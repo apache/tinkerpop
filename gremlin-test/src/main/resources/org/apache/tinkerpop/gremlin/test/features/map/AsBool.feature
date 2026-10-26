@@ -200,3 +200,29 @@ Feature: Step - asBool()
       | p[v[josh],true] |
       | p[v[ripple],false] |
       | p[v[peter],true] |
+
+  Scenario: g_V_hasLabelXproductX_whereXvaluesXinStockX_asBool_isXtrueXX_name
+    Given the empty graph
+    And the intent
+      """
+      The in-stock flag on each product is stored as the text "true" or "false". Which products are in stock? Return
+      their names.
+      """
+    And the graph initializer of
+      """
+      g.addV("product").property("name","lamp").property("price","1999").property("inStock","true").
+        addV("product").property("name","desk").property("price","12000").property("inStock","false").
+        addV("product").property("name","chair").property("price","4550").property("inStock","true").
+        addV("order").property("number","A1").property("placed","2024-03-05T10:00:00Z").property("shipped","2024-03-07T16:00:00Z").
+        addV("order").property("number","A2").property("placed","2024-04-12T09:30:00Z").property("shipped","2024-04-13T09:30:00Z").
+        addV("order").property("number","A3").property("placed","2024-03-28T18:15:00Z").property("shipped","2024-04-02T08:00:00Z")
+      """
+    And the traversal of
+      """
+      g.V().hasLabel("product").where(values("inStock").asBool().is(true)).values("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | lamp |
+      | chair |

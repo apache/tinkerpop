@@ -625,6 +625,12 @@ conforms to the pattern of "Given the _xxx_ graph" where the "xxx" may be one of
 * crew
 * sink
 * grateful
+* zoo
+* airroutes
+
+Scenarios that use the "airroutes" graph should only return values (e.g. strings, numbers, maps) rather than graph
+elements. The language variant test harnesses do not build element lookups for that graph because its vertices have no
+"name" property and it is too large to cache efficiently.
 
 Never modify the data of any of the graphs except for the "empty" graph. The "empty" graph is the only graph that is
 guaranteed to be refreshed between tests. The "empty" graph maybe be modified by the traversal under test or by an
@@ -652,6 +658,10 @@ And the graph initializer of
 
 The above configuration will use the "empty" graph and initialize it with the specified traversal. In this case, that
 traversal loads the "empty" graph with the "modern" graph.
+
+An initializer may also load data that follows one of the domain schemas described in <<gherkin-domain-schemas>>. In
+that case the schema is shared and the data is not, so each scenario adds only the vertices, edges and values its
+traversal needs.
 
 Once the graph for the test is defined, the context can be expanded to include parameters that will be applied to the
 traversal under test. Any variable value being used in the traversal under test, especially ones that require a
@@ -762,6 +772,34 @@ And using the side effect x defined as "v[marko].id"
 
 The above example is equivalent to configuring a traversal with `g.withSideEffect(x, <marko vertex id>)` and may be
 used to add side effect values which could otherwise not be inlined into the traversal script.
+
+A scenario may also carry an intent, which is a natural language description of what the traversal under test does:
+
+[source,gherkin]
+----
+Given the modern graph
+And the intent
+  """
+  For each vertex in the graph, traverse edges with a weight of 1.0 and return the vertex the edges come out of.
+  """
+----
+
+The intent has no effect on the test. Every language variant accepts the step without acting on it, and the code that
+generates language variant translations from the feature files skips it. An intent is a single paragraph, wrapped
+at 120 characters like the rest of the feature file, and its lines are read back as one. It may describe the
+traversal step by step, as Gremlin is commonly explained in English, or pose the question the traversal answers.
+Parameters may be referenced by name in angle brackets, as in `What are the outgoing vertices for vertex id: <vid1>?`.
+Intents pair natural language
+with a traversal and a verified result, which makes the annotated scenarios a corpus for evaluating how well an agent
+or model writes Gremlin. The Gremlin Fluency tool in `gremlin-tools/gremlin-fluency` runs that evaluation, and its
+`README.md` describes how. Each intent should be written and reviewed with care, so that it accurately describes its
+traversal.
+
+An intent should admit only one reasonable reading, and that reading should produce the scenario's expected result on
+any graph with the same schema, not only on the graph the scenario uses. For example, "the vertices connected to vertex
+<vid1>" says nothing about edge direction, so a traversal using `both()` might match one using `out()` on the modern
+graph and still differ on another. Domain language is enough to settle such details. Phrases like "the people marko
+knows" or "the airports that can be flown to from Austin" fix the direction without mentioning edges at all.
 
 Finally, specify the traversal under test with the "Given" option "and the traversal":
 
@@ -908,7 +946,7 @@ Scenario: g_V_outE_drop
 ==== Tags
 
 Features have tags associated with them to help allow developers to better break up test runs if they desire. There
-are two types of tags:
+are three types of tags:
 
 * `@StepClass*` - Marks the step grouping and is a prefix that precedes and either refers to one of the following:
 ** One of the four types of steps: `Branch`, `Filter`, `Map`, and `SideEffect` (e.g. `@StepClassBranch`)
@@ -919,6 +957,9 @@ file itself and test filtering could be accomplished at that level by way of the
 secondary option and allows filtering to be consistently managed by tags alone. The suffix is the Gremlin step itself
 (e.g. `@StepHas`) in all cases except for `@StepVertex` which covers `V()`, `E()`, `out()`, `in()`, `both()`, `inE()`,
 `outE()`, and `bothE()`.
+* `@Data*` - Marks testing for a particular data type. The suffix is the name of the `GType` in camel case (e.g.
+`@DataBigDecimal`). The features under `data` carry it for the type they test, and a scenario elsewhere carries it when
+its result depends on values of that type, such as a scenario on a domain schema that sums decimal amounts.
 
 Scenarios have tags associated with them that help identify subsets of tests so that a test runner can selectively
 include or ignore certain tests. The tags enable the practical and necessary ability for providers to ignore tests that
@@ -987,6 +1028,71 @@ Tag filters can be applied to Intellij at execution time by adding a system prop
 `-Dcucumber.filter.tags=<tag-expression>`. In addition, the scenarios that pass the `<tag-expression>` can be further
 filtered by name with `-Dcucumber.filter.name=<scenario-regex>`. Note that these settings will override those
 configured by `CucumberOptions` on "*FeatureTest" setups.
+
+[[gherkin-domain-schemas]]
+==== Domain Schemas
+
+The preloaded graphs fix both a schema and its data, which suits tests of individual steps but leaves little room for
+data types beyond strings and common numbers, and they are graphs that models have seen many times. Domain schemas
+cover that ground. Each one defines a test graph for a common use case by its schema alone: its vertex and edge
+labels, its property keys and the type of each value. A scenario that uses a domain schema starts from the "empty"
+graph and its initializer adds whatever data the scenario needs, as long as that data follows the schema. Scenarios
+written against the same schema therefore share a standard definition of the graph while choosing their data
+independently, so a scenario can add exactly the values that make its traversal meaningful, such as a decimal amount
+whose sum must stay exact or a multi-property with a meta-property on one of its values.
+
+The schema is a contract. An initializer must use the labels and keys exactly as defined and must store each value
+with the defined type, writing `19.99m` for a `BIGDECIMAL` rather than `19.99`, because the type of a value is part of
+what such scenarios test. An initializer may leave out labels, keys and optional properties that its scenario does not
+need. Changing a schema means reviewing every scenario that uses it. The schema is also what an intent is judged
+against, since an intent must produce the expected result on any graph with the same schema (see
+<<gremlin-language-test-cases>>). Each scenario carries a `@Data*` tag for every data type its result depends on, and
+the tags for values that need specific support, such as `@AllowDateTimePropertyValues`, `@AllowMapPropertyValues`,
+`@SupportsChar`, `@SupportsDuration`, `@MultiProperties` and `@MetaProperties`, as described in <<gherkin-tags>>.
+Null values are not stored in these graphs, as many graphs do not support them, so a `NULL` is only ever a result of
+the traversal.
+
+The schemas are written in the notation of
+link:https://learn.microsoft.com/en-us/fabric/graph/gql-graph-types[GQL Graph Types] used throughout the reference
+documentation. Where the GQL type does not name the TinkerPop type precisely, a comment gives the `GType`. Each schema
+is kept in its own file under `gremlin-test/src/main/resources/org/apache/tinkerpop/gremlin/test/schemas`, which is
+the copy that tools such as gremlin-fluency read.
+
+A schema also carries what is understood about its data in the real world, even where GQL has no syntax for it. No
+edge connects a vertex to itself, as a person does not report to themselves and a device does not send through
+itself. An edge type marked with a `hierarchy` comment gives each vertex at most one outgoing edge of that label and
+never leads back to where it started, so following it from any vertex ends at a root. An edge type marked with a
+`containment` comment gives each vertex at most one incoming edge of that label, as a reading is recorded by a single
+sensor. Edge types without a mark, such as `transfer`, may form cycles and connect a vertex to any number of others.
+Data written for a scenario follows these conventions, and a traversal written against the schema may rely on them.
+
+*ledger* - Accounts that transfer money to each other and pay merchants.
+
+[source,text]
+----
+include::../../../../gremlin-test/src/main/resources/org/apache/tinkerpop/gremlin/test/schemas/ledger.gql[tags=schema]
+----
+
+*telemetry* - Devices at sites that send through gateway devices and carry sensors that record readings.
+
+[source,text]
+----
+include::../../../../gremlin-test/src/main/resources/org/apache/tinkerpop/gremlin/test/schemas/telemetry.gql[tags=schema]
+----
+
+*organization* - Employees in a reporting hierarchy who belong to teams and work on projects.
+
+[source,text]
+----
+include::../../../../gremlin-test/src/main/resources/org/apache/tinkerpop/gremlin/test/schemas/organization.gql[tags=schema]
+----
+
+*contacts* - Contacts imported from a spreadsheet, where the same property holds values of different types.
+
+[source,text]
+----
+include::../../../../gremlin-test/src/main/resources/org/apache/tinkerpop/gremlin/test/schemas/contacts.gql[tags=schema]
+----
 
 [[gremlin-socket-server-tests]]
 === Gremlin Socket Server Tests

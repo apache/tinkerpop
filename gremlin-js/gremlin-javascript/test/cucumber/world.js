@@ -84,7 +84,7 @@ setWorldConstructor(TinkerPopWorld);
 
 BeforeAll(function () {
   // load all traversals
-  const promises = ['modern', 'classic', 'crew', 'grateful', 'sink', 'zoo', 'empty', 'multilabel'].map(graphName => {
+  const promises = ['modern', 'classic', 'crew', 'grateful', 'sink', 'zoo', 'airroutes', 'empty', 'multilabel'].map(graphName => {
     let connection = null;
     if (graphName === 'empty') {
       connection = getConnection('ggraph');
@@ -93,6 +93,12 @@ BeforeAll(function () {
     if (graphName === 'multilabel') {
       connection = getConnection('gmultilabel');
       return connection.open().then(() => cache['multilabel'] = { connection: connection });
+    }
+    if (graphName === 'airroutes') {
+      // air-routes scenarios only return values so the graph needs no element lookups
+      connection = getConnection('gairroutes');
+      return connection.open().then(() => cache['airroutes'] = {
+        connection: connection, vertices: new Map(), edges: {}, vertexProperties: {} });
     }
     connection = getConnection('g' + graphName);
     return connection.open()

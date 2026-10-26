@@ -21,6 +21,10 @@ Feature: Step - subgraph()
   Scenario: g_VX1X_outEXknowsX_subgraphXsgX_name_capXsgX
     Given the modern graph
     And using the parameter vid1 defined as "v[marko].id"
+    And the intent
+      """
+      Extract the subgraph made of the outgoing knows edges of vertex <vid1> and the vertices at both ends of them.
+      """
     And the traversal of
       """
       g.V(vid1).outE("knows").subgraph("sg").values("name").cap("sg")
@@ -38,6 +42,10 @@ Feature: Step - subgraph()
 
   Scenario: g_V_repeatXbothEXcreatedX_subgraphXsgX_outVX_timesX5X_name_dedup_capXsgX
     Given the modern graph
+    And the intent
+      """
+      Extract the subgraph made of every created edge and the vertices at both of its ends.
+      """
     And the traversal of
       """
       g.V().repeat(__.bothE("created").subgraph("sg").outV()).times(5).values("name").dedup().cap("sg")
@@ -71,6 +79,10 @@ Feature: Step - subgraph()
 
   Scenario: g_E_hasXweight_0_5X_subgraphXaX_selectXaX
     Given the modern graph
+    And the intent
+      """
+      Extract the subgraph made of the edges whose weight is exactly 0.4 and the vertices at both ends of them.
+      """
     And the traversal of
       """
       g.E().has("weight", 0.4).subgraph("a").select("a")

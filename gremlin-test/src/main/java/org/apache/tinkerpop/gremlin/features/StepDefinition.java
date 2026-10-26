@@ -315,6 +315,20 @@ public final class StepDefinition {
         this.world = Objects.requireNonNull(world, "world must not be null");
     }
 
+    /**
+     * The result of iterating the traversal under test, or {@code null} if it has not been iterated or failed.
+     */
+    public Object getResult() {
+        return result;
+    }
+
+    /**
+     * The error raised while parsing or iterating the traversal under test, or {@code null} if there was none.
+     */
+    public Throwable getError() {
+        return error;
+    }
+
     @Before
     public void beforeEachScenario(final Scenario scenario) throws Exception {
         this.currentScenario = scenario;
@@ -365,7 +379,11 @@ public final class StepDefinition {
             else
                 this.g = world.getGraphTraversalSource(null);
         } else {
-            this.g = world.getGraphTraversalSource(GraphData.valueOf(graphName.toUpperCase()));
+            // graph names in the feature files drop the underscore of multi-word GraphData names (e.g. airroutes)
+            final GraphData graphData = Stream.of(GraphData.values()).
+                    filter(gd -> gd.name().replace("_", "").equalsIgnoreCase(graphName)).
+                    findFirst().orElseThrow(() -> new IllegalArgumentException("No graph named " + graphName));
+            this.g = world.getGraphTraversalSource(graphData);
         }
     }
 
@@ -388,6 +406,11 @@ public final class StepDefinition {
     @Given("using the side effect {word} defined as {string}")
     public void usingTheSideEffectXDefinedAsX(final String key, final String value) {
         sideEffects.put(key, convertToString(value));
+    }
+
+    @Given("the intent")
+    public void theIntent(final String docString) {
+        // a natural language description of the traversal that has no effect on the test
     }
 
     @Given("the traversal of")

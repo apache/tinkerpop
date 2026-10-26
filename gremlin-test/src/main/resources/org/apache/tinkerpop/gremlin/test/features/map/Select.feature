@@ -59,6 +59,7 @@ Feature: Step - select()
       | v[marko] |
 
   # ProductiveBy
+
   @GraphComputerVerificationReferenceOnly
   Scenario: g_VX1X_asXaX_outXknowsX_asXbX_selectXaX_byXnameX
     Given the modern graph
@@ -173,6 +174,11 @@ Feature: Step - select()
 
   Scenario: g_V_hasLabelXpersonX_asXpX_mapXbothE_label_groupCountX_asXrX_selectXp_rX
     Given the modern graph
+    And the intent
+      """
+      For each person, count their edges in either direction by label. Return a map of the person ("p") and those counts
+      by label ("r").
+      """
     And the traversal of
       """
       g.V().hasLabel("person").as("p").
@@ -792,6 +798,7 @@ Feature: Step - select()
       | v[marko] |
 
   # ProductiveBy
+
   @GraphComputerVerificationReferenceOnly
   Scenario: g_EX11X_propertiesXweightX_asXaX_selectXaX_byXkeyX
     Given the modern graph
@@ -806,6 +813,7 @@ Feature: Step - select()
       | weight |
 
   # ProductiveBy
+
   @GraphComputerVerificationReferenceOnly
   Scenario: g_EX11X_propertiesXweightX_asXaX_selectXaX_byXvalueX
     Given the modern graph

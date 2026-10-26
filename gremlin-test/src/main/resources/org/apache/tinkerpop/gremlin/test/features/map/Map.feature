@@ -47,6 +47,10 @@ Feature: Step - map()
   Scenario: g_VX1X_out_mapXvaluesXnameXX_mapXlengthX
     Given the modern graph
     And using the parameter vid1 defined as "v[marko].id"
+    And the intent
+      """
+      How long is the name of each vertex that vertex <vid1> has an outgoing edge to?
+      """
     And the traversal of
       """
       g.V(vid1).out().map(__.values("name")).map(__.length())

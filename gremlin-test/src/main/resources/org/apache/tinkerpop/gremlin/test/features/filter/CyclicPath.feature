@@ -88,3 +88,21 @@ Feature: Step - cyclicPath()
       | p[d[0].i,v[josh],v[marko],v[josh]] |
       | p[d[0].i,v[ripple],v[josh],d[0].i] |
       | p[d[0].i,v[peter],v[lop],d[0].i] |
+
+  Scenario: g_V_hasXperson_name_markoX_both_both_cyclicPath_path
+    Given the modern graph
+    And the intent
+      """
+      Find every walk of two steps from marko, following edges in either direction, that ends back at marko, and return
+      each walk as a path.
+      """
+    And the traversal of
+      """
+      g.V().has("person","name","marko").both().both().cyclicPath().path()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | p[v[marko],v[lop],v[marko]] |
+      | p[v[marko],v[vadas],v[marko]] |
+      | p[v[marko],v[josh],v[marko]] |

@@ -20,6 +20,7 @@ Feature: Step - lTrim()
 
   @GraphComputerVerificationInjectionNotSupported
   # This verifies both ASCII control space and ideographic space character \u3000 are property trimmed.
+
   Scenario: g_injectX__feature___test__nullX_lTrim
     Given the empty graph
     And the traversal of
@@ -41,6 +42,7 @@ Feature: Step - lTrim()
 
   @GraphComputerVerificationInjectionNotSupported
   # This verifies both ASCII control space and ideographic space character \u3000 are property trimmed.
+
   Scenario: g_injectX__feature___test__nullX_lTrimXlocalX
     Given the empty graph
     And the traversal of
@@ -100,6 +102,10 @@ Feature: Step - lTrim()
         addE("created").from("josh").to("ripple").property("weight", 1.0d).
         addE("created").from("josh").to("lop").property("weight", 0.4d).
         addE("created").from("peter").to("lop").property("weight", 0.2d)
+      """
+    And the intent
+      """
+      Return the name of every vertex with any leading spaces removed.
       """
     And the traversal of
       """

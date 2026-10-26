@@ -270,7 +270,7 @@ function registerGraphTools(server: McpServer, runtime: Runtime.Runtime<GremlinS
           Effect.catchAll(error => {
             const errorResponse = {
               results: [],
-              message: `Query failed: ${error}`,
+              message: error.message,
             };
             return Effect.succeed(createSuccessResponse(errorResponse));
           }),

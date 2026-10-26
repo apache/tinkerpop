@@ -45,10 +45,13 @@ def prepare_static_traversal_source(features, marker):
     for graph_name in (("modern", "gmodern"), ("classic", "gclassic"), ("crew", "gcrew"), ("grateful", "ggrateful"), ("sink", "gsink"), ("zoo", "gzoo")):
         cache[graph_name[0]] = {}
         remote = __create_remote(graph_name[1])
-        cache[graph_name[0]]["remote_conn"] = __create_remote(graph_name[1])
+        cache[graph_name[0]]["remote_conn"] = remote
         cache[graph_name[0]]["lookup_v"] = world.create_lookup_v(remote)
         cache[graph_name[0]]["lookup_e"] = world.create_lookup_e(remote)
         cache[graph_name[0]]["lookup_vp"] = world.create_lookup_vp(remote)
+
+    # air-routes scenarios only return values so the graph needs no element lookups
+    cache["airroutes"] = {"remote_conn": __create_remote("gairroutes"), "lookup_v": {}, "lookup_e": {}, "lookup_vp": {}}
 
     # store the cache on the global context so that remotes can be shutdown cleanly at the end of the tests
     world.cache = cache
@@ -62,7 +65,7 @@ def prepare_static_traversal_source(features, marker):
             scenario.context.lookup_e = {}
             scenario.context.lookup_vp = {}
 
-            for graph_name in ("modern", "classic", "crew", "grateful", "sink", "zoo"):
+            for graph_name in ("modern", "classic", "crew", "grateful", "sink", "zoo", "airroutes"):
                 scenario.context.remote_conn[graph_name] = cache[graph_name]["remote_conn"]
                 scenario.context.lookup_v[graph_name] = cache[graph_name]["lookup_v"]
                 scenario.context.lookup_e[graph_name] = cache[graph_name]["lookup_e"]
@@ -119,6 +122,9 @@ def __create_remote(server_graph_name):
 
     bulking = world.config.user_data["bulking"] == "true" if "bulking" in world.config.user_data else False
 
+    # scenarios run one at a time, so a small pool is enough. each pooled connection holds its own event loop and
+    # socket, and the driver default of 128 per remote exhausts the container's file descriptor limit over a full run
     return DriverRemoteConnection(test_no_auth_url, server_graph_name,
                                   response_serializer=s,
-                                  bulk_results=bulking)
+                                  bulk_results=bulking,
+                                  max_connections=4)

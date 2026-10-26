@@ -177,6 +177,12 @@ Feature: Step - repeat()
   Scenario: g_VX1X_repeatXgroupCountXmX_byXloopsX_outX_timesX3X_capXmX
     Given the modern graph
     And using the parameter vid1 defined as "v[marko].id"
+    And the intent
+      """
+      Starting from vertex <vid1> and following outgoing edges, count the vertices reached at each depth: 0 for vertex
+      <vid1> itself, then one and two steps away, counting a vertex once for each way it is reached. Return a map from
+      depth to count.
+      """
     And the traversal of
       """
       g.V(vid1).repeat(__.groupCount("m").by(__.loops()).out()).times(3).cap("m")
@@ -200,6 +206,11 @@ Feature: Step - repeat()
   Scenario: g_VX1X_repeatXoutX_untilXoutE_count_isX0XX_name
     Given the modern graph
     And using the parameter vid1 defined as "v[marko].id"
+    And the intent
+      """
+      Starting from vertex <vid1>, follow outgoing edges until reaching vertices that have no outgoing edges, and return
+      their names, once for each route that reaches them.
+      """
     And the traversal of
       """
       g.V(vid1).repeat(__.out()).until(__.outE().count().is(0)).values("name")
@@ -215,6 +226,11 @@ Feature: Step - repeat()
   @GraphComputerVerificationReferenceOnly
   Scenario: g_V_hasXname_markoX_repeatXoutE_inV_simplePathX_untilXhasXname_rippleXX_path_byXnameX_byXlabelX
     Given the modern graph
+    And the intent
+      """
+      Find every route from marko to ripple along outgoing edges that never visits a vertex twice. Return each route as
+      the names of its vertices alternating with the labels of its edges.
+      """
     And the traversal of
       """
       g.V().has("name", "marko").repeat(__.outE().inV().simplePath()).until(__.has("name", "ripple")).path().by("name").by(T.label)
@@ -432,6 +448,7 @@ Feature: Step - repeat()
       | marko |
 
   # Proper handling of empty results if repeat doesn't output traversers
+
   Scenario: g_V_repeatXboth_hasXnot_productiveXX_timesX3X_constantX1X
     Given the modern graph
     And the traversal of
@@ -442,6 +459,7 @@ Feature: Step - repeat()
     Then the result should be empty
 
   # Proper handling of empty results if no traverser goes into repeat
+
   Scenario: g_V_hasXnot_productiveX_repeatXbothX_timesX3X_constantX1X
     Given the modern graph
     And the traversal of
@@ -452,6 +470,7 @@ Feature: Step - repeat()
     Then the result should be empty
 
   # Each iteration of repeat traversal that ends in a barrier leads to BFS style processing
+
   @InsertionOrderingRequired
   Scenario: g_VX1_2_3X_repeatXboth_barrierX_emit_timesX2X_path
     Given the modern graph
@@ -491,6 +510,7 @@ Feature: Step - repeat()
       | p[v[lop],v[peter],v[lop]] |
 
   # Global children should be ordered by last loop first
+
   Scenario: g_V_order_byXname_descX_repeatXboth_simplePath_order_byXname_descXX_timesX2X_path
     Given the modern graph
     And the traversal of
@@ -520,6 +540,7 @@ Feature: Step - repeat()
       | p[v[marko],v[lop],v[josh]] |
 
   # Nested repeat should maintain globalness
+
   Scenario: g_V_repeatXboth_repeatXorder_byXnameXX_timesX1XX_timesX1X
     Given the modern graph
     And the traversal of
@@ -543,6 +564,7 @@ Feature: Step - repeat()
       | v[vadas] |
 
   # Nested local inside repeat should prevent global children from parent repeat
+
   @GraphComputerVerificationStarGraphExceeded
   Scenario: g_V_order_byXname_descX_repeatXlocalXout_order_byXnameXXX_timesX1X
     Given the modern graph
@@ -561,6 +583,7 @@ Feature: Step - repeat()
       | v[ripple] |
 
   # Local child traversal should be applied per loop
+
   @GraphComputerVerificationStarGraphExceeded
   Scenario: g_V_order_byXnameX_repeatXlocalXboth_simplePath_order_byXnameXXX_timesX2X_path
     Given the modern graph
@@ -592,6 +615,7 @@ Feature: Step - repeat()
 
   # Branching step with global children should remain global in repeat traversal
   # Results are unordered due to server bulking of traversers which leads to incorrect result
+
   Scenario: g_V_repeatXunionXoutXknowsX_order_byXnameX_inXcreatedX_order_byXnameXXX_timesX1X
     Given the modern graph
     And the traversal of
@@ -609,6 +633,7 @@ Feature: Step - repeat()
       | v[peter] |
 
   # addV inside repeat should create the proper number of vertices
+
   Scenario: g_V_repeatXaddV_propertyXgenerated_trueXX_timesX2X
     Given the empty graph
     And the graph initializer of
@@ -625,6 +650,7 @@ Feature: Step - repeat()
     And the graph should return 4 for count of "g.V().has(\"generated\")"
 
   # global dedup should remove all traversers if looped more than once with all possible vertices
+
   Scenario: g_V_repeatXdedup_bothX_timesX2X
     Given the modern graph
     And the traversal of
@@ -635,6 +661,7 @@ Feature: Step - repeat()
     Then the result should be empty
 
   # global, eager aggregate should contain all results even in the first select
+
   Scenario: g_V_repeatXaggregateXxXX_timesX2X_selectXxX_limitX1X_unfold
     Given the modern graph
     And the traversal of
@@ -714,6 +741,7 @@ Feature: Step - repeat()
       | v[peter] |
 
   # Test tail works in repeat with a single loop
+
   Scenario: g_VX3X_repeatXout_order_byXperformancesX_tailX2XX_timesX1X_valuesXnameX
     Given the grateful graph
     And using the parameter vid3 defined as "v[NOT FADE AWAY].id"
@@ -728,6 +756,7 @@ Feature: Step - repeat()
       | DRUMS |
 
   # Test tail runs per iteration in repeat with multiple iterations
+
   Scenario: g_VX3X_repeatXout_order_byXperformancesX_tailX2XX_timesX2X_valuesXnameX
     Given the grateful graph
     And using the parameter vid3 defined as "v[NOT FADE AWAY].id"
@@ -742,6 +771,7 @@ Feature: Step - repeat()
       | SUGAR MAGNOLIA |
 
   # Test object-local tail works in repeat with a single loop
+
   Scenario: g_VX2X_repeatXout_localXorder_byXperformancesX_tailX1XXX_timesX1X_valuesXnameX
     Given the grateful graph
     And using the parameter vid2 defined as "v[IM A MAN].id"
@@ -756,6 +786,7 @@ Feature: Step - repeat()
       | JACK STRAW |
 
   # Test object-local tail runs per iteration in repeat with multiple iterations
+
   Scenario: g_VX250X_repeatXout_localXorder_byXperformancesX_tailX1XXX_timesX2X_valuesXnameX
     Given the grateful graph
     And using the parameter vid250 defined as "v[SIMPLE TWIST OF FATE].id"
@@ -779,6 +810,7 @@ Feature: Step - repeat()
       | BABY BLUE |
 
   # Test tail inside repeat can be followed by other range-based steps
+
   Scenario: g_VX3X_repeatXout_order_byXperformancesX_tailX3X_limitX1XX_timesX2X_valuesXnameX
     Given the grateful graph
     And using the parameter vid3 defined as "v[NOT FADE AWAY].id"
@@ -792,6 +824,7 @@ Feature: Step - repeat()
       | THE OTHER ONE |
 
   # Test tail inside repeat can be preceded by other range-based steps
+
   Scenario: g_VX3X_repeatXout_order_byXperformances_descX_limitX5X_tailX1XX_timesX2X_valuesXnameX
     Given the grateful graph
     And using the parameter vid3 defined as "v[NOT FADE AWAY].id"
@@ -805,9 +838,16 @@ Feature: Step - repeat()
       | CHINA CAT SUNFLOWER |
 
   # Test order on edge weight with tail in repeat leads to ordered walk
+
   Scenario: g_VX3X_repeatXoutE_order_byXweightX_tailX2X_inVX_timesX2X_valuesXnameX
     Given the grateful graph
     And using the parameter vid3 defined as "v[NOT FADE AWAY].id"
+    And the intent
+      """
+      Starting from the song <vid3>, take the two followedBy edges with the highest weight and move to the songs they
+      lead to. Then, across all followedBy edges leaving those songs together, take the two with the highest weight
+      again, and return the names of the songs they lead to.
+      """
     And the traversal of
       """
       g.V(vid3).repeat(__.outE().order().by("weight").tail(2).inV()).times(2).values("name")
@@ -819,6 +859,7 @@ Feature: Step - repeat()
       | AROUND AND AROUND |
 
   # Test order on edge weight with limit in repeat leads to limited, ordered walk
+
   Scenario: g_VX3X_repeatXoutE_order_byXweight_descX_limitX2X_inVX_timesX2X_valuesXnameX
     Given the grateful graph
     And using the parameter vid3 defined as "v[NOT FADE AWAY].id"
@@ -1004,3 +1045,41 @@ Feature: Step - repeat()
       | v[ripple] |
       | v[peter] |
       | v[peter] |
+
+  @GraphComputerVerificationReferenceOnly
+  Scenario: g_V_untilXhasXname_rippleXX_repeatXoutX_path_byXnameX
+    Given the modern graph
+    And the intent
+      """
+      Find every path along outgoing edges that ends at ripple, from any starting vertex, including ripple on its own.
+      Return each path as the names along it.
+      """
+    And the traversal of
+      """
+      g.V().until(has("name","ripple")).repeat(out()).path().by("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | p[marko,josh,ripple] |
+      | p[josh,ripple] |
+      | p[ripple] |
+
+  @GraphComputerVerificationReferenceOnly
+  Scenario: g_V_hasXperson_name_markoX_emitXhasLabelXpersonXX_repeatXoutX_path_byXnameX
+    Given the modern graph
+    And the intent
+      """
+      Starting from marko and following outgoing edges, return the path to every person reached, including the path of
+      marko on his own. Give each path as the names along it.
+      """
+    And the traversal of
+      """
+      g.V().has("person","name","marko").emit(hasLabel("person")).repeat(out()).path().by("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | p[marko] |
+      | p[marko,vadas] |
+      | p[marko,josh] |

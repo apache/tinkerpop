@@ -299,3 +299,23 @@ Feature: Step - product()
       | l[three,five] |
       | l[three,three] |
       | l[three,d[7].i] |
+
+  @GraphComputerVerificationMidVNotSupported
+  Scenario: g_V_hasXperson_name_markoX_outXknowsX_valuesXnameX_order_fold_productXjoshs_creations_order_foldX_unfold
+    Given the modern graph
+    And the intent
+      """
+      Pair every person marko knows with every thing josh created. Return each pair as a two-item list of the person's
+      name and the thing's name.
+      """
+    And the traversal of
+      """
+      g.V().has("person","name","marko").out("knows").values("name").order().fold().product(__.V().has("person","name","josh").out("created").values("name").order().fold()).unfold()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | l[josh,lop] |
+      | l[josh,ripple] |
+      | l[vadas,lop] |
+      | l[vadas,ripple] |

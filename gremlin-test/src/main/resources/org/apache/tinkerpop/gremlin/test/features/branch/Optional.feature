@@ -45,6 +45,11 @@ Feature: Step - optional()
   @GraphComputerVerificationStarGraphExceeded
   Scenario: g_V_hasLabelXpersonX_optionalXoutXknowsX_optionalXoutXcreatedXXX_path
     Given the modern graph
+    And the intent
+      """
+      For each person, return the path from them to each person they know and on to each thing that person created.
+      Where a person knows no one, or the person they know created nothing, end the path there instead of dropping it.
+      """
     And the traversal of
       """
       g.V().hasLabel("person").

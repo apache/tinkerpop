@@ -323,3 +323,20 @@ Feature: Step - elementMap()
     Then the result should be unordered
       | result |
       | m[{"t[id]": "e[marko-knows->josh].id", "t[label]": "knows", "weight": "d[0.5].d", "D[OUT]": "m[{\\"t[id]\\": \\"v[marko].id\\", \\"t[label]\\": \\"person\\"}]", "D[IN]": "m[{\\"t[id]\\": \\"v[josh].id\\", \\"t[label]\\": \\"person\\"}]"}] |
+
+  @GraphComputerVerificationStarGraphExceeded
+  Scenario: g_V_hasXperson_name_markoX_outEXknowsX_whereXinV_hasXname_joshXX_elementMap
+    Given the modern graph
+    And the intent
+      """
+      Show the knows edge from marko to josh as one map with its id, its label, its properties, and the id and label of
+      the vertex at each end.
+      """
+    And the traversal of
+      """
+      g.V().has("person","name","marko").outE("knows").where(inV().has("name","josh")).elementMap()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | m[{"t[id]": "e[marko-knows->josh].id", "t[label]": "knows", "weight": "d[1.0].d", "D[OUT]": "m[{\\"t[id]\\": \\"v[marko].id\\", \\"t[label]\\": \\"person\\"}]", "D[IN]": "m[{\\"t[id]\\": \\"v[josh].id\\", \\"t[label]\\": \\"person\\"}]"}] |

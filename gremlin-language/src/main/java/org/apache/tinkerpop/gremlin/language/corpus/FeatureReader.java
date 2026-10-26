@@ -95,6 +95,7 @@ public class FeatureReader {
                     String currentGremlin = "";
                     boolean openTriples = false;
                     boolean skipIgnored = false;
+                    boolean skipIntent = false;
                     String scenarioName = "";
                     Map<String,String> parameters = new HashMap<>();
 
@@ -115,16 +116,21 @@ public class FeatureReader {
                                 }
                             } else if (cleanLine.contains("nothing should happen because") || cleanLine.contains("the result should be a tree with a structure of")) {
                                 skipIgnored = true;
+                            } else if (cleanLine.startsWith("And the intent")) {
+                                // the intent docstring is natural language, not gremlin
+                                skipIntent = true;
                             } else if (cleanLine.startsWith("And the graph should return")) {
                                 gremlins.computeIfAbsent(scenarioName, k -> new ArrayList<>()).add(applyParametersToGremlin(StringEscapeUtils.unescapeJava(cleanLine.substring(cleanLine.indexOf("\"") + 1, cleanLine.lastIndexOf("\""))), parameters));
                             } else if (cleanLine.startsWith("\"\"\"")) {
                                 openTriples = !openTriples;
-                                if (!skipIgnored && !openTriples) {
+                                if (skipIntent) {
+                                    if (!openTriples) skipIntent = false;
+                                } else if (!skipIgnored && !openTriples) {
                                     currentGremlin = applyParametersToGremlin(currentGremlin, parameters);
                                     gremlins.computeIfAbsent(scenarioName, k -> new ArrayList<>()).add(currentGremlin);
                                     currentGremlin = "";
                                 }
-                            } else if (openTriples && !skipIgnored) {
+                            } else if (openTriples && !skipIgnored && !skipIntent) {
                                 currentGremlin += cleanLine;
                             }
                         }

@@ -132,3 +132,27 @@ Feature: Step - labels()
       | result |
       | knows |
       | knows |
+
+  Scenario: g_V_hasLabelXanimalX_projectXname_labelsX_byXnameX_byXlabels_order_foldX
+    Given the zoo graph
+    And the intent
+      """
+      For each animal, return a map of its name and all of its labels in alphabetical order.
+      """
+    And the traversal of
+      """
+      g.V().hasLabel("animal").project("name","labels").by("name").by(labels().order().fold())
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | m[{"name":"tux","labels":"l[animal,aquatic,bird,endangered]"}] |
+      | m[{"name":"atlas","labels":"l[animal,aquatic,endangered,reptile]"}] |
+      | m[{"name":"ripple","labels":"l[animal,aquatic,mammal]"}] |
+      | m[{"name":"monty","labels":"l[animal,nocturnal,reptile]"}] |
+      | m[{"name":"echo","labels":"l[animal,flying,mammal,nocturnal]"}] |
+      | m[{"name":"blaze","labels":"l[animal,endangered,mammal,nocturnal]"}] |
+      | m[{"name":"titan","labels":"l[animal,endangered,mammal]"}] |
+      | m[{"name":"bitsy","labels":"l[animal,mammal,nocturnal]"}] |
+      | m[{"name":"splash","labels":"l[animal,aquatic,endangered,mammal,nocturnal]"}] |
+      | m[{"name":"tinker","labels":"l[animal,endangered,mammal,nocturnal]"}] |

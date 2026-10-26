@@ -191,6 +191,7 @@ Feature: Step - mergeE()
     Then the traversal will raise an error with message containing text of "Out Vertex not specified"
 
   # Directions not specified
+
   Scenario: g_V_mergeEXnullX
     Given the empty graph
     And the graph initializer of
@@ -422,6 +423,7 @@ Feature: Step - mergeE()
     And the graph should return 1 for count of "g.E().hasLabel(\"knows\").has(\"created\",\"N\").outV().has(\"name\",\"vadas\")"
 
   # Tests the case where a edge match triggers onMatch, but still treats this as invalid Gremlin due to onCreate.
+
   Scenario: g_mergeEXlabel_knows_out_vadasX_optionXonCreate_created_YX_optionXonMatch_created_NX_exists_updated_override_prohibited
     Given the empty graph
     And the graph initializer of
@@ -465,6 +467,7 @@ Feature: Step - mergeE()
     And the graph should return 1 for count of "g.E().hasLabel(\"knows\").has(\"created\",\"N\").outV().has(\"name\",\"vadas\")"
 
   # Tests the case where a edge match triggers onMatch, but still treats this as invalid Gremlin due to onCreate.
+
   Scenario: g_mergeEXout_vadasX_optionXonCreate_created_YX_optionXonMatch_created_NX_exists_updated_override_prohibited
     Given the empty graph
     And the graph initializer of
@@ -487,6 +490,7 @@ Feature: Step - mergeE()
   # Tests the case where a edge match triggers onMatch, so the validation for onCreate never kicks in because the
   # Map for onCreate is dynamically assigned. we can't know until we resolve that there is a problem. this is a bit of
   # a latent bug for a user, but they will get a failure at runtime whenever the onCreate branch executes
+
   Scenario: g_withSideEffect_mergeEXout_vadasX_optionXonCreate_created_YX_optionXonMatch_created_NX_exists_updated_dynamic_override_sketchily_allowed
     Given the empty graph
     And the graph initializer of
@@ -726,6 +730,7 @@ Feature: Step - mergeE()
     And the graph should return 1 for count of "g.V().has(\"name\",\"marko\").out(\"knows\").has(\"name\",\"vadas\")"
 
   # onCreate inherits from merge and can specify an eid
+
   @UserSuppliedEdgeIds
   Scenario: g_mergeE_with_eid_specified_and_inheritance_1
     Given the empty graph
@@ -748,6 +753,7 @@ Feature: Step - mergeE()
     And the graph should return 1 for count of "g.V().has(\"name\",\"marko\").out(\"knows\").has(\"name\",\"vadas\")"
 
   # onCreate inherits from merge and can specify an eid
+
   @UserSuppliedEdgeIds
   Scenario: g_mergeE_with_eid_specified_and_inheritance_2
     Given the empty graph
@@ -770,6 +776,7 @@ Feature: Step - mergeE()
     And the graph should return 1 for count of "g.V().has(\"name\",\"marko\").out(\"knows\").has(\"name\",\"vadas\")"
 
   # cannot override Direction.OUT in onCreate
+
   Scenario: g_mergeE_outV_override_prohibited
     Given the empty graph
     And the graph initializer of
@@ -787,6 +794,7 @@ Feature: Step - mergeE()
     Then the traversal will raise an error with message containing text of "option(onCreate) cannot override values from merge() argument"
 
   # cannot override Direction.OUT in onCreate
+
   Scenario: g_withSideEffect_withSideEffect_mergeE_outV_dynamic_override_prohibited
     Given the empty graph
     And the graph initializer of
@@ -804,6 +812,7 @@ Feature: Step - mergeE()
     Then the traversal will raise an error with message containing text of "option(onCreate) cannot override values from merge() argument"
 
   # cannot override Direction.IN in onCreate
+
   Scenario: g_mergeE_inV_override_prohibited
     Given the empty graph
     And the graph initializer of
@@ -821,6 +830,7 @@ Feature: Step - mergeE()
     Then the traversal will raise an error with message containing text of "option(onCreate) cannot override values from merge() argument"
 
   # cannot override Direction.IN in onCreate
+
   Scenario: g_withSideEffect_mergeE_inV_dynamic_override_prohibited
     Given the empty graph
     And the graph initializer of
@@ -838,6 +848,7 @@ Feature: Step - mergeE()
     Then the traversal will raise an error with message containing text of "option(onCreate) cannot override values from merge() argument"
 
   # cannot override T.label in onCreate
+
   Scenario: g_mergeE_label_override_prohibited
     Given the empty graph
     And the graph initializer of
@@ -855,6 +866,7 @@ Feature: Step - mergeE()
     Then the traversal will raise an error with message containing text of "option(onCreate) cannot override values from merge() argument"
 
   # cannot override T.label in onCreate
+
   Scenario: g_mergeE_label_dynamic_override_prohibited
     Given the empty graph
     And the graph initializer of
@@ -872,6 +884,7 @@ Feature: Step - mergeE()
     Then the traversal will raise an error with message containing text of "option(onCreate) cannot override values from merge() argument"
 
   # cannot override T.id in onCreate
+
   @UserSuppliedEdgeIds
   Scenario: g_mergeE_id_override_prohibited
     Given the empty graph
@@ -890,6 +903,7 @@ Feature: Step - mergeE()
     Then the traversal will raise an error with message containing text of "option(onCreate) cannot override values from merge() argument"
 
   # cannot override T.id in onCreate
+
   @UserSuppliedEdgeIds
   Scenario: g_withSideEffect_mergeE_id_dynamic_override_prohibited
     Given the empty graph
@@ -908,6 +922,7 @@ Feature: Step - mergeE()
     Then the traversal will raise an error with message containing text of "option(onCreate) cannot override values from merge() argument"
 
   # combining mergeV and mergeE when vertices do not exist
+
   Scenario: g_mergeV_mergeE_combination_new_vertices
     Given the empty graph
     And using the parameter xx1 defined as "m[{\"name\": \"marko\", \"t[label]\": \"person\"}]"
@@ -924,6 +939,7 @@ Feature: Step - mergeE()
     And the graph should return 1 for count of "g.V().has(\"name\",\"marko\").out(\"knows\").has(\"name\",\"vadas\")"
 
   # combining mergeV and mergeE when vertices exist
+
   Scenario: g_mergeV_mergeE_combination_existing_vertices
     Given the empty graph
     And the graph initializer of
@@ -945,6 +961,7 @@ Feature: Step - mergeE()
     And the graph should return 1 for count of "g.V().has(\"name\",\"marko\").out(\"knows\").has(\"name\",\"vadas\")"
 
   # cannot use hidden namespace for label key for onMatch
+
   Scenario: g_V_asXvX_mergeEXxx1X_optionXMerge_onMatch_xx2X_optionXMerge_outV_selectXvXX_optionXMerge_inV_selectXvXX
     Given the empty graph
     And the graph initializer of
@@ -1155,3 +1172,33 @@ Feature: Step - mergeE()
       """
     When iterated to list
     Then the traversal will raise an error with message containing text of "option(inV) can only be specified once"
+
+  Scenario: g_V_hasXperson_name_markoX_asXmX_V_hasXperson_name_peterX_asXpX_mergeEXlabel_knows_out_inX_optionXoutV_selectXmXX_optionXinV_selectXpXX
+    Given the empty graph
+    And the intent
+      """
+      Make sure marko knows peter, adding a knows edge from marko to peter only if there is not one already.
+      """
+    And the graph initializer of
+      """
+      g.addV("person").property("name", "marko").property("age", 29).as("marko").
+        addV("person").property("name", "vadas").property("age", 27).as("vadas").
+        addV("software").property("name", "lop").property("lang", "java").as("lop").
+        addV("person").property("name","josh").property("age", 32).as("josh").
+        addV("software").property("name", "ripple").property("lang", "java").as("ripple").
+        addV("person").property("name", "peter").property("age", 35).as('peter').
+        addE("knows").from("marko").to("vadas").property("weight", 0.5d).
+        addE("knows").from("marko").to("josh").property("weight", 1.0d).
+        addE("created").from("marko").to("lop").property("weight", 0.4d).
+        addE("created").from("josh").to("ripple").property("weight", 1.0d).
+        addE("created").from("josh").to("lop").property("weight", 0.4d).
+        addE("created").from("peter").to("lop").property("weight", 0.2d)
+      """
+    And the traversal of
+      """
+      g.V().has("person","name","marko").as("m").V().has("person","name","peter").as("p").mergeE([T.label:"knows",(OUT):Merge.outV,(IN):Merge.inV]).option(Merge.outV,select("m")).option(Merge.inV,select("p"))
+      """
+    When iterated to list
+    Then the result should have a count of 1
+    And the graph should return 7 for count of "g.E()"
+    And the graph should return 1 for count of "g.V().has(\"name\",\"marko\").out(\"knows\").has(\"name\",\"peter\")"

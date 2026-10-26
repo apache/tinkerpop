@@ -98,6 +98,10 @@ Feature: Step - addV()
 
   Scenario: g_addVXpersonX_propertyXname_stephenX
     Given the empty graph
+    And the intent
+      """
+      Add a person vertex with the name stephen.
+      """
     And the graph initializer of
       """
       g.addV("person").property("name", "marko").property("age", 29).as("marko").

@@ -37,6 +37,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Removed automatic persistence from `TinkerMemoryGraph`, which is now purely in-memory and ignores `gremlin.tinkergraph.graphLocation`/`graphFormat`. Use `TinkerStorageGraph` for durability or `g.io()` for interchange.
 * Fixed `CountStrategy` so that it no longer adds a `limit()` before `count().is(P)` when the capped count can pass the predicate and is then observed downstream, e.g. `out().count().is(gt(2))`.
 * Removed the per-request `userAgent` option from all drivers so the user agent is sent only as the `User-Agent` header controlled by `enableUserAgentOnConnect`.
+* Fixed `gremlin-mcp` to include the server's reason when a query fails rather than only reporting that it failed.
 
 [[release-4-0-0-beta-3]]
 === TinkerPop 4.0.0-beta.3 (July 20, 2026)
