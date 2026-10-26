@@ -218,7 +218,7 @@ Feature: Step - inject()
       | result |
       | s[d[1].i] |
 
-  @GraphComputerVerificationInjectionNotSupported
+  @GraphComputerVerificationInjectionNotSupported @DataBigInt
   Scenario: g_injectXbigintBoundaryValuesX
     Given the empty graph
     And the traversal of
