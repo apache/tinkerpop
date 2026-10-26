@@ -542,6 +542,8 @@ mvn -Dmaven.javadoc.skip=true --projects tinkergraph-gremlin test
 ** Reports are generated to the console and to `gremlin-tools/gremlin-benchmark/target/reports/benchmark`.
 * Test coverage report: `mvn clean install -Dcoverage` - note that the `install` is necessary because report aggregation is bound to that part of the lifecycle.
 ** Reports are generated to `gremlin-tools/gremlin-coverage/target/site`.
+* Evaluate how well AI agents write Gremlin from the intents in the feature tests: see `gremlin-tools/gremlin-fluency/README.md`
+** Results are written to `~/.gremlin-fluency/runs`.
 * `cd site`
 ** Generate web site locally: `bin/generate-home.sh`
 ** Publish web site: `bin/publish-home.sh <username>`

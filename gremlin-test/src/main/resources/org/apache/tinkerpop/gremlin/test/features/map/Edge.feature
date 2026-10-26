@@ -20,6 +20,10 @@ Feature: Step - E(), inV(), outV(), bothV(), otherV()
 
   Scenario: g_E
     Given the modern graph
+    And the intent
+      """
+      Get all of the edges in the graph.
+      """
     And the traversal of
       """
       g.E()
@@ -36,6 +40,10 @@ Feature: Step - E(), inV(), outV(), bothV(), otherV()
 
   Scenario: g_EX11X
     Given the modern graph
+    And the intent
+      """
+      Get an edge with id=<eid11>.
+      """
     And using the parameter eid11 defined as "e[josh-created->lop].id"
     And the traversal of
       """
@@ -60,6 +68,10 @@ Feature: Step - E(), inV(), outV(), bothV(), otherV()
 
   Scenario: g_EXeid7_eid11X
     Given the modern graph
+    And the intent
+      """
+      Get an edge with ids: <eid7>, <eid11>
+      """
     And using the parameter eid7 defined as "e[marko-knows->vadas].id"
     And using the parameter eid11 defined as "e[josh-created->lop].id"
     And the traversal of
@@ -218,6 +230,10 @@ Feature: Step - E(), inV(), outV(), bothV(), otherV()
 
   Scenario: g_VX2X_inE_outV
     Given the modern graph
+    And the intent
+      """
+      What vertices are connected to the vertex with <vid2> on incoming edges?
+      """
     And using the parameter vid2 defined as "v[vadas].id"
     And the traversal of
       """
@@ -230,6 +246,10 @@ Feature: Step - E(), inV(), outV(), bothV(), otherV()
 
   Scenario: g_V_outE_hasXweight_1X_outV
     Given the modern graph
+    And the intent
+      """
+      For each vertex in the graph, traverse edges with a weight of 1.0 and return the vertex the edges come out of.
+      """
     And the traversal of
       """
       g.V().outE().has("weight",1.0).outV()
@@ -256,6 +276,10 @@ Feature: Step - E(), inV(), outV(), bothV(), otherV()
 
   Scenario: g_VX4X_bothE_otherV
     Given the modern graph
+    And the intent
+      """
+      For vertex with id: <vid4>, what are the vertices on the opposite side of its edges?
+      """
     And using the parameter vid4 defined as "v[josh].id"
     And the traversal of
       """
@@ -270,6 +294,10 @@ Feature: Step - E(), inV(), outV(), bothV(), otherV()
 
   Scenario: g_VX4X_bothE_hasXweight_lt_1X_otherV
     Given the modern graph
+    And the intent
+      """
+      Starting at vertex=<vid4> traverse edges with weight less than 1.0 and get the other vertex.
+      """
     And using the parameter vid4 defined as "v[josh].id"
     And the traversal of
       """
@@ -338,6 +366,10 @@ Feature: Step - E(), inV(), outV(), bothV(), otherV()
 
   Scenario: g_VX1X_outEXknowsX_bothV_name
     Given the modern graph
+    And the intent
+      """
+      For vertex with id: <vid1>, what are the names of the vertices on both sides of its outgoing knows edges?
+      """
     And using the parameter vid1 defined as "v[marko].id"
     And the traversal of
       """
@@ -354,6 +386,10 @@ Feature: Step - E(), inV(), outV(), bothV(), otherV()
   Scenario: g_V_toEXout_knowsvarX_valuesXweightX
     Given the modern graph
     And using the parameter xx1 defined as "knows"
+    And the intent
+      """
+      What are the weights of all the outgoing <xx1> edges in the graph?
+      """
     And the traversal of
       """
       g.V().toE(Direction.OUT, xx1).values("weight")
@@ -416,3 +452,21 @@ Feature: Step - E(), inV(), outV(), bothV(), otherV()
       | e[marko-created->lop] |
       | e[marko-knows->josh] |
       | e[marko-knows->vadas] |
+
+  Scenario: g_E_hasLabelXcreatedX_toVXINX_name
+    Given the modern graph
+    And the intent
+      """
+      What are the names of the vertices that created edges point to? Return one name per edge.
+      """
+    And the traversal of
+      """
+      g.E().hasLabel("created").toV(Direction.IN).values("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | lop |
+      | ripple |
+      | lop |
+      | lop |

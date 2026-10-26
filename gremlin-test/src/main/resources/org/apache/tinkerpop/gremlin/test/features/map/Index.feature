@@ -57,6 +57,11 @@ Feature: Step - index()
 
   Scenario: g_V_hasLabelXpersonX_name_fold_orderXlocalX_index_withXmapX
     Given the modern graph
+    And the intent
+      """
+      Number the names of all the people in alphabetical order, starting from 0, and return them as one map from each
+      number to its name.
+      """
     And the traversal of
       """
       g.V().hasLabel("person").values("name").fold().order(Scope.local).index().with(WithOptions.indexer, WithOptions.map)

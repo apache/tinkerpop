@@ -195,6 +195,29 @@ Registration is required in Java for deserialization only, which typically only 
 registration, read attempts fail with a `Class not recognized` message naming the class, raised as a
 `MismatchedInputException` for GraphSON and a `RuntimeException` for Gryo.
 
+===== Gherkin Intent Step
+
+Scenarios in the Gherkin feature tests may now carry an `And the intent` step that holds a natural language description
+of the traversal under test. The step has no effect on the test. Providers that run the features through the
+`StepDefinition` class in `gremlin-test`, or through the test harnesses of the language variants, need no change. A
+provider with its own step definitions must accept the step and ignore it, or the scenarios that carry it will fail
+with an undefined step.
+
+[source,gherkin]
+----
+Given the modern graph
+And the intent
+  """
+  How many vertices are there of each label? Return one map from label to count.
+  """
+And the traversal of
+  """
+  g.V().groupCount().by(T.label)
+  """
+----
+
+See: link:https://tinkerpop.apache.org/docs/x.y.z/dev/developer/#gremlin-language-test-cases[Gremlin Language Test Cases]
+
 ==== Graph Driver Providers
 
 Drivers should send the user agent only as the `User-Agent` request header, in the format described in the provider

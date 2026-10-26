@@ -279,3 +279,27 @@ Feature: Predicate - typeOf() General
     Then the result should be unordered
       | result |
       | true |
+
+  Scenario: g_V_hasLabelXpersonX_hasXage_typeOfXGType_STRINGXX_name
+    Given the empty graph
+    And the intent
+      """
+      Some people's ages were stored as text by mistake. Which people have an age stored as text rather than a number?
+      Return their names.
+      """
+    And the graph initializer of
+      """
+      g.addV("person").property("name","alice").property("age",31).
+        addV("person").property("name","bob").property("age","40").
+        addV("person").property("name","carol").property("age",25).
+        addV("person").property("name","dave").property("age","unknown")
+      """
+    And the traversal of
+      """
+      g.V().hasLabel("person").has("age",P.typeOf(GType.STRING)).values("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | bob |
+      | dave |

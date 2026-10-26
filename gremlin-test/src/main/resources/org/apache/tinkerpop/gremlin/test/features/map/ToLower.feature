@@ -71,6 +71,10 @@ Feature: Step - toLower()
         addE("created").from("josh").to("lop").property("weight", 0.4d).
         addE("created").from("peter").to("lop").property("weight", 0.2d)
       """
+    And the intent
+      """
+      Return the name of every vertex in lower case.
+      """
     And the traversal of
       """
       g.V().values("name").toLower()

@@ -146,6 +146,11 @@ def add_side_effect(step, key, value):
     step.context.traversal_side_effects[key] = _convert(value.replace('\\"', '"'), step.context)
 
 
+@given("the intent")
+def the_intent(step):
+    return
+
+
 @given("the traversal of")
 def translate_traversal(step):
     if step.context.ignore == False:

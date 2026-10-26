@@ -152,6 +152,11 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
             _sideEffects.Add(key, parsedValue);
         }
 
+        [Given("the intent")]
+        public void GivenTheIntent(string intent)
+        {
+        }
+
         [Given("the traversal of")]
         public void TranslateTraversal(string traversalText)
         {

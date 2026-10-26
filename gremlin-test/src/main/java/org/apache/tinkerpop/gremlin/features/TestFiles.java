@@ -43,7 +43,8 @@ public class TestFiles {
                     "tinkerpop-classic-v3.kryo",
                     "tinkerpop-crew-v3.kryo",
                     "tinkerpop-sink-v3.kryo",
-                    "tinkerpop-zoo-v3.kryo");
+                    "tinkerpop-zoo-v3.kryo",
+                    "air-routes-v3.kryo");
             for (final String fileName : kryoResources) {
                 PATHS.put(fileName,
                         Storage.toPath(TestHelper.generateTempFileFromResource(GryoResourceAccess.class, fileName, "")));
@@ -100,6 +101,11 @@ public class TestFiles {
             if (useGraphSON)
                 throw new RuntimeException("The zoo graph is multi-label and cannot be read from GraphSON V1/V2/V3");
             return PATHS.get("tinkerpop-zoo" + type);
+        } else if (graphData.equals(LoadGraphWith.GraphData.AIR_ROUTES)) {
+            // air-routes is only packaged as Gryo in gremlin-test
+            if (useGraphSON)
+                throw new RuntimeException("The air-routes graph is only available as Gryo");
+            return PATHS.get("air-routes" + type);
         } else
             throw new RuntimeException("Could not load graph with " + graphData);
     }

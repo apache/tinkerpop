@@ -44,6 +44,11 @@ confidence pass so the `governs` edges they write go through it:
 - Assertions that don't clearly explain what they verify
 - Error/exception paths that aren't tested
 - Test helpers without guard clauses (missing else/throw for invalid input)
+- Gherkin intents (`And the intent`) added or changed — each should admit one
+  reasonable reading that produces the scenario's result on any graph with the
+  same schema (see the intent guidance in for-committers.asciidoc). Wording a
+  reader could take two ways ("connected to" with no direction, "places" for
+  airports) is a finding.
 
 **Project memory** (only when beads were found; read decisions by `listBeads`):
 - Chosen decisions are claims to verify, not reasoning to accept. A decision's
@@ -118,6 +123,8 @@ author's recorded reasoning is as much inside knowledge as the source code.
 - Style nits and unused variables — low; note them, don't let them dominate.
 - Formatting mixed with functional changes — high; it makes the PR harder to
   review and should ideally be separate commits.
+- An ambiguous intent — low; the test still passes, but it weakens the eval
+  corpus by making a wrong agent answer look right, or a right one wrong.
 - `discussions.beads` — the root is expected to be open: it closes at merge, so
   an open root is never a finding, and neither is finding no beads or a failed
   sync (the report says which).

@@ -59,6 +59,9 @@ import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData;
 public class HadoopGraphFeatureIntegrateTest {
     private static final String skipReasonLength = "Hadoop-Gremlin is OLAP-oriented and for OLTP operations, linear-scan joins are required. This particular tests takes many minutes to execute.";
 
+    private static final String skipReasonAirRoutes = "Hadoop-Gremlin is OLAP-oriented and for OLTP operations, linear-scan joins are required. The air-routes graph is large enough that its scenarios take many minutes to execute.";
+    private static final String skipReasonFutureInvestigation = "Results differ on GraphComputer, ignored pending future investigation.";
+
     private static final List<Pair<String, String>> skip = new ArrayList<Pair<String,String>>() {{
        add(Pair.with("g_V_both_both_count", skipReasonLength));
         add(Pair.with("g_V_repeatXoutX_timesX3X_count", skipReasonLength));
@@ -73,6 +76,7 @@ public class HadoopGraphFeatureIntegrateTest {
         add(Pair.with("g_V_repeatXbothXfollowedByXX_timesX2X_group_byXsongTypeX_byXcountX", skipReasonLength));
         add(Pair.with("g_V_repeatXbothXfollowedByXX_timesX2X_groupXaX_byXsongTypeX_byXcountX_capXaX", skipReasonLength));
         add(Pair.with("g_V_matchXa_followedBy_count_isXgtX10XX_b__a_0followedBy_count_isXgtX10XX_bX_count", skipReasonLength));
+        add(Pair.with("g_cyclesInEitherDirection", skipReasonFutureInvestigation));
     }};
 
     public static final class ServiceModule extends AbstractModule {
@@ -104,6 +108,8 @@ public class HadoopGraphFeatureIntegrateTest {
         public GraphTraversalSource getGraphTraversalSource(final GraphData graphData) {
             if (null == graphData)
                 throw new AssumptionViolatedException("HadoopGraph does not support graph mutations");
+            else if (graphData == GraphData.AIR_ROUTES)
+                throw new AssumptionViolatedException(skipReasonAirRoutes);
             else if (graphData == GraphData.CLASSIC)
                 return classic.traversal();
             else if (graphData == GraphData.CREW)

@@ -224,6 +224,7 @@ Feature: Step - group()
       | m[{"software":"d[2].l", "person":"d[4].l"}] |
 
   # validates that a reducing barrier in the value traversal produces an output when a collecting barrier does not.
+
   Scenario: g_V_hasXperson_name_withinXvadas_peterXX_group_by_byXout_order_foldX
     Given the modern graph
     And the traversal of
@@ -247,6 +248,7 @@ Feature: Step - group()
       | m[{"v[vadas]":"l[]", "v[peter]":"l[v[lop]]"}] |
 
   # validates that a collecting barrier produces a filtering effect if it is unproductive.
+
   Scenario: g_V_hasXperson_name_withinXvadas_peterXX_group_by_byXout_orderX
     Given the modern graph
     And the traversal of
@@ -421,6 +423,10 @@ Feature: Step - group()
 
   Scenario: g_V_group_byXvaluesXnameXX_byXboth_countX
     Given the modern graph
+    And the intent
+      """
+      How many neighbours does each vertex have in either direction? Return one map from each vertex name to its count.
+      """
     And the traversal of
       """
       g.V().group().by(values('name')).by(both().count())

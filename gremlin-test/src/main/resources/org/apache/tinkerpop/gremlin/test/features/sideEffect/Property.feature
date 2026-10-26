@@ -246,3 +246,47 @@ Feature: Step - property()
       """
     When iterated to list
     Then the traversal will raise an error
+
+  @MultiProperties @DataSet
+  Scenario: g_addRustToInesSkills
+    Given the empty graph
+    And the intent
+      """
+      Add "rust" to the skills of Ines Duarte, keeping the skills she already has.
+      """
+    And the graph initializer of
+      """
+      g.addV("employee").property("name","Ines Duarte").property(Cardinality.set,"skills","java").property(Cardinality.set,"skills","kafka")
+      """
+    And the traversal of
+      """
+      g.V().has("employee","name","Ines Duarte").property(Cardinality.set,"skills","rust")
+      """
+    When iterated to list
+    Then the result should have a count of 1
+    And the graph should return 3 for count of "g.V().has(\"employee\",\"name\",\"Ines Duarte\").properties(\"skills\")"
+    And the graph should return 1 for count of "g.V().has(\"employee\",\"name\",\"Ines Duarte\").properties(\"skills\").hasValue(\"rust\")"
+
+
+  @AllowDateTimePropertyValues @MetaProperties @MultiProperties @DataDateTime @DataList
+  Scenario: g_promoteOmarToManager
+    Given the empty graph
+    And the intent
+      """
+      Record that Omar Said became a "manager" at the start of 2024 (UTC): end his current title at that moment and add
+      "manager" as a new title starting then.
+      """
+    And the graph initializer of
+      """
+      g.addV("employee").property("name","Omar Said").property(Cardinality.list,"title","engineer","since",datetime("2018-04-01T00:00:00Z"),"until",datetime("2021-07-01T00:00:00Z")).property(Cardinality.list,"title","senior engineer","since",datetime("2021-07-01T00:00:00Z"))
+      """
+    And the traversal of
+      """
+      g.V().has("employee","name","Omar Said").sideEffect(__.properties("title").hasNot("until").property("until",datetime("2024-01-01T00:00:00Z"))).property(Cardinality.list,"title","manager","since",datetime("2024-01-01T00:00:00Z"))
+      """
+    When iterated to list
+    Then the result should have a count of 1
+    And the graph should return 3 for count of "g.V().has(\"employee\",\"name\",\"Omar Said\").properties(\"title\")"
+    And the graph should return 1 for count of "g.V().has(\"employee\",\"name\",\"Omar Said\").properties(\"title\").hasValue(\"senior engineer\").has(\"until\",datetime(\"2024-01-01T00:00:00Z\"))"
+    And the graph should return 1 for count of "g.V().has(\"employee\",\"name\",\"Omar Said\").properties(\"title\").hasValue(\"manager\").has(\"since\",datetime(\"2024-01-01T00:00:00Z\")).hasNot(\"until\")"
+

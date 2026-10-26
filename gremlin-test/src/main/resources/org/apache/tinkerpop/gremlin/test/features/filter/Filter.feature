@@ -91,6 +91,10 @@ Feature: Step - filter()
 
   Scenario: g_V_filterXhasXname_startingWithXm_or_pXX
     Given the modern graph
+    And the intent
+      """
+      Which vertices have a name that starts with "m" or "p"?
+      """
     And the traversal of
       """
       g.V().filter(__.has("name", TextP.startingWith("m").or(TextP.startingWith("p"))))
@@ -125,3 +129,19 @@ Feature: Step - filter()
       | e[peter-created->lop] |
       | e[josh-created->lop] |
       | e[josh-created->ripple] |
+
+  @GraphComputerVerificationStarGraphExceeded
+  Scenario: g_V_filterXoutXknowsX_hasXname_joshXX_name
+    Given the modern graph
+    And the intent
+      """
+      Who knows josh? Return their names.
+      """
+    And the traversal of
+      """
+      g.V().filter(out("knows").has("name","josh")).values("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | marko |

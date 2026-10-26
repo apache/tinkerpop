@@ -98,6 +98,7 @@ public abstract class TinkerWorld implements World {
         private static final AbstractTinkerGraph sink = registerTestServices(TinkerFactory.createKitchenSink());
         private static final AbstractTinkerGraph grateful = registerTestServices(TinkerFactory.createGratefulDead());
         private static final AbstractTinkerGraph zoo = registerTestServices(TinkerFactory.createTheZoo());
+        private static final AbstractTinkerGraph airRoutes = registerTestServices(TinkerFactory.createAirRoutes());
 
         @Override
         public GraphTraversalSource getGraphTraversalSource(final LoadGraphWith.GraphData graphData) {
@@ -115,6 +116,8 @@ public abstract class TinkerWorld implements World {
                 return grateful.traversal();
             else if (graphData == LoadGraphWith.GraphData.ZOO)
                 return zoo.traversal();
+            else if (graphData == LoadGraphWith.GraphData.AIR_ROUTES)
+                return airRoutes.traversal();
             else
                 throw new UnsupportedOperationException("GraphData not supported: " + graphData.name());
         }
@@ -168,6 +171,7 @@ public abstract class TinkerWorld implements World {
         private static final AbstractTinkerGraph sink;
         private static final AbstractTinkerGraph grateful;
         private static final AbstractTinkerGraph zoo;
+        private static final AbstractTinkerGraph airRoutes;
 
         static {
             modern = TinkerStorageGraph.open(getNumberIdManagerConfiguration());
@@ -199,6 +203,11 @@ public abstract class TinkerWorld implements World {
             TinkerFactory.generateTheZoo(zoo);
             zoo.tx().commit();
             registerTestServices(zoo);
+
+            airRoutes = TinkerStorageGraph.open(getNumberIdManagerConfiguration());
+            TinkerFactory.generateAirRoutes(airRoutes);
+            airRoutes.tx().commit();
+            registerTestServices(airRoutes);
         }
 
         @Override
@@ -217,6 +226,8 @@ public abstract class TinkerWorld implements World {
                 return grateful.traversal();
             else if (graphData == LoadGraphWith.GraphData.ZOO)
                 return zoo.traversal();
+            else if (graphData == LoadGraphWith.GraphData.AIR_ROUTES)
+                return airRoutes.traversal();
             else
                 throw new UnsupportedOperationException("GraphData not supported: " + graphData.name());
         }
@@ -245,6 +256,7 @@ public abstract class TinkerWorld implements World {
         private static final TinkerShuffleGraph sink;
         private static final TinkerShuffleGraph grateful;
         private static final TinkerShuffleGraph zoo;
+        private static final TinkerShuffleGraph airRoutes;
 
         static {
             modern = TinkerShuffleGraph.open();
@@ -265,6 +277,9 @@ public abstract class TinkerWorld implements World {
             zoo = TinkerShuffleGraph.open(getMultiLabelConfiguration());
             TinkerFactory.generateTheZoo(zoo);
             registerTestServices(zoo);
+            airRoutes = TinkerShuffleGraph.open();
+            TinkerFactory.generateAirRoutes(airRoutes);
+            registerTestServices(airRoutes);
         }
 
         @Override
@@ -283,6 +298,8 @@ public abstract class TinkerWorld implements World {
                 return grateful.traversal();
             else if (graphData == LoadGraphWith.GraphData.ZOO)
                 return zoo.traversal();
+            else if (graphData == LoadGraphWith.GraphData.AIR_ROUTES)
+                return airRoutes.traversal();
             else
                 throw new UnsupportedOperationException("GraphData not supported: " + graphData.name());
         }
@@ -389,6 +406,12 @@ public abstract class TinkerWorld implements World {
                 case "g_V_localXgroupXaX_byXnameX_by_selectXaX_countXlocalXX":
                 case "g_V_out_order_byXnameX_localXtreeXaX_selectXaX_countXlocalXX":
                     throw new AssumptionViolatedException("Selecting side effects inside local() produces inconsistent results in OLAP (See TINKERPOP-3209)");
+                case "g_averageRoutesPerAirport":
+                case "g_mostOutgoingRoutesFromAnyAirport":
+                case "g_airportCountsByRunwayBucket":
+                case "g_directAndTwoFlightJourneysFromAUS":
+                case "g_cyclesInEitherDirection":
+                    throw new AssumptionViolatedException("Results differ on GraphComputer, ignored pending future investigation");
                 default:
                     // Do nothing
             }

@@ -66,6 +66,12 @@ Feature: Step - coalesce()
   @GraphComputerVerificationReferenceOnly
   Scenario: g_V_coalesceXoutEXknowsX_outEXcreatedXX_otherV_path_byXnameX_byXlabelX
     Given the modern graph
+    And the intent
+      """
+      For each vertex, follow its outgoing knows edges, or its outgoing created edges if it has no knows edges, to the
+      vertex at the other end. Return each path as the starting vertex's name, the edge label and the ending vertex's
+      name.
+      """
     And the traversal of
       """
       g.V().coalesce(__.outE("knows"), __.outE("created")).otherV().path().by("name").by(T.label)
@@ -92,3 +98,24 @@ Feature: Step - coalesce()
       | lop |
       | lop |
       | ripple |
+
+  Scenario: g_V_projectXname_age_langX_byXnameX_byXcoalesceXvaluesXageX_constantXn_aXXX_byXcoalesceXvaluesXlangX_constantXn_aXXX
+    Given the modern graph
+    And the intent
+      """
+      Return every vertex as a map of its name, its age and its lang ("name", "age" and "lang"), using "n/a" for any of
+      age or lang it does not have.
+      """
+    And the traversal of
+      """
+      g.V().project("name","age","lang").by("name").by(coalesce(values("age"),constant("n/a"))).by(coalesce(values("lang"),constant("n/a")))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | m[{"name":"marko","age":"d[29].i","lang":"n/a"}] |
+      | m[{"name":"vadas","age":"d[27].i","lang":"n/a"}] |
+      | m[{"name":"lop","age":"n/a","lang":"java"}] |
+      | m[{"name":"josh","age":"d[32].i","lang":"n/a"}] |
+      | m[{"name":"ripple","age":"n/a","lang":"java"}] |
+      | m[{"name":"peter","age":"d[35].i","lang":"n/a"}] |

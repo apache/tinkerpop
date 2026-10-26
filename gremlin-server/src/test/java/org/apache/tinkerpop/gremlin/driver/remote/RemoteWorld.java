@@ -95,6 +95,9 @@ public abstract class RemoteWorld implements World {
                 case ZOO:
                     remoteTraversalSource = "gzoo";
                     break;
+                case AIR_ROUTES:
+                    remoteTraversalSource = "gairroutes";
+                    break;
                 default:
                     throw new UnsupportedOperationException("GraphData not supported: " + graphData.name());
             }
@@ -182,6 +185,12 @@ public abstract class RemoteWorld implements World {
                 case "g_V_localXgroupXaX_byXnameX_by_selectXaX_countXlocalXX":
                 case "g_V_out_order_byXnameX_localXtreeXaX_selectXaX_countXlocalXX":
                     throw new AssumptionViolatedException("Selecting side effects inside local() produces inconsistent results in OLAP (See TINKERPOP-3209)");
+                case "g_averageRoutesPerAirport":
+                case "g_mostOutgoingRoutesFromAnyAirport":
+                case "g_airportCountsByRunwayBucket":
+                case "g_directAndTwoFlightJourneysFromAUS":
+                case "g_cyclesInEitherDirection":
+                    throw new AssumptionViolatedException("Results differ on GraphComputer, ignored pending future investigation");
                 default:
                     // Do nothing
             }

@@ -135,7 +135,8 @@ ones that are easy to miss:
   `Check`, not `Test`.
 - **Gremlin language tests**: cross-language behavior is tested with Gherkin features under
   `gremlin-test/src/main/resources/org/apache/tinkerpop/gremlin/test/features/`
-  (see `docs/src/dev/developer/for-committers.asciidoc`).
+  (see `docs/src/dev/developer/for-committers.asciidoc`). When adding or changing an intent
+  (`And the intent`), follow the intent guidance there.
 - **Docs are AsciiDoc** under `docs/src/` — never Markdown in the main docs tree. For writing or
   revising any documentation (voice, per-book style, executable code blocks, AsciiDoc wiring),
   use the **tinker-doc** skill. The mechanical minimum: add new content to the right book and update

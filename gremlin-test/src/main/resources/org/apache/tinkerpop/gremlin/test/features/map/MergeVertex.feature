@@ -576,6 +576,7 @@ Feature: Step - mergeV()
     And the graph should return 1 for count of "g.V().has(\"person\",\"name\",\"marko\").properties(\"age\")"
 
   # onCreate inheritance from merge
+
   @UserSuppliedVertexIds
   Scenario: g_mergeV_onCreate_inheritance_existing
     Given the empty graph
@@ -595,6 +596,7 @@ Feature: Step - mergeV()
     And the graph should return 1 for count of "g.V(\"1\").has(\"person\",\"name\",\"mike\")"
 
   # onCreate inheritance from merge
+
   @UserSuppliedVertexIds
   Scenario: g_mergeV_onCreate_inheritance_new_1
     Given the empty graph
@@ -610,6 +612,7 @@ Feature: Step - mergeV()
     And the graph should return 1 for count of "g.V(\"1\").has(\"person\",\"name\",\"mike\")"
 
   # onCreate inheritance from merge
+
   @UserSuppliedVertexIds
   Scenario: g_mergeV_onCreate_inheritance_new_2
     Given the empty graph
@@ -625,6 +628,7 @@ Feature: Step - mergeV()
     And the graph should return 1 for count of "g.V(\"1\").has(\"person\",\"name\",\"mike\")"
 
   # cannot override T.label in onCreate
+
   Scenario: g_mergeV_label_override_prohibited
     Given the empty graph
     And using the parameter xx1 defined as "m[{\"t[label]\": \"a\"}]"
@@ -637,6 +641,7 @@ Feature: Step - mergeV()
     Then the traversal will raise an error with message containing text of "option(onCreate) cannot override values from merge() argument"
 
   # cannot override T.label in onCreate
+
   Scenario: g_withSideEffect_mergeV_label_dynamic_override_prohibited
     Given the empty graph
     And using the parameter xx1 defined as "m[{\"t[label]\": \"a\"}]"
@@ -649,6 +654,7 @@ Feature: Step - mergeV()
     Then the traversal will raise an error with message containing text of "option(onCreate) cannot override values from merge() argument"
 
   # cannot override T.id in onCreate
+
   @UserSuppliedVertexIds
   Scenario: g_mergeV_id_override_prohibited
     Given the empty graph
@@ -662,6 +668,7 @@ Feature: Step - mergeV()
     Then the traversal will raise an error with message containing text of "option(onCreate) cannot override values from merge() argument"
 
   # cannot use hidden namespace for id key
+
   Scenario: g_mergeV_hidden_id_key_prohibited
     Given the empty graph
     And using the parameter xx1 defined as "m[{\"~id\": \"1\"}]"
@@ -673,6 +680,7 @@ Feature: Step - mergeV()
     Then the traversal will raise an error
 
   # cannot use hidden namespace for label key
+
   Scenario: g_mergeV_hidden_label_key_prohibited
     Given the empty graph
     And using the parameter xx1 defined as "m[{\"~label\":\"vertex\"}]"
@@ -684,6 +692,7 @@ Feature: Step - mergeV()
     Then the traversal will raise an error
 
   # cannot use hidden namespace for label value
+
   Scenario: g_mergeV_hidden_label_value_prohibited
     Given the empty graph
     And using the parameter xx1 defined as "m[{\"t[label]\":\"~vertex\"}]"
@@ -695,6 +704,7 @@ Feature: Step - mergeV()
     Then the traversal will raise an error
 
   # cannot use hidden namespace for id key for onCreate
+
   Scenario: g_mergeV_hidden_id_key_onCreate_prohibited
     Given the empty graph
     And using the parameter xx1 defined as "m[{\"~id\": 1}]"
@@ -706,6 +716,7 @@ Feature: Step - mergeV()
     Then the traversal will raise an error with message containing text of "Property key can not be a hidden key: ~id"
 
   # cannot use hidden namespace for label key for onCreate
+
   Scenario: g_mergeV_hidden_label_key_onCreate_prohibited
     Given the empty graph
     And using the parameter xx1 defined as "m[{\"~label\":\"vertex\"}]"
@@ -717,6 +728,7 @@ Feature: Step - mergeV()
     Then the traversal will raise an error with message containing text of "Property key can not be a hidden key: ~label"
 
   # cannot use hidden namespace for label value for onCreate
+
   Scenario: g_mergeV_hidden_label_value_onCreate_prohibited
     Given the empty graph
     And using the parameter xx1 defined as "m[{\"t[label]\":\"~vertex\"}]"
@@ -728,6 +740,7 @@ Feature: Step - mergeV()
     Then the traversal will raise an error with message containing text of "Label can not be a hidden key: ~vertex"
 
   # cannot use hidden namespace for id key for onMatch
+
   Scenario: g_mergeV_hidden_id_key_onMatch_matched_prohibited
     Given the empty graph
     And the graph initializer of
@@ -743,6 +756,7 @@ Feature: Step - mergeV()
     Then the traversal will raise an error with message containing text of "Property key can not be a hidden key: ~id"
 
   # cannot use hidden namespace for label key for onMatch
+
   Scenario: g_mergeV_hidden_label_key_matched_onMatch_matched_prohibited
     Given the empty graph
     And the graph initializer of
@@ -943,6 +957,7 @@ Feature: Step - mergeV()
     And the graph should return 1 for count of "g.V().has(\"person\",\"name\",\"alice\").properties(\"age\")"
 
   # cannot use hidden namespace for label key for onMatch
+
   Scenario: g_mergeV_hidden_label_key_onMatch_matched_prohibited
     Given the empty graph
     And using the parameter xx1 defined as "m[{\"~label\":\"vertex\"}]"
@@ -1224,3 +1239,56 @@ Feature: Step - mergeV()
       """
     When iterated to list
     Then the traversal will raise an error with message containing text of "option(onMatch) can only be specified once"
+
+  Scenario: g_mergeVXlabel_person_name_vadasX_optionXonCreate_age_0X_optionXonMatch_age_28X
+    Given the empty graph
+    And the intent
+      """
+      Make sure there is a person named vadas. If you have to create them, give them an age of 0; if they already exist,
+      set their age to 28.
+      """
+    And the graph initializer of
+      """
+      g.addV("person").property("name", "marko").property("age", 29).as("marko").
+        addV("person").property("name", "vadas").property("age", 27).as("vadas").
+        addV("software").property("name", "lop").property("lang", "java").as("lop").
+        addV("person").property("name","josh").property("age", 32).as("josh").
+        addV("software").property("name", "ripple").property("lang", "java").as("ripple").
+        addV("person").property("name", "peter").property("age", 35).as('peter').
+        addE("knows").from("marko").to("vadas").property("weight", 0.5d).
+        addE("knows").from("marko").to("josh").property("weight", 1.0d).
+        addE("created").from("marko").to("lop").property("weight", 0.4d).
+        addE("created").from("josh").to("ripple").property("weight", 1.0d).
+        addE("created").from("josh").to("lop").property("weight", 0.4d).
+        addE("created").from("peter").to("lop").property("weight", 0.2d)
+      """
+    And the traversal of
+      """
+      g.mergeV([T.label:"person","name":"vadas"]).option(Merge.onCreate,["age":0]).option(Merge.onMatch,["age":28])
+      """
+    When iterated to list
+    Then the result should have a count of 1
+    And the graph should return 4 for count of "g.V().hasLabel(\"person\")"
+    And the graph should return 1 for count of "g.V().has(\"person\",\"name\",\"vadas\").has(\"age\",28)"
+
+  @AllowUUIDPropertyValues @DataUUID
+  Scenario: g_registerDeviceBySerial
+    Given the empty graph
+    And the intent
+      """
+      Make sure there is a device with serial number c47d2ea0-5b18-4a6f-b2eb-0f9eed7c6b5a. If it has to be created,
+      record its model as TH-300 and mark it offline.
+      """
+    And the graph initializer of
+      """
+      g.addV("device").property("serial",UUID("3f2b8cae-7d4a-4eab-9c55-1a2b3c4d5eaf")).property("model","TH-200").property("online",true)
+      """
+    And the traversal of
+      """
+      g.mergeV(["serial":UUID("c47d2ea0-5b18-4a6f-b2eb-0f9eed7c6b5a"),(T.label):"device"]).option(Merge.onCreate,["model":"TH-300","online":false])
+      """
+    When iterated to list
+    Then the result should have a count of 1
+    And the graph should return 2 for count of "g.V()"
+    And the graph should return 1 for count of "g.V().has(\"device\",\"serial\",UUID(\"c47d2ea0-5b18-4a6f-b2eb-0f9eed7c6b5a\")).has(\"model\",\"TH-300\").has(\"online\",false)"
+

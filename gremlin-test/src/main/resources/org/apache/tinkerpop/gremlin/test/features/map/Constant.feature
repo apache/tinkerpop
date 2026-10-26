@@ -52,6 +52,10 @@ Feature: Step - constant()
 
   Scenario: g_V_chooseXhasLabelXpersonX_valuesXnameX_constantXinhumanXX
     Given the modern graph
+    And the intent
+      """
+      For each vertex, return its name if it is a person, and "inhuman" if it is not.
+      """
     And the traversal of
       """
       g.V().choose(__.hasLabel("person"), __.values("name"), __.constant("inhuman"))
