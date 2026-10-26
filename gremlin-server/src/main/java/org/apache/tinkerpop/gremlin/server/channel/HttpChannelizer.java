@@ -19,6 +19,8 @@
 package org.apache.tinkerpop.gremlin.server.channel;
 
 import io.netty.channel.ChannelInboundHandlerAdapter;
+import io.netty.handler.codec.http.HttpHeaderNames;
+import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpServerKeepAliveHandler;
 import io.netty.handler.codec.http.cors.CorsConfig;
 import io.netty.handler.codec.http.cors.CorsConfigBuilder;
@@ -42,6 +44,7 @@ import io.netty.handler.codec.http.HttpServerCodec;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
 import org.apache.tinkerpop.gremlin.server.util.ServerGremlinExecutor;
+import org.apache.tinkerpop.gremlin.util.Tokens;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -126,15 +129,22 @@ public class HttpChannelizer extends AbstractChannelizer {
         final List<String> allowedOrigins = settings.cors.allowedOrigins;
         final boolean isWildcard = allowedOrigins.size() == 1 && allowedOrigins.get(0).equals("*");
 
+        final CorsConfigBuilder builder;
         if (isWildcard) {
             final boolean hasRealAuth = !AllowAllAuthenticator.class.getName().equals(settings.authentication.authenticator);
             if (hasRealAuth) {
                 logger.warn("CORS is configured to allow any origin while authentication is enabled. " +
                         "Consider setting cors.allowedOrigins to specific origins for browser-facing deployments.");
             }
-            return CorsConfigBuilder.forAnyOrigin().build();
+            builder = CorsConfigBuilder.forAnyOrigin();
+        } else {
+            builder = CorsConfigBuilder.forOrigins(allowedOrigins.toArray(new String[0]));
         }
 
-        return CorsConfigBuilder.forOrigins(allowedOrigins.toArray(new String[0])).build();
+        return builder.allowedRequestMethods(HttpMethod.POST)
+                .allowedRequestHeaders(HttpHeaderNames.CONTENT_TYPE, HttpHeaderNames.ACCEPT,
+                        HttpHeaderNames.AUTHORIZATION, Tokens.Headers.TRANSACTION_ID)
+                .exposeHeaders(Tokens.Headers.TRANSACTION_ID)
+                .build();
     }
 }

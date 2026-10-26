@@ -30,6 +30,7 @@ import org.apache.http.HttpVersion;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpOptions;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.conn.EofSensorInputStream;
 import org.apache.http.entity.ByteArrayEntity;
@@ -144,6 +145,7 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
                 settings.gremlinPool = 1;
                 break;
             case "shouldRespectCorsAllowedOrigins":
+            case "shouldAnswerCorsPreflightForAllowedOriginOnly":
             case "shouldRejectDisallowedCorsOrigin":
                 settings.cors.allowedOrigins = java.util.Arrays.asList("https://allowed.gremlinexample.com");
                 break;
@@ -1516,6 +1518,61 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
             final Header corsHeader = response.getFirstHeader("Access-Control-Allow-Origin");
             assertNotNull(corsHeader);
             assertEquals("https://allowed.gremlinexample.com", corsHeader.getValue());
+        }
+    }
+
+    @Test
+    public void shouldAnswerCorsPreflightForBrowserRequests() throws Exception {
+        final CloseableHttpClient httpclient = HttpClients.createDefault();
+        final HttpOptions preflight = new HttpOptions(TestClientFactory.createURLString());
+        preflight.addHeader("Origin", "http://localhost:4173");
+        preflight.addHeader("Access-Control-Request-Method", "POST");
+        preflight.addHeader("Access-Control-Request-Headers", "content-type,authorization,x-transaction-id");
+
+        try (final CloseableHttpResponse response = httpclient.execute(preflight)) {
+            assertEquals(200, response.getStatusLine().getStatusCode());
+            assertEquals("*", response.getFirstHeader("Access-Control-Allow-Origin").getValue());
+            assertEquals("POST", response.getFirstHeader("Access-Control-Allow-Methods").getValue());
+            final String allowedHeaders = response.getFirstHeader("Access-Control-Allow-Headers").getValue().toLowerCase();
+            assertTrue(allowedHeaders.contains("content-type"));
+            assertTrue(allowedHeaders.contains("authorization"));
+            assertTrue(allowedHeaders.contains("x-transaction-id"));
+        }
+    }
+
+    @Test
+    public void shouldAnswerCorsPreflightForAllowedOriginOnly() throws Exception {
+        final CloseableHttpClient httpclient = HttpClients.createDefault();
+
+        final HttpOptions allowed = new HttpOptions(TestClientFactory.createURLString());
+        allowed.addHeader("Origin", "https://allowed.gremlinexample.com");
+        allowed.addHeader("Access-Control-Request-Method", "POST");
+        allowed.addHeader("Access-Control-Request-Headers", "content-type");
+        try (final CloseableHttpResponse response = httpclient.execute(allowed)) {
+            assertEquals("https://allowed.gremlinexample.com", response.getFirstHeader("Access-Control-Allow-Origin").getValue());
+            assertTrue(response.getFirstHeader("Access-Control-Allow-Headers").getValue().toLowerCase().contains("content-type"));
+        }
+
+        final HttpOptions notAllowed = new HttpOptions(TestClientFactory.createURLString());
+        notAllowed.addHeader("Origin", "https://notallowed.gremlinexample.com");
+        notAllowed.addHeader("Access-Control-Request-Method", "POST");
+        notAllowed.addHeader("Access-Control-Request-Headers", "content-type");
+        try (final CloseableHttpResponse response = httpclient.execute(notAllowed)) {
+            assertNull(response.getFirstHeader("Access-Control-Allow-Origin"));
+        }
+    }
+
+    @Test
+    public void shouldExposeTransactionIdHeaderToBrowsers() throws Exception {
+        final CloseableHttpClient httpclient = HttpClients.createDefault();
+        final HttpPost httppost = new HttpPost(TestClientFactory.createURLString());
+        httppost.addHeader("Content-Type", "application/json");
+        httppost.addHeader("Origin", "http://localhost:4173");
+        httppost.setEntity(new StringEntity("{\"gremlin\": \"g.inject(1)\"}", Consts.UTF_8));
+
+        try (final CloseableHttpResponse response = httpclient.execute(httppost)) {
+            assertEquals(200, response.getStatusLine().getStatusCode());
+            assertTrue(response.getFirstHeader("Access-Control-Expose-Headers").getValue().toLowerCase().contains("x-transaction-id"));
         }
     }
 
