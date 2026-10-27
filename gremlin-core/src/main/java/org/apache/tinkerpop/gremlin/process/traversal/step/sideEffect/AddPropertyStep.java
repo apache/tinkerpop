@@ -155,7 +155,11 @@ public class AddPropertyStep<S extends Element> extends SideEffectStep<S> implem
                     }
                 }
             } else if (effectiveCardinality == VertexProperty.Cardinality.single) {
-                removedProperty = element.property(key);
+                // Only tracks the first removed property, potentially missing events if existing cardinality was Set or List. TINKERPOP-3300
+                final Iterator<? extends Property> existing = element.properties(key);
+                if (existing.hasNext()) {
+                    removedProperty = existing.next();
+                }
             }
         } else {
             removedProperty = element.property(key);
