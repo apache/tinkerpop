@@ -188,8 +188,7 @@ class AsyncDriverRemoteConnection(RemoteConnection):
         rarely needs to call this directly.
         """
         from gremlin_python.driver.async_graph_traversal import AsyncRemoteTraversal
-        options = self._extract_request_options(bytecode)
-        result_set = await self._async_client.submit(bytecode, request_options=options)
+        result_set = await self.submit_stream(bytecode)
         return AsyncRemoteTraversal(result_set)
 
     # ------------------------------------------------------------------
@@ -212,10 +211,11 @@ class AsyncDriverRemoteConnection(RemoteConnection):
             Optional dict of request options.  When *None*, options are
             extracted from any OptionsStrategy attached to the traversal.
         """
-        remote_traversal = await self.submit(
-            getattr(traversal_or_bytecode, "bytecode", traversal_or_bytecode)
+        from gremlin_python.driver.async_graph_traversal import AsyncRemoteTraversal
+        result_set = await self.submit_stream(
+            traversal_or_bytecode, request_options=request_options
         )
-        return await remote_traversal.to_list()
+        return await AsyncRemoteTraversal(result_set).to_list()
 
     async def submit_stream(self, traversal_or_bytecode, request_options=None):
         """Execute a traversal and return an AsyncResultSet.
