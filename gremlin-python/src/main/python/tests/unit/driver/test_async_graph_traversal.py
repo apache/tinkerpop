@@ -520,6 +520,24 @@ class TestAsyncTransaction(_AsyncioTestCase):
         await tx.begin()
         self.assertTrue(tx.is_open)
 
+    async def test_begin_preserves_source_options_on_session_queries(self):
+        parent_rc, session_rc = self._make_session_rc()
+        g = _make_g(parent_rc).with_("evaluationTimeout", 1234).with_("batchSize", 8)
+        g = g.with_bulk(False)
+        tx = await g.tx()
+        gtx = await tx.begin()
+
+        await gtx.V().count().to_list()
+
+        submitted_bc = session_rc.submit.call_args[0][0]
+        self.assertEqual(submitted_bc.source_instructions, g.bytecode.source_instructions)
+        self.assertEqual(
+            session_rc._extract_request_options(submitted_bc),
+            {"evaluationTimeout": 1234, "batchSize": 8},
+        )
+        parent_rc.submit.assert_not_awaited()
+        await tx.rollback()
+
     async def test_commit_closes_session_without_rollback(self):
         parent_rc, session_rc = self._make_session_rc()
         g = _make_g(parent_rc)
