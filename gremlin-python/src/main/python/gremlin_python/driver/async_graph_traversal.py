@@ -381,6 +381,7 @@ class AsyncTransaction:
             self._gtx = AsyncGraphTraversalSource(
                 self._g.graph,
                 strategies,
+                self._g.bytecode,
             )
             self._is_open = True
             return self._gtx
