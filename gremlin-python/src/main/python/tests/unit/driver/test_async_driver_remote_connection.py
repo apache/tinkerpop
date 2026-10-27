@@ -22,7 +22,7 @@ Architecture under test
 -----------------------
 * submit(bytecode) — async coroutine, called by AsyncRemoteStrategy,
   returns AsyncRemoteTraversal
-* submit_async(traversal) — convenience: calls submit() then .to_list()
+* submit_async(traversal) — convenience: calls submit_stream() then .to_list()
 * submit_stream(traversal) — returns raw AsyncResultSet for streaming
 * Lifecycle: close(), context manager, is_closed(), sessions, transactions
 * _extract_request_options — static helper
@@ -160,7 +160,7 @@ class TestInit(unittest.TestCase):
 class TestSubmit(_AsyncioTestCase):
     async def test_submit_bytecode_returns_async_remote_traversal(self):
         rc = AsyncDriverRemoteConnection(URL, TRAVERSAL_SOURCE)
-        _patch_submit(rc, values=[6])
+        rc._async_client.submit = AsyncMock(return_value=_make_result_set([6]))
         bc = Bytecode()
         bc.add_step("V")
         bc.add_step("count")
@@ -169,11 +169,23 @@ class TestSubmit(_AsyncioTestCase):
 
     async def test_submit_traversers_iterable(self):
         rc = AsyncDriverRemoteConnection(URL, TRAVERSAL_SOURCE)
-        _patch_submit(rc, values=["marko", "vadas"])
+        rc._async_client.submit = AsyncMock(return_value=_make_result_set(["marko", "vadas"]))
         bc = Bytecode()
         remote_traversal = await rc.submit(bc)
         results = await remote_traversal.to_list()
         self.assertEqual(results, ["marko", "vadas"])
+
+    async def test_submit_delegates_to_submit_stream(self):
+        rc = AsyncDriverRemoteConnection(URL, TRAVERSAL_SOURCE)
+        rc._async_client.submit = AsyncMock(side_effect=AssertionError("submit_stream was bypassed"))
+        rc.submit_stream = AsyncMock(return_value=_make_result_set([6]))
+        bc = Bytecode()
+        bc.add_step("V")
+
+        result = await rc.submit(bc)
+
+        self.assertEqual(await result.to_list(), [6])
+        rc.submit_stream.assert_awaited_once_with(bc)
 
 
 # ---------------------------------------------------------------------------
@@ -182,34 +194,87 @@ class TestSubmit(_AsyncioTestCase):
 
 class TestSubmitAsync(_AsyncioTestCase):
     async def test_returns_list(self):
-        rc = AsyncDriverRemoteConnection(URL, TRAVERSAL_SOURCE)
-        _patch_submit(rc, values=[10])
+        rc = self._make_rc(values=[10])
         bc = Bytecode()
         results = await rc.submit_async(bc)
         self.assertEqual(results, [10])
 
     async def test_accepts_traversal_object(self):
-        rc = AsyncDriverRemoteConnection(URL, TRAVERSAL_SOURCE)
-        _patch_submit(rc, values=["marko"])
+        rc = self._make_rc(values=["marko"])
         g = async_traversal().with_remote(rc)
         t = g.V().has_label("person")
         results = await rc.submit_async(t)
         self.assertEqual(results, ["marko"])
         # Verify bytecode was extracted and passed
-        submitted_bc = rc.submit.call_args[0][0]
+        submitted_bc = rc._async_client.submit.call_args[0][0]
         self.assertIsInstance(submitted_bc, Bytecode)
 
     async def test_empty_result(self):
-        rc = AsyncDriverRemoteConnection(URL, TRAVERSAL_SOURCE)
-        _patch_submit(rc, values=[])
+        rc = self._make_rc()
         results = await rc.submit_async(Bytecode())
         self.assertEqual(results, [])
 
     async def test_propagates_exception(self):
-        rc = AsyncDriverRemoteConnection(URL, TRAVERSAL_SOURCE)
-        rc.submit = AsyncMock(side_effect=RuntimeError("server error"))
+        rc = self._make_rc()
+        rc._async_client.submit.side_effect = RuntimeError("server error")
         with self.assertRaises(RuntimeError):
             await rc.submit_async(Bytecode())
+
+    def _make_rc(self, values=None):
+        rc = AsyncDriverRemoteConnection(URL, TRAVERSAL_SOURCE)
+        rc._async_client.submit = AsyncMock(return_value=_make_result_set(values or []))
+        return rc
+
+    async def test_submit_async_delegates_to_submit_stream_without_options(self):
+        rc = AsyncDriverRemoteConnection(URL, TRAVERSAL_SOURCE)
+        rc.submit = AsyncMock()
+        rc.submit_stream = AsyncMock(return_value=_make_result_set([10]))
+        bc = Bytecode()
+
+        self.assertEqual(await rc.submit_async(bc), [10])
+
+        rc.submit_stream.assert_awaited_once_with(bc, request_options=None)
+        rc.submit.assert_not_awaited()
+
+    async def test_forwards_explicit_options_for_bytecode(self):
+        rc = self._make_rc(values=[10])
+        bc = Bytecode()
+        bc.add_step("V")
+        options = {"evaluationTimeout": 5000, "batchSize": 8}
+
+        self.assertEqual(await rc.submit_async(bc, request_options=options), [10])
+
+        rc._async_client.submit.assert_awaited_once_with(bc, request_options=options)
+
+    async def test_explicit_options_override_traversal_options(self):
+        rc = self._make_rc(values=["marko"])
+        traversal = async_traversal().with_remote(rc).with_("evaluationTimeout", 1000).V()
+        options = {"evaluationTimeout": 5000}
+
+        self.assertEqual(await rc.submit_async(traversal, request_options=options), ["marko"])
+
+        rc._async_client.submit.assert_awaited_once_with(
+            traversal.bytecode, request_options=options
+        )
+
+    async def test_extracts_traversal_options_when_options_are_none(self):
+        rc = self._make_rc(values=["marko"])
+        g = async_traversal().with_remote(rc).with_("evaluationTimeout", 1234)
+        traversal = g.with_("batchSize", 8).V()
+
+        self.assertEqual(await rc.submit_async(traversal), ["marko"])
+
+        rc._async_client.submit.assert_awaited_once_with(
+            traversal.bytecode, request_options={"evaluationTimeout": 1234, "batchSize": 8}
+        )
+
+    async def test_explicit_empty_options_do_not_extract_traversal_options(self):
+        rc = self._make_rc()
+        traversal = async_traversal().with_remote(rc).with_("evaluationTimeout", 1234).V()
+
+        await rc.submit_async(traversal, request_options={})
+
+        rc._async_client.submit.assert_awaited_once_with(traversal.bytecode, request_options={})
 
 
 # ---------------------------------------------------------------------------
