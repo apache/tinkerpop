@@ -153,7 +153,7 @@ limitations under the License.
         <dependency>
             <groupId>org.xerial.snappy</groupId>
             <artifactId>snappy-java</artifactId>
-            <version>1.1.8.2</version>
+            <version>1.1.10.9</version>
         </dependency>
         <dependency>
             <groupId>com.nimbusds</groupId>
