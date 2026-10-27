@@ -214,6 +214,10 @@ public class AddPropertyStep<S extends Element> extends SideEffectStep<S> implem
                     "Property cardinality can only be set for a Vertex but the traversal encountered %s for key: %s",
                     element.getClass().getSimpleName(), key));
 
+        final VertexProperty.Cardinality effectiveCardinality = this.cardinality != null
+                ? this.cardinality
+                : element.graph().features().vertex().getCardinality(key);
+
         final Optional<EventStrategy> optEventStrategy = getTraversal().getStrategies().getStrategy(EventStrategy.class);
         final boolean eventingIsConfigured = EventUtil.hasAnyCallbacks(callbackRegistry)
                 && optEventStrategy.isPresent();
@@ -221,17 +225,13 @@ public class AddPropertyStep<S extends Element> extends SideEffectStep<S> implem
 
         // find property to remove. only need to capture the removedProperty if eventing is configured
         final Property removedProperty = eventingIsConfigured ?
-                captureRemovedProperty(element, key, value, es) :
+                captureRemovedProperty(element, key, value, effectiveCardinality, es) :
                 VertexProperty.empty();
-
-        final VertexProperty.Cardinality card = this.cardinality != null
-                ? this.cardinality
-                : (element instanceof Vertex ? element.graph().features().vertex().getCardinality(key) : null);
 
         // update property
         if (element instanceof Vertex) {
-            if (null != card) {
-                ((Vertex) element).property(card, key, value, vertexPropertyKeyValues);
+            if (null != effectiveCardinality) {
+                ((Vertex) element).property(effectiveCardinality, key, value, vertexPropertyKeyValues);
             } else if (vertexPropertyKeyValues.length > 0) {
                 ((Vertex) element).property(key, value, vertexPropertyKeyValues);
             } else {
@@ -250,11 +250,12 @@ public class AddPropertyStep<S extends Element> extends SideEffectStep<S> implem
     }
 
     private Property captureRemovedProperty(final Element element, final String key, final Object value,
+                                            final VertexProperty.Cardinality effectiveCardinality,
                                             final EventStrategy es){
         Property removedProperty = VertexProperty.empty();
 
         if (element instanceof Vertex) {
-            if (cardinality == VertexProperty.Cardinality.set) {
+            if (effectiveCardinality == VertexProperty.Cardinality.set) {
                 final Iterator<? extends Property> properties = element.properties(key);
                 while (properties.hasNext()) {
                     final Property property = properties.next();
@@ -263,8 +264,12 @@ public class AddPropertyStep<S extends Element> extends SideEffectStep<S> implem
                         break;
                     }
                 }
-            } else if (cardinality == VertexProperty.Cardinality.single) {
-                removedProperty = element.property(key);
+            } else if (effectiveCardinality == VertexProperty.Cardinality.single) {
+                // Only tracks the first removed property, potentially missing events if existing cardinality was Set or List. TINKERPOP-3300
+                final Iterator<? extends Property> existing = element.properties(key);
+                if (existing.hasNext()) {
+                    removedProperty = existing.next();
+                }
             }
         } else {
             removedProperty = element.property(key);

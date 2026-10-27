@@ -241,6 +241,8 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 This release also includes changes from prior 3.7.x releases.
 
+* Fixed `AddPropertyStep` not passing the old property to `EventStrategy` listeners when the cardinality was not specified in `property()`.
+
 [[release-3-8-2]]
 === TinkerPop 3.8.2 (Release Date: September 1, 2026)
 
