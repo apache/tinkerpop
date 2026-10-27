@@ -234,10 +234,24 @@ class AsyncDriverRemoteConnection(RemoteConnection):
 
     async def close(self):
         """Close all spawned session connections and the underlying client."""
-        for session in self.__spawned_sessions:
-            await session.close()
-        self.__spawned_sessions.clear()
-        await asyncio.shield(self._async_client.close())
+        await asyncio.shield(self._close())
+
+    async def _close(self):
+        errors = []
+        for session in tuple(self.__spawned_sessions):
+            try:
+                await session.close()
+            except BaseException as exc:
+                errors.append(exc)
+            finally:
+                if session in self.__spawned_sessions:
+                    self.__spawned_sessions.remove(session)
+        try:
+            await self._async_client.close()
+        except BaseException as exc:
+            errors.append(exc)
+        if errors:
+            raise errors[0]
 
     async def __aenter__(self):
         return self
@@ -291,9 +305,11 @@ class AsyncDriverRemoteConnection(RemoteConnection):
 
     async def remove_session(self, session_based_connection):
         """Close and untrack a previously spawned session connection."""
-        await session_based_connection.close()
-        if session_based_connection in self.__spawned_sessions:
-            self.__spawned_sessions.remove(session_based_connection)
+        try:
+            await session_based_connection.close()
+        finally:
+            if session_based_connection in self.__spawned_sessions:
+                self.__spawned_sessions.remove(session_based_connection)
 
     # ------------------------------------------------------------------
     # Transactions
