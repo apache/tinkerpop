@@ -348,6 +348,36 @@ class TestLifecycle(_AsyncioTestCase):
         rc._async_client._closed = False
         self.assertFalse(rc.is_closed())
 
+    async def test_child_close_failure_still_closes_other_children_and_client(self):
+        rc = AsyncDriverRemoteConnection(URL, TRAVERSAL_SOURCE)
+        first = rc.create_session()
+        second = rc.create_session()
+        first.close = AsyncMock(side_effect=OSError("child close failed"))
+        second.close = AsyncMock()
+        rc._async_client.close = AsyncMock()
+
+        with self.assertRaisesRegex(OSError, "child close failed"):
+            await rc.close()
+
+        second.close.assert_awaited_once()
+        rc._async_client.close.assert_awaited_once()
+        self.assertEqual(rc._AsyncDriverRemoteConnection__spawned_sessions, [])
+
+    async def test_child_cancellation_still_closes_other_children_and_client(self):
+        rc = AsyncDriverRemoteConnection(URL, TRAVERSAL_SOURCE)
+        first = rc.create_session()
+        second = rc.create_session()
+        first.close = AsyncMock(side_effect=asyncio.CancelledError())
+        second.close = AsyncMock()
+        rc._async_client.close = AsyncMock()
+
+        with self.assertRaises(asyncio.CancelledError):
+            await rc.close()
+
+        second.close.assert_awaited_once()
+        rc._async_client.close.assert_awaited_once()
+        self.assertEqual(rc._AsyncDriverRemoteConnection__spawned_sessions, [])
+
 
 # ---------------------------------------------------------------------------
 # Transactions
@@ -422,6 +452,16 @@ class TestSessionManagement(_AsyncioTestCase):
         await rc.remove_session(session_rc)
         self.assertNotIn(session_rc, rc._AsyncDriverRemoteConnection__spawned_sessions)
         session_rc._async_client.close.assert_awaited_once()
+
+    async def test_remove_session_untracks_connection_when_close_fails(self):
+        rc = AsyncDriverRemoteConnection(URL, TRAVERSAL_SOURCE)
+        session_rc = rc.create_session()
+        session_rc.close = AsyncMock(side_effect=OSError("child close failed"))
+
+        with self.assertRaisesRegex(OSError, "child close failed"):
+            await rc.remove_session(session_rc)
+
+        self.assertNotIn(session_rc, rc._AsyncDriverRemoteConnection__spawned_sessions)
 
 
 # ---------------------------------------------------------------------------

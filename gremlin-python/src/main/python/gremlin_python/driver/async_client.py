@@ -112,6 +112,7 @@ class AsyncClient(Client):
         # Do NOT call super().__init__() — Client.__init__ creates a
         # ThreadPoolExecutor and a threading queue, neither of which we want.
         self._closed = False
+        self._close_task = None
         self._url = url
         self._headers = headers
         self._enable_user_agent_on_connect = enable_user_agent_on_connect
@@ -163,6 +164,7 @@ class AsyncClient(Client):
         self._pool_size = pool_size
 
         self._pool = asyncio.Queue()
+        self._connections = []
         self._fill_pool()
 
     # ------------------------------------------------------------------
@@ -171,7 +173,7 @@ class AsyncClient(Client):
 
     def _get_connection(self):
         proto = self._protocol_factory()
-        return AsyncConnection(
+        conn = AsyncConnection(
             self._url,
             self._traversal_source,
             proto,
@@ -182,23 +184,38 @@ class AsyncClient(Client):
             enable_user_agent_on_connect=self._enable_user_agent_on_connect,
             ping_interval=self._ping_interval,
         )
+        self._connections.append(conn)
+        return conn
 
     # ------------------------------------------------------------------
     # Lifecycle
     # ------------------------------------------------------------------
 
     async def close(self):
-        """Close all pooled connections and mark the client as closed."""
-        if self._closed:
-            return
-        if self._session_enabled:
-            await self._close_session()
+        """Close all connections, including requests still receiving results."""
+        if self._close_task is None:
+            self._closed = True
+            self._close_task = asyncio.create_task(self._close())
+        await asyncio.shield(self._close_task)
+
+    async def _close(self):
+        error = None
+        try:
+            if self._session_enabled:
+                await self._close_session()
+        except BaseException as exc:
+            error = exc
         log.info("Closing AsyncClient with url '%s'", self._url)
-        conns = []
+        results = await asyncio.gather(
+            *(conn.close() for conn in self._connections), return_exceptions=True
+        )
         while not self._pool.empty():
-            conns.append(self._pool.get_nowait())
-        await asyncio.gather(*(conn.close() for conn in conns), return_exceptions=True)
-        self._closed = True
+            self._pool.get_nowait()
+        if error is not None:
+            raise error
+        for result in results:
+            if isinstance(result, BaseException):
+                raise result
 
     async def _close_session(self):
         if self._pool.empty():
@@ -206,6 +223,7 @@ class AsyncClient(Client):
         conn = await self._pool.get()
         try:
             if not conn._inited or conn._transport.closed:
+                self._pool.put_nowait(conn)
                 return
             message = request.RequestMessage(
                 processor="session",
@@ -216,8 +234,6 @@ class AsyncClient(Client):
             await result_set.all()
         except Exception:
             pass
-        finally:
-            await conn.close()
 
     # ------------------------------------------------------------------
     # Context manager
@@ -268,8 +284,6 @@ class AsyncClient(Client):
                 processor=processor, op=op, args=args
             )
 
-        conn = await self._pool.get()
-
         # Merge default options first; per-request options win.
         if self._default_request_options:
             merged = {**self._default_request_options}
@@ -279,4 +293,8 @@ class AsyncClient(Client):
         elif request_options:
             message.args.update(request_options)
 
+        conn = await self._pool.get()
+        if self.is_closed():
+            self._pool.put_nowait(conn)
+            raise Exception("Client is closed")
         return await conn.write(message)

@@ -66,6 +66,7 @@ class AsyncConnection(Connection):
         )
         self._ping_interval = ping_interval
         self._ping_task = None
+        self._receive_task = None
 
     # ------------------------------------------------------------------
     # Lifecycle
@@ -86,15 +87,22 @@ class AsyncConnection(Connection):
             self._ping_task = asyncio.create_task(self._ping_forever())
 
     async def close(self):
-        """Close the connection, cancelling the ping task first."""
+        """Close the connection and stop its background tasks."""
+        await asyncio.shield(self._close())
+
+    async def _close(self):
         if self._ping_task is not None:
             self._ping_task.cancel()
             self._ping_task = None
-        if self._transport is not None:
-            # asyncio.shield protects the close coroutine from cancellation so
-            # the underlying transport is always cleanly shut down.
-            await asyncio.shield(self._transport.close())
+        if self._receive_task is not None:
+            self._receive_task.cancel()
+            await asyncio.gather(self._receive_task, return_exceptions=True)
+        try:
+            if self._transport is not None:
+                await self._transport.close()
+        finally:
             self._inited = False
+            self._results.clear()
 
     # ------------------------------------------------------------------
     # Keepalive
@@ -125,27 +133,23 @@ class AsyncConnection(Connection):
         while idle).  Returns as soon as the first response chunk arrives; a
         background asyncio.Task drains any remaining partial (206) chunks.
         """
-        if not self._inited or self._transport is None or self._transport.closed:
-            try:
-                await self.connect()
-            except BaseException:
-                self._inited = False
-                self._pool.put_nowait(self)
-                raise
-
-        if request_message.args.get("requestId"):
-            request_id = str(request_message.args["requestId"])
-            uuid.UUID(request_id)
-        else:
-            request_id = str(uuid.uuid4())
-
-        result_set = AsyncResultSet(asyncio.Queue(), request_id)
-        self._results[request_id] = result_set
-
         try:
+            if not self._inited or self._transport is None or self._transport.closed:
+                await self.connect()
+
+            if request_message.args.get("requestId"):
+                request_id = str(request_message.args["requestId"])
+                uuid.UUID(request_id)
+            else:
+                request_id = str(uuid.uuid4())
+
+            result_set = AsyncResultSet(asyncio.Queue(), request_id)
+            self._results[request_id] = result_set
+
             await self._protocol.write(request_id, request_message)
         except BaseException:
             self._inited = False
+            self._results.clear()
             self._pool.put_nowait(self)
             raise
 
@@ -158,6 +162,7 @@ class AsyncConnection(Connection):
             status_code = await self._protocol.data_received(data, self._results)
         except BaseException:
             self._inited = False
+            self._results.clear()
             self._pool.put_nowait(self)
             raise
 
@@ -168,18 +173,23 @@ class AsyncConnection(Connection):
             self._pool.put_nowait(self)
         else:
             async def _consume():
-                try:
-                    while True:
-                        chunk = await self._transport.read()
-                        sc = await self._protocol.data_received(chunk, self._results)
-                        if sc != 206:
-                            break
-                except Exception:
+                while True:
+                    chunk = await self._transport.read()
+                    sc = await self._protocol.data_received(chunk, self._results)
+                    if sc != 206:
+                        break
+
+            def release_connection(future):
+                # A done callback also runs if cancellation prevents _consume
+                # from ever entering its coroutine body.
+                if future.cancelled() or future.exception() is not None:
                     self._inited = False
-                    raise
-                finally:
-                    self._pool.put_nowait(self)
+                    self._results.clear()
+                self._receive_task = None
+                self._pool.put_nowait(self)
 
             result_set.future = asyncio.create_task(_consume())
+            self._receive_task = result_set.future
+            result_set.future.add_done_callback(release_connection)
 
         return result_set
