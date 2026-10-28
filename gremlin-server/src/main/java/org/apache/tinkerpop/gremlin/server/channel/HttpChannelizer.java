@@ -19,7 +19,6 @@
 package org.apache.tinkerpop.gremlin.server.channel;
 
 import io.netty.channel.ChannelInboundHandlerAdapter;
-import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpServerKeepAliveHandler;
 import io.netty.handler.codec.http.cors.CorsConfig;
@@ -44,7 +43,6 @@ import io.netty.handler.codec.http.HttpServerCodec;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
 import org.apache.tinkerpop.gremlin.server.util.ServerGremlinExecutor;
-import org.apache.tinkerpop.gremlin.util.Tokens;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -141,10 +139,9 @@ public class HttpChannelizer extends AbstractChannelizer {
             builder = CorsConfigBuilder.forOrigins(allowedOrigins.toArray(new String[0]));
         }
 
-        return builder.allowedRequestMethods(HttpMethod.POST)
-                .allowedRequestHeaders(HttpHeaderNames.CONTENT_TYPE, HttpHeaderNames.ACCEPT,
-                        HttpHeaderNames.AUTHORIZATION, Tokens.Headers.TRANSACTION_ID)
-                .exposeHeaders(Tokens.Headers.TRANSACTION_ID)
+        return builder.allowedRequestMethods(settings.cors.allowedMethods.stream().map(HttpMethod::valueOf).toArray(HttpMethod[]::new))
+                .allowedRequestHeaders(settings.cors.allowedRequestHeaders.toArray(new String[0]))
+                .exposeHeaders(settings.cors.exposedHeaders.toArray(new String[0]))
                 .build();
     }
 }

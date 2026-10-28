@@ -149,6 +149,10 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
             case "shouldRejectDisallowedCorsOrigin":
                 settings.cors.allowedOrigins = java.util.Arrays.asList("https://allowed.gremlinexample.com");
                 break;
+            case "shouldUseConfiguredCorsHeaders":
+                settings.cors.allowedRequestHeaders = java.util.Arrays.asList("X-Custom-Header");
+                settings.cors.exposedHeaders = java.util.Arrays.asList("X-Custom-Exposed");
+                break;
             case "should200OnPOSTWithChunkedResponse":
             case "shouldHandleErrorsInFirstChunkPOSTWithChunkedResponse":
             case "shouldHandleErrorsInFirstChunkPOSTWithChunkedResponseUsingTextPlain":
@@ -1572,7 +1576,32 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
 
         try (final CloseableHttpResponse response = httpclient.execute(httppost)) {
             assertEquals(200, response.getStatusLine().getStatusCode());
-            assertTrue(response.getFirstHeader("Access-Control-Expose-Headers").getValue().toLowerCase().contains("x-transaction-id"));
+            // Netty sends each exposed header as its own header line, which browsers combine
+            final String exposed = java.util.Arrays.stream(response.getHeaders("Access-Control-Expose-Headers"))
+                    .map(Header::getValue).collect(java.util.stream.Collectors.joining(",")).toLowerCase();
+            assertTrue(exposed.contains("x-transaction-id"));
+            assertTrue(exposed.contains("gremlin-requestid"));
+        }
+    }
+
+    @Test
+    public void shouldUseConfiguredCorsHeaders() throws Exception {
+        final CloseableHttpClient httpclient = HttpClients.createDefault();
+
+        final HttpOptions preflight = new HttpOptions(TestClientFactory.createURLString());
+        preflight.addHeader("Origin", "http://localhost:4173");
+        preflight.addHeader("Access-Control-Request-Method", "POST");
+        preflight.addHeader("Access-Control-Request-Headers", "x-custom-header");
+        try (final CloseableHttpResponse response = httpclient.execute(preflight)) {
+            assertEquals("X-Custom-Header", response.getFirstHeader("Access-Control-Allow-Headers").getValue());
+        }
+
+        final HttpPost httppost = new HttpPost(TestClientFactory.createURLString());
+        httppost.addHeader("Content-Type", "application/json");
+        httppost.addHeader("Origin", "http://localhost:4173");
+        httppost.setEntity(new StringEntity("{\"gremlin\": \"g.inject(1)\"}", Consts.UTF_8));
+        try (final CloseableHttpResponse response = httpclient.execute(httppost)) {
+            assertEquals("X-Custom-Exposed", response.getFirstHeader("Access-Control-Expose-Headers").getValue());
         }
     }
 
