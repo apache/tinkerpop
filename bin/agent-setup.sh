@@ -24,6 +24,7 @@
 #   tinker-dev    - Development guidance (coding conventions, build recipes, etc.)
 #   tinker-doc    - Documentation authoring and review (voice, per-book style, etc.)
 #   tinker-review - Graph-based PR review (knowledge graph analysis, playbooks, etc.)
+#   tinker-merge  - Merging work forward through the release branches toward master
 #
 # Different AI coding tools discover skills in different directories. This script
 # creates the necessary symlinks or shims so your tool can find the skills.
@@ -48,7 +49,7 @@
 
 set -uo pipefail
 
-SKILLS=("tinker-dev" "tinker-doc" "tinker-review")
+SKILLS=("tinker-dev" "tinker-doc" "tinker-review" "tinker-merge")
 
 RED='\033[0;31m'
 GREEN='\033[0;32m'

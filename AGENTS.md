@@ -15,10 +15,12 @@ test belongs on a later branch. Changes here merge forward toward `master` — s
 ## Primary Guidance: Agent Skills
 
 This repository provides development guidance as [Agent Skills](https://agentskills.io):
-`tinker-dev` for building, testing and coding conventions, and `tinker-doc` for authoring and
-revising documentation. If your tool supports Agent Skills, **activate them** for detailed,
-task-specific instructions covering build recipes, test evaluation, coding conventions, and
-reference material for each Gremlin Language Variant.
+`tinker-dev` for building, testing and coding conventions, `tinker-doc` for authoring and
+revising documentation, `tinker-review` for graph-based review of a pull request, and
+`tinker-merge` for merging work forward through the release branches. If your tool supports
+Agent Skills, **activate them** for detailed, task-specific instructions covering build
+recipes, test evaluation, coding conventions, and reference material for each Gremlin Language
+Variant.
 
 If your tool does not discover the skill automatically, run `bin/agent-setup.sh --list` to
 see how to configure it, or `bin/agent-setup.sh <agent>` to set up the integration.
@@ -125,7 +127,8 @@ These rules apply to any AI/IDE assistant operating on this repository.
 - Don't invent project policies, version numbers, or release names.
 - Don't remove or weaken tests to "fix" failures; adjust the implementation or test data instead.
 - Don't push to any branch.
-- Don't merge any PR or branch.
+- Don't merge any PR or branch without explicit instruction. When asked, follow the
+  `tinker-merge` skill, which merges locally and leaves the push to the operator.
 - Don't create tags or releases.
 - Don't add `@author` javadoc (or similar) tags for new files, but do not remove existing ones either.
 

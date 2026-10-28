@@ -1029,6 +1029,13 @@ branches then this process is best handled by multiple pull requests: one to eac
 merged changes should be pushed in reverse order, starting with the latest release version first (e.g. if the fix is
 going to 3.3.x then the change should be merged in the following order: `master`, 3.4-dev`, `3.3-dev`).
 
+The `tinker-merge` Agent Skill automates this process for a coding agent. Asked to merge a pull request, a feature
+branch or commits made directly on a release branch, the agent asks only how to test, then merges and tests each release
+branch in turn with `.skills/tinker-merge/scripts/merge-forward.sh`. The script stops at merge conflicts and test
+failures and resumes with `--continue`. It never pushes. The run ends with the local branches merged and an atomic push
+command, which leaves the committer to review the result before anything reaches the remote. The `--abort` option
+returns every branch to where it stood before the run.
+
 As an example, consider a situation where there is a feature branch named "TINKERPOP-1234" that contains a fix for
 the `3.4-dev` branch:
 
