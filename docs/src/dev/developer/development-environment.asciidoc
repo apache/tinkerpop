@@ -469,8 +469,10 @@ and development environment setup, along with a verification script in `scripts/
 pipeline, and AsciiDoc conventions
 * `tinker-review` covers review of a pull request by number, building a knowledge graph from the changed source and
 analyzing it against domain playbooks to produce an evidence report
+* `tinker-merge` covers merging a pull request, a feature branch or commits on a release branch forward through the
+release branches toward `master`, testing each branch locally and stopping before the push
 
-Unlike the other two, `tinker-review` depends on more than the repository. It requires Docker, Node.js 20 or newer, a
+Unlike the others, `tinker-review` depends on more than the repository. It requires Docker, Node.js 20 or newer, a
 remote that fetches from `apache/tinkerpop`, and a one-time `npm install --prefix .skills/tinker-review` to install its
 dependencies. A review runs against the branch the pull request targets rather than the branch that is checked out, so
 any checkout can review any pull request.
