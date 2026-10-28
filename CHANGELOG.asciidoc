@@ -44,6 +44,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Removed the per-request `userAgent` option from all drivers so the user agent is sent only as the `User-Agent` header controlled by `enableUserAgentOnConnect`.
 * Fixed `gremlin-mcp` to include the server's reason when a query fails rather than only reporting that it failed.
 * Added `search_gremlin_docs` and `get_gremlin_doc_page` tools to `gremlin-mcp` that serve the reference documentation and Gremlin Semantics for a chosen TinkerPop version.
+* Added variable-length path patterns to TinkerGQL using quantified relationships such as `(a)-[:knows]->{1,3}(b)`.
 * Bumped `zod` to 4.6.7 for `gremlin-mcp`, which requires an explicit key schema on `z.record()`.
 * Bumped `jackson-databind` to 2.22.4.
 * Bumped Spark to 4.3.0 and Hadoop to 3.5.0.
@@ -147,8 +148,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Deprecated the traversal-based `match(Traversal[])` in favor of the new string-based API.
 * Added the `gql-gremlin` module containing the TinkerGQL engine, a `MATCH`-pattern executor implementing a deliberate minimal subset of ISO GQL, usable by any graph provider.
 * Added `Graph.countVerticesByLabel(String)`, `Graph.countEdgesByLabel(String)`, and the `Graph.Index` nested interface as performance-hint extension points for the TinkerGQL engine.
-* Added GQL support to TinkerGraph with `gql-gremlin`.
-* Added variable-length path patterns to TinkerGQL via the quantified-relationship form `(a)-[r:label]->{m,n}(b)` (also `{m}`, `{m,}`, and `+`), across directed, reverse, and undirected edges.
+* Added GQL support to TinkerGraph with `gql-gremlin`,
 
 [[release-4-0-0-beta-2]]
 === TinkerPop 4.0.0-beta.2 (April 1, 2026)
