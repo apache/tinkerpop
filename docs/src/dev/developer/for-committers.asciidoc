@@ -1100,7 +1100,9 @@ going to 3.3.x then the change should be merged in the following order: `master`
 The `tinker-merge` Agent Skill automates this process for a coding agent. Asked to merge a pull request, a feature
 branch or commits made directly on a release branch, the agent asks only how to test, then merges and tests each release
 branch in turn with `.skills/tinker-merge/scripts/merge-forward.sh`. The script stops at merge conflicts and test
-failures and resumes with `--continue`. It never pushes. The run ends with the local branches merged and an atomic push
+failures and resumes with `--continue`, which can retest a failed branch with a different command, such as a Maven build
+resumed from the failing module. Branches the committer does not need built can be merged without being tested. It never
+pushes. The run ends with the local branches merged and an atomic push
 command, which leaves the committer to review the result before anything reaches the remote. The `--abort` option
 returns every branch to where it stood before the run.
 

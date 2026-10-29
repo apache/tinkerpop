@@ -23,8 +23,8 @@
 #
 # Usage:
 #   merge-forward.sh <source> [--test default|integration|skip | --test-command <cmd>]
-#                    [--onto <branch>] [--remote <name>]
-#   merge-forward.sh --continue
+#                    [--skip-test-on <branch>[,<branch>...]] [--onto <branch>] [--remote <name>]
+#   merge-forward.sh --continue [--test-command <cmd>]
 #   merge-forward.sh --abort
 #
 # <source> is one of:
@@ -36,10 +36,16 @@
 #   0  every branch merged and tested; push command printed
 #   1  refused or failed before changing anything, or bad usage
 #   2  merge conflict; resolve, commit, then --continue
-#   3  test failure; fix and commit on the branch, then --continue
+#   3  test failure; fix and commit on the branch if needed, then --continue
 #
 # --test-command runs the given shell command from the repository root on every branch in place of
 # the --test presets. A non-zero exit counts as a test failure.
+#
+# --skip-test-on merges the named branches without testing them.
+#
+# --continue --test-command runs the given command once, as the test of the branch the run stopped
+# on, in place of the run's test command; resuming a Maven build with -rf is the usual case. Later
+# branches go back to the run's test command. A plain --continue runs the run's test command.
 #
 # A JDK can be pinned per branch with: git config tinker-merge.<branch>.javaHome <path>
 #
@@ -76,6 +82,7 @@ save_state() {
         printf 'SOURCE_DESC=%q\n' "$SOURCE_DESC"
         printf 'SOURCE_REF=%q\n' "$SOURCE_REF"
         printf 'TEST_CMD=%q\n' "$TEST_CMD"
+        printf 'SKIP_TEST=(%s)\n' "$(printf '%q ' "${SKIP_TEST[@]}")"
         printf 'REMOTE=%q\n' "$REMOTE"
         printf 'ORIG_BRANCH=%q\n' "$ORIG_BRANCH"
         printf 'CHAIN=(%s)\n' "$(printf '%q ' "${CHAIN[@]}")"
@@ -87,6 +94,7 @@ save_state() {
 
 load_state() {
     [[ -f "$(state_file)" ]] || die "No merge in progress."
+    SKIP_TEST=()
     # shellcheck disable=SC1090
     source "$(state_file)"
 }
@@ -99,6 +107,12 @@ require_clean_tree() {
 is_release_branch() {
     local b
     for b in "${RELEASE_BRANCHES[@]}"; do [[ "$b" == "$1" ]] && return 0; done
+    return 1
+}
+
+is_untested() {
+    local b
+    for b in "${SKIP_TEST[@]}"; do [[ "$b" == "$1" ]] && return 0; done
     return 1
 }
 
@@ -165,11 +179,12 @@ check_previous_run() {
 start() {
     check_previous_run
     local source="" onto="" remote_opt=""
-    local test_mode="default" test_cmd_opt=""
+    local test_mode="default" test_cmd_opt="" skip_opt=""
     while [[ $# -gt 0 ]]; do
         case "$1" in
             --test)   test_mode="${2:-}"; shift 2 ;;
             --test-command) test_cmd_opt="${2:-}"; shift 2 ;;
+            --skip-test-on) skip_opt="${2:-}"; shift 2 ;;
             --onto)   onto="${2:-}"; shift 2 ;;
             --remote) remote_opt="${2:-}"; shift 2 ;;
             -h|--help) usage ;;
@@ -236,6 +251,14 @@ start() {
     first=$(release_index "$start_branch")
     CHAIN=("${RELEASE_BRANCHES[@]:$first}")
 
+    SKIP_TEST=()
+    if [[ -n "$skip_opt" ]]; then
+        IFS=',' read -r -a SKIP_TEST <<< "$skip_opt"
+        for b in "${SKIP_TEST[@]}"; do
+            [[ " ${CHAIN[*]} " == *" $b "* ]] || die "--skip-test-on names $b, which is not in the chain: ${CHAIN[*]}"
+        done
+    fi
+
     # Bring every branch in the chain level with the remote. Only the start branch may hold local
     # commits the remote lacks, and only when it is itself the source.
     # Every check runs before any branch moves, so a refusal leaves the clone as it was.
@@ -278,16 +301,21 @@ start() {
     else
         info "Test command: $TEST_CMD"
         for b in "${CHAIN[@]}"; do
-            info "$b tests with JDK: $(java_home_for "$b" | sed 's/^$/(java on PATH)/')"
+            if is_untested "$b"; then
+                warn "$b is not tested"
+            else
+                info "$b tests with JDK: $(java_home_for "$b" | sed 's/^$/(java on PATH)/')"
+            fi
         done
     fi
+    RESUME_CMD=""
     run
 }
 
 # Merges and tests from branch NEXT onward. Every step checks whether it has already been done,
-# so --continue simply calls this again.
+# so --continue simply calls this again. RESUME_CMD, when set, tests only the branch it resumes.
 run() {
-    local i b from log jh
+    local i b from log jh cmd resumed="$NEXT"
     for (( i = NEXT; i < ${#CHAIN[@]}; i++ )); do
         b="${CHAIN[$i]}"
         if [[ "$i" -eq 0 ]]; then from="$SOURCE_REF"; else from="${CHAIN[$((i - 1))]}"; fi
@@ -302,13 +330,17 @@ run() {
             fi
         fi
 
-        if [[ -n "$TEST_CMD" ]]; then
+        cmd="$TEST_CMD"
+        [[ "$i" -eq "$resumed" && -n "$RESUME_CMD" ]] && cmd="$RESUME_CMD"
+        if is_untested "$b"; then
+            warn "Testing skipped on $b"
+        elif [[ -n "$cmd" ]]; then
             log="$(state_dir)/$b.log"
             jh=$(java_home_for "$b")
-            info "Testing $b: $TEST_CMD (log: $log)"
-            if ! ( [[ -n "$jh" ]] && export JAVA_HOME="$jh" PATH="$jh/bin:$PATH"; bash -c "$TEST_CMD" ) > "$log" 2>&1; then
+            info "Testing $b: $cmd (log: $log)"
+            if ! ( [[ -n "$jh" ]] && export JAVA_HOME="$jh" PATH="$jh/bin:$PATH"; bash -c "$cmd" ) > "$log" 2>&1; then
                 tail -n 60 "$log"
-                die "Tests failed on $b. Fix and commit on $b, then run --continue, or run --abort." 3
+                die "Tests failed on $b. Fix and commit on $b if needed, then run --continue, adding --test-command <cmd> to test it another way, or run --abort." 3
             fi
         fi
 
@@ -333,9 +365,21 @@ run() {
 }
 
 continue_run() {
+    local resume_cmd=""
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            --test-command)
+                resume_cmd="${2:-}"
+                [[ -n "$resume_cmd" ]] || die "--test-command needs a command."
+                shift 2 ;;
+            *) die "Unknown option $1" ;;
+        esac
+    done
     load_state
     require_clean_tree
     [[ "$NEXT" -lt "${#CHAIN[@]}" ]] || die "The merge of $SOURCE_DESC already finished. Push it, or run --abort."
+    [[ -z "$resume_cmd" ]] || ! is_untested "${CHAIN[$NEXT]}" || die "${CHAIN[$NEXT]} is not tested in this run."
+    RESUME_CMD="$resume_cmd"
     run
 }
 
@@ -357,7 +401,7 @@ main() {
     git rev-parse --git-dir >/dev/null 2>&1 || die "Not inside a git repository."
     cd "$(git rev-parse --show-toplevel)" || die "Cannot reach the repository root."
     case "${1:-}" in
-        --continue) continue_run ;;
+        --continue) shift; continue_run "$@" ;;
         --abort)    abort_run ;;
         ""|-h|--help) usage ;;
         *)          start "$@" ;;
