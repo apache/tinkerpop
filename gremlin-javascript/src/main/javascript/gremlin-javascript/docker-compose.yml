@@ -64,7 +64,8 @@ services:
       && node basic-gremlin.js
       && node connections.js
       && node modern-traversals.js
-      && echo 'All examples completed successfully'"
+      && echo 'All examples completed successfully';
+      EXIT_CODE=$$?; chown -R `stat -c "%u:%g" /gremlin-javascript` /gremlin-javascript; exit $$EXIT_CODE"
     depends_on:
       gremlin-server-test-js:
         condition: service_healthy
