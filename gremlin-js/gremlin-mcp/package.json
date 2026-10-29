@@ -45,7 +45,7 @@
   "dependencies": {
     "gremlint": "4.0.0-alpha1",
     "@effect/platform": "^0.90.6",
-    "@effect/platform-node": "^0.96.0",
+    "@effect/platform-node": "^4.0.6",
     "@modelcontextprotocol/sdk": "^1.17.4",
     "effect": "^3.17.9",
     "gremlin": "4.0.0-alpha1",
