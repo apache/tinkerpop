@@ -31,6 +31,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Fixed `TinkerTransactionGraph` rollback, which threw a `NullPointerException` when only a vertex index existed and left rolled-back entries visible to an indexed edge lookup when only an edge index existed.
 * Prevented repeated `option(onCreate)`, `option(onMatch)`, `option(outV)` and `option(inV)` calls on `mergeV()` and `mergeE()`, which now throw an `IllegalArgumentException` instead of silently keeping only the last one.
 * Fixed the Gherkin feature test harness to assert errors raised during traversal construction.
+* Fixed bug in `TinkerTransactionGraph` where a write to an element found through an index, or through a reference kept across a commit, changed committed state directly, so it was visible to other transactions before commit and not undone by rollback.
 
 [[release-3-7-7]]
 === TinkerPop 3.7.7 (Release Date: September 1, 2026)
