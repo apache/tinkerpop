@@ -17,6 +17,7 @@
 # under the License.
 #
 
+from gremlin_python.driver.aiohttp.async_transport import _NeedMoreData
 from gremlin_python.driver.connection import GremlinServerError
 from gremlin_python.process.traversal import Traverser
 from gremlin_python.structure.io import graphbinaryV4
@@ -122,6 +123,63 @@ class GraphBinarySerializersV4(object):
         status_exception = '' if exc_is_null else reader.to_object(
             stream, graphbinaryV4.DataType.string, False)
 
+        if status_code not in (200, 204):
+            raise GremlinServerError({
+                'code': status_code,
+                'message': status_message,
+                'exception': status_exception
+            })
+
+    async def deserialize_async_response_stream(self, stream):
+        """
+        Async generator counterpart to :meth:`deserialize_response_stream` for
+        :class:`~gremlin_python.driver.aiohttp.async_transport.AsyncBufferedStream`.
+        Yields each deserialized item as chunks arrive over the network without
+        blocking the event loop or duplicating ``GraphBinaryReader``.
+        """
+        reader = self._graphbinary_reader
+
+        # Response header: version byte + flags byte
+        await stream.read_exactly(1)
+        flags = (await stream.read_exactly(1))[0]
+        bulked = flags == 0x01
+
+        while True:
+            checkpoint = stream.checkpoint()
+            try:
+                obj = reader.to_object(stream)
+                if obj != Marker.end_of_stream() and bulked:
+                    bulk = reader.to_object(stream)
+            except _NeedMoreData as need:
+                stream.restore(checkpoint)
+                await stream.fill_more(need.missing)
+                continue
+
+            stream.compact()
+            if obj == Marker.end_of_stream():
+                break
+            if bulked:
+                yield Traverser(obj, bulk)
+            else:
+                yield obj
+
+        # Trailer: status code, message, exception
+        while True:
+            checkpoint = stream.checkpoint()
+            try:
+                status_code = graphbinaryV4.int32_unpack(stream.read(4))
+                msg_is_null = stream.read(1)[0] == 0x01
+                status_message = '' if msg_is_null else reader.to_object(
+                    stream, graphbinaryV4.DataType.string, False)
+                exc_is_null = stream.read(1)[0] == 0x01
+                status_exception = '' if exc_is_null else reader.to_object(
+                    stream, graphbinaryV4.DataType.string, False)
+                break
+            except _NeedMoreData as need:
+                stream.restore(checkpoint)
+                await stream.fill_more(need.missing)
+
+        stream.compact()
         if status_code not in (200, 204):
             raise GremlinServerError({
                 'code': status_code,
