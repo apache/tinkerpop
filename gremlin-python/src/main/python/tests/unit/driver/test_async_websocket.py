@@ -429,6 +429,12 @@ class TestAsyncResultSet(_AsyncioTestCase):
         result = await rs.one()
         self.assertEqual(result, 42)
 
+    async def test_is_not_resultset_subclass_and_has_no_done_attribute(self):
+        from gremlin_python.driver.resultset import ResultSet
+        rs = self._make_rs([1])
+        self.assertFalse(issubclass(AsyncResultSet, ResultSet))
+        self.assertFalse(hasattr(rs, "done"))
+
 
 # ---------------------------------------------------------------------------
 # AsyncConnection
@@ -448,11 +454,14 @@ class TestAsyncConnection(_AsyncioTestCase):
             traversal_source="g",
             protocol=mock_protocol,
             transport_factory=lambda: mock_transport,
-            executor=None,
             pool=pool,
         )
         conn._transport = mock_transport
         return conn, mock_transport, mock_protocol, pool
+
+    async def test_is_not_connection_subclass(self):
+        from gremlin_python.driver.connection import Connection
+        self.assertFalse(issubclass(AsyncConnection, Connection))
 
     async def test_connect_calls_transport_and_protocol(self):
         conn, transport, protocol, _ = self._make_conn()
@@ -719,6 +728,14 @@ class TestAsyncClient(_AsyncioTestCase):
             **kwargs,
         )
         return client, mock_transport
+
+    async def test_is_not_client_subclass_and_has_no_executor(self):
+        from gremlin_python.driver.client import Client
+        client, _ = self._make_client()
+        self.assertFalse(issubclass(AsyncClient, Client))
+        self.assertFalse(hasattr(client, "executor"))
+        self.assertEqual(client.available_pool_size, 8)
+        self.assertEqual(client.traversal_source, "g")
 
     async def test_pool_is_asyncio_queue(self):
         client, _ = self._make_client()

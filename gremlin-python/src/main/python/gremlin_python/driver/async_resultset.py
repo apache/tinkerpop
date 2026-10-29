@@ -19,13 +19,11 @@
 import asyncio
 import queue
 
-from gremlin_python.driver.resultset import ResultSet
-
 # Internal sentinel used to signal that the stream is exhausted.
 _EXHAUSTED = object()
 
 
-class AsyncResultSet(ResultSet):
+class AsyncResultSet:
     """Result set backed by an asyncio.Queue and an asyncio.Future.
 
     Consumption methods (one, all) are coroutines.  The class also supports
@@ -38,11 +36,38 @@ class AsyncResultSet(ResultSet):
 
     def __init__(self, stream, request_id):
         # stream must be an asyncio.Queue
-        super().__init__(stream, request_id)
+        self._stream = stream
+        self._request_id = request_id
+        self._aggregate_to = None
+        self._status_attributes = {}
         self._future = None
         # Cache individual items already unpacked from a multi-item chunk so
         # that successive one() calls each return exactly one result.
         self._item_cache = queue.Queue()
+
+    @property
+    def aggregate_to(self):
+        return self._aggregate_to
+
+    @aggregate_to.setter
+    def aggregate_to(self, val):
+        self._aggregate_to = val
+
+    @property
+    def status_attributes(self):
+        return self._status_attributes
+
+    @status_attributes.setter
+    def status_attributes(self, val):
+        self._status_attributes = val
+
+    @property
+    def request_id(self):
+        return self._request_id
+
+    @property
+    def stream(self):
+        return self._stream
 
     # ------------------------------------------------------------------
     # future property (asyncio.Future / asyncio.Task)
