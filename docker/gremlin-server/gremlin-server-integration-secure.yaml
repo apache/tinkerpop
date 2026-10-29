@@ -75,3 +75,8 @@ ssl: {
   keyStore: /opt/test/resources/server-key.jks,
   keyStorePassword: changeit
 }
+cors:
+  allowedOrigins: ["*"]
+  allowedMethods: ["POST"]
+  allowedRequestHeaders: ["Content-Type", "Accept", "Authorization", "X-Transaction-Id"]
+  exposedHeaders: ["X-Transaction-Id", "Gremlin-RequestId"]
