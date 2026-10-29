@@ -1,0 +1,502 @@
+////
+Licensed to the Apache Software Foundation (ASF) under one
+or more contributor license agreements.  See the NOTICE file
+distributed with this work for additional information
+regarding copyright ownership.  The ASF licenses this file
+to you under the Apache License, Version 2.0 (the
+"License"); you may not use this file except in compliance
+with the License.  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on an
+"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied.  See the License for the
+specific language governing permissions and limitations
+under the License.
+////
+
+image::apache-tinkerpop-logo.png[width=500,link="https://tinkerpop.apache.org"]
+
+*Proposal 10*
+
+== Geospatial Types for TinkerPop
+
+=== Motivation
+
+TinkerPop has no way to represent spatial data, so providers that support it each define their own type, predicates and wire format and a spatial query is not portable between two graphs. This proposal makes `Geometry` a first-class value type, alongside `OffsetDateTime` and `UUID`, with the predicates and steps that query it.
+
+A provider should only have to store a geometry and give it back, because every spatial semantic has a default implementation in `gremlin-core`. Planar results are identical on every provider, since that implementation is the definition. Geodetic results are provider-defined within a stated accuracy bar, because no single geodetic approach is practical across every language and backend. The functional target is "most of what people use PostGIS for", and the proposal says where an Apache project's libraries cannot reach it.
+
+[source,groovy]
+----
+g.addV('city').property('name', 'nyc').property('loc', Geometry("POINT(-74.006 40.7128)", GEOGRAPHIC))
+g.V().has('loc', geoWithinDistance(Geometry("POINT(-73.98 40.75)", GEOGRAPHIC), 10000))     // within 10 km
+g.V().has('loc', geoWithin(Geometry("POLYGON((-125 24, -66 24, -66 49, -125 49, -125 24))", GEOGRAPHIC)))
+g.V().has('shape', typeOf(GType.CARTESIAN).and(typeOf(GType.POLYGON))).values('shape')
+g.V().hasLabel('city').order().by(values('loc').distance(Geometry("POINT(-0.12 51.5)", GEOGRAPHIC))).limit(3)
+----
+
+=== Background
+
+==== Geometry and geography
+
+The same pair of coordinates can mean two different things. Take `POINT(-74 40.7)` (New York) and `POINT(-0.1 51.5)` (London). Read as x and y on a flat plane, they are about 74.7 apart, in "degrees", which is a physically meaningless number. Read as longitude and latitude on the surface of the earth, they are about 5,570 km apart. Both readings are legitimate. Planar _geometry_ is right for floor plans, CAD drawings, game maps and map data that has already been projected onto a flat surface. Geodetic _geography_ is right for GPS coordinates. Area, length and even "is this point inside that polygon" give different answers under the two readings, so something has to tell `distance()` or `geoWithin()` which math to use.
+
+That something is conventionally a *spatial reference identifier (SRID)*, an integer naming a coordinate reference system. Two SRIDs matter for this proposal. SRID 0 means "unspecified", which in practice means a plain Cartesian plane. SRID 4326 is WGS84 longitude/latitude, the coordinate system of GPS and of GeoJSON. Several thousand other SRIDs exist, mostly map projections. SRIDs are precise, but most users have never heard of them, which is why this proposal keeps them out of the everyday API.
+
+==== Standards and the PostGIS reference point
+
+Two standards define the field.
+
+* *ISO/IEC 13249-3, SQL/MM Spatial,* defines the `ST++_*++` type hierarchy and function set familiar from spatial SQL.
+* *OGC Simple Features Access 1.2.1* is the language-neutral model behind it. The two share the same core of straight-line types: points, line strings, polygons, their multi-part variants and collections. SQL/MM additionally defines curve types built from circular arcs.
+
+*PostGIS* is the de facto reference implementation and the practical target here. Unlike the standards, it splits the world into a planar `geometry` type and a geodetic `geography` type. `geography` supports only the straight-line types and a small set of predicates.
+
+Geometries are exchanged as *Well-Known Text* (WKT), e.g. `+POLYGON((0 0, 1 0, 1 1, 0 0))+`, or as *Well-Known Binary* (WKB). ISO WKT marks 3D coordinates with a `Z` tag, as in `POINT Z (1 2 3)`. PostGIS adds "extended" variants of both, EWKT and EWKB, which embed the SRID: `SRID=4326;POINT(1 2)`.
+
+Spatial predicates such as `intersects`, `within` and `touches` are defined by the *DE-9IM* model over the _point sets_ that geometries occupy. That makes them topological: vertex order and redundant vertices don't affect the answer. This matters later, when we separate a geometry's Java equality from spatial equality.
+
+==== What the libraries allow
+
+An Apache project can only depend on libraries with ASF-compatible licenses. That constraint decides which geometry types core can compute on, and which library its implementation is built on. The realistic Java candidates are JTS, Apache SIS and spatial4j.
+
+*JTS* is the workhorse. It is dual-licensed EPL 2.0 / EDL 1.0 and consumable under the BSD-style EDL, and Apache Calcite already builds its `ST++_*++` library on it, with Apache Sedona and Lucene's spatial-extras also using it. JTS provides:
+
+* the full straight-line OGC type model
+* complete DE-9IM predicates
+* robust overlay operations
+* WKT and WKB I/O
+* several spatial index structures
+* Hilbert and Morton space-filling-curve codes
+
+It preserves Z coordinates while computing in 2D, which is exactly what PostGIS `geometry` does. What it doesn't do is earth-surface math of any kind.
+
+No ASF-compatible Java library supports SQL/MM curves, since GeoTools and deegree are LGPL and Oracle and Esri are proprietary, so this proposal supports only straight-line types while leaving room in the hierarchy for curves. None of them evaluates polygon predicates with edges that follow the earth's curvature either, which is what PostGIS `geography` does, so geodetic predicates and steps are *provider-defined*: core ships a default approximation built on JTS, and a provider may substitute its own as long as it meets a stated accuracy bar and documents its model. The computation section describes the default and the bar.
+
+=== The Geometry type
+
+==== One type with a model
+
+TinkerPop gets a single `Geometry` type. What users see is its *model*, which says how its coordinates are interpreted. It is a three-valued enum:
+
+* *`CARTESIAN`* is planar, with math in coordinate units. TinkerPop defines it completely.
+* *`GEOGRAPHIC`* is longitude/latitude on the earth, with geodetic math in meters. Precisely, the coordinates are WGS84. How geodetic operations on them are _computed_ is provider-defined, within the accuracy bar described below.
+* *`OTHER`* describes data in any other coordinate system, such as a map projection exported from PostGIS. Such values can be stored and returned unchanged, but the spatial predicates and steps treat them as unsupported. There is no reprojection between coordinate systems, which would need a CRS library and the EPSG registry, whose license is a separate problem.
+
+[source,java]
+----
+Point.of(3, 4)                                     // CARTESIAN, the default
+Point.of(-74.0, 40.7, Model.GEOGRAPHIC)
+Geometry.fromWkt("POINT(-74.0 40.7)", Model.GEOGRAPHIC)
+geometry.model()                                   // CARTESIAN, GEOGRAPHIC or OTHER
+----
+
+Underneath, every value still carries an integer *SRID*. `CARTESIAN` is SRID 0, `GEOGRAPHIC` is SRID 4326, and `OTHER` is whatever SRID the data arrived with. The SRID is what gets stored and serialized, and it remains readable through `srid()`. Users who know what SRIDs are can still supply one: `Geometry.fromWkt(wkt, 32618)`, an EWKT prefix such as `SRID=32618;POINT(...)`, WKB, or the literal `Geometry("POINT(...)", 32618)`. `OTHER` is only ever _reported_ by `model()`. It is never passed to a constructor, because a geometry in another coordinate system is meaningless without saying which one, and the SRID says exactly that.
+
+The reason for the indirection is that SRIDs and WGS84 are precise but obscure. Asking every user who wants a GPS point to know that the magic number is 4326 would make the common case harder for the sake of the rare one. PostGIS reaches the same place by a different route. Its `geometry` type defaults to SRID 0 and its `geography` type defaults to 4326, so most PostGIS users never write an SRID either. The model also gives the Java API an unambiguous shape. `Point.of(x, y, Model.GEOGRAPHIC)` can never be confused with the 3D `Point.of(x, y, z)`, as an integer SRID argument could be.
+
+==== The hierarchy
+
+The class hierarchy mirrors SQL/MM, including its abstract `Curve` and `Surface` levels, even though no curve types are instantiable yet. At the root is an abstract `Geometry`, which every value extends. It carries the model and SRID and the accessors common to all geometries: `model()`, `srid()`, `isEmpty()`, `hasZ()` and `isValid()`. Beneath it are four branches:
+
+* *`Point`* extends `Geometry` directly. It exposes `x()`, `y()` and `z()`, and `hasZ()` to say whether z is present.
+* *The abstract `Curve`* is the parent of every one-dimensional type. Today its only child is `LineString`, which exposes its `points()`.
+* *The abstract `Surface`* is the parent of every two-dimensional type. Today its only child is `Polygon`, which exposes `exteriorRing()` and `interiorRings()`.
+* *`GeometryCollection`* holds any mix of geometries, exposed through `geometries()`. Its children are the multi-part types:
+** `MultiPoint` extends it directly.
+** `MultiLineString` extends it through the abstract `MultiCurve`.
+** `MultiPolygon` extends it through the abstract `MultiSurface`.
+
+So a `MultiPolygon` is a `MultiSurface`, and every multi-part geometry is a collection, exactly as in SQL/MM.
+
+The seven instantiable types are:
+
+* Point
+* LineString
+* Polygon (with holes)
+* MultiPoint
+* MultiLineString
+* MultiPolygon
+* GeometryCollection
+
+This set is the intersection of three things: what JTS can compute on, the well-supported core of PostGIS `geometry`, and everything PostGIS `geography` supports. Going beyond it would mean types that nothing can compute on.
+
+`GeometryCollection` deserves a word, since few users store one deliberately. It is the natural result of constructive operations. For example, the intersection of two polygons can be a polygon plus a stray line plus a point. It also appears in every interchange format, so it has to exist.
+
+The abstract levels are there so curves can be added without a breaking change. Once an ASF-compatible library supports them, or once we implement them ourselves, `CircularString` and `CompoundCurve` slot in under `Curve`, `CurvePolygon` under `Surface`, and `MultiCurve` and `MultiSurface` become instantiable. Implementing them ourselves would follow the approach GeoTools takes:
+
+[arabic]
+. Store each arc's control points faithfully.
+. Compute on a straight-segment approximation of the arcs.
+. Write the original control points back out.
+
+That approach can be reimplemented from the SQL/MM specification without touching LGPL code.
+
+Coordinates carry a `z` from day one. A 2D value records z as _absent_ (NaN, following JTS), not as zero. Z survives WKT and WKB round trips, while all math is 2D for now. Putting z into the model now means 3D can arrive later without changing `Point`'s API or the wire format. This was also the deciding argument against spatial4j as the model, since it cannot store z at all. Geometry values are immutable.
+
+==== The Java API
+
+The root class carries everything common to all geometries: construction from the standard text and binary formats, the model and SRID, structural accessors and the standard encodings. The sketch below shows its shape. The names of the accessors follow SQL/MM and OGC where a counterpart exists, for example `srid()` for `ST++_++SRID`.
+
+[source,java]
+----
+package org.apache.tinkerpop.gremlin.structure.geo;
+
+public enum Model { CARTESIAN, GEOGRAPHIC, OTHER }
+
+public abstract class Geometry {
+
+    // construction from standard formats; malformed input raises IllegalArgumentException
+    public static Geometry fromWkt(String wktOrEwkt);          // model from an EWKT prefix, else CARTESIAN
+    public static Geometry fromWkt(String wkt, Model model);    // CARTESIAN or GEOGRAPHIC
+    public static Geometry fromWkt(String wkt, int srid);       // for experts; any SRID
+    public static Geometry fromWkb(byte[] wkb, int srid);       // ISO WKB
+
+    public Model model();                                        // derived from the SRID
+    public int srid();                                           // 0, 4326, or the custom SRID
+
+    public abstract boolean isEmpty();
+    public abstract boolean hasZ();
+
+    public String toWKT();                                      // ISO WKT, without the SRID
+    public String toEWKT();                                     // EWKT, "SRID=n;" + toWKT()
+    public byte[] toWKB();                                      // ISO WKB
+
+    @Override public boolean equals(Object o);                   // exact: SRID, type and coordinates
+    @Override public int hashCode();
+    @Override public String toString();                          // same as toWKT()
+}
+----
+
+`Point` is the simplest concrete type. Its z is absent rather than zero for 2D points, so `hasZ()` distinguishes `POINT(1 2)` from `POINT Z (1 2 0)`:
+
+[source,java]
+----
+public final class Point extends Geometry {
+
+    public static Point of(double x, double y);                  // CARTESIAN
+    public static Point of(double x, double y, Model model);
+    public static Point of(double x, double y, double z);        // 3D, CARTESIAN
+    public static Point of(double x, double y, double z, Model model);
+    public static Point empty();                                 // POINT EMPTY, CARTESIAN
+    public static Point empty(Model model);
+
+    public double x();                                           // longitude for GEOGRAPHIC
+    public double y();                                           // latitude for GEOGRAPHIC
+    public double z();                                           // NaN when absent
+}
+----
+
+A polygon is built from rings, each of which is a closed `LineString`. The first ring is the shell and any others are holes:
+
+[source,java]
+----
+public final class Polygon extends Surface {
+
+    public static Polygon of(LineString shell, LineString... holes);   // model taken from the rings, which must agree
+
+    public LineString exteriorRing();
+    public List<LineString> interiorRings();                     // empty when there are no holes
+}
+----
+
+The other types follow the same pattern. `LineString` exposes `points()`, and `GeometryCollection` and its multi-part subclasses expose `geometries()`. All of them come from `Geometry.fromWkt`, and the same values are what the `Geometry(...)` literal and the GraphBinary decoder produce.
+
+The model is given through overloads. The shorter form defaults to `CARTESIAN`, and a trailing `Model` sets it, so a geodetic point is written `Point.of(-74.0, 40.7, Model.GEOGRAPHIC)`. Composite types such as `Polygon` take their model from their parts. Because `Model` is its own type, the overloads can't be confused: `Point.of(1, 2, 3)` is always a 3D point. Custom SRIDs enter only through the text and binary formats.
+
+==== Writing geometries in Gremlin
+
+gremlin-lang gets one literal, `Geometry(...)`, added to `genericLiteral`. It takes WKT or EWKT, and optionally a model or, for experts, an explicit SRID. `Model` becomes a grammar token like the other enums:
+
+[source,groovy]
+----
+Geometry("POINT(-74.0 40.7)")                // CARTESIAN
+Geometry("POINT(-74.0 40.7)", GEOGRAPHIC)    // the common geodetic form
+Geometry("SRID=4326;POINT(-74.0 40.7)")      // EWKT, which is also GEOGRAPHIC
+Geometry("POINT(583960 4507523)", 32618)     // custom SRID, reported as OTHER
+----
+
+Giving both an EWKT prefix and a conflicting model or SRID argument is an error.
+
+The literal follows the grammar's existing function-style literals (`datetime(...)`, `uuid(...)`, `Duration(...)`, `Binary(...)`) and its current PascalCase convention. Accepting EWKT lets PostGIS output be pasted straight in, while the model argument covers what most people writing literals by hand need. We considered per-type shorthands such as `point(x, y)` and `polygon(...)`, and decided against them. GLVs will mostly generate these literals from native constructors, so the shorthands would mainly serve people writing scripts by hand. And a keyword per type doesn't scale once the full hierarchy, including curves, exists.
+
+==== Placement
+
+Everything lives in `gremlin-core` and `gremlin-language`. That includes the types, the predicates, the steps, the optimization strategy, the comparator entry, the `GType` entries and the grammar. JTS (`jts-core`, about 1 MB with no transitive dependencies) becomes a dependency of `gremlin-core`.
+
+=== Scope
+
+Existing providers set the floor. Those that already expose spatial support offer the four standard relationships, a distance query and a bounding-box query, so a user moving from one should lose nothing.
+
+This proposal therefore defines seven predicates, `GeoP.geoWithin`, `geoContains`, `geoIntersects`, `geoDisjoint`, `geoWithinDistance`, `geoIntersectsBox` and `geoEquals`, and five steps, `distance`, `buffer`, `envelope`, `asGeometry` and `asGeography`. No standard defines such a subset, so this is presented as a subset whose names and semantics follow SQL/MM and PostGIS, not as a claim of conformance. Each later addition fits the same patterns, so it is additive.
+
+=== Spatial steps
+
+The steps fall into three groups: a measure, construction and conversion.
+
+The measure is:
+
+* *`distance(g)`* returns the minimum distance between the incoming geometry and `g`, which is 0 when they intersect. Besides answering "how far", it is the basis of nearest-neighbor queries (`order().by(values('loc').distance(g)).limit(k)`), which the acceleration section turns into a pattern providers can recognize.
+
+It is in coordinate units for `CARTESIAN` values and in meters for `GEOGRAPHIC` ones. The grammar already has a `distance` token, from `ShortestPath.distance`, and must also accept it as a step name.
+
+The construction steps return a new geometry built from the incoming one:
+
+* `buffer(d)` returns the area within distance `d` of the incoming geometry, as a polygon whose rounded sides are approximated by short straight ones, like `ST++_++Buffer`.
+* `envelope()` returns the smallest axis-aligned box around the incoming geometry, like `ST++_++Envelope`. It is a polygon, or a point or line when the box has no area.
+
+The conversion steps, *`asGeometry()`* and *`asGeography()`*, join the existing `as++*++` family (`asString`, `asDate`, `asNumber`, `asBool`). `asGeometry()` produces a `CARTESIAN` value and `asGeography()` a `GEOGRAPHIC` one. They accept three kinds of input:
+
+* *A geometry* is relabeled with its coordinates unchanged. This is the equivalent of PostGIS's `::geometry` and `::geography` casts, not a reprojection like `ST++_++Transform`.
+** `asGeography()` rejects coordinates outside the longitude and latitude ranges, and rejects `OTHER` values, since converting those would require reprojection.
+** `asGeometry()` accepts any model, since projected coordinate systems are already planar.
+* *A string* is parsed as WKT or EWKT, like `ST++_++GeomFromText`. Data that stored shapes as text can be converted inside a traversal.
+* *A map of named coordinates* becomes a point, like `ST++_++MakePoint`. The keys are `lon` and `lat`, or `x` and `y`, with an optional `z`. Coordinates are read by name, so the order of the entries doesn't matter. An unknown key, a missing coordinate, a mix of the two pairs, or a value that isn't a finite number is an error.
+
+A list such as `+[x, y]+` is rejected. Nothing in a list says which number is longitude, and steps such as `values('lon','lat')` return values in storage order, which can silently swap the coordinates.
+
+==== Examples
+
+[source,groovy]
+----
+// build a point from the lat/lon properties the data already has
+gremlin> g = TinkerFactory.createAirRoutes().traversal()
+gremlin> g.V().hasLabel('airport').
+           property('loc', project('lon','lat').by('lon').by('lat').
+                             asGeography()).iterate()
+gremlin> g.V().hasLabel('airport').limit(3).values('code','loc')
+==>POINT(-84.4281005859375 33.6366996765137)
+==>ATL
+==>POINT(-149.996002197266 61.1744003295898)
+==>ANC
+==>POINT(-97.6698989868164 30.1944999694824)
+==>AUS
+
+// GEOGRAPHIC distance, in meters
+gremlin> austin = g.V().has('code','AUS').values('loc').next()
+gremlin> g.V().has('code','DFW').values('loc').distance(austin)
+==>306388.68807495054
+
+// the three airports closest to Austin
+gremlin> g.V().hasLabel('airport').
+           order().by(__.values('loc').distance(austin)).limit(3).
+           project('code','km').by('code').
+             by(__.values('loc').distance(austin).math('_ / 1000'))
+==>[code:AUS, km:0.0]
+==>[code:GRK, km:98.22518308112255]
+==>[code:SAT, km:106.52929587490001]
+
+// asGeometry() relabels CARTESIAN, coordinates unchanged, so distance
+// is then in coordinate units
+gremlin> g.V().has('code','AUS').values('loc').asGeometry().
+           distance(Point.of(-97.0d, 32.9d))
+==>2.787202014147588
+----
+
+=== Spatial predicates
+
+All spatial predicates live in a new `GeoP` class, backed by a new `Geo` predicate enum, in the same way `TextP` is backed by `Text`. Each one behaves as its SQL/MM or PostGIS counterpart: topological, and independent of vertex order. For `CARTESIAN` values it is computed by JTS. For `GEOGRAPHIC` values it is core's default approximation unless the provider substitutes its own. Arguments may be constants or traversals, thanks to the recently added support for traversal-valued predicates. Like every other predicate, each has a bare shorthand, so `has('loc', geoWithin(region))` works as well as `has('loc', GeoP.geoWithin(region))`.
+
+[cols=",,",options="header",]
+|===
+|Predicate |Meaning |Equivalent
+|`GeoP.geoWithin(g)` |the value lies entirely inside `g` |`ST++_++Within`
+|`GeoP.geoContains(g)` |the value entirely contains `g` |`ST++_++Contains`
+|`GeoP.geoIntersects(g)` |the value and `g` share at least one point |`ST++_++Intersects`
+|`GeoP.geoDisjoint(g)` |the value and `g` share no point |`ST++_++Disjoint`
+|`GeoP.geoWithinDistance(g, d)` |the value is within distance `d` of `g` (coordinate units for `CARTESIAN`, meters for `GEOGRAPHIC`) |`ST++_++DWithin`
+|`GeoP.geoIntersectsBox(minX, minY, maxX, maxY)` |the value's bounding box intersects the box |PostGIS `&&` with `ST++_++MakeEnvelope`; BigQuery `ST++_++INTERSECTSBOX`
+|`GeoP.geoEquals(g)` |the value and `g` occupy the same point set |`ST++_++Equals`
+|===
+
+Filtering by model or shape uses `GType`, described later, rather than a spatial predicate. Experts working with custom SRIDs also have an undocumented `GeoP.srid(n)` escape hatch.
+
+==== Naming
+
+Predicate naming uses a "geo" prefix to distinguish between other closely named predicates that already exist like `within()`. Although this is a break from traditional naming, it allows for shorthands to continue to exist without forcing users to have to write out `GeoP.within()`.
+
+The semantics of `geoWithin` are exactly OGC `ST++_++Within`, including the boundary rule: a point lying exactly on a polygon's edge is not within it. Some existing backends treat boundaries inclusively, which is acceptable under the geodetic accuracy bar.
+
+==== Predicate shortcuts
+
+`geoDisjoint(g)` is exactly `P.not(GeoP.geoIntersects(g))`. It is kept because it is one of the four standard relationships (`ST++_++Disjoint`).
+
+`geoWithinDistance(g, d)` is more than a convenience. In principle it is `distance(g) ++<++= d`, but that form can't be written inside `has()`. In `has(key, predicate)`, the left side of the comparison is always the stored property value, and a traversal argument can compute only the right side, from the current traverser. 4.0's `has(key, traversal)` builds `P.eq(traversal)`. So `has('loc', lte(++__++.distance(g)))` would compare the geometry with a number. The long form works only as a filter over a projection, `where(values('loc').distance(g).is(lte(d)))`, which is not a `HasContainer` that providers can fold into an index. `geoWithinDistance` is therefore the only way to express an indexable distance test. The canonicalization strategy rewrites the long form into it. A bounded distance test also has a computational advantage: it can stop early and expand an index search box by `d`, where a full distance computation can't.
+
+==== Bounding boxes
+
+`GeoP.geoIntersectsBox` is the map-viewport predicate. For `GEOGRAPHIC` values its arguments are longitude and latitude ranges, and a box whose minimum longitude exceeds its maximum wraps across the ±180° meridian. It is "intersects" rather than "within" because a viewport should still show a road or a country that is only partly visible. Defining the box by coordinate ranges rather than as a polygon keeps it unambiguous on every provider, whatever their geodetic model: the edges of a box-shaped polygon would bow away from the latitude lines under a great-circle model. It is exact for points and coarse for lines and polygons, just as PostGIS's `&&` is.
+
+==== Both models
+
+*Every predicate works for both models.* PostGIS `geography` offers fewer predicates than `geometry`. But a `GeoP` that silently supports a different set of predicates depending on the coordinate system would be a poor first-class API, and it would strand users of providers that already offer containment and disjointness on longitude/latitude shapes. Core's default supports all of them for `GEOGRAPHIC`, so a provider that substitutes its own geodetic implementation must support all of them too.
+
+==== Examples
+
+[source,groovy]
+----
+gremlin> square = Geometry("POLYGON((0 0, 4 0, 4 4, 0 4, 0 0))", GEOGRAPHIC)
+
+// an interior point is within the polygon, and the polygon contains it
+gremlin> g.inject(Geometry("POINT(2 2)", GEOGRAPHIC)).is(geoWithin(square))
+==>POINT(2 2)
+gremlin> g.inject(square).is(geoContains(Geometry("POINT(2 2)", GEOGRAPHIC)))
+==>POLYGON((0 0, 4 0, 4 4, 0 4, 0 0))
+
+// a point on the boundary is not within it, but it does intersect
+gremlin> g.inject(Geometry("POINT(0 2)", GEOGRAPHIC)).is(geoWithin(square))
+// no result
+gremlin> g.inject(Geometry("POINT(0 2)", GEOGRAPHIC)).is(geoIntersects(square))
+==>POINT(0 2)
+
+// geoEquals is topological, eq is exact: the same square from another corner
+gremlin> a = Geometry("POLYGON((0 0, 0 1, 1 1, 1 0, 0 0))", GEOGRAPHIC)
+gremlin> b = Geometry("POLYGON((1 1, 1 0, 0 0, 0 1, 1 1))", GEOGRAPHIC)
+gremlin> g.inject(a).is(geoEquals(b))
+==>POLYGON((0 0, 0 1, 1 1, 1 0, 0 0))
+gremlin> g.inject(a).is(P.eq(b))
+// no result
+----
+
+=== Computing on geometries
+
+For `CARTESIAN` values computation is straightforward JTS planar math: DE-9IM predicates through `relate`, and distance in coordinate units. `CARTESIAN` is portable by definition, so a provider may override the implementation, for example to evaluate a predicate inside its own index, but the results must be identical to core's.
+
+`GEOGRAPHIC` is where the proposal deliberately stops short of a single definition. Fixing one founders on the same problem whichever definition is chosen: what each language's libraries can do, and what each provider's backend already does, differ too much to force one approach on everyone. So *geodetic predicates and steps are provider-defined.* Core ships a default implementation, which every provider that doesn't override it gets. A provider may substitute its own, provided it meets a minimum bar:
+
+* *Measures* (`distance` and `GeoP.geoWithinDistance`) are in meters and within about 1% of the true WGS84 values.
+* *Predicates* are correct for ordinary shapes: edges under roughly 100 km that cross neither the ±180° meridian nor a pole. They may differ from other implementations only for larger or antimeridian-crossing shapes.
+* *Every predicate and step* that core supports for `GEOGRAPHIC` values is supported.
+* *The provider documents its model:* a sphere (and its radius) or the ellipsoid, and whether polygon edges are great circles or straight lines in longitude/latitude.
+
+The bar rules out nonsense such as distances in degrees while admitting every implementation in use today, and it maps onto Gherkin feature tests: the ordinary-shape cases become portable tests, and everything outside them is tagged as provider-defined.
+
+Core's default needs nothing beyond JTS. Point-to-point distance, including `geoWithinDistance`, uses the haversine formula on a sphere; distance between non-point geometries takes the nearest points JTS finds in longitude/latitude space and applies haversine to them; and predicates are evaluated by JTS in that same space, so polygon edges are straight lines in degrees rather than great-circle arcs. That is what the search backends existing geo-capable providers build on already do.
+
+Measures on a sphere differ from the WGS84 ellipsoid by about 0.3 to 0.5 percent, and the predicate approximation matters more for large shapes: an edge along the 49th parallel lies about 450 km south of the great circle between its endpoints, so a point between the two readings is inside the polygon under one and outside under the other. For city-sized shapes the error is negligible; for continental shapes, or shapes that cross the ±180° meridian, it is not.
+
+=== Geometry as a Gremlin value
+
+Before any spatial operation, a geometry has to behave correctly as an ordinary Gremlin value. That means defining how it is compared for equality, ordered, validated, displayed and named in `GType`.
+
+==== Equality
+
+`equals()` and `hashCode()` are exact. Two geometries are equal when they have the same SRID, the same type and the same coordinate sequence, including z. This is what `P.eq`, `dedup()`, `group()` and map keys see. Topological equality, meaning "occupies the same point set", is a separate spatial predicate.
+
+The temptation is to make `equals()` topological, because that is what SQL/MM's `ST++_++Equals` means. It doesn't work in Java: `LINESTRING(0 0, 2 2)` and `LINESTRING(0 0, 1 1, 2 2)` are topologically equal but have different coordinates, so no consistent `hashCode()` exists for them. SQL/MM itself also defines `ST++_++OrderingEquals` for the exact notion, and JTS makes the same split, keeping `equals(Object)` exact and offering `equalsTopo` separately.
+
+==== Ordering and comparability
+
+Gremlin requires every value to be orderable. Without an explicit entry, a geometry would fall into the `Unknown` bucket of `GremlinValueComparator` and sort by class name and `toString()`, which works only by accident. Geometry therefore gets its own `Type` entry, placed after `UUID` and before `Vertex` with the other scalar values.
+
+SQL/MM defines equality for geometries but no total order, so the order within the type is TinkerPop's to define. It follows PostGIS's. PostGIS 2.4 and 2.5 ordered geometries by their exact coordinate sequence. PostGIS 3.0 and later order first by a Hilbert space-filling-curve key of the bounding box, then by raw bytes. We adopt the 3.x behavior, because it gives `order()` spatial locality: shapes that are near each other sort near each other. Geometries are ordered by:
+
+. SRID
+. empty geometries first
+. the Hilbert key of the bounding-box center
+. the exact coordinate sequence, compared numerically
+
+The key is a Hilbert index of the bounding-box centre on a fixed, global grid. The grid has to be global rather than derived from the pair being compared, or the order stops being transitive. The final tie-break compares coordinates numerically rather than as raw bytes, because a byte-wise comparison of IEEE doubles puts negative numbers in the wrong order, and it is what keeps the order consistent with exact `equals()`. The result is modelled on PostGIS rather than promising an identical order: PostGIS is GPL, so the behaviour is reimplemented from its documentation, not ported.
+
+Geometries are also _comparable_ with each other, so `lt` and `gt` use the same order. It is tempting to make them orderable but not comparable, since "less than" between shapes has no spatial meaning. But Gremlin makes every pair of same-type values comparable: vertices by id, lists and maps by their contents. Making Geometry the one exception would be inconsistent. The ordering carries no more spatial meaning than vertex-id order carries graph meaning, and spatial questions belong to the spatial predicates.
+
+==== Validity
+
+A geometry can be bad in two different ways, and PostGIS treats them differently, as do we.
+
+A *malformed* geometry is not a geometry at all. Examples are a polygon ring that doesn't close, a ring with fewer than four points, a line string with a single point, a NaN coordinate, or WKT with a syntax error. These are cheap O(n) checks, and malformed input is rejected at construction.
+
+An *invalid* geometry is structurally sound but breaks OGC's rules. Examples are a "bow-tie" polygon whose ring crosses itself, a hole outside its shell, overlapping holes, or overlapping parts of a MultiPolygon. Algorithms can run on such shapes, but their results are undefined. Invalid geometries are accepted, and `isValid()` reports them. An operation that trips over one raises a clear error rather than a raw JTS `TopologyException`.
+
+Rejecting invalid geometries too would make everything downstream simpler. But checking validity costs O(n log n) on every construction, and real-world data is often slightly invalid, so strict rejection would break imports. In practice users will mostly load data exported from GIS systems or from PostGIS itself, which is nearly always valid. A `makeValid` operation can come later.
+
+==== Display
+
+`toString()` produces ISO WKT without the SRID, for example `POINT(-74 40.7)` or `POINT Z (-74 40.7 10)`. The `Z` tag appears only when z is present.
+
+The choice follows usage. Every spatial system reads and writes WKT, including PostGIS, Oracle, SQL Server, MySQL, JTS, GDAL, Shapely, Elasticsearch and JanusGraph. EWKT is essentially PostGIS's own. JTS's `toString()` and Shapely's `str()` both print plain WKT without the SRID, and the ISO `Z` tag is what SQL/MM, OGC 1.2, PostGIS's `ST++_++AsText`, JTS, GDAL and Shapely all use. PostGIS's EWKT output writes 3D coordinates without a tag, which becomes ambiguous once M (measure) values exist. The cost is that the console doesn't show the SRID. It is still available from the value, and an explicit EWKT output step can be added later without changing the default.
+
+==== GType
+
+`GType` gains `GEOMETRY`, one entry per instantiable subtype, and one entry per model:
+
+* *shapes:* `POINT`, `LINESTRING`, `POLYGON`, `MULTIPOINT`, `MULTILINESTRING`, `MULTIPOLYGON`, `GEOMETRYCOLLECTION`
+* *models:* `CARTESIAN`, `GEOGRAPHIC`
+
+The shape entries follow the existing `NUMBER`/`INT` precedent: `typeOf(GType.GEOMETRY)` matches every geometry, just as `NUMBER` matches `INT`. The model entries let users filter by interpretation with the same mechanism, and the two combine:
+
+[source,groovy]
+----
+g.V().has('loc', typeOf(GType.GEOGRAPHIC).and(typeOf(GType.POINT)))
+----
+
+Both kinds give users, and providers, a typed filter that can be pushed down to storage. Chained or combined `typeOf` predicates fold into a provider's `GraphStep` as ``HasContainer``s like any other.
+
+The model entries are the first `GType` entries that test an attribute of a value rather than its Java class. Every model is the same `Geometry` class, so `GType` matching needs a per-entry test rather than only a class check. There is no `GType.OTHER`, since that name would be meaningless among `GType`'s other entries. Values in custom coordinate systems are matched by `GType.GEOMETRY`, and experts can narrow to a specific SRID with the undocumented `GeoP.srid(n)`.
+
+=== When types don't match
+
+Error handling follows the Gremlin semantics document rather than PostGIS, which raises "Operation on mixed SRID geometries" whenever SRIDs disagree. Gremlin distinguishes filters from maps, and so do we.
+
+A spatial predicate whose input is not a geometry, has a different model or SRID from the argument, or is an `OTHER` value simply evaluates to false. This is the Comparability rule that "any such incomputable comparison is defined to be `FALSE`". It matters because a property's values are often mixed across elements: some `CARTESIAN`, some `GEOGRAPHIC`, some not geometries at all. A query such as `has('loc', geoIntersects(g))` should simply match the compatible ones. The exception is an invalid _constant_ argument, such as an `OTHER` geometry. That is wrong for every traverser, so it raises an Argument Error when the predicate is constructed rather than silently matching nothing. When the argument is a traversal, that check can only happen per traverser, and the predicate falls back to false.
+
+Map steps behave like the existing string steps. A non-geometry input, mismatched models between input and argument, an `OTHER` input, or a conversion that can't be performed (such as `asGeography()` on out-of-range coordinates or an `OTHER` value) raises an Argument Error, and `null` passes through. `distance` also raises an Argument Error when either geometry is empty, since no distance exists. PostGIS returns NULL here, but Gremlin map steps have no convention for producing a null from a non-null input. A map step raises an error rather than filtering because users can filter beforehand: `has(k, typeOf(GType.POLYGON))` guarantees the shape, and `has(k, typeOf(GType.GEOGRAPHIC))` guarantees the model. This way a map step is never silently lossy. Gremlin's notion of an "unproductive" traversal doesn't come into it, since that concerns a _missing_ value, not a wrong one.
+
+=== Making spatial queries fast
+
+Spatial queries are accelerated in two ways. The first is a data index. An index cannot make a single predicate evaluation faster, since testing one geometry is one computation; what it saves is producing traversers that would have been discarded. So it helps only where elements are produced, which in TinkerPop terms means a `has()` folded into a provider's `GraphStep` or `VertexStep`. Providers recognise a `HasContainer` whose predicate is a `Geo` value exactly as they recognise `Compare.eq`, serve candidates from their own spatial index and re-check them with the predicate. `geoIntersectsBox` needs no re-check, because the index's own box test _is_ the predicate, and where the key is not indexed the `has()` runs as an ordinary filter. A core optimization strategy rewrites the equivalent `where()` and `filter()` forms into that canonical `has()`, and names `order().by(values(k).distance(g)).limit(n)` as the canonical nearest-neighbour pattern so that a provider can replace it with an index-backed search.
+
+The second is argument preparation, which needs no provider at all: a predicate with a constant argument can prepare that geometry once and reuse it across traversers, which also covers the streams an index cannot reach, such as values from `inject()` filtered against a constant shape.
+
+TinkerGraph ships a reference geo index, to prove the provider path rather than for performance: geometry values on an indexed key go into a per-key spatial index, and `TinkerGraphStep` serves `Geo` ``HasContainer``s from it with bounding-box candidates followed by an exact check.
+
+=== Serialization
+
+==== GLV compatibility
+
+Each GLV exposes its own idiomatic, TinkerPop-owned representation of the same hierarchy as Java, including the abstract geometry levels and seven concrete types. These representations are deliberately thin: they preserve the model, SRID, coordinates, rings and component geometries and exact structural equality, but do not reproduce Gremlin's ordering, comparability or spatial operations locally. Gremlin traversals that are run on the server should be used to handle those operations. Applications that need local spatial computation can hand the value to an ecosystem library through its standard WKT or WKB representation (e.g. Shapely in Python) without making that library a driver dependency.
+
+The thin representations in the drivers are wrappers around information they get back from GraphBinary. gremlin-python is designed first, because it settles the questions every language faces: an ecosystem library against a TinkerPop-owned type, the dependency policy, the translator and the wire format. The other GLVs follow the same template.
+
+==== GraphBinary
+
+Geometry gets its own GraphBinary type. The proposed type code is `0x31`. The value layout is the SRID as an `Int`, followed by the geometry as ISO WKB, with no byte-length prefix: `++{++type++_++code}++{++value++_++flag}++{++srid}++{++wkb}`. An empty point is written with NaN coordinates, following the WKB convention.
+
+[source]
+----
+31                             Geometry type code
+00                             non-null value
+00 00 10 e6                    SRID 4326 (GEOGRAPHIC)
+00                             WKB big-endian
+00 00 00 01                    WKB Point
+c0 5e 95 41 20 5b c0 1a        longitude: -122.3321
+40 47 cd 97 f6 2b 6a e8        latitude:   47.6062
+----
+
+WKB rather than WKT, because WKB carries doubles as raw IEEE 754 values and so round-trips exactly. WKT round-trips only if every writer produces the shortest exact decimal form. WKB is also compact, and every relevant library reads it: JTS, Shapely and PostGIS. The SRID travels as its own field rather than through PostGIS's non-standard EWKB, because ISO WKB plus an integer says the same thing in standard terms. The length prefix is unnecessary because WKB already describes its own extent. Each geometry's header gives its byte order and type, and the type fixes the size of each point. Counts of points, rings and parts follow, so a reader always knows where the value ends. That is also how GraphBinary's own composites (List, Map, Path) are delimited, and since GraphBinary has no general mechanism for skipping an unknown type, a length would buy nothing. A dedicated type, rather than a provider-defined type, means every GLV decodes geometries without registering anything.
+
+Requests and responses carry geometries differently. gremlin-python sends traversals as gremlin-lang scripts, so a geometry used as an argument travels as a `Geometry("++<++WKT++>++", srid)` literal. Results, and any parameters encoded in GraphBinary, carry WKB.
+
+==== GraphSON
+
+GraphSON writes the text and the model as two fields.
+
+[source,json]
+----
+"loc": { "@type": "g:Geometry",
+         "@value": { "wkt": "POINT (-97.6698989868164 30.1944999694824)",
+                     "model": "GEOGRAPHIC" } }
+----
+
+=== What providers need to do
+
+The required work is minimal. A provider stores geometry property values in whatever representation suits it, with SRID plus WKB being the natural choice, and returns them as TinkerPop `Geometry` values. Predicates, steps, ordering and equality all have implementations in core, so a provider that does nothing more gets complete, working geo support: its planar results are identical to every other provider's, and its geodetic results are core's default approximation.
+
+Everything else is optional. A provider that wants speed folds ``HasContainer``s carrying `Geo` predicates, along with `P.typeOf` on the geometry and model ``GType``s, into its `GraphStep` or `VertexStep`, as described above. A provider that wants its own geodetic calculations needs no new API either: it replaces steps through its own strategies and converts `GeoP` into its own predicates, as it already does for `P` and `TextP`. Core's part of the bargain is that `GeoP` is backed by a recognizable `Geo` enum whose arguments are accessible, and that the geo steps are not `final`.
+
+Substituting `GEOGRAPHIC` calculations carries two obligations. The provider must meet the accuracy bar and document its model, and it must cover every place a geo predicate or step can appear, since converting `GeoP` inside `has()` but not inside `is()` or `where()` would mix its math with core's default in one query. `CARTESIAN` can be overridden the same way, but its results must stay identical to core's.
+
+The one trap is the index-then-re-check pattern. If a provider's index uses a different geodetic model from the one its re-check uses, the index must return a *superset* of the true answer: false positives are removed by the re-check, but a match the index model excludes is never returned, and no re-check can recover it. The simplest course is to use the same model for both.
