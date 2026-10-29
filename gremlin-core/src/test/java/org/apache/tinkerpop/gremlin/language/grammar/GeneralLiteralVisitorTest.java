@@ -80,6 +80,12 @@ public class GeneralLiteralVisitorTest {
                     {1, 1000000},
                     {1, 1},
                     {1000000, 1},
+                    // endpoint cases where an inclusive int loop would wrap around past the endpoint
+                    {Integer.MAX_VALUE, Integer.MAX_VALUE},
+                    {Integer.MIN_VALUE, Integer.MIN_VALUE},
+                    {Integer.MAX_VALUE - 1, Integer.MAX_VALUE},
+                    {Integer.MIN_VALUE, Integer.MIN_VALUE + 1},
+                    {Integer.MIN_VALUE + 1, Integer.MIN_VALUE},
             });
         }
 
@@ -119,6 +125,10 @@ public class GeneralLiteralVisitorTest {
             return Arrays.asList(new Object[][]{
                     {0, 10000000},
                     {10000000, 1},
+                    // widths that overflow signed int arithmetic and used to slip past the guard:
+                    // Math.abs(start - end) == Integer.MIN_VALUE (stays negative), and start - end overflow
+                    {-1073741824, 1073741824},
+                    {Integer.MIN_VALUE, Integer.MAX_VALUE},
             });
         }
 
@@ -127,7 +137,7 @@ public class GeneralLiteralVisitorTest {
          */
         @Test(expected = IllegalArgumentException.class)
         public void shouldNotParse() {
-            assertThat(Math.abs(end - start), greaterThanOrEqualTo(GenericLiteralVisitor.TOTAL_INTEGER_RANGE_RESULT_COUNT_LIMIT));
+            assertThat(Math.abs((long) start - (long) end), greaterThanOrEqualTo((long) GenericLiteralVisitor.TOTAL_INTEGER_RANGE_RESULT_COUNT_LIMIT));
             parseGenericLiteralRange(String.format("%d..%d", start, end));
         }
     }

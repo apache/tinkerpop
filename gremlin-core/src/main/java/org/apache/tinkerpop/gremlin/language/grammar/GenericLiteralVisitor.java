@@ -189,28 +189,22 @@ public class GenericLiteralVisitor extends DefaultGremlinBaseVisitor<Object> {
      * @return : return an object which is type of array of object, and each object is a Integer inside the range.
      */
     private static Object createIntegerRange(final int start, final int end, final String range) {
-        final List<Object> results = new ArrayList<>();
-        int total_result_count = Math.abs(start - end);
+        // Compute the gap between endpoints in long arithmetic so the limit check cannot be bypassed by
+        // int subtraction overflow (e.g. MIN..MAX) or by Math.abs(Integer.MIN_VALUE) remaining negative.
+        final long total_result_count = Math.abs((long) start - (long) end);
 
         // validate result count not exceeding limit
         if (total_result_count > TOTAL_INTEGER_RANGE_RESULT_COUNT_LIMIT) {
             throw new IllegalArgumentException("Range " + range + " is too wide. Current limit is " + TOTAL_INTEGER_RANGE_RESULT_COUNT_LIMIT + " items");
         }
 
-        if (start <= end) {
-            // handle start <= end
-            int cur = start;
-            while (cur <= end) {
-                results.add(cur);
-                cur++;
-            }
-        } else {
-            // handle start > end
-            int cur = start;
-            while (cur >= end) {
-                results.add(cur);
-                cur--;
-            }
+        final List<Object> results = new ArrayList<>((int) total_result_count+1);
+
+        final int step = (start <= end) ? 1 : -1;
+        int cur = start;
+        for (int i = 0; i <= total_result_count; i++) {
+            results.add(cur);
+            cur += step;
         }
 
         return results;
