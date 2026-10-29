@@ -231,8 +231,12 @@ final class TinkerElementContainer<T extends TinkerElement> {
             element = null;
             isDeleted = true;
         } else if (isModifiedInTx.get()){
-            element = transactionUpdatedValue.get();
-            element.currentVersion = txVersion;
+            // the draft is an object the transaction handed out, so the caller may still hold it after commit.
+            // commit a copy, so that writes through that reference in a later transaction go to a draft and
+            // not to committed state.
+            final T draft = transactionUpdatedValue.get();
+            draft.currentVersion = txVersion;
+            element = (T) draft.clone();
         }
         reset();
     }

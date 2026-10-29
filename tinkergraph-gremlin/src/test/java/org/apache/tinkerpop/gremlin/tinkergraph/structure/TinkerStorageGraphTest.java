@@ -2709,6 +2709,133 @@ public class TinkerStorageGraphTest {
         assertEquals(0, (long) gtx.E().has(PROPERTY_NAME, "link").count().next());
     }
 
+    @Test
+    public void shouldNotChangeCommittedVertexOnRollbackOfWriteThroughIndexedLookup() {
+        final TinkerStorageGraph g = TinkerStorageGraph.open();
+        g.createIndex(PROPERTY_NAME, Vertex.class);
+        final GraphTraversalSource gtx = g.tx().begin();
+        final Object id = gtx.addV().property(PROPERTY_NAME, "a").property(PROPERTY_WEIGHT, 1).id().next();
+        gtx.tx().commit();
+
+        gtx.V().has(PROPERTY_NAME, "a").property(PROPERTY_WEIGHT, 2).iterate();
+        gtx.tx().rollback();
+
+        assertEquals(1, (int) g.getVertices().get(id).getUnmodified().<Integer>value(PROPERTY_WEIGHT));
+        assertEquals(1, (int) gtx.V(id).values(PROPERTY_WEIGHT).next());
+    }
+
+    @Test
+    public void shouldNotShowUncommittedWriteThroughIndexedLookupToOtherTransactions() throws InterruptedException {
+        final TinkerStorageGraph g = TinkerStorageGraph.open();
+        g.createIndex(PROPERTY_NAME, Vertex.class);
+        final GraphTraversalSource gtx = g.tx().begin();
+        final Object id = gtx.addV().property(PROPERTY_NAME, "a").property(PROPERTY_WEIGHT, 1).id().next();
+        gtx.tx().commit();
+
+        gtx.V().has(PROPERTY_NAME, "a").property(PROPERTY_WEIGHT, 2).iterate();
+
+        final AtomicReference<Object> seen = new AtomicReference<>();
+        final Thread thread = new Thread(() -> seen.set(g.traversal().V(id).values(PROPERTY_WEIGHT).next()));
+        thread.start();
+        thread.join();
+        assertEquals(1, seen.get());
+
+        gtx.tx().commit();
+        assertEquals(2, (int) g.getVertices().get(id).getUnmodified().<Integer>value(PROPERTY_WEIGHT));
+    }
+
+    @Test
+    public void shouldNotChangeCommittedEdgeOnRollbackOfWriteThroughIndexedLookup() {
+        final TinkerStorageGraph g = TinkerStorageGraph.open();
+        g.createIndex(PROPERTY_NAME, Edge.class);
+        final GraphTraversalSource gtx = g.tx().begin();
+        final Object id = gtx.addV().addE(EDGE_LABEL).to(__.addV()).
+                property(PROPERTY_NAME, "link").property(PROPERTY_WEIGHT, 1).id().next();
+        gtx.tx().commit();
+
+        gtx.E().has(PROPERTY_NAME, "link").property(PROPERTY_WEIGHT, 2).iterate();
+        gtx.tx().rollback();
+
+        assertEquals(1, (int) g.getEdges().get(id).getUnmodified().<Integer>value(PROPERTY_WEIGHT));
+        assertEquals(1, (int) gtx.E(id).values(PROPERTY_WEIGHT).next());
+    }
+
+    @Test
+    public void shouldNotChangeCommittedVertexOnRollbackOfWriteThroughReferenceKeptAcrossCommit() {
+        final TinkerStorageGraph g = TinkerStorageGraph.open();
+        final GraphTraversalSource gtx = g.tx().begin();
+        final Vertex v = gtx.addV().property(PROPERTY_WEIGHT, 1).next();
+        gtx.tx().commit();
+
+        v.property(PROPERTY_WEIGHT, 2);
+        gtx.tx().rollback();
+
+        assertEquals(1, (int) g.getVertices().get(v.id()).getUnmodified().<Integer>value(PROPERTY_WEIGHT));
+        assertEquals(1, (int) gtx.V(v.id()).values(PROPERTY_WEIGHT).next());
+    }
+
+    @Test
+    public void shouldNotChangeCommittedEdgeOnRollbackOfWriteThroughReferenceKeptAcrossCommit() {
+        final TinkerStorageGraph g = TinkerStorageGraph.open();
+        final GraphTraversalSource gtx = g.tx().begin();
+        final Edge e = gtx.addV().addE(EDGE_LABEL).to(__.addV()).property(PROPERTY_WEIGHT, 1).next();
+        gtx.tx().commit();
+
+        e.property(PROPERTY_WEIGHT, 2);
+        gtx.tx().rollback();
+
+        assertEquals(1, (int) g.getEdges().get(e.id()).getUnmodified().<Integer>value(PROPERTY_WEIGHT));
+        assertEquals(1, (int) gtx.E(e.id()).values(PROPERTY_WEIGHT).next());
+    }
+
+    @Test
+    public void shouldCommitWriteThroughReferenceKeptAcrossCommit() {
+        final TinkerStorageGraph g = TinkerStorageGraph.open();
+        final GraphTraversalSource gtx = g.tx().begin();
+        final Vertex v = gtx.addV().property(PROPERTY_WEIGHT, 1).next();
+        gtx.tx().commit();
+
+        v.property(PROPERTY_WEIGHT, 2);
+        gtx.tx().commit();
+
+        assertEquals(2, (int) g.getVertices().get(v.id()).getUnmodified().<Integer>value(PROPERTY_WEIGHT));
+        assertEquals(2, (int) gtx.V(v.id()).values(PROPERTY_WEIGHT).next());
+    }
+
+    @Test
+    public void shouldNotAllowWriteThroughReferenceKeptAcrossCommitToRemovedVertex() {
+        final TinkerStorageGraph g = TinkerStorageGraph.open();
+        final GraphTraversalSource gtx = g.tx().begin();
+        final Vertex v = gtx.addV().property(PROPERTY_WEIGHT, 1).next();
+        gtx.tx().commit();
+        gtx.V(v.id()).drop().iterate();
+        gtx.tx().commit();
+
+        try {
+            v.property(PROPERTY_WEIGHT, 2);
+            fail("Should not allow a write to a removed vertex");
+        } catch (IllegalStateException ex) {
+            assertEquals(String.format("Vertex with id %s was removed.", v.id()), ex.getMessage());
+        }
+    }
+
+    @Test
+    public void shouldNotAllowWriteThroughReferenceKeptAcrossCommitToRemovedEdge() {
+        final TinkerStorageGraph g = TinkerStorageGraph.open();
+        final GraphTraversalSource gtx = g.tx().begin();
+        final Edge e = gtx.addV().addE(EDGE_LABEL).to(__.addV()).next();
+        gtx.tx().commit();
+        gtx.E(e.id()).drop().iterate();
+        gtx.tx().commit();
+
+        try {
+            e.property(PROPERTY_WEIGHT, 2);
+            fail("Should not allow a write to a removed edge");
+        } catch (IllegalStateException ex) {
+            assertEquals(String.format("Edge with id %s was removed.", e.id()), ex.getMessage());
+        }
+    }
+
     private void verifyCommittedSingleVertex(final TinkerStorageGraph g) {
         verifyCommittedSingleVertex(g, null);
     }
