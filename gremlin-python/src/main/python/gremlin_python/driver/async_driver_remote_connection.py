@@ -188,8 +188,7 @@ class AsyncDriverRemoteConnection(RemoteConnection):
         rarely needs to call this directly.
         """
         from gremlin_python.driver.async_graph_traversal import AsyncRemoteTraversal
-        options = self._extract_request_options(bytecode)
-        result_set = await self._async_client.submit(bytecode, request_options=options)
+        result_set = await self.submit_stream(bytecode)
         return AsyncRemoteTraversal(result_set)
 
     # ------------------------------------------------------------------
@@ -212,10 +211,11 @@ class AsyncDriverRemoteConnection(RemoteConnection):
             Optional dict of request options.  When *None*, options are
             extracted from any OptionsStrategy attached to the traversal.
         """
-        remote_traversal = await self.submit(
-            getattr(traversal_or_bytecode, "bytecode", traversal_or_bytecode)
+        from gremlin_python.driver.async_graph_traversal import AsyncRemoteTraversal
+        result_set = await self.submit_stream(
+            traversal_or_bytecode, request_options=request_options
         )
-        return await remote_traversal.to_list()
+        return await AsyncRemoteTraversal(result_set).to_list()
 
     async def submit_stream(self, traversal_or_bytecode, request_options=None):
         """Execute a traversal and return an AsyncResultSet.
@@ -234,10 +234,24 @@ class AsyncDriverRemoteConnection(RemoteConnection):
 
     async def close(self):
         """Close all spawned session connections and the underlying client."""
-        for session in self.__spawned_sessions:
-            await session.close()
-        self.__spawned_sessions.clear()
-        await asyncio.shield(self._async_client.close())
+        await asyncio.shield(self._close())
+
+    async def _close(self):
+        errors = []
+        for session in tuple(self.__spawned_sessions):
+            try:
+                await session.close()
+            except BaseException as exc:
+                errors.append(exc)
+            finally:
+                if session in self.__spawned_sessions:
+                    self.__spawned_sessions.remove(session)
+        try:
+            await self._async_client.close()
+        except BaseException as exc:
+            errors.append(exc)
+        if errors:
+            raise errors[0]
 
     async def __aenter__(self):
         return self
@@ -291,9 +305,11 @@ class AsyncDriverRemoteConnection(RemoteConnection):
 
     async def remove_session(self, session_based_connection):
         """Close and untrack a previously spawned session connection."""
-        await session_based_connection.close()
-        if session_based_connection in self.__spawned_sessions:
-            self.__spawned_sessions.remove(session_based_connection)
+        try:
+            await session_based_connection.close()
+        finally:
+            if session_based_connection in self.__spawned_sessions:
+                self.__spawned_sessions.remove(session_based_connection)
 
     # ------------------------------------------------------------------
     # Transactions

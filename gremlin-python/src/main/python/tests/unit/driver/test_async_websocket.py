@@ -546,6 +546,7 @@ class TestAsyncConnection(_AsyncioTestCase):
         protocol.write.assert_awaited_once()
         self.assertEqual(pool.qsize(), 1)
         self.assertFalse(conn._inited)
+        self.assertEqual(conn._results, {})
 
     async def test_receive_non_206_returns_conn_to_pool(self):
         conn, transport, protocol, pool = self._make_conn()
@@ -575,6 +576,7 @@ class TestAsyncConnection(_AsyncioTestCase):
         conn._inited = True
 
         rs = AsyncResultSet(asyncio.Queue(), "req-1")
+        conn._results["req-1"] = rs
         transport.read = AsyncMock(side_effect=RuntimeError("boom"))
 
         with self.assertRaises(RuntimeError):
@@ -582,6 +584,121 @@ class TestAsyncConnection(_AsyncioTestCase):
 
         self.assertEqual(pool.qsize(), 1)
         self.assertFalse(conn._inited)
+        self.assertEqual(conn._results, {})
+
+    async def test_invalid_request_id_returns_connection_to_pool(self):
+        conn, _, _, pool = self._make_conn()
+        conn._inited = True
+        msg = MagicMock(args={"requestId": "not-a-uuid"})
+
+        with self.assertRaises(ValueError):
+            await conn.write(msg)
+
+        self.assertIs(pool.get_nowait(), conn)
+        self.assertTrue(pool.empty())
+        self.assertEqual(conn._results, {})
+
+    async def test_cancelled_write_clears_pending_results(self):
+        conn, _, protocol, pool = self._make_conn()
+        conn._inited = True
+        protocol.write.side_effect = asyncio.CancelledError()
+
+        with self.assertRaises(asyncio.CancelledError):
+            await conn.write(MagicMock(args={}))
+
+        self.assertIs(pool.get_nowait(), conn)
+        self.assertTrue(pool.empty())
+        self.assertFalse(conn._inited)
+        self.assertEqual(conn._results, {})
+
+    async def test_cancelled_first_read_clears_pending_results(self):
+        conn, transport, _, pool = self._make_conn()
+        conn._inited = True
+        transport.read.side_effect = asyncio.CancelledError()
+
+        with self.assertRaises(asyncio.CancelledError):
+            await conn.write(MagicMock(args={}))
+
+        self.assertIs(pool.get_nowait(), conn)
+        self.assertTrue(pool.empty())
+        self.assertFalse(conn._inited)
+        self.assertEqual(conn._results, {})
+
+    async def test_cancel_receive_before_start_returns_connection_once(self):
+        conn, _, protocol, pool = self._make_conn()
+        conn._inited = True
+        protocol.data_received.return_value = 206
+        rs = await conn.write(MagicMock(args={}))
+
+        # No yield between creating the receive task and cancelling it.
+        rs.future.cancel()
+        with self.assertRaises(asyncio.CancelledError):
+            await rs.future
+
+        self.assertIs(pool.get_nowait(), conn)
+        self.assertTrue(pool.empty())
+        self.assertFalse(conn._inited)
+        self.assertEqual(conn._results, {})
+
+    async def test_cancel_running_receive_reconnects_before_next_request(self):
+        conn, transport, protocol, pool = self._make_conn()
+        conn._inited = True
+        protocol.data_received.return_value = 206
+        rs = await conn.write(MagicMock(args={}))
+        reading = asyncio.Event()
+
+        async def pending_read():
+            reading.set()
+            await asyncio.Event().wait()
+
+        transport.read.side_effect = pending_read
+        await asyncio.wait_for(reading.wait(), 1)
+        rs.future.cancel()
+        with self.assertRaises(asyncio.CancelledError):
+            await rs.future
+
+        self.assertFalse(conn._inited)
+        self.assertEqual(conn._results, {})
+        self.assertIs(pool.get_nowait(), conn)
+        self.assertTrue(pool.empty())
+
+        transport.read.side_effect = None
+        protocol.data_received.return_value = 200
+        await conn.write(MagicMock(args={}))
+        transport.connect.assert_awaited_once()
+        self.assertIs(pool.get_nowait(), conn)
+        self.assertTrue(pool.empty())
+        await conn.close()
+
+    async def test_stream_read_failure_discards_buffered_results(self):
+        conn, transport, protocol, pool = self._make_conn()
+        conn._inited = True
+
+        async def partial_response(data, results):
+            next(iter(results.values())).stream.put_nowait(["partial result"])
+            return 206
+
+        protocol.data_received.side_effect = partial_response
+        transport.read.side_effect = [b"first chunk", OSError("socket dropped")]
+        rs = await conn.write(MagicMock(args={}))
+        with self.assertRaises(OSError):
+            await rs.future
+
+        self.assertFalse(conn._inited)
+        self.assertEqual(conn._results, {})
+        self.assertIs(pool.get_nowait(), conn)
+        self.assertTrue(pool.empty())
+
+    async def test_successful_stream_returns_connection_once(self):
+        conn, _, protocol, pool = self._make_conn()
+        conn._inited = True
+        protocol.data_received.side_effect = [206, 200]
+        rs = await conn.write(MagicMock(args={}))
+        await rs.future
+
+        self.assertTrue(conn._inited)
+        self.assertIs(pool.get_nowait(), conn)
+        self.assertTrue(pool.empty())
 
 
 # ---------------------------------------------------------------------------
@@ -699,9 +816,9 @@ class TestAsyncClient(_AsyncioTestCase):
         client, _ = self._make_client(pool_size=2)
         mock_conns = []
         while not client._pool.empty():
-            mc = AsyncMock()
+            mc = client._pool.get_nowait()
+            mc.close = AsyncMock()
             mock_conns.append(mc)
-            client._pool.get_nowait()
         for mc in mock_conns:
             client._pool.put_nowait(mc)
 
@@ -710,6 +827,93 @@ class TestAsyncClient(_AsyncioTestCase):
         self.assertTrue(client.is_closed())
         for mc in mock_conns:
             mc.close.assert_awaited_once()
+        self.assertTrue(client._pool.empty())
+
+    async def test_invalid_request_id_does_not_block_next_submission(self):
+        client, _ = self._make_client(pool_size=1, ping_interval=0)
+        with self.assertRaises(ValueError):
+            await client.submit("g.V()", request_options={"requestId": "invalid"})
+
+        conn = client._pool.get_nowait()
+        conn._protocol = AsyncMock()
+        conn._protocol.connection_made = MagicMock()
+        conn._protocol.data_received.return_value = 200
+        client._pool.put_nowait(conn)
+
+        await asyncio.wait_for(client.submit("g.V()"), 1)
+        self.assertEqual(client._pool.qsize(), 1)
+        await client.close()
+
+    async def test_invalid_options_do_not_take_a_pool_slot(self):
+        client, _ = self._make_client(pool_size=1)
+        with self.assertRaises(ValueError):
+            await client.submit("g.V()", request_options=[("invalid",)])
+        self.assertEqual(client._pool.qsize(), 1)
+        await client.close()
+
+    async def test_close_stops_checked_out_stream(self):
+        client, transport = self._make_client(pool_size=1, ping_interval=0)
+        conn = client._pool.get_nowait()
+        conn._inited = True
+        conn._transport = transport
+        conn._protocol = AsyncMock()
+        conn._protocol.data_received.return_value = 206
+        client._pool.put_nowait(conn)
+        rs = await client.submit("g.V()")
+        reading = asyncio.Event()
+
+        async def pending_read():
+            reading.set()
+            await asyncio.Event().wait()
+
+        transport.read.side_effect = pending_read
+        await asyncio.wait_for(reading.wait(), 1)
+        self.assertTrue(client._pool.empty())
+
+        await asyncio.wait_for(client.close(), 1)
+
+        self.assertTrue(client.is_closed())
+        self.assertTrue(rs.future.cancelled())
+        self.assertEqual(conn._results, {})
+        transport.close.assert_awaited_once()
+        self.assertTrue(client._pool.empty())
+
+    async def test_close_continues_after_connection_close_failure(self):
+        client, _ = self._make_client(pool_size=2)
+        first, second = client._connections
+        first.close = AsyncMock(side_effect=OSError("close failed"))
+        second.close = AsyncMock()
+
+        with self.assertRaisesRegex(OSError, "close failed"):
+            await client.close()
+
+        second.close.assert_awaited_once()
+        self.assertTrue(client.is_closed())
+        self.assertTrue(client._pool.empty())
+
+    async def test_cancelled_close_caller_does_not_interrupt_cleanup(self):
+        client, _ = self._make_client(pool_size=1)
+        closing = asyncio.Event()
+        finish_close = asyncio.Event()
+
+        async def pending_close():
+            closing.set()
+            await finish_close.wait()
+
+        conn = client._connections[0]
+        conn.close = AsyncMock(side_effect=pending_close)
+        caller = asyncio.create_task(client.close())
+        await asyncio.wait_for(closing.wait(), 1)
+        with self.assertRaisesRegex(Exception, "Client is closed"):
+            await client.submit("g.V()")
+        caller.cancel()
+        with self.assertRaises(asyncio.CancelledError):
+            await caller
+        finish_close.set()
+        await asyncio.wait_for(client.close(), 1)
+
+        conn.close.assert_awaited_once()
+        self.assertTrue(client._pool.empty())
 
     async def test_close_idempotent(self):
         client, _ = self._make_client()
