@@ -86,9 +86,12 @@ def _patch_submit(rc, values=None):
 
 class TestInit(unittest.TestCase):
     def test_url_and_traversal_source_stored(self):
+        from gremlin_python.driver.remote_connection import RemoteConnection
         rc = AsyncDriverRemoteConnection(URL, TRAVERSAL_SOURCE)
+        self.assertFalse(issubclass(AsyncDriverRemoteConnection, RemoteConnection))
         self.assertEqual(rc.url, URL)
         self.assertEqual(rc.traversal_source, TRAVERSAL_SOURCE)
+        self.assertEqual(repr(rc), f"remoteconnection[{URL},{TRAVERSAL_SOURCE}]")
 
     def test_default_traversal_source(self):
         rc = AsyncDriverRemoteConnection(URL)

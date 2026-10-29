@@ -20,15 +20,16 @@ import asyncio
 import logging
 import uuid
 
+from gremlin_python.driver import useragent
 from gremlin_python.driver.async_resultset import AsyncResultSet
-from gremlin_python.driver.connection import Connection
 
 log = logging.getLogger("gremlinpython")
 
-class AsyncConnection(Connection):
+
+class AsyncConnection:
     """Native-async WebSocket connection with keepalive.
 
-    Features beyond the synchronous Connection:
+    Features:
 
     * Ping keepalive: a background asyncio.Task sends a WebSocket
       ping every *ping_interval* seconds to prevent the server or intermediate
@@ -44,8 +45,6 @@ class AsyncConnection(Connection):
         An AsyncGremlinServerWSProtocol instance.
     transport_factory:
         Zero-argument callable returning an AsyncAiohttpWSTransport.
-    executor:
-        Ignored; present for API compatibility with Connection.
     pool:
         The asyncio.Queue that owns this connection.
     headers:
@@ -57,16 +56,28 @@ class AsyncConnection(Connection):
     """
 
     def __init__(self, url, traversal_source, protocol, transport_factory,
-                 executor, pool, headers=None, enable_user_agent_on_connect=True,
+                 pool, headers=None, enable_user_agent_on_connect=True,
                  ping_interval=60):
-        super().__init__(
-            url, traversal_source, protocol, transport_factory,
-            executor, pool, headers=headers,
-            enable_user_agent_on_connect=enable_user_agent_on_connect,
-        )
+        self._url = url
+        self._headers = headers
+        self._traversal_source = traversal_source
+        self._protocol = protocol
+        self._transport_factory = transport_factory
+        self._transport = None
+        self._pool = pool
+        self._results = {}
+        self._inited = False
+        if enable_user_agent_on_connect:
+            self._add_header(useragent.userAgentHeader, useragent.userAgent)
         self._ping_interval = ping_interval
         self._ping_task = None
         self._receive_task = None
+
+    def _add_header(self, key, value):
+        if self._headers is None:
+            self._headers = dict()
+        if key.lower() not in [k.lower() for k in self._headers.keys()]:
+            self._headers[key] = value
 
     # ------------------------------------------------------------------
     # Lifecycle

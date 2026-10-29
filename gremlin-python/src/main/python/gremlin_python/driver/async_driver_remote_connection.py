@@ -22,14 +22,13 @@ import uuid
 
 from gremlin_python.driver import serializer
 from gremlin_python.driver.async_client import AsyncClient
-from gremlin_python.driver.remote_connection import RemoteConnection
 from gremlin_python.process.strategies import OptionsStrategy
 from gremlin_python.process.traversal import Bytecode
 
 log = logging.getLogger("gremlinpython")
 
 
-class AsyncDriverRemoteConnection(RemoteConnection):
+class AsyncDriverRemoteConnection:
     """Async remote connection backed by AsyncClient.
 
     Primary entry point for the async Gremlin driver.  Works with
@@ -56,8 +55,6 @@ class AsyncDriverRemoteConnection(RemoteConnection):
         Forwarded to AsyncClient.
     pool_size:
         Number of concurrent WebSocket connections (default 8).
-    max_workers:
-        Accepted for configuration parity with DriverRemoteConnection.
     message_serializer:
         Serializer instance (default GraphBinarySerializersV1).
     username, password:
@@ -91,7 +88,6 @@ class AsyncDriverRemoteConnection(RemoteConnection):
         protocol_factory=None,
         transport_factory=None,
         pool_size=None,
-        max_workers=None,
         message_serializer=None,
         username="",
         password="",
@@ -106,11 +102,12 @@ class AsyncDriverRemoteConnection(RemoteConnection):
         query_timeout=None,
         **transport_kwargs,
     ):
-        super().__init__(url, traversal_source)
+        log.info("Creating AsyncDriverRemoteConnection with url '%s'", str(url))
+        self._url = url
+        self._traversal_source = traversal_source
         self._protocol_factory = protocol_factory
         self._transport_factory = transport_factory
         self._pool_size = pool_size
-        self._max_workers = max_workers
         self._username = username
         self._password = password
         self._kerberized_service = kerberized_service
@@ -145,7 +142,6 @@ class AsyncDriverRemoteConnection(RemoteConnection):
             protocol_factory=protocol_factory,
             transport_factory=transport_factory,
             pool_size=pool_size,
-            max_workers=max_workers,
             message_serializer=message_serializer,
             username=username,
             password=password,
@@ -159,28 +155,22 @@ class AsyncDriverRemoteConnection(RemoteConnection):
             **transport_kwargs,
         )
 
-    # ------------------------------------------------------------------
-    # RemoteConnection interface
-    # ------------------------------------------------------------------
+    @property
+    def url(self):
+        return self._url
 
-    def submit(self, bytecode):
-        """Not supported synchronously.
+    @property
+    def traversal_source(self):
+        return self._traversal_source
 
-        submit() is overridden as an async coroutine below.  Python allows an
-        async def to satisfy an abstract def requirement, so this docstring
-        exists only to explain why the sync method is absent.
-        """
-        raise RuntimeError(
-            "AsyncDriverRemoteConnection.submit() must be awaited. "
-            "Call it as 'await connection.submit(bytecode)' or use "
-            "'async_traversal().with_remote(rc)' for the DSL."
-        )
+    def __repr__(self):
+        return "remoteconnection[" + str(self._url) + "," + str(self._traversal_source) + "]"
 
     # ------------------------------------------------------------------
     # Async submit (called by AsyncRemoteStrategy)
     # ------------------------------------------------------------------
 
-    async def submit(self, bytecode):  # noqa: F811 — intentional async override
+    async def submit(self, bytecode):
         """Execute *bytecode* and return an AsyncRemoteTraversal.
 
         Called automatically by AsyncRemoteStrategy when a terminal step
@@ -285,7 +275,6 @@ class AsyncDriverRemoteConnection(RemoteConnection):
             protocol_factory=self._protocol_factory,
             transport_factory=self._transport_factory,
             pool_size=1,
-            max_workers=self._max_workers,
             message_serializer=self._message_serializer,
             username=self._username,
             password=self._password,

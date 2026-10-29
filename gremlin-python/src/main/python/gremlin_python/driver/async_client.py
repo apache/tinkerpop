@@ -19,22 +19,20 @@
 import asyncio
 import logging
 
-from gremlin_python.driver import protocol, request, serializer
+from gremlin_python.driver import request, serializer
 from gremlin_python.driver.async_connection import AsyncConnection
 from gremlin_python.driver.async_protocol import AsyncGremlinServerWSProtocol
 from gremlin_python.driver.aiohttp.async_transport import AsyncAiohttpWSTransport
-from gremlin_python.driver.client import Client
 from gremlin_python.process import traversal
 
 log = logging.getLogger("gremlinpython")
 
 
-class AsyncClient(Client):
+class AsyncClient:
     """Native-async Gremlin client using WebSocket transport.
 
-    Unlike Client, no ThreadPoolExecutor is created.  The connection pool is
-    an asyncio.Queue and all submit/close methods are coroutines that must
-    be awaited.
+    The connection pool is an asyncio.Queue and all submit/close methods are
+    coroutines that must be awaited.
 
     Features:
 
@@ -94,7 +92,6 @@ class AsyncClient(Client):
         protocol_factory=None,
         transport_factory=None,
         pool_size=None,
-        max_workers=None,  # accepted but unused — no thread pool
         message_serializer=None,
         username="",
         password="",
@@ -109,8 +106,6 @@ class AsyncClient(Client):
     ):
         log.info("Creating AsyncClient with url '%s'", url)
 
-        # Do NOT call super().__init__() — Client.__init__ creates a
-        # ThreadPoolExecutor and a threading queue, neither of which we want.
         self._closed = False
         self._close_task = None
         self._url = url
@@ -118,7 +113,6 @@ class AsyncClient(Client):
         self._enable_user_agent_on_connect = enable_user_agent_on_connect
         self._enable_compression = enable_compression
         self._traversal_source = traversal_source
-        self._executor = None  # no thread pool; attribute expected by Client
         self._ping_interval = ping_interval
         self._default_request_options = default_request_options or {}
 
@@ -167,9 +161,25 @@ class AsyncClient(Client):
         self._connections = []
         self._fill_pool()
 
+    @property
+    def available_pool_size(self):
+        return self._pool.qsize()
+
+    @property
+    def traversal_source(self):
+        return self._traversal_source
+
+    def is_closed(self):
+        return self._closed
+
     # ------------------------------------------------------------------
     # Internal helpers
     # ------------------------------------------------------------------
+
+    def _fill_pool(self):
+        for _ in range(self._pool_size):
+            conn = self._get_connection()
+            self._pool.put_nowait(conn)
 
     def _get_connection(self):
         proto = self._protocol_factory()
@@ -178,7 +188,6 @@ class AsyncClient(Client):
             self._traversal_source,
             proto,
             self._transport_factory,
-            None,
             self._pool,
             headers=self._headers,
             enable_user_agent_on_connect=self._enable_user_agent_on_connect,
