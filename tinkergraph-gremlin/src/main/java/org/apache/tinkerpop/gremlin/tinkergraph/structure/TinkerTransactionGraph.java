@@ -183,28 +183,36 @@ public final class TinkerTransactionGraph extends AbstractTinkerGraph {
 
     @Override
     public void touch(final TinkerVertex vertex) {
-        // already removed, so skip
-        if (null == vertex || !vertices.containsKey(vertex.id())) return;
+        if (null == vertex) return;
 
         final TinkerElementContainer<TinkerVertex> container = vertices.get(vertex.id());
 
-        if (null != container) {
-            this.tx().readWrite();
-            container.touch(vertex, (TinkerTransaction) tx());
+        // already removed, so skip. the caller may hold a copy the removal never flagged, such as a reference kept
+        // across the commit that made it, so flag it here for the caller's own removed check to reject the write.
+        if (null == container) {
+            vertex.removed = true;
+            return;
         }
+
+        this.tx().readWrite();
+        container.touch(vertex, (TinkerTransaction) tx());
     }
 
     @Override
     public void touch(final TinkerEdge edge) {
-        // already removed, so skip
-        if (null == edge || !edges.containsKey(edge.id())) return;
+        if (null == edge) return;
 
         final TinkerElementContainer<TinkerEdge> container = edges.get(edge.id());
 
-        if (null != container) {
-            this.tx().readWrite();
-            container.touch(edge, (TinkerTransaction) tx());
+        // already removed, so skip. the caller may hold a copy the removal never flagged, such as a reference kept
+        // across the commit that made it, so flag it here for the caller's own removed check to reject the write.
+        if (null == container) {
+            edge.removed = true;
+            return;
         }
+
+        this.tx().readWrite();
+        container.touch(edge, (TinkerTransaction) tx());
     }
 
     @Override
