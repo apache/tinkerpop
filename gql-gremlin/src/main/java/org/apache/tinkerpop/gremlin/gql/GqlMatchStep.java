@@ -23,14 +23,11 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.DeclarativeMatchStep;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.util.FastNoSuchElementException;
-import org.apache.tinkerpop.gremlin.structure.Edge;
-import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
@@ -205,25 +202,20 @@ public final class GqlMatchStep<S> extends DeclarativeMatchStep<S> {
     @SuppressWarnings({"unchecked", "rawtypes"})
     private void bindRow(final GqlRow row, final GqlMatchPlan plan,
                          final Traverser.Admin traverser) {
-        // Surface both binding channels the executor produces:
-        //   - row.scalars[i]    : a single graph Element for a scalar variable, or null.
-        //   - row.groups.get(i) : the ordered List<Edge> for a group edge variable.
-        // A given variable index is EITHER a scalar or a group for one match, never both. Every
-        // bound named variable is written to two channels that select() can read, using the SAME
+        if (row.size() != plan.getVariableCount())
+            throw new IllegalStateException(executor.getClass().getName() + " returned a GqlRow of size " +
+                    row.size() + " for a plan with " + plan.getVariableCount() + " variables");
+        // A variable index holds either a scalar Element or a group List<Edge>, never both. Every
+        // bound named variable is written to the two channels select() can read, using the same
         // value instance so they always agree: the emitted binding Map (the traverser's final
-        // current object) and the traverser path label of that name. A group edge variable
-        // resolves to the whole List<Edge> from row.groups in both channels; a scalar variable
-        // resolves to a single Element from row.scalars.
-        final Element[] scalars = row.scalars;
-        final Map<Integer, List<Edge>> groups = row.groups;
+        // current object) and the traverser path label of that name.
         final String[] variables = plan.getVariables();
         final Map<String, Object> bindings = new LinkedHashMap<>();
         for (int i = 0; i < variables.length; i++) {
             final String var = variables[i];
             if (var.startsWith(GqlMatchPlan.ANON_VAR_PREFIX))
                 continue;
-            // Group list takes precedence for its index; otherwise fall back to the scalar slot.
-            final Object value = groups.containsKey(i) ? groups.get(i) : scalars[i];
+            final Object value = row.isGroup(i) ? row.getGroup(i) : row.getScalar(i);
             if (value == null)
                 continue;
             traverser.set(value);

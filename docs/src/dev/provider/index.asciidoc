@@ -795,9 +795,33 @@ public class AcmeGraph implements Graph {
 
 The contract for a `GqlExecutor` implementation is: for each seed vertex matching the plan's seed label and
 predicates, extend through each `ExtensionStep` in an order that keeps every step's anchor variable bound
-before that step executes, and emit one `Element[]` per complete match. Each array's indices must match
-`GqlMatchPlan.getVariables()`, with the seed variable at index 0. See `DefaultGqlExecutor` for a reference
-implementation.
+before that step executes, and emit one `GqlRow` per complete match. Results are returned lazily as an
+`Iterator<GqlRow>`. See `DefaultGqlExecutor` for a reference implementation.
+
+A `GqlRow` is an immutable value addressed by variable index. Each index matches a position in
+`GqlMatchPlan.getVariables()`, with the seed variable at index 0, and `GqlMatchPlan.getIndex(String)` resolves
+a variable name to its index. Each index holds at most one kind of binding. A scalar binding is a single
+`Element`, used for node variables and non-quantified edge variables. A group binding is an ordered
+`List<Edge>`, used for the edge variable of a quantified relationship such as `(a)-[r:knows]->{1,3}(b)`. The
+list holds the edges of the walk in traversal order, and it is a list even when the walk has a single edge. An
+index with neither binding is unbound and is omitted from the traversal result.
+
+An executor builds a row with `GqlRow.of(Element[] scalars, Map<Integer, List<Edge>> groups)`. The `scalars`
+array is sized to `GqlMatchPlan.getVariableCount()` and holds the scalar bindings, with `null` in every slot
+that is unbound or holds a group. The `groups` map holds the group bindings by variable index and is empty for
+a match with no quantified relationships. The factory copies both arguments, so an executor may reuse and
+mutate its own working array and lists after the call. It rejects an index outside the row, an index bound as both
+a scalar and a group, and an empty group list. `GqlRow.getScalar(int)`, `GqlRow.getGroup(int)` and `GqlRow.isGroup(int)`
+read the bindings back. Rows compare by value. The match step rejects a row whose `size()` differs from
+`GqlMatchPlan.getVariableCount()` with an `IllegalStateException`.
+
+[source,java]
+----
+Element[] scalars = new Element[plan.getVariableCount()];
+scalars[plan.getIndex("a")] = startVertex;
+scalars[plan.getIndex("b")] = endVertex;
+GqlRow row = GqlRow.of(scalars, Map.of(plan.getIndex("r"), List.of(firstEdge, secondEdge)));
+----
 
 NOTE: Replacing only the *planner* is rarely worthwhile. Producing a valid `GqlMatchPlan` requires
       constructing `ExtensionStep` objects, assigning variable index maps, and satisfying all other

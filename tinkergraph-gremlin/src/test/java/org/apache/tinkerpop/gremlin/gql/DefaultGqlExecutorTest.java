@@ -37,6 +37,7 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static org.junit.Assert.*;
@@ -73,7 +74,7 @@ public class DefaultGqlExecutorTest {
      * bindings (variable name → graph element), so all existing scalar assertions
      * ({@code row.get("a")}, {@code row.containsKey(...)}) work unchanged. In addition it carries
      * the quantified group edge bindings (variable name → ordered {@code List<Edge>}) surfaced
-     * from {@link GqlRow#groups} via the plan's variable indices.
+     * from {@link GqlRow#getGroup(int)} via the plan's variable indices.
      */
     private static final class Row extends LinkedHashMap<String, Element> {
         final Map<String, List<Edge>> groups = new LinkedHashMap<>();
@@ -91,14 +92,12 @@ public class DefaultGqlExecutorTest {
         final List<Map<String, Element>> rows = new ArrayList<>();
         while (iter.hasNext()) {
             final GqlRow gqlRow = iter.next();
-            final Element[] scalars = gqlRow.scalars;
             final Row map = new Row();
             for (int i = 0; i < variables.length; i++) {
-                if (!variables[i].startsWith("$anon") && scalars[i] != null)
-                    map.put(variables[i], scalars[i]);
-            }
-            for (final Map.Entry<Integer, List<Edge>> e : gqlRow.groups.entrySet()) {
-                map.groups.put(variables[e.getKey()], e.getValue());
+                if (gqlRow.isGroup(i))
+                    map.groups.put(variables[i], gqlRow.getGroup(i));
+                else if (!variables[i].startsWith("$anon") && gqlRow.getScalar(i) != null)
+                    map.put(variables[i], gqlRow.getScalar(i));
             }
             rows.add(map);
         }
@@ -1002,9 +1001,8 @@ public class DefaultGqlExecutorTest {
         executor.execute(plan).forEachRemaining(results::add);
 
         assertEquals("Only the edge with weight=0.5 should match", 1, results.size());
-        final Element[] row = results.get(0).scalars;
         final int eIdx = plan.getIndex("e");
-        assertEquals(lowWeight, row[eIdx]);
+        assertEquals(lowWeight, results.get(0).getScalar(eIdx));
     }
 
     @Test
@@ -1041,7 +1039,7 @@ public class DefaultGqlExecutorTest {
 
         assertEquals(1, results.size());
         final int eIdx = plan.getIndex("e");
-        assertEquals(heavy, results.get(0).scalars[eIdx]);
+        assertEquals(heavy, results.get(0).getScalar(eIdx));
     }
 
     @Test
@@ -1081,7 +1079,7 @@ public class DefaultGqlExecutorTest {
 
         assertEquals("Only the self-loop satisfies the equality constraint on 'a'", 1, results.size());
         final int rIdx = plan.getIndex("r");
-        assertEquals(selfLoop, results.get(0).scalars[rIdx]);
+        assertEquals(selfLoop, results.get(0).getScalar(rIdx));
     }
 
     @Test
@@ -1113,28 +1111,91 @@ public class DefaultGqlExecutorTest {
     }
 
     // -------------------------------------------------------------------------
-    // Lazy delivery: each row is an independent array snapshot
+    // Lazy delivery: each row is an independent snapshot
     // -------------------------------------------------------------------------
 
     @Test
     public void testResultRowsAreIndependentSnapshots() {
-        // Verify that the Element[] arrays returned by the iterator are independent copies —
-        // modifying one does not corrupt another (backtracking correctness).
-        graph.addVertex("Person");
-        graph.addVertex("Person");
-        final GqlMatchPlan plan = planner.plan("MATCH (n:Person)");
+        // Rows are immutable snapshots: producing the next row from the same seed rebinds the
+        // executor's working state, which must not change a row already emitted.
+        final Vertex a = graph.addVertex("Person");
+        final Vertex b1 = graph.addVertex("Person");
+        final Vertex b2 = graph.addVertex("Person");
+        a.addEdge("knows", b1);
+        a.addEdge("knows", b2);
+
+        final GqlMatchPlan plan = planner.plan("MATCH (a:Person)-[e:knows]->(b:Person)");
+        assertEquals("both rows must come from one seed for the test to exercise working-state reuse",
+                "a", plan.getSeedVariable());
+        final int aIdx = plan.getIndex("a");
+        final int eIdx = plan.getIndex("e");
+        final int bIdx = plan.getIndex("b");
         final Iterator<GqlRow> iter = executor.execute(plan);
 
-        final Element[] first = iter.next().scalars;
-        final Element first0 = first[0];
-        // Corrupt the first row's array
-        first[0] = null;
+        final GqlRow first = iter.next();
+        final Element firstA = first.getScalar(aIdx);
+        final Element firstE = first.getScalar(eIdx);
+        final Element firstB = first.getScalar(bIdx);
+        assertSame(a, firstA);
+        assertNotNull(firstE);
+        assertNotNull(firstB);
 
-        // Second row must be unaffected
         assertTrue(iter.hasNext());
-        final Element[] second = iter.next().scalars;
-        assertNotNull(second[0]);
-        assertNotSame(first, second);
+        final GqlRow second = iter.next();
+        assertSame("both rows must come from the same seed", a, second.getScalar(aIdx));
+        assertNotEquals(firstE, second.getScalar(eIdx));
+        assertNotEquals(firstB, second.getScalar(bIdx));
+
+        assertSame(firstA, first.getScalar(aIdx));
+        assertSame(firstE, first.getScalar(eIdx));
+        assertSame(firstB, first.getScalar(bIdx));
+        assertFalse(iter.hasNext());
+    }
+
+    @Test
+    public void testQuantifiedResultRowsAreIndependentSnapshots() {
+        // a -> b -> c with {1,2} yields, from seed a, the one-hop walk [ab] and then the two-hop
+        // walk [ab, bc]. Producing the second row from the same seed rebinds the group and target
+        // of the working state, which must not change the first row's group list or scalars.
+        final Vertex a = graph.addVertex("Person");
+        final Vertex b = graph.addVertex("Person");
+        final Vertex c = graph.addVertex("Person");
+        final Edge ab = a.addEdge("knows", b);
+        final Edge bc = b.addEdge("knows", c);
+
+        final GqlMatchPlan plan = planner.plan("MATCH (s:Person)-[r:knows]->{1,2}(d:Person)");
+        assertEquals("both rows must come from one seed for the test to exercise working-state reuse",
+                "s", plan.getSeedVariable());
+        final int sIdx = plan.getIndex("s");
+        final int rIdx = plan.getIndex("r");
+        final int dIdx = plan.getIndex("d");
+
+        final Iterator<GqlRow> iter = executor.execute(plan);
+        GqlRow first = null;
+        while (iter.hasNext()) {
+            final GqlRow row = iter.next();
+            if (row.getScalar(sIdx) == a) {
+                first = row;
+                break;
+            }
+        }
+        assertNotNull("seed a must produce a row", first);
+        final List<Edge> firstGroup = new ArrayList<>(first.getGroup(rIdx));
+        final Element firstD = first.getScalar(dIdx);
+
+        assertTrue(iter.hasNext());
+        final GqlRow second = iter.next();
+        assertSame("both rows must come from the same seed", a, second.getScalar(sIdx));
+        final List<Edge> secondGroup = second.getGroup(rIdx);
+        assertNotEquals(firstGroup, secondGroup);
+        assertEquals(Set.of(List.of(ab), List.of(ab, bc)), Set.of(firstGroup, secondGroup));
+        assertNotEquals(firstD, second.getScalar(dIdx));
+        assertSame(firstGroup.size() == 1 ? b : c, firstD);
+        assertSame(secondGroup.size() == 1 ? b : c, second.getScalar(dIdx));
+
+        assertEquals(firstGroup, first.getGroup(rIdx));
+        assertSame(firstD, first.getScalar(dIdx));
+        assertSame(a, first.getScalar(sIdx));
     }
 
     // -------------------------------------------------------------------------
