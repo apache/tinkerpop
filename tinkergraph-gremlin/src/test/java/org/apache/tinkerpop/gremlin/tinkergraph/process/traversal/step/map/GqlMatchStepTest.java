@@ -18,7 +18,12 @@
  */
 package org.apache.tinkerpop.gremlin.tinkergraph.process.traversal.step.map;
 
+import org.apache.tinkerpop.gremlin.gql.DefaultGqlPlanner;
+import org.apache.tinkerpop.gremlin.gql.GqlDeclarativeMatchStrategy;
+import org.apache.tinkerpop.gremlin.gql.GqlExecutor;
+import org.apache.tinkerpop.gremlin.gql.GqlMatchPlan;
 import org.apache.tinkerpop.gremlin.gql.GqlMatchStep;
+import org.apache.tinkerpop.gremlin.gql.GqlRow;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
@@ -27,6 +32,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.DeclarativeMatchS
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
@@ -35,12 +41,12 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 import static org.junit.Assert.*;
-import static org.junit.Assert.fail;
 
 /**
  * Unit tests for {@link GqlMatchStep}: path binding, multi-row output,
@@ -53,8 +59,9 @@ public class GqlMatchStepTest {
 
     /**
      * A minimal traversal strategy that replaces every {@link DeclarativeMatchStep} with a
-     * {@link GqlMatchStep}. This is a stand-in for {@link org.apache.tinkerpop.gremlin.gql.GqlDeclarativeMatchStrategy}
-     * so we can test the step in isolation without the shared graph-level cache.
+     * {@link GqlMatchStep} built with the default planner and executor. {@link #setUp()} removes the
+     * {@link GqlDeclarativeMatchStrategy} that TinkerGraph registers by default, so this is the only
+     * strategy that rewrites the match step and the shared graph-level planner cache is not used.
      */
     private static final class InjectMatchStrategy
             extends AbstractTraversalStrategy<TraversalStrategy.ProviderOptimizationStrategy>
@@ -80,7 +87,9 @@ public class GqlMatchStepTest {
     @Before
     public void setUp() {
         graph = TinkerGraph.open();
-        g = graph.traversal().withStrategies(InjectMatchStrategy.instance());
+        g = graph.traversal()
+                .withoutStrategies(GqlDeclarativeMatchStrategy.class)
+                .withStrategies(InjectMatchStrategy.instance());
     }
 
     @After
@@ -495,10 +504,6 @@ public class GqlMatchStepTest {
     // -------------------------------------------------------------------------
 
     /**
-     * Builds an inline person chain s -[knows]-> m -[knows]-> ... over {@code n} vertices,
-     * returning the edges in walk order. Element 0 is the first hop out of {@code s}.
-     */
-    /**
      * Builds an inline person chain head -[knows]-> m1 -[knows]-> ... over {@code hops} edges,
      * returning the edges in walk order (element 0 is the first hop out of the head). The head
      * vertex carries {@code name='head'} so a query can anchor the source and isolate the
@@ -780,6 +785,81 @@ public class GqlMatchStepTest {
             // 'x' is the step label; pattern uses 'a' and 'b' — no overlap, no guard fires
             modern.traversal().V(1).as("x")
                   .match("MATCH (a:person)-[:knows]->(b:person)").toList();
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // Provider-implemented GqlExecutor
+    // -------------------------------------------------------------------------
+
+    /**
+     * A {@link GqlExecutor} written outside the {@code gql} package, as a provider would, that
+     * emits one fixed {@link GqlRow} built with the public factory. The step must surface its
+     * scalar and group bindings by variable name.
+     */
+    @Test
+    public void shouldSurfaceRowsFromProviderImplementedExecutor() {
+        final List<Edge> chain = buildKnowsChain(2);
+        final Vertex head = chain.get(0).outVertex();
+        final Vertex tail = chain.get(1).inVertex();
+        final DefaultGqlPlanner planner = new DefaultGqlPlanner(graph);
+
+        final GqlExecutor providerExecutor = new GqlExecutor() {
+            @Override
+            public Iterator<GqlRow> execute(final GqlMatchPlan p) {
+                return execute(p, Collections.emptyMap());
+            }
+
+            @Override
+            public Iterator<GqlRow> execute(final GqlMatchPlan p, final Map<String, Object> params) {
+                final Element[] scalars = new Element[p.getVariableCount()];
+                scalars[p.getIndex("s")] = head;
+                scalars[p.getIndex("d")] = tail;
+                return Collections.singletonList(
+                        GqlRow.of(scalars, Map.of(p.getIndex("r"), chain))).iterator();
+            }
+        };
+
+        final GraphTraversalSource gp = graph.traversal().withStrategies(
+                GqlDeclarativeMatchStrategy.create(planner, providerExecutor));
+        final List<Map<String, Object>> results = gp.<Integer>inject(1)
+                .match("MATCH (s:person)-[r:knows]->{1,2}(d:person)")
+                .toList();
+
+        assertEquals(1, results.size());
+        assertEquals(head, results.get(0).get("s"));
+        assertEquals(tail, results.get(0).get("d"));
+        assertEquals(chain, asEdgeList(results.get(0).get("r")));
+    }
+
+    /**
+     * A provider executor whose rows do not match the plan's variable count must be reported
+     * rather than silently binding the wrong variables.
+     */
+    @Test
+    public void shouldRejectProviderRowWithWrongSize() {
+        final DefaultGqlPlanner planner = new DefaultGqlPlanner(graph);
+        final GqlExecutor providerExecutor = new GqlExecutor() {
+            @Override
+            public Iterator<GqlRow> execute(final GqlMatchPlan p) {
+                return execute(p, Collections.emptyMap());
+            }
+
+            @Override
+            public Iterator<GqlRow> execute(final GqlMatchPlan p, final Map<String, Object> params) {
+                return Collections.singletonList(
+                        GqlRow.of(new Element[p.getVariableCount() + 1], Collections.emptyMap())).iterator();
+            }
+        };
+
+        final GraphTraversalSource gp = graph.traversal().withStrategies(
+                GqlDeclarativeMatchStrategy.create(planner, providerExecutor));
+        try {
+            gp.<Integer>inject(1).match("MATCH (a:person)-[e:knows]->(b:person)").toList();
+            fail("a row whose size differs from the plan's variable count must be rejected");
+        } catch (IllegalStateException ex) {
+            assertTrue(ex.getMessage(), ex.getMessage().contains(providerExecutor.getClass().getName()));
+            assertTrue(ex.getMessage(), ex.getMessage().contains("size 4"));
         }
     }
 }

@@ -74,10 +74,8 @@ public final class DefaultGqlExecutor implements GqlExecutor {
     }
 
     /**
-     * Returns a lazy {@link Iterator} of result rows. Each {@link GqlRow} carries a scalar
-     * {@code Element[]} ({@code row.scalars}) whose indices correspond to the variable index
-     * defined in the {@link GqlMatchPlan}, plus a side-channel map ({@code row.groups}) from
-     * variable index to the ordered {@code List<Edge>} bound to a quantified group edge variable.
+     * Returns a lazy {@link Iterator} of result rows. Each {@link GqlRow} is keyed by the variable
+     * indices defined in the {@link GqlMatchPlan}; see {@link GqlRow} for the binding contract.
      */
     @Override
     public Iterator<GqlRow> execute(final GqlMatchPlan plan, final Map<String, Object> params) {

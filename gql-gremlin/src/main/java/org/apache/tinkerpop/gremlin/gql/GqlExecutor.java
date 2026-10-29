@@ -38,7 +38,8 @@ import java.util.Map;
  *   <li>For each seed, extend the partial match through the plan's
  *       {@link GqlMatchPlan#getSteps() extension steps} in an order that keeps every step's
  *       anchor variable bound before that step executes.</li>
- *   <li>Emit one {@link GqlRow} per complete match, populated as described on {@link GqlRow}.</li>
+ *   <li>Emit one {@link GqlRow} per complete match, built with {@link GqlRow#of} and populated
+ *       as described on {@link GqlRow}.</li>
  *   <li>Return results lazily rather than materialising the full result set in memory.</li>
  * </ul>
  */

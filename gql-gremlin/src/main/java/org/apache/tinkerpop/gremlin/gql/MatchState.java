@@ -21,7 +21,6 @@ package org.apache.tinkerpop.gremlin.gql;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -66,11 +65,10 @@ final class MatchState {
     }
 
     /**
-     * Returns an immutable {@link GqlRow} snapshot of this state. The scalar array is cloned and
-     * the group side map is copied so later backtracking mutations do not alias the emitted row.
+     * Returns an immutable {@link GqlRow} snapshot of this state. {@link GqlRow#of} copies both
+     * channels, so later backtracking mutations do not alias the emitted row.
      */
     GqlRow snapshot() {
-        return new GqlRow(scalars.clone(),
-                groups.isEmpty() ? Collections.emptyMap() : Map.copyOf(groups));
+        return GqlRow.of(scalars, groups);
     }
 }
