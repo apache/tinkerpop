@@ -352,7 +352,9 @@ run() {
     for b in "${CHAIN[@]}"; do FINAL_SHAS+=("$(git rev-parse "$b")"); done
     save_state
 
-    git checkout -q "$ORIG_BRANCH" 2>/dev/null || true
+    if ! git checkout -q "$ORIG_BRANCH" 2>/dev/null; then
+        warn "Could not switch back to $ORIG_BRANCH, so $(git symbolic-ref -q --short HEAD) is still checked out. Run git checkout $ORIG_BRANCH to see why."
+    fi
     info "Done. What each branch now holds beyond $REMOTE:"
     for b in "${CHAIN[@]}"; do
         echo "  $b: $(git rev-list --count "$REMOTE/$b..$b") commit(s)"
