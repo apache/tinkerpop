@@ -9,7 +9,7 @@ description: >
 license: Apache-2.0
 compatibility: Requires git and Maven, plus the gh CLI to merge a pull request. Each release branch needs the JDK its tinker-dev skill names.
 metadata:
-  version: 1.0.0
+  version: 1.1.0
   project: Apache TinkerPop
 ---
 
@@ -38,7 +38,7 @@ The script works out the chain itself: from the pull request's base branch, from
 branch a feature branch was cut from, or from the named release branch. Pass `--onto <branch>`
 only when the operator states the target or the script says it cannot tell.
 
-## 2. Ask how to test — the only question
+## 2. Ask how to test — the only questions
 
 Ask the operator exactly this, with the default first:
 
@@ -47,9 +47,13 @@ Ask the operator exactly this, with the default first:
 3. Skip all testing → `--test skip`
 4. A command the operator gives → `--test-command '<command>'`
 
+Unless testing is skipped, also ask which branches in the chain to test, all of them by default.
+Pass the ones the operator leaves out as `--skip-test-on <branch>[,<branch>]`: they are merged
+but not tested, as when the operator trusts a build of the oldest branch to cover the rest.
+
 Ask nothing else before starting. Whichever command is chosen runs from the repository root on
-every branch in the chain, after its merge, and a non-zero exit counts as a test failure. Pass
-an operator's command through exactly as given, quoted as one argument.
+every tested branch in the chain, after its merge, and a non-zero exit counts as a test failure.
+Pass an operator's command through exactly as given, quoted as one argument.
 GLV modules are tested only where the clone has activated them (see the `tinker-dev` skill), so
 say so if the operator chose testing and a GLV changed but its `.glv` sentinel is absent.
 
@@ -69,12 +73,14 @@ before starting, and tell the operator which you pinned:
 git config tinker-merge.<branch>.javaHome <path-to-jdk>
 ```
 
-If no suitable JDK is installed, stop and say so. Skip this step when testing is skipped.
+If no suitable JDK is installed, stop and say so. Skip this step for branches that are not
+tested.
 
 ## 4. Run it
 
 ```bash
-.skills/tinker-merge/scripts/merge-forward.sh <source> [--test <mode> | --test-command '<cmd>'] [--onto <branch>]
+.skills/tinker-merge/scripts/merge-forward.sh <source> [--test <mode> | --test-command '<cmd>'] \
+    [--skip-test-on <branch>[,<branch>]] [--onto <branch>]
 ```
 
 A tested run takes a long time, since each branch gets a full build. Run it in the background
@@ -111,8 +117,16 @@ Commit a resolution with git's default merge message (`git commit --no-edit`), t
 
 A failure stops the run. Report the branch, the failing module and the relevant part of the log,
 then wait. Fix nothing unless the operator asks. If they do, commit the fix on the branch that
-failed and run `--continue`, which tests that branch again. Never weaken or skip a test to get
-through.
+failed first. Never weaken or skip a test to get through.
+
+`--continue` tests the failed branch again, as many times as the operator asks:
+
+- **Plain `--continue`** reruns the run's test command in full.
+- **`--continue --test-command '<cmd>'`** runs `<cmd>` instead, once, on that branch only. The
+  usual case is a Maven build resumed from the module that failed, such as
+  `mvn clean install -rf :gremlin-server`, since the modules before it already passed. The next
+  branch goes back to the run's test command. Use it only when the operator gives the command or
+  asks to resume.
 
 ## 5. Hand off
 

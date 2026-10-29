@@ -25,6 +25,10 @@ list, and the push.
   so a direct commit the operator asked to merge forward survives an abort.
 - **Every step can be repeated.** A merge is skipped when it is already an ancestor, and the
   state file records the next branch to test, which is what makes `--continue` work.
+- **The run's test plan is fixed at the start.** The test command and the branches named by
+  `--skip-test-on` are saved with the run. `--continue --test-command` replaces the command for
+  one test of the branch being resumed and is never saved, so the next branch always gets the
+  run's command.
 - **The body runs inside `main`.** The script checks out other branches, which can replace the
   file while it runs. Bash parses `main` in full before executing it.
 
