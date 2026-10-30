@@ -194,10 +194,18 @@ public class GqlGrammarTest {
                 {"MATCH (a)-[:KNOWS]->{2}(b)"},
                 {"MATCH (a)-[:KNOWS]->*(b)"},
                 {"MATCH (a)-[:KNOWS]->+(b)"},
-                // Zero lower bound parses structurally (semantic check deferred downstream)
+                // Zero lower bound parses structurally (QueryGraph rejects it as not yet supported)
                 {"MATCH (a)-[:KNOWS]->{0,3}(b)"},
                 // max < min parses structurally (semantic validation is handled by QueryGraph, not the grammar)
                 {"MATCH (a)-[:KNOWS]->{3,1}(b)"},
+                // Bound text the grammar accepts and QueryGraph validates: exact zero, sign,
+                // out-of-range value and leading zeros
+                {"MATCH (a)-[:KNOWS]->{0}(b)"},
+                {"MATCH (a)-[:KNOWS]->{+1}(b)"},
+                {"MATCH (a)-[:KNOWS]->{99999999999}(b)"},
+                {"MATCH (a)-[:KNOWS]->{01,3}(b)"},
+                {"MATCH (a)<-[:KNOWS]-{+1}(b)"},
+                {"MATCH (a)-[:KNOWS]-{99999999999}(b)"},
 
                 // ── Quantified relationships: reverse directed edges <-[...]-{q} ───────
                 {"MATCH (a)<-[:KNOWS]-{1,3}(b)"},

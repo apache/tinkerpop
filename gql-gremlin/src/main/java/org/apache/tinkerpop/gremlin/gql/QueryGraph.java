@@ -134,8 +134,12 @@ public final class QueryGraph {
         final Map<String, QueryVertex> nodesByVar = new LinkedHashMap<>();
         final List<QueryVertex> nodes = new ArrayList<>();
         final List<QueryEdge> edges = new ArrayList<>();
-        // Track edge variable names to detect node/edge variable name conflicts.
+        // Every edge variable name seen so far. Used to detect node/edge variable name conflicts
+        // and, together with groupEdgeVarNames, to reject reuse of a quantified edge variable.
         final java.util.Set<String> edgeVarNames = new java.util.HashSet<>();
+        // Edge variable names declared on a quantified edge. A group variable binds a list of
+        // edges, so a second occurrence of the same name has no defined join and is rejected.
+        final java.util.Set<String> groupEdgeVarNames = new java.util.HashSet<>();
 
         for (final GQLParser.PathPatternContext patternCtx : ctx.graphPattern().pathPattern()) {
             final List<GQLParser.NodePatternContext> nodeCtxs = patternCtx.nodePattern();
@@ -154,13 +158,20 @@ public final class QueryGraph {
                     if (nodesByVar.containsKey(edgeVar))
                         throw new IllegalArgumentException(
                                 "Variable '" + edgeVar + "' is used as both a node variable and an edge variable");
-                    edgeVarNames.add(edgeVar);
                 }
                 final String edgeLabel = extractEdgeLabel(edgeCtx);
                 final Direction dir = extractDirection(edgeCtx);
                 final List<PropertyPredicate> edgePredicates = extractEdgePredicates(edgeCtx);
 
                 final GQLParser.QuantifierContext quantifierCtx = getQuantifier(edgeCtx);
+                if (edgeVar != null) {
+                    final boolean seenBefore = !edgeVarNames.add(edgeVar);
+                    if (seenBefore && (quantifierCtx != null || groupEdgeVarNames.contains(edgeVar)))
+                        throw new IllegalArgumentException(
+                                "Edge variable '" + edgeVar + "' is declared more than once; "
+                                + "a quantified edge variable cannot be reused");
+                    if (quantifierCtx != null) groupEdgeVarNames.add(edgeVar);
+                }
                 final int[] bounds = extractQuantifier(quantifierCtx);
                 // The edge variable becomes a group variable exactly when the edge is quantified
                 // and carries a (non-null) variable name.
@@ -410,6 +421,8 @@ public final class QueryGraph {
      *   <li>A bound whose token text is not a bare non-negative decimal, such as a leading sign or
      *       a numeric type suffix (both admitted by the INTEGER_LITERAL backing), which is never
      *       valid.</li>
+     *   <li>A bound at or above {@link Integer#MAX_VALUE}, which is reserved as
+     *       {@link QueryEdge#UNBOUNDED}.</li>
      *   <li>A zero lower bound ({@code {0,..}}, {@code {,n}}, {@code *}), which is valid GQL but not
      *       yet supported and rejected with a distinct "not yet supported" message.</li>
      * </ul>
@@ -453,13 +466,13 @@ public final class QueryGraph {
             }
         }
 
-        // (a) never valid: max < min.
+        // Never valid: max < min.
         if (max < min)
             throw new IllegalArgumentException(
                     "invalid quantifier bounds: upper bound (" + renderBound(max)
                     + ") is less than lower bound (" + min + ")");
 
-        // (c) deferred: zero lower bound (min == 0), i.e. *, {0,n}, {,n}. Valid GQL, not yet supported.
+        // Valid GQL but not yet supported: zero lower bound (min == 0), i.e. *, {0,n}, {,n}.
         if (min == 0)
             throw new IllegalArgumentException(
                     "zero-length paths (min bound 0, including * and {0,n}/{,n}) are not yet supported");
@@ -471,7 +484,11 @@ public final class QueryGraph {
      * Parses a single quantifier bound, rejecting anything that is not a bare non-negative decimal.
      * The bound is backed by INTEGER_LITERAL, which also admits a leading sign and a numeric type
      * suffix (e.g. {@code -1}, {@code 3i}); those are never valid as a quantifier bound and are
-     * rejected on the raw token text before {@link Integer#parseInt}.
+     * rejected on the raw token text before {@link Integer#parseInt}. Leading zeros are accepted.
+     *
+     * <p>{@link Integer#MAX_VALUE} is reserved as {@link QueryEdge#UNBOUNDED}, so any bound at or
+     * above it is rejected. The digit string is range-checked before parsing so that values too
+     * large for an {@code int} never reach {@link Integer#parseInt}.
      */
     private static int parseBound(final GQLParser.UnsignedIntegerContext ctx) {
         final String text = ctx.getText();
@@ -479,7 +496,25 @@ public final class QueryGraph {
             throw new IllegalArgumentException(
                     "invalid quantifier bound '" + text
                     + "': bounds must be bare non-negative integers (no sign or type suffix)");
+        if (!fitsBelowUnbounded(text))
+            throw new IllegalArgumentException(
+                    "invalid quantifier bound '" + text
+                    + "': quantifier bound exceeds the maximum supported value ("
+                    + (QueryEdge.UNBOUNDED - 1) + ")");
         return Integer.parseInt(text);
+    }
+
+    /**
+     * Returns whether a string of decimal digits denotes a value strictly less than
+     * {@link QueryEdge#UNBOUNDED}, compared textually so that arbitrarily long input is safe.
+     */
+    private static boolean fitsBelowUnbounded(final String digits) {
+        int start = 0;
+        while (start < digits.length() - 1 && digits.charAt(start) == '0') start++;
+        final String significant = digits.substring(start);
+        final String limit = Integer.toString(QueryEdge.UNBOUNDED);
+        if (significant.length() != limit.length()) return significant.length() < limit.length();
+        return significant.compareTo(limit) < 0;
     }
 
     private static String renderBound(final int bound) {
