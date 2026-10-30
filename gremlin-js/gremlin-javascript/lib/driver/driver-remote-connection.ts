@@ -85,6 +85,7 @@ export default class DriverRemoteConnection extends RemoteConnection {
         'batchSize',
         'materializeProperties',
         'bulkResults',
+        'language',
       ];
       for (const strategy of strategies) {
         for (const key in strategy.configuration) {

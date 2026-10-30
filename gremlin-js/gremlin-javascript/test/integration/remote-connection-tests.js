@@ -62,6 +62,20 @@ describe('DriverRemoteConnection', function () {
           assert.ok(err.statusException);
         });
     });
+    it('should send the with_() language to the server', async function () {
+      const g = anon.traversal().with_(connection);
+      await assert.rejects(g.with_('language', 'no-such-engine').inject(1).toList(), err => {
+        assert.strictEqual(err.statusCode, 400);
+        assert.strictEqual(err.statusException, 'InvalidRequestException');
+        assert.match(err.statusMessage, /Script engine \[no-such-engine\] is not available/);
+        return true;
+      });
+    });
+    it('should use the with_() language when it is available', async function () {
+      const g = anon.traversal().with_(connection);
+      const list = await g.with_('language', 'gremlin-lang').inject(1).toList();
+      assert.deepStrictEqual(list, [1]);
+    });
     it('should iterate ordered results', async function () {
       const g = anon.traversal().with_(connection);
       const traversal = g.V().has('name', P.within('marko', 'peter')).values('name').order();
