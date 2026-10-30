@@ -333,21 +333,21 @@ Feature: Step - match() (String form)
       | m[{"a":"marko","b":"vadas"}] |
       | m[{"a":"marko","b":"josh"}]  |
 
-  Scenario: g_match_chainXroute_1_2X_selectXbX_byXcodeX
+  Scenario: g_match_airportXroute_1_2X_airport_selectXbX_byXnameX
     Given the empty graph
     And the graph initializer of
       """
-      g.addV("airport").property("code", "AAA").as("a").
-        addV("airport").property("code", "BBB").as("b").
-        addV("airport").property("code", "CCC").as("c").
-        addV("airport").property("code", "DDD").as("d").
+      g.addV("airport").property("name", "AAA").as("a").
+        addV("airport").property("name", "BBB").as("b").
+        addV("airport").property("name", "CCC").as("c").
+        addV("airport").property("name", "DDD").as("d").
         addE("route").from("a").to("b").
         addE("route").from("b").to("c").
         addE("route").from("c").to("d")
       """
     And the traversal of
       """
-      g.match("MATCH (a:airport {code: 'AAA'})-[:route]->{1,2}(b:airport)").select("b").by("code")
+      g.match("MATCH (a:airport {name: 'AAA'})-[:route]->{1,2}(b:airport)").select("b").by("name")
       """
     When iterated to list
     Then the result should be unordered
@@ -355,21 +355,21 @@ Feature: Step - match() (String form)
       | BBB    |
       | CCC    |
 
-  Scenario: g_match_chainXroute_2_X_selectXbX_byXcodeX
+  Scenario: g_match_airportXroute_2_X_airport_selectXbX_byXnameX
     Given the empty graph
     And the graph initializer of
       """
-      g.addV("airport").property("code", "AAA").as("a").
-        addV("airport").property("code", "BBB").as("b").
-        addV("airport").property("code", "CCC").as("c").
-        addV("airport").property("code", "DDD").as("d").
+      g.addV("airport").property("name", "AAA").as("a").
+        addV("airport").property("name", "BBB").as("b").
+        addV("airport").property("name", "CCC").as("c").
+        addV("airport").property("name", "DDD").as("d").
         addE("route").from("a").to("b").
         addE("route").from("b").to("c").
         addE("route").from("c").to("d")
       """
     And the traversal of
       """
-      g.match("MATCH (a:airport {code: 'AAA'})-[:route]->{2,}(b:airport)").select("b").by("code")
+      g.match("MATCH (a:airport {name: 'AAA'})-[:route]->{2,}(b:airport)").select("b").by("name")
       """
     When iterated to list
     Then the result should be unordered
@@ -377,21 +377,21 @@ Feature: Step - match() (String form)
       | CCC    |
       | DDD    |
 
-  Scenario: g_match_chainXroute_plusX_selectXbX_byXcodeX
+  Scenario: g_match_airportXroute_plusX_airport_selectXbX_byXnameX
     Given the empty graph
     And the graph initializer of
       """
-      g.addV("airport").property("code", "AAA").as("a").
-        addV("airport").property("code", "BBB").as("b").
-        addV("airport").property("code", "CCC").as("c").
-        addV("airport").property("code", "DDD").as("d").
+      g.addV("airport").property("name", "AAA").as("a").
+        addV("airport").property("name", "BBB").as("b").
+        addV("airport").property("name", "CCC").as("c").
+        addV("airport").property("name", "DDD").as("d").
         addE("route").from("a").to("b").
         addE("route").from("b").to("c").
         addE("route").from("c").to("d")
       """
     And the traversal of
       """
-      g.match("MATCH (a:airport {code: 'AAA'})-[:route]->+(b:airport)").select("b").by("code")
+      g.match("MATCH (a:airport {name: 'AAA'})-[:route]->+(b:airport)").select("b").by("name")
       """
     When iterated to list
     Then the result should be unordered
@@ -400,21 +400,21 @@ Feature: Step - match() (String form)
       | CCC    |
       | DDD    |
 
-  Scenario: g_match_chainXreverseRoute_1_2X_selectXbX_byXcodeX
+  Scenario: g_match_airportXreversedRoute_1_2X_airport_selectXbX_byXnameX
     Given the empty graph
     And the graph initializer of
       """
-      g.addV("airport").property("code", "AAA").as("a").
-        addV("airport").property("code", "BBB").as("b").
-        addV("airport").property("code", "CCC").as("c").
-        addV("airport").property("code", "DDD").as("d").
+      g.addV("airport").property("name", "AAA").as("a").
+        addV("airport").property("name", "BBB").as("b").
+        addV("airport").property("name", "CCC").as("c").
+        addV("airport").property("name", "DDD").as("d").
         addE("route").from("a").to("b").
         addE("route").from("b").to("c").
         addE("route").from("c").to("d")
       """
     And the traversal of
       """
-      g.match("MATCH (a:airport {code: 'CCC'})<-[:route]-{1,2}(b:airport)").select("b").by("code")
+      g.match("MATCH (a:airport {name: 'CCC'})<-[:route]-{1,2}(b:airport)").select("b").by("name")
       """
     When iterated to list
     Then the result should be unordered
@@ -422,21 +422,21 @@ Feature: Step - match() (String form)
       | BBB    |
       | AAA    |
 
-  Scenario: g_match_chainXundirectedRoute_1X_selectXbX_byXcodeX
+  Scenario: g_match_airportXundirectedRoute_1X_airport_selectXbX_byXnameX
     Given the empty graph
     And the graph initializer of
       """
-      g.addV("airport").property("code", "AAA").as("a").
-        addV("airport").property("code", "BBB").as("b").
-        addV("airport").property("code", "CCC").as("c").
-        addV("airport").property("code", "DDD").as("d").
+      g.addV("airport").property("name", "AAA").as("a").
+        addV("airport").property("name", "BBB").as("b").
+        addV("airport").property("name", "CCC").as("c").
+        addV("airport").property("name", "DDD").as("d").
         addE("route").from("a").to("b").
         addE("route").from("b").to("c").
         addE("route").from("c").to("d")
       """
     And the traversal of
       """
-      g.match("MATCH (a:airport {code: 'BBB'})-[:route]-{1}(b:airport)").select("b").by("code")
+      g.match("MATCH (a:airport {name: 'BBB'})-[:route]-{1}(b:airport)").select("b").by("name")
       """
     When iterated to list
     Then the result should be unordered
@@ -444,7 +444,58 @@ Feature: Step - match() (String form)
       | AAA    |
       | CCC    |
 
-  Scenario: g_match_chainXroute_2X_selectXrX
+  Scenario: g_match_airportXundirectedRoute_1_2X_airport_selectXa_bX_byXnameX
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("airport").property("name", "AAA").as("a").
+        addV("airport").property("name", "BBB").as("b").
+        addV("airport").property("name", "CCC").as("c").
+        addV("airport").property("name", "DDD").as("d").
+        addE("route").from("a").to("b").
+        addE("route").from("b").to("c").
+        addE("route").from("c").to("d")
+      """
+    And the traversal of
+      """
+      g.match("MATCH (a:airport)-[:route]-{1,2}(b:airport)").select("a","b").by("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | m[{"a":"AAA","b":"BBB"}] |
+      | m[{"a":"BBB","b":"AAA"}] |
+      | m[{"a":"BBB","b":"CCC"}] |
+      | m[{"a":"CCC","b":"BBB"}] |
+      | m[{"a":"CCC","b":"DDD"}] |
+      | m[{"a":"DDD","b":"CCC"}] |
+      | m[{"a":"AAA","b":"CCC"}] |
+      | m[{"a":"CCC","b":"AAA"}] |
+      | m[{"a":"BBB","b":"DDD"}] |
+      | m[{"a":"DDD","b":"BBB"}] |
+
+  Scenario: g_match_airportXrouteXrVar_1X_airport_selectXrX
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("airport").property("name", "AAA").as("a").
+        addV("airport").property("name", "BBB").as("b").
+        addV("airport").property("name", "CCC").as("c").
+        addV("airport").property("name", "DDD").as("d").
+        addE("route").from("a").to("b").
+        addE("route").from("b").to("c").
+        addE("route").from("c").to("d")
+      """
+    And the traversal of
+      """
+      g.match("MATCH (a:airport {name: 'AAA'})-[r:route]->{1}(b:airport)").select("r")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | l[e[AAA-route->BBB]] |
+
+  Scenario: g_match_airportXrouteXrVar_2X_airport_selectXrX
     Given the empty graph
     And the graph initializer of
       """
@@ -464,3 +515,161 @@ Feature: Step - match() (String form)
     Then the result should be unordered
       | result |
       | l[e[AAA-route->BBB],e[BBB-route->CCC]] |
+
+  Scenario: g_match_airportXrouteXrVar_2_3X_hub_selectXrX
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("airport").property("name", "AAA").as("a").
+        addV("airport").property("name", "BBB").as("b").
+        addV("airport").property("name", "CCC").as("c").
+        addV("hub").property("name", "DDD").as("d").
+        addE("route").from("a").to("b").
+        addE("route").from("b").to("c").
+        addE("route").from("c").to("d")
+      """
+    And the traversal of
+      """
+      g.match("MATCH (a:airport)-[r:route]->{2,3}(b:hub)").select("r")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | l[e[BBB-route->CCC],e[CCC-route->DDD]] |
+      | l[e[AAA-route->BBB],e[BBB-route->CCC],e[CCC-route->DDD]] |
+
+  Scenario: g_match_airportXreversedRouteXrVar_2X_hub_selectXrX
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("airport").property("name", "AAA").as("a").
+        addV("airport").property("name", "BBB").as("b").
+        addV("airport").property("name", "CCC").as("c").
+        addV("hub").property("name", "DDD").as("d").
+        addE("route").from("d").to("c").
+        addE("route").from("c").to("b").
+        addE("route").from("c").to("a")
+      """
+    And the traversal of
+      """
+      g.match("MATCH (a:airport)<-[r:route]-{2}(b:hub)").select("r")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | l[e[CCC-route->BBB],e[DDD-route->CCC]] |
+      | l[e[CCC-route->AAA],e[DDD-route->CCC]] |
+
+  Scenario: g_match_airportXundirectedRouteXrVar_2X_hub_selectXrX
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("airport").property("name", "AAA").as("a").
+        addV("airport").property("name", "BBB").as("b").
+        addV("airport").property("name", "CCC").as("c").
+        addV("hub").property("name", "DDD").as("d").
+        addE("route").from("c").to("b").
+        addE("route").from("c").to("d").
+        addE("route").from("b").to("a").
+        addE("route").from("d").to("a")
+      """
+    And the traversal of
+      """
+      g.match("MATCH (a:airport)-[r:route]-{2}(b:hub)").select("r")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | l[e[CCC-route->BBB],e[CCC-route->DDD]] |
+      | l[e[BBB-route->AAA],e[DDD-route->AAA]] |
+
+  Scenario: g_match_airportXparallelRoute_1X_airport_selectXbX_byXnameX
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("airport").property("name", "AAA").as("a").
+        addV("airport").property("name", "BBB").as("b").
+        addE("route").from("a").to("b").
+        addE("route").from("a").to("b")
+      """
+    And the traversal of
+      """
+      g.match("MATCH (a:airport {name: 'AAA'})-[:route]->{1}(b:airport)").select("b").by("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | BBB    |
+      | BBB    |
+
+  Scenario: g_match_personXknows_starX_person_selectXa_bX_byXnameX
+    Given the modern graph
+    And the traversal of
+      """
+      g.match("MATCH (a:person)-[:knows]->*(b:person)").select("a","b").by("name")
+      """
+    When iterated to list
+    Then the traversal will raise an error with message containing text of "zero-length paths"
+
+  Scenario: g_match_personXknows_0_2X_person_selectXa_bX_byXnameX
+    Given the modern graph
+    And the traversal of
+      """
+      g.match("MATCH (a:person)-[:knows]->{0,2}(b:person)").select("a","b").by("name")
+      """
+    When iterated to list
+    Then the traversal will raise an error with message containing text of "zero-length paths"
+
+  Scenario: g_match_personXknows_noMin_2X_person_selectXa_bX_byXnameX
+    Given the modern graph
+    And the traversal of
+      """
+      g.match("MATCH (a:person)-[:knows]->{,2}(b:person)").select("a","b").by("name")
+      """
+    When iterated to list
+    Then the traversal will raise an error with message containing text of "zero-length paths"
+
+  Scenario: g_match_personXknows_1_3X_personXknows_1_3X_cycle_selectXa_bX_byXnameX
+    Given the modern graph
+    And the traversal of
+      """
+      g.match("MATCH (a:person)-[:knows]->{1,3}(b:person), (b)-[:knows]->{1,3}(a)").select("a","b").by("name")
+      """
+    When iterated to list
+    Then the traversal will raise an error with message containing text of "quantified edges closing a pattern cycle are not yet supported"
+
+  Scenario: g_match_personXknows_1X_personXknows_1X_cycle_selectXa_bX_byXnameX
+    Given the modern graph
+    And the traversal of
+      """
+      g.match("MATCH (a:person)-[:knows]->{1}(b:person), (b)-[:knows]->{1}(a)").select("a","b").by("name")
+      """
+    When iterated to list
+    Then the traversal will raise an error with message containing text of "quantified edges closing a pattern cycle are not yet supported"
+
+  Scenario: g_match_personXknowsXrVar_2_3X_selfLoop_selectXrX
+    Given the modern graph
+    And the traversal of
+      """
+      g.match("MATCH (a:person)-[r:knows]->{2,3}(a)").select("r")
+      """
+    When iterated to list
+    Then the traversal will raise an error with message containing text of "quantified edges closing a pattern cycle are not yet supported"
+
+  Scenario: g_match_personXknowsXrVar_1_2X_personXcreatedXrVarX_software_selectXrX
+    Given the modern graph
+    And the traversal of
+      """
+      g.match("MATCH (a:person)-[r:knows]->{1,2}(b:person), (b)-[r:created]->(s:software)").select("r")
+      """
+    When iterated to list
+    Then the traversal will raise an error with message containing text of "a quantified edge variable cannot be reused"
+
+  Scenario: g_match_personXknows_1_2147483647X_person_selectXa_bX_byXnameX
+    Given the modern graph
+    And the traversal of
+      """
+      g.match("MATCH (a:person)-[:knows]->{1,2147483647}(b:person)").select("a","b").by("name")
+      """
+    When iterated to list
+    Then the traversal will raise an error with message containing text of "exceeds the maximum supported value"
