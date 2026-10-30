@@ -27,6 +27,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 * Added a `Char` type to `gremlin-go` to represent the Gremlin `Character` type in `GremlinLang`.
 * Restricted GraphSON and Gryo `Class` deserialization to classes registered with `ClassRegistry.register()`, `registerStrategy()` or `registerStrategies()`.
+* Fixed `gremlin-javascript` to send the `language` set with `with_("language", ...)` on remote traversals instead of dropping it.
 * Fixed `gremlin-go` to report a malformed or truncated GraphBinary response as a deserialization error rather than a bare decoder message.
 * Added a per-request `language` option to the `gremlin-go` `RequestOptionsBuilder`, and honored `With("language", ...)` on traversals.
 * Changed `gremlin-go` per-request options set via `with()` to accept any numeric type holding an integer value an `int` can hold and to ignore other values rather than panicking.
