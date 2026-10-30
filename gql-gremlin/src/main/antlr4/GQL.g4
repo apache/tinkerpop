@@ -29,7 +29,9 @@
  *   - Undirected edges:             -[e:Label]-   or  -[:Label]-   or  -[e]-   or  -[]-
  *   - Quantified relationships (trailing postfix, ISO GQL abbreviation form):
  *                                   -[:KNOWS]->{1,3}   <-[:KNOWS]-{2,}   -[:KNOWS]-{2}
- *                                   also {m}, {m,}, {,n}, * and + (e.g. -[:KNOWS]->{,3}, -[:KNOWS]->*)
+ *                                   also {m}, {m,} and + (e.g. -[:KNOWS]->{2,}, -[:KNOWS]->+)
+ *                                   The zero-lower-bound forms {0,n}, {,n} and * are recognized by
+ *                                   the grammar but rejected by QueryGraph as not yet supported.
  *   - Multiple comma-separated path patterns in a single MATCH clause
  *   - Inline property filters on nodes: (n:Label {key: 'value', count: 42i, flag: true, x: $param})
  *
@@ -203,8 +205,8 @@ undirectedEdge
 
 /**
  * A trailing quantifier on a relationship, in the ISO GQL quantified-relationship
- * abbreviation form (a)-[r]->{q}(b). Grammar accepts all structural forms; semantic
- * rules (zero lower bound, max &lt; min) are enforced in downstream tasks, not here.
+ * abbreviation form (a)-[r]->{q}(b). The grammar accepts every structural form; semantic
+ * validation (zero lower bound, max &lt; min, bound range) is performed by QueryGraph.
  *
  * Forms:
  *   {m,n}  fixed lower and upper bound
@@ -216,7 +218,7 @@ undirectedEdge
  *
  * Bounds go through the dedicated unsignedInteger production rather than referencing a
  * numeric token directly, keeping the intended "bare, unsigned, unsuffixed" contract in
- * one place for downstream validation.
+ * one place for QueryGraph to validate.
  */
 quantifier
     : LBRACE unsignedInteger COMMA unsignedInteger RBRACE   // {m,n}
@@ -233,10 +235,9 @@ quantifier
  * A dedicated UNSIGNED_INTEGER lexer token (bare digits, no sign, no type suffix) would be
  * the natural backing here, but a bare {@code [0-9]+} token is unreachable: for a bare digit
  * sequence it ties with INTEGER_LITERAL, which must win so that property-filter values keep
- * their INTEGER_LITERAL token type (QueryGraph relies on it, and is out of scope for this
- * task). The bound therefore accepts INTEGER_LITERAL; a leading sign or type suffix is not
- * meaningful for a bound and is left to downstream validation, alongside the zero-lower-bound
- * and max &lt; min checks.
+ * their INTEGER_LITERAL token type, which QueryGraph relies on when parsing literals. The bound
+ * therefore accepts INTEGER_LITERAL; QueryGraph rejects a leading sign or type suffix, along
+ * with the zero-lower-bound, out-of-range and max &lt; min cases.
  */
 unsignedInteger
     : INTEGER_LITERAL
