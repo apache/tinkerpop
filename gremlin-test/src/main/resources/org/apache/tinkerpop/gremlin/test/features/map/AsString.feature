@@ -199,6 +199,10 @@ Feature: Step - asString()
 
   Scenario: g_V_hasLabelXpersonX_valuesXageX_asString_concatX_years_oldX
     Given the modern graph
+    And the intent
+      """
+      Describe each person's age as text in the form "29 years old".
+      """
     And the traversal of
       """
       g.V().hasLabel("person").values("age").asString().concat(" years old")

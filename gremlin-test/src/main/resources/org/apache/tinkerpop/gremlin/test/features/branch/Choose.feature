@@ -180,6 +180,11 @@ Feature: Step - choose()
 
   Scenario: g_V_hasLabelXpersonX_asXp1X_chooseXoutEXknowsX__outXknowsXX_asXp2X_selectXp1_p2X_byXnameX
     Given the modern graph
+    And the intent
+      """
+      For each person, pair them with each person they know, or with themselves if they know no one. Return each pair as
+      a map of the two names, keyed "p1" for the person and "p2" for who they are paired with.
+      """
     And the traversal of
       """
       g.V().hasLabel("person").as("p1").
@@ -512,6 +517,10 @@ Feature: Step - choose()
 
   Scenario: g_V_hasLabelXpersonX_chooseXvaluesXageX_isXgtX29XX_and_valuesXageX_isXltX35XX__valuesXnameX__constantXotherXX
     Given the modern graph
+    And the intent
+      """
+      For each person, return their name if they are older than 29 and younger than 35, and "other" if not.
+      """
     And the traversal of
       """
       g.V().hasLabel("person").
@@ -567,6 +576,10 @@ Feature: Step - choose()
   Scenario: g_V_hasLabelXpersonX_chooseXlocalXoutXknowsX_countX__optionX0__constantXnoFriendsXX__optionXnone__constantXhasFriendsXXX
     Given the modern graph
     And using the parameter xx0 defined as "d[0].l"
+    And the intent
+      """
+      For each person, return "noFriends" if the number of people they know is <xx0>, and "hasFriends" otherwise.
+      """
     And the traversal of
       """
       g.V().hasLabel("person").
@@ -603,6 +616,11 @@ Feature: Step - choose()
 
   Scenario: g_V_chooseXlabelX_optionXperson__chooseXageX_optionXP_lt_30__constantXyoungXX_optionXP_gte_30__constantXoldXXX_optionXsoftware__constantXprogramXX_optionXnone__constantXunknownXX
     Given the modern graph
+    And the intent
+      """
+      Classify every vertex: a person under 30 is "young", a person 30 or older is "old", software is "program", and
+      anything else is "unknown". Return one classification per vertex.
+      """
     And the traversal of
       """
       g.V().choose(__.label()).
@@ -701,6 +719,7 @@ Feature: Step - choose()
 
   # choose() with a boolean predicate branches on label set membership (hasLabel matches if ANY label
   # matches), so the aquatic habitats/reptiles take the true branch and the rest take the false branch.
+
   @MultiLabel
   Scenario: g_V_hasLabelXhabitat_reptileX_chooseXhasLabelXaquaticX_constantXwetX_constantXdryXX_multilabel
     Given the zoo graph
@@ -718,6 +737,7 @@ Feature: Step - choose()
 
   # choose(T.label) selects the option matching a single, arbitrary label from the vertex's label set, so
   # for the multi-label vertex tux any one of its four label branches may be taken.
+
   @MultiLabel
   Scenario: g_V_hasXname_tuxX_chooseXlabelX_optionXanimal_bird_aquatic_endangeredX_multilabel
     Given the zoo graph
@@ -737,3 +757,58 @@ Feature: Step - choose()
       | is-aquatic |
       | is-endangered |
     And the result should have a count of 1
+
+  Scenario: g_V_hasLabelXpersonX_groupCount_byXvaluesXageX_chooseXisXltX28XX_constantXyoungX_chooseXisXltX30XX_constantXoldX_constantXvery_oldXXXX
+    Given the modern graph
+    And the intent
+      """
+      Count the people in each age band: under 28 is "young", 28 or 29 is "old", and 30 or more is "very old". Return
+      one map from band to count.
+      """
+    And the traversal of
+      """
+      g.V().hasLabel("person").groupCount().by(values("age").choose(is(P.lt(28)),constant("young"),choose(is(P.lt(30)),constant("old"),constant("very old"))))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | m[{"young":"d[1].l","old":"d[1].l","very old":"d[2].l"}] |
+
+  Scenario: g_V_chooseXlabelX_optionXperson_projectXpersonX_byXnameXX_optionXsoftware_projectXproductX_byXnameXX
+    Given the modern graph
+    And the intent
+      """
+      For each vertex, return a map holding its name under "person" if it is a person, or under "product" if it is
+      software.
+      """
+    And the traversal of
+      """
+      g.V().choose(T.label).option("person",project("person").by(values("name"))).option("software",project("product").by(values("name")))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | m[{"person":"marko"}] |
+      | m[{"person":"vadas"}] |
+      | m[{"product":"lop"}] |
+      | m[{"person":"josh"}] |
+      | m[{"product":"ripple"}] |
+      | m[{"person":"peter"}] |
+
+  Scenario: g_V_chooseXlabelX_optionXperson_outXcreatedXX_optionXsoftware_inXcreatedXX_name
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().choose(T.label).option("person",out("created")).option("software",__.in("created")).values("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | lop |
+      | marko |
+      | josh |
+      | peter |
+      | ripple |
+      | lop |
+      | josh |
+      | lop |

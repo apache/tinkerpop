@@ -79,6 +79,10 @@ Feature: Step - V(), out(), in(), both(), inE(), outE(), bothE()
 
   Scenario: g_V
     Given the modern graph
+    And the intent
+      """
+      Get all the vertices in the graph.
+      """
     And the traversal of
       """
       g.V()
@@ -109,6 +113,10 @@ Feature: Step - V(), out(), in(), both(), inE(), outE(), bothE()
 
   Scenario: g_VX1X_out
     Given the modern graph
+    And the intent
+      """
+      What are the outgoing vertices for vertex id: <vid1>?
+      """
     And using the parameter vid1 defined as "v[marko].id"
     And the traversal of
       """
@@ -123,6 +131,10 @@ Feature: Step - V(), out(), in(), both(), inE(), outE(), bothE()
 
   Scenario: g_VX2X_in
     Given the modern graph
+    And the intent
+      """
+      What are the incoming vertices for vertex id: <vid2>?
+      """
     And using the parameter vid2 defined as "v[vadas].id"
     And the traversal of
       """
@@ -135,6 +147,10 @@ Feature: Step - V(), out(), in(), both(), inE(), outE(), bothE()
 
   Scenario: g_VX4X_both
     Given the modern graph
+    And the intent
+      """
+      What are adjacent vertices for vertex id: <vid4>?
+      """
     And using the parameter vid4 defined as "v[josh].id"
     And the traversal of
       """
@@ -149,6 +165,10 @@ Feature: Step - V(), out(), in(), both(), inE(), outE(), bothE()
 
   Scenario: g_VX1X_outE
     Given the modern graph
+    And the intent
+      """
+      What are outgoing edges for vertex id: <vid1>?
+      """
     And using the parameter vid1 defined as "v[marko].id"
     And the traversal of
       """
@@ -161,8 +181,12 @@ Feature: Step - V(), out(), in(), both(), inE(), outE(), bothE()
       | e[marko-knows->josh] |
       | e[marko-knows->vadas] |
 
-  Scenario: g_VX2X_outE
+  Scenario: g_VX2X_inE
     Given the modern graph
+    And the intent
+      """
+      What are incoming edges for vertex id: <vid2>?
+      """
     And using the parameter vid2 defined as "v[vadas].id"
     And the traversal of
       """
@@ -175,6 +199,10 @@ Feature: Step - V(), out(), in(), both(), inE(), outE(), bothE()
 
   Scenario: g_VX4X_bothEXcreatedX
     Given the modern graph
+    And the intent
+      """
+      Find any created edges for vertex id: <vid4>?
+      """
     And using the parameter vid4 defined as "v[josh].id"
     And the traversal of
       """
@@ -202,6 +230,10 @@ Feature: Step - V(), out(), in(), both(), inE(), outE(), bothE()
 
   Scenario: g_VX4X_bothE
     Given the modern graph
+    And the intent
+      """
+      What are the edges for vertex id: <vid4>?
+      """
     And using the parameter vid4 defined as "v[josh].id"
     And the traversal of
       """
@@ -234,7 +266,7 @@ Feature: Step - V(), out(), in(), both(), inE(), outE(), bothE()
       | peter |
       | peter |
 
-  Scenario: g_VX2X_inE
+  Scenario: g_VX2X_bothE
     Given the modern graph
     And using the parameter vid2 defined as "v[vadas].id"
     And the traversal of
@@ -248,6 +280,10 @@ Feature: Step - V(), out(), in(), both(), inE(), outE(), bothE()
 
   Scenario: g_VX1X_outXknowsX
     Given the modern graph
+    And the intent
+      """
+      Who does the vertex with id=<vid1> know?
+      """
     And using the parameter vid1 defined as "v[marko].id"
     And the traversal of
       """
@@ -274,6 +310,10 @@ Feature: Step - V(), out(), in(), both(), inE(), outE(), bothE()
 
   Scenario: g_VX1X_outXknows_createdX
     Given the modern graph
+    And the intent
+      """
+      For vertex <vid1>, what vertices does it reach over outgoing knows or created edges?
+      """
     And using the parameter vid1 defined as "v[marko].id"
     And the traversal of
       """
@@ -304,6 +344,10 @@ Feature: Step - V(), out(), in(), both(), inE(), outE(), bothE()
 
   Scenario: g_V_out_out
     Given the modern graph
+    And the intent
+      """
+      Follow out edges two steps away.
+      """
     And the traversal of
       """
       g.V().out().out()
@@ -316,6 +360,10 @@ Feature: Step - V(), out(), in(), both(), inE(), outE(), bothE()
 
   Scenario: g_VX1X_out_out_out
     Given the modern graph
+    And the intent
+      """
+      Follow out edges three steps away.
+      """
     And using the parameter vid1 defined as "v[marko].id"
     And the traversal of
       """
@@ -326,6 +374,10 @@ Feature: Step - V(), out(), in(), both(), inE(), outE(), bothE()
 
   Scenario: g_VX1X_out_name
     Given the modern graph
+    And the intent
+      """
+      What are the names of the vertices that vertex <vid1> has outgoing edges to?
+      """
     And using the parameter vid1 defined as "v[marko].id"
     And the traversal of
       """
@@ -354,6 +406,7 @@ Feature: Step - V(), out(), in(), both(), inE(), outE(), bothE()
   # the point here is to test g.V() where an id is not present. to do this with the gherkin structure
   # the test establishes the modern graph, does a drop() of "lop" and then tries to query the 4 vertices
   # and we assert the count of 3
+
   Scenario: g_VX1_2_3_4X_name
     Given the empty graph
     And the graph initializer of
@@ -571,6 +624,7 @@ Feature: Step - V(), out(), in(), both(), inE(), outE(), bothE()
       | josh |
 
   # Use as()/select() to bookmark a vertex ID and return to it later via V(select()).
+
   @GraphComputerVerificationMidVNotSupported
   Scenario: g_VXvid1X_id_asXbookmarkX_V_hasXname_joshX_VXselectXbookmarkXX_name
     Given the modern graph

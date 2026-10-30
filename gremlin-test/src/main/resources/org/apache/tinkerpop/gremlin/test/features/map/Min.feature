@@ -215,6 +215,7 @@ Feature: Step - min()
       | d[29].i |
 
   # It verifies if empty lists are filtered out as expected
+
   Scenario: g_V_localXunionXvaluesXageX_outE_valuesXweightXX_foldX_minXlocalX
     Given the modern graph
     And the traversal of
@@ -228,3 +229,18 @@ Feature: Step - min()
       | d[27].i |
       | d[0.4].d |
       | d[0.2].d |
+
+  Scenario: g_V_groupCount_byXlabelX_selectXvaluesX_minXlocalX
+    Given the modern graph
+    And the intent
+      """
+      How many vertices are in the smallest group when the vertices are grouped by label?
+      """
+    And the traversal of
+      """
+      g.V().groupCount().by(T.label).select(Column.values).min(Scope.local)
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[2].l |

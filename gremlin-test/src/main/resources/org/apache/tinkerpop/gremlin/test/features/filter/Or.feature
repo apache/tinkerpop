@@ -74,3 +74,20 @@ Feature: Step - or()
       | tux |
       | atlas |
       | monty |
+
+  Scenario: g_V_whereXoutEXcreatedX_or_outEXknowsXX_name
+    Given the modern graph
+    And the intent
+      """
+      Which vertices have created something or know someone? Return their names.
+      """
+    And the traversal of
+      """
+      g.V().where(outE("created").or().outE("knows")).values("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | marko |
+      | josh |
+      | peter |

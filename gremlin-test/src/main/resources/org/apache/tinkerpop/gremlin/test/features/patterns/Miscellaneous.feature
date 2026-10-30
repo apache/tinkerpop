@@ -20,6 +20,12 @@ Feature: Step - miscellaneous
 
   Scenario: g_V_coworker
     Given the modern graph
+    And the intent
+      """
+      For each person who created software, show every other person who created software and what the two of them
+      created in common. Return one map per person, keyed by their name, whose value maps each other person's name to a
+      map of the number of shared creations ("numCoCreated") and the names of those creations ("coCreated").
+      """
     And the traversal of
       """
       g.V().hasLabel("person").
@@ -72,3 +78,26 @@ Feature: Step - miscellaneous
       | m[{"josh": {"peter": {"numCoCreated":"d[1].l", "coCreated":["lop"]}, "marko": {"numCoCreated":"d[1].l", "coCreated":["lop"]}}}] |
       | m[{"marko": {"peter": {"numCoCreated":"d[1].l", "coCreated":["lop"]}, "josh": {"numCoCreated":"d[1].l", "coCreated":["lop"]}}}] |
 
+
+  @GraphComputerVerificationStarGraphExceeded
+  Scenario: g_V_openTriads
+    Given the modern graph
+    And the intent
+      """
+      Find the open triads: three vertices where the middle one is connected to both of the others, in either direction,
+      but those two are not connected to each other. Return each triad once, as a map of the middle vertex's name
+      ("middle") and the names of the other two in alphabetical order ("ends").
+      """
+    And the traversal of
+      """
+      g.V().as("a").both().as("b").both().where(P.neq("a")).as("c").not(both().where(P.eq("a"))).project("middle","ends").by(select("b").values("name")).by(union(select("a"),select("c")).values("name").order().fold()).dedup()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | m[{"middle":"lop","ends":"l[marko,peter]"}] |
+      | m[{"middle":"josh","ends":"l[marko,ripple]"}] |
+      | m[{"middle":"marko","ends":"l[lop,vadas]"}] |
+      | m[{"middle":"marko","ends":"l[josh,vadas]"}] |
+      | m[{"middle":"josh","ends":"l[lop,ripple]"}] |
+      | m[{"middle":"lop","ends":"l[josh,peter]"}] |

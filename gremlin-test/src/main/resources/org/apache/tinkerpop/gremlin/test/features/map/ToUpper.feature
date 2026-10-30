@@ -56,6 +56,10 @@ Feature: Step - toUpper()
 
   Scenario: g_V_valuesXnameX_toUpper
     Given the modern graph
+    And the intent
+      """
+      Return the name of every vertex in upper case.
+      """
     And the traversal of
       """
       g.V().values("name").toUpper()

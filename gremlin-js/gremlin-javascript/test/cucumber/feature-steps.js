@@ -137,6 +137,8 @@ Given('the graph initializer of', function (traversalText) {
 
 Given('an unsupported test', () => {});
 
+Given('the intent', _ => {});
+
 Given('the traversal of', function (traversalText) {
   const p = Object.assign({}, this.parameters);
   if (parameterize) {

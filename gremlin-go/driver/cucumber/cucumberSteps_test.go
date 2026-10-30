@@ -510,6 +510,10 @@ func (tg *tinkerPopGraph) nothingShouldHappenBecause(arg1 *godog.DocString) erro
 	return nil
 }
 
+func (tg *tinkerPopGraph) theIntent(arg1 *godog.DocString) error {
+	return nil
+}
+
 // Choose the graph.
 func (tg *tinkerPopGraph) chooseGraph(graphName string) error {
 	// Multi-label tests use the gmultilabel traversal source for empty graphs
@@ -1260,6 +1264,7 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 	ctx.Step(`^the result should be (o\w+)$`, tg.theResultShouldBe)
 	ctx.Step(`^the result should be (u\w+)$`, tg.theResultShouldBe)
 	ctx.Step(`^the result should have a count of (\d+)$`, tg.theResultShouldHaveACountOf)
+	ctx.Step(`^the intent$`, tg.theIntent)
 	ctx.Step(`^the traversal of$`, tg.theTraversalOf)
 	ctx.Step(`^using the parameter (.+) defined as "(.+)"$`, tg.usingTheParameterDefined)
 	ctx.Step(`^using the parameter (.+) of P\.(.+)\("(.+)"\)$`, tg.usingTheParameterOfP)

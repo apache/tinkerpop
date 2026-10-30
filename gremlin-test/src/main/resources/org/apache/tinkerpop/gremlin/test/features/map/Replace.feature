@@ -89,3 +89,23 @@ Feature: Step - replace()
     Then the result should be unordered
       | result |
       | l[log,riggle] |
+
+  Scenario: g_V_hasLabelXairportX_hasXcity_startingWithXSaint_XX_valuesXcityX_replaceXSaint__St_X_dedup
+    Given the airroutes graph
+    And the intent
+      """
+      For every airport city whose name starts with "Saint ", return the city name with "Saint " shortened to "St. ",
+      listing each name once.
+      """
+    And the traversal of
+      """
+      g.V().hasLabel("airport").has("city",TextP.startingWith("Saint ")).values("city").replace("Saint ","St. ").dedup()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | St. Helier |
+      | St. Peter Port |
+      | St. Anne |
+      | St. John |
+      | St. George's |

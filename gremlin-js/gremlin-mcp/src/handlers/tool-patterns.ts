@@ -102,7 +102,7 @@ export const createQueryEffect = (
       // For query errors, return structured JSON with empty results and error message
       const errorResponse = {
         results: [],
-        message: `Query failed: ${error}`,
+        message: error.message,
       };
       return Effect.succeed(createSuccessResponse(errorResponse));
     })

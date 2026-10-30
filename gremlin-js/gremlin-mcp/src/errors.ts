@@ -25,7 +25,7 @@
  * contextual metadata for debugging and user-friendly error messages.
  */
 
-import { Data } from 'effect';
+import { Cause, Data } from 'effect';
 
 /**
  * Standardized error message prefixes for consistency
@@ -38,6 +38,27 @@ export const ERROR_PREFIXES = {
   TIMEOUT: 'Operation timed out',
   PARSE: 'Parse error',
 } as const;
+
+/**
+ * Describes the reason behind a failure, such as the error a driver raised, so that it can be reported rather than
+ * only the operation that failed. When the driver carries the server's status message apart from its own message,
+ * both are included.
+ */
+export const describeCause = (cause: unknown): string | undefined => {
+  if (cause instanceof Cause.UnknownException) return describeCause(cause.error);
+  if (cause === undefined || cause === null) return undefined;
+  if (typeof cause !== 'object') return String(cause);
+
+  const message = cause instanceof Error ? cause.message : undefined;
+  const statusMessage = (cause as { statusMessage?: unknown }).statusMessage;
+  if (
+    typeof statusMessage === 'string' &&
+    statusMessage &&
+    !(message ?? '').includes(statusMessage)
+  )
+    return message ? `${message}: ${statusMessage}` : statusMessage;
+  return message;
+};
 
 /**
  * Gremlin connection errors

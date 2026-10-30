@@ -134,3 +134,31 @@ Feature: Step - hasKey()
       | d[0.4].d |
       | d[0.4].d |
       | d[0.2].d |
+
+  Scenario: g_V_propertiesXlocationX_properties_hasKeyXstartTimeX_value
+    Given the crew graph
+    And the intent
+      """
+      List every start time recorded on anyone's locations.
+      """
+    And the traversal of
+      """
+      g.V().properties("location").properties().hasKey("startTime").value()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[1997].i |
+      | d[2001].i |
+      | d[2004].i |
+      | d[2004].i |
+      | d[2005].i |
+      | d[2005].i |
+      | d[1990].i |
+      | d[2000].i |
+      | d[2006].i |
+      | d[2007].i |
+      | d[2011].i |
+      | d[2014].i |
+      | d[1982].i |
+      | d[2009].i |

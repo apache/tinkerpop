@@ -233,6 +233,10 @@ Feature: Step - range()
 
   Scenario: g_V_hasLabelXpersonX_order_byXageX_skipX1X_valuesXnameX
     Given the modern graph
+    And the intent
+      """
+      List the people from youngest to oldest, leaving out the youngest, and return their names.
+      """
     And the traversal of
       """
       g.V().hasLabel("person").order().by("age").skip(1).values("name")
@@ -341,6 +345,7 @@ Feature: Step - range()
     Then the traversal will raise an error with message containing text of "Not a legal range: [2, 1]"
 
   # iterated next variant of the previous test (which is iterated to list)
+
   Scenario: g_V_rangeX3_2X
     Given the modern graph
     And the traversal of
@@ -351,6 +356,7 @@ Feature: Step - range()
     Then the traversal will raise an error with message containing text of "Not a legal range: [3, 2]"
 
   # Test consistent collection output for range(local) - single element should return collection
+
   Scenario: g_injectXlistX1_2_3XX_rangeXlocal_1_2X
     Given the empty graph
     And the traversal of
@@ -363,6 +369,7 @@ Feature: Step - range()
       | l[d[2].i] |
 
   # Test consistent collection output for limit(local) - single element should return collection
+
   Scenario: g_injectXlistX1_2_3XX_limitXlocal_1X
     Given the empty graph
     And the traversal of
@@ -375,6 +382,7 @@ Feature: Step - range()
       | l[d[1].i] |
 
   # Test unfold() can be used to extract single elements from collections
+
   Scenario: g_injectXlistX1_2_3X_limitXlocal_1X_unfold
     Given the empty graph
     And the traversal of
@@ -387,6 +395,7 @@ Feature: Step - range()
       | d[1].i |
 
   # Test multiple collections with consistent output
+
   Scenario: g_injectX1_2_3_4_5X_limitXlocal_1X
     Given the empty graph
     And the traversal of
@@ -400,6 +409,7 @@ Feature: Step - range()
       | l[d[3].i] |
 
   # Test range(local) with multiple collections
+
   Scenario: g_injectX1_2_3_4_5_6X_rangeXlocal_1_2X
     Given the empty graph
     And the traversal of
@@ -607,6 +617,7 @@ Feature: Step - range()
     Then the result should have a count of 3
 
   # global limits in choose
+
   Scenario: g_V_chooseXvaluesXageX_isXlteX30XX_out_order_byXnameX_limitX1X_out_order_byXnameX_limitX2XX
     Given the modern graph
     And the traversal of
@@ -617,6 +628,7 @@ Feature: Step - range()
     Then the result should have a count of 3
 
   # local limits in choose
+
   @GraphComputerVerificationStarGraphExceeded
   Scenario: g_V_chooseXvaluesXageX_isXlteX30XX_localXout_order_byXnameX_limitX1XX_localXout_order_byXnameX_limitX2XXX
     Given the modern graph

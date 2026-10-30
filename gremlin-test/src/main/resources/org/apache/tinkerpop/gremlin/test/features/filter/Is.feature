@@ -68,6 +68,10 @@ Feature: Step - is()
 
   Scenario: g_V_valuesXageX_isXoutsideX28_33XX
     Given the modern graph
+    And the intent
+      """
+      Which ages in the graph are below 28 or above 33? Return the ages.
+      """
     And the traversal of
       """
       g.V().values("age").is(P.outside(28, 33))
@@ -80,6 +84,10 @@ Feature: Step - is()
 
   Scenario: g_V_valuesXageX_isXgte_29X_isXlt_34X
     Given the modern graph
+    And the intent
+      """
+      Which ages in the graph are at least 29 and less than 34? Return the ages.
+      """
     And the traversal of
       """
       g.V().values("age").is(P.gte(29)).is(P.lt(34))
@@ -125,6 +133,7 @@ Feature: Step - is()
     Then the result should be unordered
       | result |
       | lop |
+
   Scenario: g_V_valuesXageX_isXconstantX29XX
     Given the modern graph
     And the traversal of
@@ -293,6 +302,7 @@ Feature: Step - is()
     Then the result should be empty
 
   # Empty-result handling: predicate should treat "no results" as "no match", not null.
+
   @GraphComputerVerificationMidVNotSupported
   Scenario: g_injectXnullX_isXeqXV9999_valuesXnameXXX
     Given the modern graph
@@ -346,6 +356,7 @@ Feature: Step - is()
     Then the result should be empty
 
   # Multi-traversal without() in is() context
+
   Scenario: g_V_valuesXageX_isXwithoutXconstantX29X_constantX32XXX
     Given the modern graph
     And the traversal of
@@ -359,6 +370,7 @@ Feature: Step - is()
       | d[35].i |
 
   # Child traversal using select() to reference a labeled step value
+
   @GraphComputerVerificationMidVNotSupported
   Scenario: g_VXvid1X_asXaX_V_valuesXageX_isXgtXselectXaX_valuesXageXXX
     Given the modern graph
@@ -374,6 +386,7 @@ Feature: Step - is()
       | d[35].i |
 
   # Child traversal using sack() to filter against the traverser's sack value
+
   Scenario: g_withSackX30X_V_valuesXageX_isXgtXsackXX
     Given the modern graph
     And the traversal of
@@ -385,3 +398,20 @@ Feature: Step - is()
       | result |
       | d[32].i |
       | d[35].i |
+
+  @GraphComputerVerificationStarGraphExceeded
+  Scenario: g_V_whereXinXcreatedX_valuesXageX_mean_isXinsideX30_35XXX_name
+    Given the modern graph
+    And the intent
+      """
+      Which software was created by people whose average age is strictly between 30 and 35? Return the software names.
+      """
+    And the traversal of
+      """
+      g.V().where(__.in("created").values("age").mean().is(P.inside(30d,35d))).values("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | lop |
+      | ripple |

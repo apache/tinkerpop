@@ -240,3 +240,19 @@ Feature: Step - difference()
     Then the result should be unordered
       | result |
       | s[d[3].i] |
+
+  @GraphComputerVerificationMidVNotSupported
+  Scenario: g_V_hasXperson_name_joshX_outXcreatedX_valuesXnameX_fold_differenceXmarkos_creationsX
+    Given the modern graph
+    And the intent
+      """
+      Which things did josh create that marko did not? Return them as one set of names.
+      """
+    And the traversal of
+      """
+      g.V().has("person","name","josh").out("created").values("name").fold().difference(__.V().has("person","name","marko").out("created").values("name").fold())
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | s[ripple] |

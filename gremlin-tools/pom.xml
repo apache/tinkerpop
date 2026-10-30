@@ -31,6 +31,7 @@ limitations under the License.
         <module>gremlin-benchmark</module>
         <module>gremlin-coverage</module>
         <module>gremlin-socket-server</module>
+        <module>gremlin-fluency</module>
     </modules>
 
     <build>

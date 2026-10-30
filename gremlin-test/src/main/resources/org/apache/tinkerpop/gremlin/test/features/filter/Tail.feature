@@ -57,6 +57,10 @@ Feature: Step - tail()
 
   Scenario: g_V_valuesXnameX_order_tail
     Given the modern graph
+    And the intent
+      """
+      Which vertex name comes last alphabetically?
+      """
     And the traversal of
       """
       g.V().values("name").order().tail()
@@ -227,6 +231,7 @@ Feature: Step - tail()
       | d[29].i |
 
   # Test consistent collection output for tail(local) - single element should return collection
+
   Scenario: g_injectXlistX1_2_3XX_tailXlocal_1X
     Given the empty graph
     And the traversal of
@@ -239,6 +244,7 @@ Feature: Step - tail()
       | l[d[3].i] |
 
   # Test that Map local tail 1 - should still return single entry
+
   Scenario: g_VX1X_valueMapXnameX_tailXlocal_1X
     Given the modern graph
     And using the parameter vid1 defined as "v[marko].id"
@@ -252,6 +258,7 @@ Feature: Step - tail()
       | m[{"name":["marko"]}] |
 
   # Test unfold() can be used to extract single elements from collections for tail
+
   Scenario: g_injectX1_2_3X_tailXlocal_1X_unfold
     Given the empty graph
     And the traversal of
@@ -264,6 +271,7 @@ Feature: Step - tail()
       | d[3].i |
 
   # Test tail(local) with multiple collections
+
   Scenario: g_injectX1_2_3_4_5_6X_tailXlocal_1X
     Given the empty graph
     And the traversal of
@@ -277,6 +285,7 @@ Feature: Step - tail()
       | l[d[6].i] |
 
   # Test tail(local) with multiple elements from collections
+
   Scenario: g_injectX1_2_3_4_5X_tailXlocal_2X
     Given the empty graph
     And the traversal of

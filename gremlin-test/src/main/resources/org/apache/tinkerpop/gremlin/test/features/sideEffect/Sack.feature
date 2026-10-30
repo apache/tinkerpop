@@ -264,6 +264,10 @@ Feature: Step - sack()
 
   Scenario: g_withSackX0X_V_outE_sackXsumX_byXweightX_inV_sack_sum
     Given the modern graph
+    And the intent
+      """
+      What is the total weight of all the edges in the graph?
+      """
     And the traversal of
       """
       g.withSack(0.0d).V().outE().sack(Operator.sum).by("weight").inV().sack().sum()

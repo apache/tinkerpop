@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;
@@ -56,6 +57,13 @@ public class FeatureReaderTest {
         // at least one of these things must have the "replaced" token
         assertThat(gremlins.values().stream().
                 flatMap(Collection::stream).anyMatch(gremlin -> gremlin.contains(replaceToken)), is(true));
+    }
+
+    @Test
+    public void shouldNotParseIntentAsGremlin() throws IOException {
+        // g_V carries an intent docstring ahead of its traversal
+        final Map<String,List<String>> gremlins = FeatureReader.parseGrouped(featureDir);
+        assertEquals(Collections.singletonList("g.V()"), gremlins.get("g_V"));
     }
 
     @Test

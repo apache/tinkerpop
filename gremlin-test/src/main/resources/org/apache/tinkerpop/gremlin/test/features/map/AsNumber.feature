@@ -327,6 +327,7 @@ Feature: Step - asNumber()
       | d[35.0].d |
 
   #  asNumber should be round-trippable with asDate
+
   Scenario: g_V_valuesXbirthdayX_asNumber_asDate_asNumber
     Given the empty graph
     And the graph initializer of
@@ -347,3 +348,27 @@ Feature: Step - asNumber()
       | d[1596326400000].l |
       | d[1012521600000].l |
       | d[-131587200000].l |
+
+  Scenario: g_V_hasLabelXproductX_valuesXpriceX_asNumber_sum
+    Given the empty graph
+    And the intent
+      """
+      Product prices are stored as text, in cents. What is the total price of all products, in cents?
+      """
+    And the graph initializer of
+      """
+      g.addV("product").property("name","lamp").property("price","1999").property("inStock","true").
+        addV("product").property("name","desk").property("price","12000").property("inStock","false").
+        addV("product").property("name","chair").property("price","4550").property("inStock","true").
+        addV("order").property("number","A1").property("placed","2024-03-05T10:00:00Z").property("shipped","2024-03-07T16:00:00Z").
+        addV("order").property("number","A2").property("placed","2024-04-12T09:30:00Z").property("shipped","2024-04-13T09:30:00Z").
+        addV("order").property("number","A3").property("placed","2024-03-28T18:15:00Z").property("shipped","2024-04-02T08:00:00Z")
+      """
+    And the traversal of
+      """
+      g.V().hasLabel("product").values("price").asNumber().sum()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[18549].i |

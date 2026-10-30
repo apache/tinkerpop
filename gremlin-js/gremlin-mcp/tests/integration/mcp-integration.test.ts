@@ -198,7 +198,9 @@ describe('MCP Server Integration Tests', () => {
       if (content.type === 'text') {
         const queryResult = JSON.parse(content.text);
         expect(queryResult).toBeDefined();
-        expect(queryResult.message).toContain('Query failed');
+        // the reason the server gave follows a single prefix
+        expect(queryResult.message).toMatch(/^Query failed: \S/);
+        expect(queryResult.message).not.toMatch(/Query failed.*Query failed/);
         expect(queryResult.results).toHaveLength(0);
       }
     },

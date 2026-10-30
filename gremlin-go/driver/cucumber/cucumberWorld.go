@@ -87,7 +87,7 @@ func NewCucumberWorld() *CucumberWorld {
 	}
 }
 
-var graphNames = []string{"modern", "classic", "crew", "grateful", "sink", "zoo", "empty", "multilabel"}
+var graphNames = []string{"modern", "classic", "crew", "grateful", "sink", "zoo", "airroutes", "empty", "multilabel"}
 
 func (t *CucumberWorld) getDataGraphFromMap(name string) *DataGraph {
 	if val, ok := t.graphDataMap[name]; ok {
@@ -103,6 +103,8 @@ func (t *CucumberWorld) loadAllDataGraph() {
 			t.loadEmptyDataGraph()
 		} else if name == "multilabel" {
 			t.loadMultilabelDataGraph()
+		} else if name == "airroutes" {
+			t.loadAirRoutesDataGraph()
 		} else {
 			connection, err := gremlingo.NewDriverRemoteConnection(scenarioUrl(),
 				func(settings *gremlingo.DriverRemoteConnectionSettings) {
@@ -135,6 +137,14 @@ func (t *CucumberWorld) loadMultilabelDataGraph() {
 		settings.TraversalSource = "gmultilabel"
 	})
 	t.graphDataMap["multilabel"] = &DataGraph{connection: connection}
+}
+
+// air-routes scenarios only return values so the graph needs no element lookups
+func (t *CucumberWorld) loadAirRoutesDataGraph() {
+	connection, _ := gremlingo.NewDriverRemoteConnection(scenarioUrl(), func(settings *gremlingo.DriverRemoteConnectionSettings) {
+		settings.TraversalSource = "gairroutes"
+	})
+	t.graphDataMap["airroutes"] = &DataGraph{name: "airroutes", connection: connection}
 }
 
 func (t *CucumberWorld) reloadEmptyData() {

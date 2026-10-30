@@ -285,3 +285,19 @@ Feature: Step - merge()
     Then the result should be unordered
       | result |
       | m[{"t[id]":"v[lop].id","t[label]":"software","name":"lop","age":29,"lang":"java"}] |
+
+  @GraphComputerVerificationMidVNotSupported
+  Scenario: g_V_hasXperson_name_markoX_outXknowsX_valuesXnameX_fold_mergeXlops_creatorsX
+    Given the modern graph
+    And the intent
+      """
+      Which people are known by marko or created lop? Return them as one set of names.
+      """
+    And the traversal of
+      """
+      g.V().has("person","name","marko").out("knows").values("name").fold().merge(__.V().has("software","name","lop").in("created").values("name").fold())
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | s[peter,vadas,josh,marko] |

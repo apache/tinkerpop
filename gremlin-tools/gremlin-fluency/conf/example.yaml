@@ -1,0 +1,52 @@
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
+# An example gremlin-fluency matrix. Run it from the module directory with
+#   mvn exec:java -Dexec.mainClass=org.apache.tinkerpop.gremlin.fluency.FluencyRunner -Dexec.args=conf/example.yaml
+# Each run writes to ~/.gremlin-fluency/runs/<run-id>, ending with snapshot.json; add --root <dir> to the arguments to
+# write elsewhere. A run's snapshot can be rebuilt from its raw files with
+#   mvn exec:java -Dexec.mainClass=org.apache.tinkerpop.gremlin.fluency.Snapshot -Dexec.args=<run-directory>
+# On Java 17 and later, loading air-routes needs the --add-opens flags the build gives its tests (see the root
+# pom.xml), passed through MAVEN_OPTS, or to java when launching the runner directly.
+
+attempts: 3
+# attempts in flight at once; nearly all of a run is spent waiting on agents, so this shortens it about in proportion
+parallelism: 4
+timeouts: {driver: 120s, traversal: 30s}
+setups:
+  # a control, not an agent: it answers with each scenario's own traversal, so anything short of a full pass
+  # means the eval itself is broken in this run (a graph that failed to load, a timeout too tight for a slow
+  # query) and the agent results beside it should not be trusted
+  - name: reference
+    driver: {builtin: reference}
+  - name: sonnet-none
+    model: claude-sonnet-5-5
+    harness: claude-code
+    context: [none]
+    driver:
+      command: [../src/main/bin/claude-code.sh]
+      env: {MODEL: claude-sonnet-5-5}
+  # the runner starts Gremlin Server and points the agent's gremlin-mcp at the scenario's graph. Set
+  # GREMLIN_MCP_PACKAGE in env to pin gremlin-mcp to a published version or a local build (see claude-code.sh)
+  - name: sonnet-mcp
+    model: claude-sonnet-5-5
+    harness: claude-code
+    context: [gremlin-mcp]
+    server: true
+    driver:
+      command: [../src/main/bin/claude-code.sh, --mcp]
+      env: {MODEL: claude-sonnet-5-5}

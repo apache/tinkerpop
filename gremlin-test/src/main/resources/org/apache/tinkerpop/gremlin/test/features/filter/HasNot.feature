@@ -20,6 +20,10 @@ Feature: Step - hasNot()
 
   Scenario: g_V_hasNotXageX_name
     Given the modern graph
+    And the intent
+      """
+      What are the names of vertices that do not have an age?
+      """
     And the traversal of
     """
     g.V().hasNot("age").values("name")
@@ -29,3 +33,16 @@ Feature: Step - hasNot()
       | result |
       | lop |
       | ripple |
+
+  Scenario: g_V_hasLabelXpersonX_hasNotXageX_name
+    Given the modern graph
+    And the intent
+      """
+      What are the names of people who do not have an age?
+      """
+    And the traversal of
+      """
+      g.V().hasLabel("person").hasNot("age").values("name")
+      """
+    When iterated to list
+    Then the result should be empty

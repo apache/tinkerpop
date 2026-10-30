@@ -149,3 +149,21 @@ Feature: Step - reverse()
     Then the result should be unordered
       | result |
       | l[three,d[3].i] |
+
+  Scenario: g_V_hasLabelXpersonX_valuesXnameX_reverse
+    Given the modern graph
+    And the intent
+      """
+      Spell each person's name backwards.
+      """
+    And the traversal of
+      """
+      g.V().hasLabel("person").values("name").reverse()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | okram |
+      | sadav |
+      | hsoj |
+      | retep |

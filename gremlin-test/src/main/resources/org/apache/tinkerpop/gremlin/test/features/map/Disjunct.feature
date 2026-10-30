@@ -217,3 +217,19 @@ Feature: Step - disjunct()
     Then the result should be unordered
       | result |
       | s[d[3].i,five,d[7].i] |
+
+  @GraphComputerVerificationMidVNotSupported
+  Scenario: g_V_hasXperson_name_markoX_outXknowsX_valuesXnameX_fold_disjunctXlops_creatorsX
+    Given the modern graph
+    And the intent
+      """
+      Which people are either known by marko or creators of lop, but not both? Return them as one set of names.
+      """
+    And the traversal of
+      """
+      g.V().has("person","name","marko").out("knows").values("name").fold().disjunct(__.V().has("software","name","lop").in("created").values("name").fold())
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | s[peter,vadas,marko] |

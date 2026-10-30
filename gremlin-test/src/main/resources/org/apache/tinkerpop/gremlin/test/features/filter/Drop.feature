@@ -104,3 +104,64 @@ Feature: Step - drop()
     Then the result should be empty
     And the graph should return 2 for count of "g.V().properties().properties()"
     And the graph should return 0 for count of "g.V().properties().properties(\"startTime\")"
+
+  Scenario: g_V_hasXperson_name_peterX_drop
+    Given the empty graph
+    And the intent
+      """
+      Remove peter and all of his edges from the graph.
+      """
+    And the graph initializer of
+      """
+      g.addV("person").property("name", "marko").property("age", 29).as("marko").
+        addV("person").property("name", "vadas").property("age", 27).as("vadas").
+        addV("software").property("name", "lop").property("lang", "java").as("lop").
+        addV("person").property("name","josh").property("age", 32).as("josh").
+        addV("software").property("name", "ripple").property("lang", "java").as("ripple").
+        addV("person").property("name", "peter").property("age", 35).as('peter').
+        addE("knows").from("marko").to("vadas").property("weight", 0.5d).
+        addE("knows").from("marko").to("josh").property("weight", 1.0d).
+        addE("created").from("marko").to("lop").property("weight", 0.4d).
+        addE("created").from("josh").to("ripple").property("weight", 1.0d).
+        addE("created").from("josh").to("lop").property("weight", 0.4d).
+        addE("created").from("peter").to("lop").property("weight", 0.2d)
+      """
+    And the traversal of
+      """
+      g.V().has("person","name","peter").drop()
+      """
+    When iterated to list
+    Then the result should be empty
+    And the graph should return 5 for count of "g.V()"
+    And the graph should return 5 for count of "g.E()"
+    And the graph should return 0 for count of "g.V().has(\"name\",\"peter\")"
+
+  Scenario: g_V_hasXperson_age_gtX30XX_propertiesXageX_drop
+    Given the empty graph
+    And the intent
+      """
+      Remove the age property from every person older than 30.
+      """
+    And the graph initializer of
+      """
+      g.addV("person").property("name", "marko").property("age", 29).as("marko").
+        addV("person").property("name", "vadas").property("age", 27).as("vadas").
+        addV("software").property("name", "lop").property("lang", "java").as("lop").
+        addV("person").property("name","josh").property("age", 32).as("josh").
+        addV("software").property("name", "ripple").property("lang", "java").as("ripple").
+        addV("person").property("name", "peter").property("age", 35).as('peter').
+        addE("knows").from("marko").to("vadas").property("weight", 0.5d).
+        addE("knows").from("marko").to("josh").property("weight", 1.0d).
+        addE("created").from("marko").to("lop").property("weight", 0.4d).
+        addE("created").from("josh").to("ripple").property("weight", 1.0d).
+        addE("created").from("josh").to("lop").property("weight", 0.4d).
+        addE("created").from("peter").to("lop").property("weight", 0.2d)
+      """
+    And the traversal of
+      """
+      g.V().has("person","age",P.gt(30)).properties("age").drop()
+      """
+    When iterated to list
+    Then the result should be empty
+    And the graph should return 2 for count of "g.V().has(\"age\")"
+    And the graph should return 6 for count of "g.V()"

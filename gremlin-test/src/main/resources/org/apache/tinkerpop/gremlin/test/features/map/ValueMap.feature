@@ -389,3 +389,19 @@ Feature: Step - valueMap()
     Then the result should be unordered
       | result |
       | m[{"t[id]": "v[nobody].id", "name": ["nobody"]}] |
+
+  Scenario: g_V_hasXsoftware_name_rippleX_inE_hasXweight_gteX0_5XX_outV_valueMap_byXunfoldX
+    Given the modern graph
+    And the intent
+      """
+      Who contributed to ripple with an edge weight of at least 0.5? Return each contributor's properties as one map
+      from property key to value.
+      """
+    And the traversal of
+      """
+      g.V().has("software","name","ripple").inE().has("weight",P.gte(0.5)).outV().valueMap().by(unfold())
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | m[{"name":"josh","age":"d[32].i"}] |

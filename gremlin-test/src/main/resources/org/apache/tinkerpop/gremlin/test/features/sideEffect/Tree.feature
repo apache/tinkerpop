@@ -147,6 +147,12 @@ Feature: Step - tree()
   Scenario: g_VX1X_outE_inV_bothE_otherV_tree
     Given the modern graph
     And using the parameter vid1 defined as "v[marko].id"
+    And the intent
+      """
+      Starting from vertex <vid1>, follow each of its outgoing edges to the vertex at the other end, then follow every
+      edge of that vertex, in either direction, to the vertex at its other end. Return the walk as a tree of vertices
+      and edges.
+      """
     And the traversal of
       """
       g.V(vid1).outE().inV().bothE().otherV().tree()

@@ -69,3 +69,19 @@ Feature: Step - hasValue()
     Then the result should be unordered
       | result |
       | josh |
+
+  Scenario: g_V_properties_hasValueXjavaX_key
+    Given the modern graph
+    And the intent
+      """
+      Which properties anywhere on the vertices hold the value "java"? Return the key of each.
+      """
+    And the traversal of
+      """
+      g.V().properties().hasValue("java").key()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | lang |
+      | lang |

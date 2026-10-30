@@ -108,6 +108,11 @@ Feature: Step - format()
   @GraphComputerVerificationReferenceOnly
   Scenario: g_V_formatXstrX_byXbothE_countX
     Given the modern graph
+    And the intent
+      """
+      For each vertex, write a sentence of the form "marko has 3 connections", using its name and the number of its
+      edges in either direction.
+      """
     And the traversal of
       """
       g.V().format("%{name} has %{_} connections").by(bothE().count())

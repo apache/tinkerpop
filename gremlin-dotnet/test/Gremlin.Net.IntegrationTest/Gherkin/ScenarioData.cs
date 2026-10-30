@@ -112,6 +112,10 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
             var multilabel = new ScenarioDataPerGraph("multilabel", _connectionFactory.CreateRemoteConnection("gmultilabel"),
                 new Dictionary<string, Vertex>(0), new Dictionary<string, Edge>(), new Dictionary<string, VertexProperty>());
             _dataPerGraph.Add("multilabel", multilabel);
+            // air-routes scenarios only return values so the graph needs no element lookups
+            var airroutes = new ScenarioDataPerGraph("airroutes", _connectionFactory.CreateRemoteConnection("gairroutes"),
+                new Dictionary<string, Vertex>(0), new Dictionary<string, Edge>(), new Dictionary<string, VertexProperty>());
+            _dataPerGraph.Add("airroutes", airroutes);
         }
 
         private Dictionary<string, ScenarioDataPerGraph> LoadDataPerGraph()

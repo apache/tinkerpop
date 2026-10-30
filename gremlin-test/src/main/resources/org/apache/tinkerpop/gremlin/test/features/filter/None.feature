@@ -158,3 +158,20 @@ Feature: Step - none()
       """
     When iterated to list
     Then the result should be empty
+
+  Scenario: g_V_hasLabelXpersonX_whereXoutEXcreatedXX_whereXoutEXcreatedX_valuesXweightX_fold_noneXltX0_3XXX_name
+    Given the modern graph
+    And the intent
+      """
+      Among the people who created something, which ones have no created edge with a weight below 0.3? Return their
+      names.
+      """
+    And the traversal of
+      """
+      g.V().hasLabel("person").where(outE("created")).where(outE("created").values("weight").fold().none(P.lt(0.3))).values("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | marko |
+      | josh |

@@ -143,3 +143,19 @@ Feature: Step - all()
       """
     When iterated to list
     Then the result should be empty
+
+  @GraphComputerVerificationStarGraphExceeded
+  Scenario: g_V_hasLabelXsoftwareX_whereXinXcreatedX_valuesXageX_fold_allXgtX30XXX_name
+    Given the modern graph
+    And the intent
+      """
+      Which software was created only by people older than 30? Return the software names.
+      """
+    And the traversal of
+      """
+      g.V().hasLabel("software").where(__.in("created").values("age").fold().all(P.gt(30))).values("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | ripple |

@@ -147,3 +147,19 @@ Feature: Step - any()
     Then the result should be unordered
       | result |
       | l[d[3].i,three] |
+
+  @GraphComputerVerificationStarGraphExceeded
+  Scenario: g_V_hasLabelXpersonX_whereXoutXknowsX_valuesXageX_fold_anyXeqX32XXX_name
+    Given the modern graph
+    And the intent
+      """
+      Which people know someone who is 32 years old? Return their names.
+      """
+    And the traversal of
+      """
+      g.V().hasLabel("person").where(out("knows").values("age").fold().any(P.eq(32))).values("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | marko |

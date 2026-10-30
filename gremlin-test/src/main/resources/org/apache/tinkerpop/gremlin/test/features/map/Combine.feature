@@ -243,3 +243,20 @@ Feature: Step - combine()
     Then the result should be unordered
       | result |
       | l[d[3].i,three,five,three,d[7].i] |
+
+  @GraphComputerVerificationMidVNotSupported
+  Scenario: g_V_hasXperson_name_markoX_outXcreatedX_valuesXnameX_order_fold_combineXjoshs_creations_order_foldX
+    Given the modern graph
+    And the intent
+      """
+      Make one list of the names of what marko created followed by the names of what josh created, each part in
+      alphabetical order, keeping duplicates.
+      """
+    And the traversal of
+      """
+      g.V().has("person","name","marko").out("created").values("name").order().fold().combine(__.V().has("person","name","josh").out("created").values("name").order().fold())
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | l[lop,lop,ripple] |
