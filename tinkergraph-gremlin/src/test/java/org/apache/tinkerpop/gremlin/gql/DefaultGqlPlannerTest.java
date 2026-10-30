@@ -27,7 +27,9 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.lang.reflect.Proxy;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import static org.junit.Assert.*;
 
@@ -582,26 +584,6 @@ public class DefaultGqlPlannerTest {
     }
 
     @Test
-    public void testQuantifiedBackEdgeClosingCycleThrows() {
-        // Triangle a-b-c. With equal cardinality the seed is a. BFS from a processes both
-        // edges touching a (AB forward -> visits b, CA forward -> visits c). The remaining
-        // edge BC is then discovered with both endpoints already visited, so it is classified
-        // as a BACK edge. Quantifying BC forces the forward-only guard to fire.
-        graph.addVertex("A");
-        graph.addVertex("B");
-        graph.addVertex("C");
-
-        try {
-            planner.compile(QueryGraph.parse(
-                    "MATCH (a:A)-[:AB]->(b:B)-[:BC]->{1,3}(c:C)-[:CA]->(a:A)"));
-            fail("expected IllegalArgumentException for quantified back edge closing a cycle");
-        } catch (final IllegalArgumentException ex) {
-            assertTrue("message should explain the forward-only limitation: " + ex.getMessage(),
-                    ex.getMessage().contains("quantified edges closing a pattern cycle are not yet supported"));
-        }
-    }
-
-    @Test
     public void testStepAnchoredAtPatternTargetIsFlagged() {
         // Company is rarer, so the step is anchored at c, the right-hand node of the pattern edge.
         graph.addVertex("Person");
@@ -674,24 +656,6 @@ public class DefaultGqlPlannerTest {
     }
 
     @Test
-    public void testExactlyOneQuantifiedBackEdgeClosingCycleThrows() {
-        graph.addVertex("A");
-        graph.addVertex("B");
-        graph.addVertex("C");
-
-        for (final String q : new String[]{"{1}", "{1,1}"}) {
-            try {
-                planner.compile(QueryGraph.parse(
-                        "MATCH (a:A)-[:AB]->(b:B)-[:BC]->" + q + "(c:C)-[:CA]->(a:A)"));
-                fail("expected IllegalArgumentException for quantified " + q + " back edge closing a cycle");
-            } catch (final IllegalArgumentException ex) {
-                assertTrue(ex.getMessage(),
-                        ex.getMessage().contains("quantified edges closing a pattern cycle are not yet supported"));
-            }
-        }
-    }
-
-    @Test
     public void testPlainBackEdgeAnchoredAtPatternTargetIsFlagged() {
         // Triangle a->b->c->a seeded at the single A. AB is denser than CA, so BFS from a visits
         // c before b. BC is then discovered from c as a back edge, and because c was visited
@@ -724,43 +688,8 @@ public class DefaultGqlPlannerTest {
         assertFalse(step.isAnchoredAtPatternTarget());
     }
 
-    // -------------------------------------------------------------------------
-    // Pattern self-loops on quantified edges
-    // -------------------------------------------------------------------------
-
     @Test
-    public void testQuantifiedPatternSelfLoopThrowsInEveryDirection() {
-        graph.addVertex("A");
-
-        for (final String edge : new String[]{"-[r:L]->", "<-[r:L]-", "-[r:L]-", "-[:L]->", "-[]-"}) {
-            for (final String q : new String[]{"{2,3}", "{1}", "{1,1}", "{2}", "{1,}", "+"}) {
-                final String query = "MATCH (a:A)" + edge + q + "(a)";
-                try {
-                    planner.compile(QueryGraph.parse(query));
-                    fail("expected IllegalArgumentException for quantified pattern self-loop " + query);
-                } catch (final IllegalArgumentException ex) {
-                    assertEquals(query, "quantified edges closing a pattern cycle are not yet supported",
-                            ex.getMessage());
-                }
-            }
-        }
-    }
-
-    @Test
-    public void testQuantifiedPatternSelfLoopInLongerPatternThrows() {
-        graph.addVertex("A");
-        graph.addVertex("B");
-
-        try {
-            planner.compile(QueryGraph.parse("MATCH (a:A)-[:E]->(b:B)-[r:L]->{2,3}(b)"));
-            fail("expected IllegalArgumentException for a quantified pattern self-loop on b");
-        } catch (final IllegalArgumentException ex) {
-            assertEquals("quantified edges closing a pattern cycle are not yet supported", ex.getMessage());
-        }
-    }
-
-    @Test
-    public void testPlainPatternSelfLoopStillCompiles() {
+    public void testPlainPatternSelfLoopCompilesInEveryDirection() {
         graph.addVertex("A");
 
         final String[] edges = {"-[r:L]->", "<-[r:L]-", "-[r:L]-"};
@@ -846,6 +775,166 @@ public class DefaultGqlPlannerTest {
                 "MATCH (m:Hub)-[:A]->(p:Person), (m)-[:MISSING]->+(z:Person)"));
         assertEquals(0L, stepTo(plan, "z").getEstimatedCost());
         assertEquals("z", plan.getSteps().get(0).getTargetVariable());
+    }
+
+    // -------------------------------------------------------------------------
+    // Quantified back edges and pattern self-loops: emitted like any other back edge
+    // -------------------------------------------------------------------------
+
+    private static ExtensionStep stepByLabel(final GqlMatchPlan plan, final String label) {
+        return plan.getSteps().stream()
+                .filter(s -> label.equals(s.getEdgeLabel())).findFirst().orElseThrow();
+    }
+
+    /**
+     * Asserts the step's target is bound by the seed or an earlier step in the plan, so it closes
+     * a cycle. This is a plan-level property: the executor may reorder steps at runtime.
+     */
+    private static void assertBackEdge(final GqlMatchPlan plan, final ExtensionStep step) {
+        final Set<String> bound = new HashSet<>();
+        bound.add(plan.getSeedVariable());
+        for (final ExtensionStep s : plan.getSteps()) {
+            if (s == step) {
+                assertTrue(step + " must be a back edge", bound.contains(s.getTargetVariable()));
+                return;
+            }
+            bound.add(s.getTargetVariable());
+        }
+        fail(step + " is not in the plan");
+    }
+
+    private static void assertQuantifiedStep(final ExtensionStep step, final String anchor, final String target,
+                                             final Direction direction, final boolean anchoredAtPatternTarget,
+                                             final int minHops, final int maxHops) {
+        assertEquals("anchor", anchor, step.getAnchorVariable());
+        assertEquals("target", target, step.getTargetVariable());
+        assertEquals("direction", direction, step.getDirection());
+        assertEquals("anchoredAtPatternTarget", anchoredAtPatternTarget, step.isAnchoredAtPatternTarget());
+        assertTrue("quantified", step.isQuantified());
+        assertEquals("minHops", minHops, step.getMinHops());
+        assertEquals("maxHops", maxHops, step.getMaxHops());
+    }
+
+    @Test
+    public void testQuantifiedBackEdgeAnchoredAtPatternSourceIsPlanned() {
+        // Triangle seeded at a. AB and CA tie on density, so AB is processed first and b is visited
+        // before c. BC is then a back edge from b, anchored at b, its pattern source.
+        graph.addVertex("A");
+        graph.addVertex("B");
+        graph.addVertex("C");
+
+        final GqlMatchPlan plan = planner.compile(QueryGraph.parse(
+                "MATCH (a:A)-[:AB]->(b:B)-[r:BC]->{1,3}(c:C)-[:CA]->(a:A)"));
+        assertEquals("a", plan.getSeedVariable());
+        final ExtensionStep bc = stepByLabel(plan, "BC");
+        assertBackEdge(plan, bc);
+        assertQuantifiedStep(bc, "b", "c", Direction.OUT, false, 1, 3);
+        assertTrue(bc.isEdgeVariableGroup());
+    }
+
+    @Test
+    public void testQuantifiedBackEdgeAnchoredAtPatternTargetIsFlaggedInEveryDirection() {
+        // AB is denser than CA, so BFS from a visits c before b, and the b-c edge is anchored at c,
+        // the pattern edge's right-hand node. The direction flips; BOTH stays BOTH.
+        final Vertex a = graph.addVertex("A");
+        graph.addVertex("B");
+        graph.addVertex("C");
+        a.addEdge("AB", graph.addVertex("X"));
+        a.addEdge("AB", graph.addVertex("X"));
+
+        final String[] edges = {"-[r:BC]->", "<-[r:BC]-", "-[r:BC]-"};
+        final Direction[] directions = {Direction.IN, Direction.OUT, Direction.BOTH};
+        for (int i = 0; i < edges.length; i++) {
+            final GqlMatchPlan plan = planner.compile(QueryGraph.parse(
+                    "MATCH (a:A)-[:AB]->(b:B)" + edges[i] + "{2,3}(c:C)-[:CA]->(a:A)"));
+            assertEquals(edges[i], "a", plan.getSeedVariable());
+            final ExtensionStep bc = stepByLabel(plan, "BC");
+            assertBackEdge(plan, bc);
+            assertQuantifiedStep(bc, "c", "b", directions[i], true, 2, 3);
+        }
+    }
+
+    @Test
+    public void testExactlyOneQuantifiedBackEdgeIsPlannedAsQuantifiedBackEdge() {
+        graph.addVertex("A");
+        graph.addVertex("B");
+        graph.addVertex("C");
+
+        for (final String q : new String[]{"{1}", "{1,1}"}) {
+            final GqlMatchPlan plan = planner.compile(QueryGraph.parse(
+                    "MATCH (a:A)-[:AB]->(b:B)-[:BC]->" + q + "(c:C)-[:CA]->(a:A)"));
+            final ExtensionStep bc = stepByLabel(plan, "BC");
+            assertBackEdge(plan, bc);
+            assertQuantifiedStep(bc, "b", "c", Direction.OUT, false, 1, 1);
+            assertFalse(q, bc.isEdgeVariableGroup());
+        }
+    }
+
+    @Test
+    public void testQuantifiedPatternSelfLoopIsPlannedInEveryDirection() {
+        graph.addVertex("A");
+
+        final String[] edges = {"-[r:L]->", "<-[r:L]-", "-[r:L]-", "-[:L]->", "-[]-"};
+        final Direction[] directions = {Direction.OUT, Direction.IN, Direction.BOTH, Direction.OUT, Direction.BOTH};
+        final String[] quantifiers = {"{2,3}", "{1}", "{1,1}", "{2}", "{1,}", "+"};
+        final int[][] hops = {{2, 3}, {1, 1}, {1, 1}, {2, 2}, {1, QueryEdge.UNBOUNDED}, {1, QueryEdge.UNBOUNDED}};
+        for (int i = 0; i < edges.length; i++) {
+            for (int j = 0; j < quantifiers.length; j++) {
+                final String query = "MATCH (a:A)" + edges[i] + quantifiers[j] + "(a)";
+                final GqlMatchPlan plan = planner.compile(QueryGraph.parse(query));
+                assertEquals(query, 1, plan.getSteps().size());
+                final ExtensionStep step = plan.getSteps().get(0);
+                assertBackEdge(plan, step);
+                assertQuantifiedStep(step, "a", "a", directions[i], false, hops[j][0], hops[j][1]);
+            }
+        }
+    }
+
+    @Test
+    public void testQuantifiedPatternSelfLoopInLongerPatternIsPlanned() {
+        graph.addVertex("A");
+        graph.addVertex("B");
+
+        final GqlMatchPlan plan = planner.compile(QueryGraph.parse("MATCH (a:A)-[:E]->(b:B)-[r:L]->{2,3}(b)"));
+        assertEquals("a", plan.getSeedVariable());
+        final ExtensionStep loop = stepByLabel(plan, "L");
+        assertBackEdge(plan, loop);
+        assertQuantifiedStep(loop, "b", "b", Direction.OUT, false, 2, 3);
+    }
+
+    @Test
+    public void testQuantifiedBackEdgeWhoseTargetIsBoundByPlainStepIsPlanned() {
+        // M is rarer than L, so from a the plain M step binds b first and the L walk closes on it.
+        final Vertex x = graph.addVertex("V");
+        final Vertex y = graph.addVertex("V");
+        y.addEdge("M", x);
+        x.addEdge("L", y);
+        y.addEdge("L", x);
+
+        final GqlMatchPlan plan = planner.compile(QueryGraph.parse("MATCH (a)-[r:L]->+(b), (b)-[:M]->(a)"));
+        assertEquals("a", plan.getSeedVariable());
+        final ExtensionStep m = stepByLabel(plan, "M");
+        assertEquals("b", m.getTargetVariable());
+        assertTrue(m.isAnchoredAtPatternTarget());
+        final ExtensionStep l = stepByLabel(plan, "L");
+        assertBackEdge(plan, l);
+        assertQuantifiedStep(l, "a", "b", Direction.OUT, false, 1, QueryEdge.UNBOUNDED);
+    }
+
+    @Test
+    public void testTwoQuantifiedEdgesFormingTwoCycleArePlanned() {
+        // r1 visits b forward; r2 then closes the 2-cycle from a, anchored at its pattern target.
+        graph.addVertex("V");
+
+        final GqlMatchPlan plan = planner.compile(QueryGraph.parse(
+                "MATCH (a)-[r1:K]->{1,3}(b), (b)-[r2:K]->{1,3}(a)"));
+        assertEquals("a", plan.getSeedVariable());
+        assertEquals(2, plan.getSteps().size());
+        assertQuantifiedStep(plan.getSteps().get(0), "a", "b", Direction.OUT, false, 1, 3);
+        final ExtensionStep r2 = plan.getSteps().get(1);
+        assertEquals("r2", r2.getEdgeVariable());
+        assertBackEdge(plan, r2);
+        assertQuantifiedStep(r2, "a", "b", Direction.IN, true, 1, 3);
     }
 
     private static ExtensionStep stepTo(final GqlMatchPlan plan, final String target) {

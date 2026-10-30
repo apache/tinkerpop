@@ -795,8 +795,12 @@ public class AcmeGraph implements Graph {
 
 The contract for a `GqlExecutor` implementation is: for each seed vertex matching the plan's seed label and
 predicates, extend through each `ExtensionStep` in an order that keeps every step's anchor variable bound
-before that step executes, and emit one `GqlRow` per complete match. Results are returned lazily as an
-`Iterator<GqlRow>`. See `DefaultGqlExecutor` for a reference implementation.
+before that step executes, and emit one `GqlRow` per complete match. A step's target variable may already be
+bound when the step runs. The step must then be joined on that binding, so only edges or walks that end at the
+bound vertex produce rows. This applies equally to a quantified step that closes a pattern cycle or loops back to
+its own node. A quantified step produces one row per walk that ends at the bound vertex, even for `{1}` over
+parallel edges. Results are returned lazily as an `Iterator<GqlRow>`. See `DefaultGqlExecutor` for a reference
+implementation.
 
 A `GqlRow` is an immutable value addressed by variable index. Each index matches a position in
 `GqlMatchPlan.getVariables()`, with the seed variable at index 0, and `GqlMatchPlan.getIndex(String)` resolves
