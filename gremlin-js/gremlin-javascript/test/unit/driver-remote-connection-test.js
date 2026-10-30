@@ -20,6 +20,7 @@
 import assert from 'assert';
 import DriverRemoteConnection from '../../lib/driver/driver-remote-connection.js';
 import GremlinLang from '../../lib/process/gremlin-lang.js';
+import { OptionsStrategy } from '../../lib/process/traversal-strategy.js';
 
 describe('DriverRemoteConnection', function () {
   function createConnection(capture) {
@@ -53,5 +54,40 @@ describe('DriverRemoteConnection', function () {
     await connection.submit(gremlinLang);
 
     assert.strictEqual(captured.requestOptions.parameters, "['x':42]");
+  });
+
+  describe('language', function () {
+    it('does not set a language when none is configured', async function () {
+      let captured;
+      const connection = createConnection(args => captured = args);
+
+      await connection.submit(new GremlinLang().addStep('V'));
+
+      assert.strictEqual(captured.requestOptions.language, undefined);
+    });
+
+    it('sends the language set with with_()', async function () {
+      let captured;
+      const connection = createConnection(args => captured = args);
+      const gremlinLang = new GremlinLang()
+        .addStep('V')
+        .addSource('withStrategies', [new OptionsStrategy({ language: 'my-engine' })]);
+
+      await connection.submit(gremlinLang);
+
+      assert.strictEqual(captured.requestOptions.language, 'my-engine');
+    });
+
+    it('does not render the language into the gremlin text', async function () {
+      let captured;
+      const connection = createConnection(args => captured = args);
+      const gremlinLang = new GremlinLang()
+        .addStep('V')
+        .addSource('withStrategies', [new OptionsStrategy({ language: 'my-engine' })]);
+
+      await connection.submit(gremlinLang);
+
+      assert.ok(!captured.gremlin.includes('language'));
+    });
   });
 });

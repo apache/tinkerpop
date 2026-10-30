@@ -2012,7 +2012,7 @@ Some connection options can also be set on individual requests made through the 
 const vertices = await g.with_('timeoutMillis', 500).V().out('knows').toList()
 ----
 
-The following options are allowed on a per-request basis in this fashion: `batchSize`, `bulkResults`,
+The following options are allowed on a per-request basis in this fashion: `batchSize`, `bulkResults`, `language`,
 `materializeProperties` and `timeoutMillis`.
 
 NOTE: When submitting traversals through `DriverRemoteConnection`, `bulkResults` defaults to `true` per-request
