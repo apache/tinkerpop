@@ -19,6 +19,8 @@
 package org.apache.tinkerpop.gremlin.gql;
 
 import org.apache.commons.configuration2.BaseConfiguration;
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalInterruptedException;
+import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -37,7 +39,11 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 import static org.junit.Assert.*;
@@ -1314,9 +1320,9 @@ public class DefaultGqlExecutorTest {
 
         assertEquals(3, results.size());
         final Map<Element, List<Map<String, Element>>> byX = byTarget(results, "x");
-        assertEquals(java.util.Arrays.asList(e1), edgeList(byX.get(b).get(0), "r"));
-        assertEquals(java.util.Arrays.asList(e1, e2), edgeList(byX.get(c).get(0), "r"));
-        assertEquals(java.util.Arrays.asList(e1, e2, e3), edgeList(byX.get(d).get(0), "r"));
+        assertEquals(List.of(e1), edgeList(byX.get(b).get(0), "r"));
+        assertEquals(List.of(e1, e2), edgeList(byX.get(c).get(0), "r"));
+        assertEquals(List.of(e1, e2, e3), edgeList(byX.get(d).get(0), "r"));
     }
 
     @Test
@@ -1327,18 +1333,18 @@ public class DefaultGqlExecutorTest {
         final Vertex b = graph.addVertex("Person");
         final Vertex c = graph.addVertex("Person");
         final Vertex d = graph.addVertex("Person");
-        a.addEdge("KNOWS", b);
-        b.addEdge("KNOWS", c);
-        c.addEdge("KNOWS", d);
+        final Edge e1 = a.addEdge("KNOWS", b);
+        final Edge e2 = b.addEdge("KNOWS", c);
+        final Edge e3 = c.addEdge("KNOWS", d);
 
         final List<Map<String, Element>> results =
                 execute("MATCH (a:Person {n: 'a'})-[r:KNOWS]->{2,3}(x:Person)");
 
         final Map<Element, List<Map<String, Element>>> byX = byTarget(results, "x");
         assertEquals(2, results.size());
-        assertFalse(byX.containsKey(b));
-        assertTrue(byX.containsKey(c));
-        assertTrue(byX.containsKey(d));
+        assertEquals(Set.of(c, d), byX.keySet());
+        assertEquals(List.of(e1, e2), edgeList(byX.get(c).get(0), "r"));
+        assertEquals(List.of(e1, e2, e3), edgeList(byX.get(d).get(0), "r"));
     }
 
     @Test
@@ -1358,7 +1364,7 @@ public class DefaultGqlExecutorTest {
 
         assertEquals(1, results.size());
         assertEquals(c, results.get(0).get("x"));
-        assertEquals(java.util.Arrays.asList(e1, e2), edgeList(results.get(0), "r"));
+        assertEquals(List.of(e1, e2), edgeList(results.get(0), "r"));
     }
 
     @Test
@@ -1369,17 +1375,18 @@ public class DefaultGqlExecutorTest {
         final Vertex b = graph.addVertex("Person");
         final Vertex c = graph.addVertex("Person");
         final Vertex d = graph.addVertex("Person");
-        a.addEdge("KNOWS", b);
-        b.addEdge("KNOWS", c);
-        c.addEdge("KNOWS", d);
+        final Edge e1 = a.addEdge("KNOWS", b);
+        final Edge e2 = b.addEdge("KNOWS", c);
+        final Edge e3 = c.addEdge("KNOWS", d);
 
         final List<Map<String, Element>> results =
                 execute("MATCH (a:Person {n: 'a'})-[r:KNOWS]->{2,}(x:Person)");
 
         final Map<Element, List<Map<String, Element>>> byX = byTarget(results, "x");
         assertEquals(2, results.size());
-        assertTrue(byX.containsKey(c));
-        assertTrue(byX.containsKey(d));
+        assertEquals(Set.of(c, d), byX.keySet());
+        assertEquals(List.of(e1, e2), edgeList(byX.get(c).get(0), "r"));
+        assertEquals(List.of(e1, e2, e3), edgeList(byX.get(d).get(0), "r"));
     }
 
     @Test
@@ -1390,21 +1397,22 @@ public class DefaultGqlExecutorTest {
         final Vertex b = graph.addVertex("Person");
         final Vertex c = graph.addVertex("Person");
         final Vertex d = graph.addVertex("Person");
-        a.addEdge("KNOWS", b);
-        b.addEdge("KNOWS", c);
-        c.addEdge("KNOWS", d);
+        final Edge e1 = a.addEdge("KNOWS", b);
+        final Edge e2 = b.addEdge("KNOWS", c);
+        final Edge e3 = c.addEdge("KNOWS", d);
 
         final List<Map<String, Element>> results =
                 execute("MATCH (a:Person {n: 'a'})-[r:KNOWS]->+(x:Person)");
 
         assertEquals(3, results.size());
         final Map<Element, List<Map<String, Element>>> byX = byTarget(results, "x");
-        assertTrue(byX.containsKey(b));
-        assertTrue(byX.containsKey(c));
-        assertTrue(byX.containsKey(d));
+        assertEquals(Set.of(b, c, d), byX.keySet());
+        assertEquals(List.of(e1), edgeList(byX.get(b).get(0), "r"));
+        assertEquals(List.of(e1, e2), edgeList(byX.get(c).get(0), "r"));
+        assertEquals(List.of(e1, e2, e3), edgeList(byX.get(d).get(0), "r"));
     }
 
-    @Test
+    @Test(timeout = 10000)
     public void testQuantifiedUnboundedTerminatesOnCycle() {
         // Cycle a->b->c->a. TRAIL edge-uniqueness makes an unbounded walk terminate.
         // From a with + the distinct trails are: a->b (b), a->b->c (c), a->b->c->a (a).
@@ -1412,22 +1420,21 @@ public class DefaultGqlExecutorTest {
         a.property("n", "a");
         final Vertex b = graph.addVertex("Person");
         final Vertex c = graph.addVertex("Person");
-        a.addEdge("KNOWS", b);
-        b.addEdge("KNOWS", c);
-        c.addEdge("KNOWS", a);
+        final Edge ab = a.addEdge("KNOWS", b);
+        final Edge bc = b.addEdge("KNOWS", c);
+        final Edge ca = c.addEdge("KNOWS", a);
 
         final List<Map<String, Element>> results =
                 execute("MATCH (a:Person {n: 'a'})-[r:KNOWS]->+(x:Person)");
 
         // Exactly three trails from a; the deepest one returns to a (vertex repeats, edges do not).
         assertEquals(3, results.size());
-        final List<Element> targets = results.stream().map(r -> r.get("x")).collect(Collectors.toList());
-        assertTrue(targets.contains(a));
-        assertTrue(targets.contains(b));
-        assertTrue(targets.contains(c));
-        // The length-3 trail ends back at a and uses all 3 distinct edges.
         final Map<Element, List<Map<String, Element>>> byX = byTarget(results, "x");
-        assertEquals(3, edgeList(byX.get(a).get(0), "r").size());
+        assertEquals(Set.of(a, b, c), byX.keySet());
+        assertEquals(List.of(ab), edgeList(byX.get(b).get(0), "r"));
+        assertEquals(List.of(ab, bc), edgeList(byX.get(c).get(0), "r"));
+        // The length-3 trail ends back at a and uses all 3 distinct edges.
+        assertEquals(List.of(ab, bc, ca), edgeList(byX.get(a).get(0), "r"));
     }
 
     @Test
@@ -1439,17 +1446,17 @@ public class DefaultGqlExecutorTest {
         final Vertex d = graph.addVertex("Person");
         d.property("n", "d");
         a.addEdge("KNOWS", b);
-        b.addEdge("KNOWS", c);
-        c.addEdge("KNOWS", d);
+        final Edge bc = b.addEdge("KNOWS", c);
+        final Edge cd = c.addEdge("KNOWS", d);
 
         final List<Map<String, Element>> results =
                 execute("MATCH (d:Person {n: 'd'})<-[r:KNOWS]-{1,2}(x:Person)");
 
         final Map<Element, List<Map<String, Element>>> byX = byTarget(results, "x");
         assertEquals(2, results.size());
-        assertTrue(byX.containsKey(c)); // depth 1
-        assertTrue(byX.containsKey(b)); // depth 2
-        assertFalse(byX.containsKey(a));
+        assertEquals(Set.of(c, b), byX.keySet());
+        assertEquals(List.of(cd), edgeList(byX.get(c).get(0), "r"));     // depth 1
+        assertEquals(List.of(cd, bc), edgeList(byX.get(b).get(0), "r")); // depth 2
     }
 
     @Test
@@ -1509,7 +1516,7 @@ public class DefaultGqlExecutorTest {
 
         assertEquals(1, results.size());
         assertEquals(a, results.get(0).get("x"));
-        assertEquals(java.util.Arrays.asList(self), edgeList(results.get(0), "r"));
+        assertEquals(List.of(self), edgeList(results.get(0), "r"));
     }
 
     @Test
@@ -1528,7 +1535,7 @@ public class DefaultGqlExecutorTest {
 
         assertEquals(1, results.size());
         assertEquals(b, results.get(0).get("x"));
-        assertEquals(java.util.List.of(e1), edgeList(results.get(0), "r"));
+        assertEquals(List.of(e1), edgeList(results.get(0), "r"));
     }
 
     @Test
@@ -1575,7 +1582,7 @@ public class DefaultGqlExecutorTest {
 
         assertEquals(1, results.size());
         assertEquals(c, results.get(0).get("x"));
-        assertEquals(java.util.Arrays.asList(e1, e2), edgeList(results.get(0), "r"));
+        assertEquals(List.of(e1, e2), edgeList(results.get(0), "r"));
     }
 
     @Test
@@ -1593,5 +1600,487 @@ public class DefaultGqlExecutorTest {
 
         assertEquals(1, results.size());
         assertEquals(b, results.get(0).get("x"));
+    }
+
+    // -------------------------------------------------------------------------
+    // Group edge list order when the walk starts at the pattern edge's target
+    // -------------------------------------------------------------------------
+
+    /**
+     * Adds Person vertices that touch no edge so that the single Company is the cheapest seed and
+     * the planner anchors the quantified step at the pattern edge's target.
+     */
+    private void addIsolatedPersons(final int count) {
+        for (int i = 0; i < count; i++) graph.addVertex("Person");
+    }
+
+    private void assertRightSeededGroupInPatternOrder(final String query, final List<Edge> expected,
+                                                      final Vertex expectedA, final Vertex expectedB) {
+        assertRightSeededGroupInPatternOrder(planner.plan(query), expected, expectedA, expectedB);
+    }
+
+    private void assertRightSeededGroupInPatternOrder(final GqlMatchPlan plan, final List<Edge> expected,
+                                                      final Vertex expectedA, final Vertex expectedB) {
+        assertEquals("the Company endpoint must be the seed for this test to start the walk at the target",
+                "b", plan.getSeedVariable());
+        assertTrue(plan.getSteps().get(0).isAnchoredAtPatternTarget());
+
+        final List<Map<String, Element>> results = materialize(executor.execute(plan), plan);
+        assertEquals(1, results.size());
+        assertEquals(expectedA, results.get(0).get("a"));
+        assertEquals(expectedB, results.get(0).get("b"));
+        assertEquals(expected, edgeList(results.get(0), "r"));
+    }
+
+    @Test
+    public void testQuantifiedGroupListInPatternOrderWhenSeededAtTarget() {
+        // p0 -L-> p1 -L-> company, walked from company. r must read left to right.
+        final Vertex p0 = graph.addVertex("Person");
+        final Vertex p1 = graph.addVertex("Person");
+        final Vertex company = graph.addVertex("Company");
+        addIsolatedPersons(8);
+        final Edge e01 = p0.addEdge("L", p1);
+        final Edge e1c = p1.addEdge("L", company);
+
+        assertRightSeededGroupInPatternOrder("MATCH (a:Person)-[r:L]->{2}(b:Company)",
+                List.of(e01, e1c), p0, company);
+    }
+
+    @Test
+    public void testQuantifiedReverseGroupListInPatternOrderWhenSeededAtTarget() {
+        // company -L-> p1 -L-> p0 matched by (a)<-[r]-{2}(b), walked from company.
+        final Vertex p0 = graph.addVertex("Person");
+        final Vertex p1 = graph.addVertex("Person");
+        final Vertex company = graph.addVertex("Company");
+        addIsolatedPersons(8);
+        final Edge e10 = p1.addEdge("L", p0);
+        final Edge ec1 = company.addEdge("L", p1);
+
+        assertRightSeededGroupInPatternOrder("MATCH (a:Person)<-[r:L]-{2}(b:Company)",
+                List.of(e10, ec1), p0, company);
+    }
+
+    @Test
+    public void testQuantifiedUndirectedGroupListInPatternOrderWhenSeededAtTarget() {
+        // Undirected edges keep Direction.BOTH when anchored at the target, so ordering must not
+        // depend on the direction being flipped.
+        final Vertex p0 = graph.addVertex("Person");
+        final Vertex p1 = graph.addVertex("Person");
+        final Vertex company = graph.addVertex("Company");
+        addIsolatedPersons(8);
+        final Edge e01 = p0.addEdge("L", p1);
+        final Edge e1c = p1.addEdge("L", company);
+
+        final GqlMatchPlan plan = planner.plan("MATCH (a:Person)-[r:L]-{2}(b:Company)");
+        assertEquals(Direction.BOTH, plan.getSteps().get(0).getDirection());
+        assertRightSeededGroupInPatternOrder(plan, List.of(e01, e1c), p0, company);
+    }
+
+    @Test
+    public void testQuantifiedGroupListsInPatternOrderAtEveryDepthWhenSeededAtTarget() {
+        // p0 -L-> p1 -L-> p2 -L-> company and q -L-> p1, walked from company with {2,3}. Depth 2
+        // ends at p1 and depth 3 ends at p0 or q; every r must read left to right.
+        final Vertex p0 = graph.addVertex("Person");
+        final Vertex q = graph.addVertex("Person");
+        final Vertex p1 = graph.addVertex("Person");
+        final Vertex p2 = graph.addVertex("Person");
+        final Vertex company = graph.addVertex("Company");
+        addIsolatedPersons(8);
+        final Edge e01 = p0.addEdge("L", p1);
+        final Edge eq1 = q.addEdge("L", p1);
+        final Edge e12 = p1.addEdge("L", p2);
+        final Edge e2c = p2.addEdge("L", company);
+
+        final GqlMatchPlan plan = planner.plan("MATCH (a:Person)-[r:L]->{2,3}(b:Company)");
+        assertEquals("b", plan.getSeedVariable());
+        assertTrue(plan.getSteps().get(0).isAnchoredAtPatternTarget());
+
+        final List<Map<String, Element>> results = materialize(executor.execute(plan), plan);
+        assertEquals(3, results.size());
+        final Map<Element, List<Map<String, Element>>> byA = byTarget(results, "a");
+        assertEquals(Set.of(p0, q, p1), byA.keySet());
+        for (final Map<String, Element> row : results) assertEquals(company, row.get("b"));
+        assertEquals(List.of(e12, e2c), edgeList(byA.get(p1).get(0), "r"));
+        assertEquals(List.of(e01, e12, e2c), edgeList(byA.get(p0).get(0), "r"));
+        assertEquals(List.of(eq1, e12, e2c), edgeList(byA.get(q).get(0), "r"));
+    }
+
+    // -------------------------------------------------------------------------
+    // Pull-based iteration: interruption, early termination, deep walks
+    // -------------------------------------------------------------------------
+
+    /** Adds a complete directed graph on {@code n} Person vertices, whose trail count explodes. */
+    private void addCompleteDigraph(final int n) {
+        final List<Vertex> vs = new ArrayList<>();
+        for (int i = 0; i < n; i++) vs.add(graph.addVertex("Person"));
+        for (final Vertex from : vs)
+            for (final Vertex to : vs)
+                if (from != to) from.addEdge("KNOWS", to);
+    }
+
+    @Test(timeout = 30000)
+    public void testInterruptStopsUnboundedWalk() throws Exception {
+        addCompleteDigraph(8);
+        final GqlMatchPlan plan = planner.plan("MATCH (a:Person)-[r:KNOWS]->+(b:Person)");
+        final CountDownLatch started = new CountDownLatch(1);
+        final AtomicReference<Throwable> thrown =
+                new AtomicReference<>();
+
+        final Thread worker = new Thread(() -> {
+            try {
+                final Iterator<GqlRow> iter = executor.execute(plan);
+                while (iter.hasNext()) {
+                    iter.next();
+                    started.countDown();
+                }
+            } catch (final Throwable t) {
+                thrown.set(t);
+            }
+        });
+        worker.setDaemon(true);
+        try {
+            worker.start();
+            assertTrue("the walk must start producing rows", started.await(10, TimeUnit.SECONDS));
+            worker.interrupt();
+            worker.join(10000);
+            assertFalse("the walk must stop after interruption", worker.isAlive());
+            assertTrue("expected TraversalInterruptedException but got " + thrown.get(),
+                    thrown.get() instanceof TraversalInterruptedException);
+        } finally {
+            worker.interrupt();
+        }
+    }
+
+    @Test(timeout = 30000)
+    public void testInterruptStopsUnboundedWalkThatNeverEmits() throws Exception {
+        // No vertex matches the target predicate, so the walk explores every trail without
+        // producing a row and only the checks inside the candidate loops can observe the interrupt.
+        addCompleteDigraph(8);
+        final GqlMatchPlan plan = planner.plan("MATCH (a:Person)-[r:KNOWS]->+(b:Person {missing: 1})");
+        final CountDownLatch started = new CountDownLatch(1);
+        final AtomicReference<Throwable> thrown = new AtomicReference<>();
+        final AtomicReference<Boolean> produced = new AtomicReference<>(false);
+
+        final Thread worker = new Thread(() -> {
+            try {
+                final Iterator<GqlRow> iter = executor.execute(plan);
+                started.countDown();
+                produced.set(iter.hasNext());
+            } catch (final Throwable t) {
+                thrown.set(t);
+            }
+        });
+        worker.setDaemon(true);
+        try {
+            worker.start();
+            assertTrue("the worker must start", started.await(10, TimeUnit.SECONDS));
+            // Give the search time to get past the seed scan and into the walk.
+            Thread.sleep(200);
+            assertTrue("the walk must still be running before the interrupt", worker.isAlive());
+            worker.interrupt();
+            worker.join(10000);
+            assertFalse("the walk must stop after interruption", worker.isAlive());
+            assertFalse("the walk must not have produced a row", produced.get());
+            assertTrue("expected TraversalInterruptedException but got " + thrown.get(),
+                    thrown.get() instanceof TraversalInterruptedException);
+        } finally {
+            worker.interrupt();
+        }
+    }
+
+    @Test
+    public void testIteratorContract() {
+        final Vertex a = graph.addVertex("Person");
+        final Vertex b = graph.addVertex("Person");
+        final Edge ab = a.addEdge("KNOWS", b);
+        final GqlMatchPlan plan = planner.plan("MATCH (x:Person)-[r:KNOWS]->{1}(y:Person)");
+
+        final Iterator<GqlRow> iter = executor.execute(plan);
+        assertTrue(iter.hasNext());
+        assertTrue("hasNext() must be idempotent", iter.hasNext());
+        final GqlRow row = iter.next();
+        assertEquals(a, row.getScalar(plan.getIndex("x")));
+        assertEquals(b, row.getScalar(plan.getIndex("y")));
+        assertEquals(List.of(ab), row.getGroup(plan.getIndex("r")));
+        assertFalse(iter.hasNext());
+        assertFalse(iter.hasNext());
+        try {
+            iter.next();
+            fail("next() after exhaustion must throw NoSuchElementException");
+        } catch (final NoSuchElementException expected) {
+            // expected
+        }
+    }
+
+    @Test(timeout = 10000)
+    public void testFirstRowOfUnboundedWalkOnDenseGraphIsPrompt() {
+        // The full result is astronomically large, so this only finishes if rows are pulled lazily.
+        addCompleteDigraph(10);
+        final GqlMatchPlan plan = planner.plan("MATCH (a:Person)-[r:KNOWS]->+(b:Person)");
+        final Iterator<GqlRow> iter = executor.execute(plan);
+        assertTrue(iter.hasNext());
+        assertEquals(1, iter.next().getGroup(plan.getIndex("r")).size());
+    }
+
+    @Test(timeout = 60000)
+    public void testUnboundedWalkOverLongChainDoesNotOverflowStack() {
+        final int length = 50_000;
+        final Vertex start = graph.addVertex("Start");
+        Vertex prev = start;
+        for (int i = 0; i < length; i++) {
+            final Vertex v = graph.addVertex("Node");
+            prev.addEdge("L", v);
+            prev = v;
+        }
+
+        final GqlMatchPlan plan = planner.plan("MATCH (a:Start)-[:L]->+(b:Node)");
+        assertEquals("a", plan.getSeedVariable());
+        final int bIdx = plan.getIndex("b");
+        final Iterator<GqlRow> iter = executor.execute(plan);
+        int count = 0;
+        Element last = null;
+        while (iter.hasNext()) {
+            last = iter.next().getScalar(bIdx);
+            count++;
+        }
+        assertEquals(length, count);
+        assertEquals(prev, last);
+    }
+
+    // -------------------------------------------------------------------------
+    // {1} and {1,1} run through the quantified walk
+    // -------------------------------------------------------------------------
+
+    @Test
+    public void testAnonymousExactlyOneQuantifierReturnsOneRowPerParallelEdge() {
+        // Two parallel KNOWS edges a=>b. A quantified {1} edge is a walk of length one, so each
+        // edge is a distinct trail, matching the depth-1 rows of {1,2}. A plain edge keeps
+        // collapsing anonymous parallel edges to one row per target.
+        final Vertex a = graph.addVertex("Person");
+        a.property("n", "a");
+        final Vertex b = graph.addVertex("Person");
+        a.addEdge("KNOWS", b);
+        a.addEdge("KNOWS", b);
+
+        assertEquals(2, execute("MATCH (a:Person {n: 'a'})-[:KNOWS]->{1}(x:Person)").size());
+        assertEquals(2, execute("MATCH (a:Person {n: 'a'})-[:KNOWS]->{1,1}(x:Person)").size());
+        assertEquals(2, execute("MATCH (a:Person {n: 'a'})-[:KNOWS]->{1,2}(x:Person)").stream()
+                .filter(row -> row.get("x") == b).count());
+        assertEquals(1, execute("MATCH (a:Person {n: 'a'})-[:KNOWS]->(x:Person)").size());
+    }
+
+    @Test
+    public void testNamedExactlyOneQuantifierBindsOneListPerParallelEdge() {
+        final Vertex a = graph.addVertex("Person");
+        a.property("n", "a");
+        final Vertex b = graph.addVertex("Person");
+        final Edge e1 = a.addEdge("KNOWS", b);
+        final Edge e2 = a.addEdge("KNOWS", b);
+
+        final List<Map<String, Element>> results =
+                execute("MATCH (a:Person {n: 'a'})-[r:KNOWS]->{1}(x:Person)");
+        assertEquals(2, results.size());
+        assertEquals(Set.of(List.of(e1), List.of(e2)),
+                results.stream().map(row -> edgeList(row, "r")).collect(Collectors.toSet()));
+    }
+
+    // -------------------------------------------------------------------------
+    // Data self-loops on undirected edges
+    // -------------------------------------------------------------------------
+
+    @Test
+    public void testUndirectedSingleHopOverDataSelfLoopReturnsOneRowPerIncidence() {
+        // Established convention: an undirected step sees a self-loop edge once as an out-edge
+        // and once as an in-edge, as Gremlin's bothE() does, so a named edge yields two identical
+        // rows. An anonymous edge collapses them through the anonymous-target dedup.
+        final Vertex a = graph.addVertex("P");
+        final Edge loop = a.addEdge("L", a);
+
+        final List<Map<String, Element>> named = execute("MATCH (a:P)-[r:L]-(b:P)");
+        assertEquals(2, named.size());
+        for (final Map<String, Element> row : named) {
+            assertEquals(a, row.get("a"));
+            assertEquals(a, row.get("b"));
+            assertEquals(loop, row.get("r"));
+        }
+        assertEquals(1, execute("MATCH (a:P)-[:L]-(b:P)").size());
+    }
+
+    @Test
+    public void testUndirectedQuantifiedWalkOverDataSelfLoopMatchesSingleHop() {
+        // The walk follows the same convention as the named single-hop step: one row per incidence
+        // of the self-loop, each binding r to the one-edge list. TRAIL uniqueness stops the walk
+        // from taking the loop a second time, so {1,2} adds no depth-2 rows.
+        final Vertex a = graph.addVertex("P");
+        final Edge loop = a.addEdge("L", a);
+
+        for (final String q : new String[]{"{1}", "{1,2}", "+"}) {
+            final List<Map<String, Element>> rows = execute("MATCH (a:P)-[r:L]-" + q + "(b:P)");
+            assertEquals(q, 2, rows.size());
+            for (final Map<String, Element> row : rows) {
+                assertEquals(q, a, row.get("b"));
+                assertEquals(q, List.of(loop), edgeList(row, "r"));
+            }
+        }
+        // Anonymous quantified edges are not deduplicated by target, as with parallel edges.
+        assertEquals(2, execute("MATCH (a:P)-[:L]-{1,2}(b:P)").size());
+    }
+
+    @Test
+    public void testPlainPatternSelfLoopOverDataSelfLoopInEveryDirection() {
+        // A plain pattern self-loop follows the single-hop convention: a reverse step sees the
+        // loop once, an undirected named step sees it once per incidence.
+        final Vertex a = graph.addVertex("P");
+        final Edge loop = a.addEdge("L", a);
+        graph.addVertex("P");
+
+        final List<Map<String, Element>> reverse = execute("MATCH (a:P)<-[r:L]-(a)");
+        assertEquals(1, reverse.size());
+        assertEquals(a, reverse.get(0).get("a"));
+        assertEquals(loop, reverse.get(0).get("r"));
+
+        final List<Map<String, Element>> undirected = execute("MATCH (a:P)-[r:L]-(a)");
+        assertEquals(2, undirected.size());
+        for (final Map<String, Element> row : undirected) {
+            assertEquals(a, row.get("a"));
+            assertEquals(loop, row.get("r"));
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // Quantified edges combined with other edges
+    // -------------------------------------------------------------------------
+
+    @Test
+    public void testTwoQuantifiedEdgesMayShareAnEdgeAcrossWalks() {
+        // Edge uniqueness is per walk, so the same edge may appear in both r1 and r2.
+        // Graph: a -L-> b -L-> c -L-> a. (x)-[r1]->{1,3}(m)-[r2]->{1,3}(y) seeded at a.
+        final Vertex a = graph.addVertex("Start");
+        final Vertex b = graph.addVertex("Node");
+        final Vertex c = graph.addVertex("Node");
+        final Edge ab = a.addEdge("L", b);
+        final Edge bc = b.addEdge("L", c);
+        final Edge ca = c.addEdge("L", a);
+
+        final GqlMatchPlan plan = planner.plan(
+                "MATCH (x:Start)-[r1:L]->{1,3}(m)-[r2:L]->{1,3}(y:Start)");
+        assertEquals("x", plan.getSeedVariable());
+        final List<Map<String, Element>> rows = materialize(executor.execute(plan), plan);
+
+        final Set<List<List<Edge>>> pairs = rows.stream()
+                .map(row -> List.of(edgeList(row, "r1"), edgeList(row, "r2")))
+                .collect(Collectors.toSet());
+        // r1 ends at m, r2 continues from m back to the Start vertex a.
+        assertEquals(Set.of(
+                List.of(List.of(ab), List.of(bc, ca)),
+                List.of(List.of(ab, bc), List.of(ca)),
+                // r1 covers the full cycle back to a, then r2 reuses all of its edges.
+                List.of(List.of(ab, bc, ca), List.of(ab, bc, ca))), pairs);
+        assertEquals(3, rows.size());
+    }
+
+    @Test
+    public void testQuantifiedEdgeFollowedByPlainEdge() {
+        // a -KNOWS-> b -KNOWS-> c, b -WORKS-> co1, c -WORKS-> co2
+        final Vertex a = graph.addVertex("Person");
+        a.property("n", "a");
+        final Vertex b = graph.addVertex("Person");
+        final Vertex c = graph.addVertex("Person");
+        final Vertex co1 = graph.addVertex("Company");
+        final Vertex co2 = graph.addVertex("Company");
+        final Edge ab = a.addEdge("KNOWS", b);
+        final Edge bc = b.addEdge("KNOWS", c);
+        final Edge w1 = b.addEdge("WORKS", co1);
+        final Edge w2 = c.addEdge("WORKS", co2);
+
+        final List<Map<String, Element>> rows =
+                execute("MATCH (a:Person {n: 'a'})-[r:KNOWS]->{1,2}(p:Person)-[w:WORKS]->(co:Company)");
+
+        assertEquals(2, rows.size());
+        final Map<Element, List<Map<String, Element>>> byP = byTarget(rows, "p");
+        assertEquals(Set.of(b, c), byP.keySet());
+        assertEquals(List.of(ab), edgeList(byP.get(b).get(0), "r"));
+        assertEquals(w1, byP.get(b).get(0).get("w"));
+        assertEquals(co1, byP.get(b).get(0).get("co"));
+        assertEquals(List.of(ab, bc), edgeList(byP.get(c).get(0), "r"));
+        assertEquals(w2, byP.get(c).get(0).get("w"));
+        assertEquals(co2, byP.get(c).get(0).get("co"));
+    }
+
+    @Test
+    public void testPlainEdgeFollowedByQuantifiedEdge() {
+        // co <-WORKS- a -KNOWS-> b -KNOWS-> c
+        final Vertex co = graph.addVertex("Company");
+        final Vertex a = graph.addVertex("Person");
+        final Vertex b = graph.addVertex("Person");
+        final Vertex c = graph.addVertex("Person");
+        final Edge w = a.addEdge("WORKS", co);
+        final Edge ab = a.addEdge("KNOWS", b);
+        final Edge bc = b.addEdge("KNOWS", c);
+
+        final GqlMatchPlan plan = planner.plan(
+                "MATCH (co:Company)<-[w:WORKS]-(a:Person)-[r:KNOWS]->{1,2}(x:Person)");
+        assertEquals("co", plan.getSeedVariable());
+        final List<Map<String, Element>> rows = materialize(executor.execute(plan), plan);
+
+        assertEquals(2, rows.size());
+        final Map<Element, List<Map<String, Element>>> byX = byTarget(rows, "x");
+        assertEquals(Set.of(b, c), byX.keySet());
+        for (final Map<String, Element> row : rows) {
+            assertEquals(a, row.get("a"));
+            assertEquals(w, row.get("w"));
+        }
+        assertEquals(List.of(ab), edgeList(byX.get(b).get(0), "r"));
+        assertEquals(List.of(ab, bc), edgeList(byX.get(c).get(0), "r"));
+    }
+
+    @Test
+    public void testQuantifiedEdgePropertyFilterCutsPathPartway() {
+        // a -ok-> b -ok-> c -blocked-> d -ok-> e : the walk stops at the first edge that fails the
+        // filter, so d and e are unreachable even though the edges after the cut pass it.
+        final Vertex a = graph.addVertex("Person");
+        a.property("n", "a");
+        final Vertex b = graph.addVertex("Person");
+        final Vertex c = graph.addVertex("Person");
+        final Vertex d = graph.addVertex("Person");
+        final Vertex e = graph.addVertex("Person");
+        final Edge ab = a.addEdge("KNOWS", b, "ok", true);
+        final Edge bc = b.addEdge("KNOWS", c, "ok", true);
+        c.addEdge("KNOWS", d, "ok", false);
+        d.addEdge("KNOWS", e, "ok", true);
+
+        final List<Map<String, Element>> rows =
+                execute("MATCH (a:Person {n: 'a'})-[r:KNOWS {ok: true}]->+(x:Person)");
+
+        assertEquals(2, rows.size());
+        final Map<Element, List<Map<String, Element>>> byX = byTarget(rows, "x");
+        assertEquals(Set.of(b, c), byX.keySet());
+        assertEquals(List.of(ab), edgeList(byX.get(b).get(0), "r"));
+        assertEquals(List.of(ab, bc), edgeList(byX.get(c).get(0), "r"));
+    }
+
+    @Test
+    public void testQuantifiedWalkPassesThroughVerticesNotMatchingTargetLabel() {
+        // a -L-> h1:Hub -L-> p:Person -L-> h2:Hub -L-> q:Person. Hubs are intermediate vertices
+        // the walk passes through, but only Person targets are emitted.
+        final Vertex a = graph.addVertex("Person");
+        a.property("n", "a");
+        final Vertex h1 = graph.addVertex("Hub");
+        final Vertex p = graph.addVertex("Person");
+        final Vertex h2 = graph.addVertex("Hub");
+        final Vertex q = graph.addVertex("Person");
+        final Edge e1 = a.addEdge("L", h1);
+        final Edge e2 = h1.addEdge("L", p);
+        final Edge e3 = p.addEdge("L", h2);
+        final Edge e4 = h2.addEdge("L", q);
+
+        final List<Map<String, Element>> rows =
+                execute("MATCH (a:Person {n: 'a'})-[r:L]->{1,4}(x:Person)");
+
+        assertEquals(2, rows.size());
+        final Map<Element, List<Map<String, Element>>> byX = byTarget(rows, "x");
+        assertEquals(Set.of(p, q), byX.keySet());
+        assertEquals(List.of(e1, e2), edgeList(byX.get(p).get(0), "r"));
+        assertEquals(List.of(e1, e2, e3, e4), edgeList(byX.get(q).get(0), "r"));
     }
 }

@@ -36,34 +36,32 @@ import java.util.concurrent.atomic.AtomicLong;
  *
  * <p>Fields:
  * <ul>
- *   <li>{@code anchorVariable} — the variable name of the already-bound vertex from which
+ *   <li>{@code anchorVariable}: the variable name of the already-bound vertex from which
  *       traversal begins; never {@code null}</li>
- *   <li>{@code edgeLabel} — optional label constraint on the edge; {@code null} means
+ *   <li>{@code edgeLabel}: optional label constraint on the edge; {@code null} means
  *       any label is accepted</li>
- *   <li>{@code direction} — traversal direction relative to the anchor vertex</li>
- *   <li>{@code edgeVariable} — optional variable name to which the matching edge is bound</li>
- *   <li>{@code targetLabel} — optional label constraint on the target vertex</li>
- *   <li>{@code targetVariable} — optional variable name to which the target vertex is bound</li>
- *   <li>{@code targetPredicates} — property equality predicates on the target vertex,
+ *   <li>{@code direction}: traversal direction relative to the anchor vertex</li>
+ *   <li>{@code edgeVariable}: optional variable name to which the matching edge is bound</li>
+ *   <li>{@code targetLabel}: optional label constraint on the target vertex</li>
+ *   <li>{@code targetVariable}: optional variable name to which the target vertex is bound</li>
+ *   <li>{@code targetPredicates}: property equality predicates on the target vertex,
  *       derived from the inline filter map on the corresponding {@link QueryVertex}</li>
- *   <li>{@code estimatedCost} — static selectivity estimate set by the planner; lower values
+ *   <li>{@code estimatedCost}: static selectivity estimate set by the planner; lower values
  *       indicate a more selective step that should be tried first when multiple steps are
- *       simultaneously eligible. Computed as {@code min(edgeLabelCount, indexedPropertyCount)}.</li>
+ *       simultaneously eligible. Computed as {@code min(edgeLabelCount, indexedPropertyCount)}, scaled
+ *       by the maximum number of hops for a quantified step.</li>
+ *   <li>{@code minHops}, {@code maxHops}, {@code quantified}: the hop bounds and whether the
+ *       pattern edge carried a quantifier</li>
+ *   <li>{@code anchoredAtPatternTarget}: whether the anchor is the pattern edge's right-hand
+ *       (target) node, so the step walks the pattern edge from right to left</li>
  * </ul>
  *
  * <p>At runtime, the executor maintains adaptive counters ({@link #recordAttempt()} /
  * {@link #recordHit()}) so that {@link #selectivityRatio()} reflects observed throughput.
- * The executor uses this ratio — with {@code estimatedCost} as a tiebreaker — to choose
+ * The executor uses this ratio, with {@code estimatedCost} as a tiebreaker, to choose
  * among simultaneously eligible steps.
  */
 public final class ExtensionStep {
-
-    /**
-     * Sentinel {@link #getMaxHops()} value denoting an open-ended upper bound, used for the
-     * {@code {m,}} and {@code +} quantifier forms. Mirrors {@link QueryEdge#UNBOUNDED} so plan
-     * and model layers agree on the open-ended sentinel.
-     */
-    public static final int UNBOUNDED = QueryEdge.UNBOUNDED;
 
     private final String anchorVariable;
     private final String edgeLabel;
@@ -76,7 +74,8 @@ public final class ExtensionStep {
     private final long estimatedCost;
     private final int minHops;
     private final int maxHops;
-    private final boolean edgeVariableIsGroup;
+    private final boolean quantified;
+    private final boolean anchoredAtPatternTarget;
 
     private final AtomicLong attempts = new AtomicLong(0);
     private final AtomicLong hits     = new AtomicLong(0);
@@ -88,7 +87,7 @@ public final class ExtensionStep {
                          final List<PropertyPredicate> targetPredicates,
                          final long estimatedCost,
                          final int minHops, final int maxHops,
-                         final boolean edgeVariableIsGroup) {
+                         final boolean quantified, final boolean anchoredAtPatternTarget) {
         if (anchorVariable == null) throw new IllegalArgumentException("anchorVariable must not be null");
         this.anchorVariable = anchorVariable;
         this.edgeLabel = edgeLabel;
@@ -105,7 +104,8 @@ public final class ExtensionStep {
         this.estimatedCost = estimatedCost;
         this.minHops = minHops;
         this.maxHops = maxHops;
-        this.edgeVariableIsGroup = edgeVariableIsGroup;
+        this.quantified = quantified;
+        this.anchoredAtPatternTarget = anchoredAtPatternTarget;
     }
 
     public ExtensionStep(final String anchorVariable, final String edgeLabel,
@@ -115,7 +115,7 @@ public final class ExtensionStep {
                          final List<PropertyPredicate> targetPredicates,
                          final long estimatedCost) {
         this(anchorVariable, edgeLabel, direction, edgeVariable, edgePredicates,
-             targetLabel, targetVariable, targetPredicates, estimatedCost, 1, 1, false);
+             targetLabel, targetVariable, targetPredicates, estimatedCost, 1, 1, false, false);
     }
 
     public ExtensionStep(final String anchorVariable, final String edgeLabel,
@@ -124,7 +124,7 @@ public final class ExtensionStep {
                          final List<PropertyPredicate> targetPredicates,
                          final long estimatedCost) {
         this(anchorVariable, edgeLabel, direction, edgeVariable, Collections.emptyList(),
-             targetLabel, targetVariable, targetPredicates, estimatedCost, 1, 1, false);
+             targetLabel, targetVariable, targetPredicates, estimatedCost, 1, 1, false, false);
     }
 
     public ExtensionStep(final String anchorVariable, final String edgeLabel,
@@ -132,14 +132,14 @@ public final class ExtensionStep {
                          final String targetLabel, final String targetVariable,
                          final List<PropertyPredicate> targetPredicates) {
         this(anchorVariable, edgeLabel, direction, edgeVariable, Collections.emptyList(),
-             targetLabel, targetVariable, targetPredicates, Long.MAX_VALUE, 1, 1, false);
+             targetLabel, targetVariable, targetPredicates, Long.MAX_VALUE, 1, 1, false, false);
     }
 
     public ExtensionStep(final String anchorVariable, final String edgeLabel,
                          final Direction direction, final String edgeVariable,
                          final String targetLabel, final String targetVariable) {
         this(anchorVariable, edgeLabel, direction, edgeVariable, Collections.emptyList(),
-             targetLabel, targetVariable, Collections.emptyList(), Long.MAX_VALUE, 1, 1, false);
+             targetLabel, targetVariable, Collections.emptyList(), Long.MAX_VALUE, 1, 1, false, false);
     }
 
     /** The variable name of the already-bound vertex used as the starting point for this step. */
@@ -190,7 +190,9 @@ public final class ExtensionStep {
 
     /**
      * Static cost estimate set by the planner. Lower values indicate a more selective step.
-     * Computed as {@code min(edgeLabelCount, indexedPropertyCount)} at plan compile time.
+     * Computed as {@code min(edgeLabelCount, indexedPropertyCount)} at plan compile time. For a
+     * quantified step that value is multiplied by {@link #getMaxHops()}, saturating at
+     * {@code Long.MAX_VALUE}, and an unbounded quantified step costs {@code Long.MAX_VALUE}.
      */
     public long getEstimatedCost() {
         return estimatedCost;
@@ -205,7 +207,7 @@ public final class ExtensionStep {
     }
 
     /**
-     * Returns the maximum number of hops this step traverses, or {@link #UNBOUNDED} for the
+     * Returns the maximum number of hops this step traverses, or {@link QueryEdge#UNBOUNDED} for the
      * open-ended quantifier forms ({@code {m,}} and {@code +}). For a plain, non-quantified
      * single-hop step this is {@code 1}.
      */
@@ -214,20 +216,32 @@ public final class ExtensionStep {
     }
 
     /**
-     * Returns {@code true} if this step carries a variable-length quantifier (e.g. {@code {1,3}},
-     * {@code +}, {@code {2,}}), as opposed to a plain single hop. Derived from the hop bounds:
-     * a step is quantified unless {@code minHops == 1 && maxHops == 1}.
+     * Returns {@code true} if the pattern edge carried a quantifier (e.g. {@code {1,3}}, {@code {1}},
+     * {@code +}, {@code {2,}}), as opposed to a plain edge. This reflects the presence of the
+     * quantifier in the query, not the hop bounds, so {@code {1}} and {@code {1,1}} are quantified.
+     * Every quantified step is executed as a walk with per-walk edge uniqueness.
      */
     public boolean isQuantified() {
-        return !(minHops == 1 && maxHops == 1);
+        return quantified;
     }
 
     /**
-     * Returns {@code true} if this step's edge variable is a group variable, modelled as a
-     * per-variable flag. For non-quantified steps this is {@code false}.
+     * Returns {@code true} if this step's edge variable is a group variable, which binds an ordered
+     * {@code List<Edge>}. That is the case exactly when the step is quantified and its edge is named.
      */
     public boolean isEdgeVariableGroup() {
-        return edgeVariableIsGroup;
+        return quantified && edgeVariable != null;
+    }
+
+    /**
+     * Returns {@code true} if this step's anchor is the pattern edge's target (right-hand) node, so
+     * the step walks the pattern edge from right to left. For a quantified step, the executor
+     * reverses the walk's edges before binding the group variable so that the list is always in
+     * pattern order, left to right. This is not the same as a flipped {@link #getDirection()}: an
+     * undirected edge keeps {@link Direction#BOTH} when anchored at either end.
+     */
+    public boolean isAnchoredAtPatternTarget() {
+        return anchoredAtPatternTarget;
     }
 
     // -------------------------------------------------------------------------
@@ -262,8 +276,9 @@ public final class ExtensionStep {
                ", target=" + (targetVariable != null ? targetVariable : "_") +
                (targetLabel != null ? ":" + targetLabel : "") +
                (isQuantified()
-                       ? ", hops={" + minHops + "," + (maxHops == UNBOUNDED ? "" : maxHops) + "}" +
-                         (edgeVariableIsGroup ? ", group" : "")
+                       ? ", hops={" + minHops + "," + (maxHops == QueryEdge.UNBOUNDED ? "" : maxHops) + "}" +
+                         (isEdgeVariableGroup() ? ", group" : "") +
+                         (anchoredAtPatternTarget ? ", reversed" : "")
                        : "") +
                (targetPredicates.isEmpty() ? "" : ", filters=" + targetPredicates) + "}";
     }

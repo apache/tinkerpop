@@ -173,12 +173,9 @@ public final class QueryGraph {
                     if (quantifierCtx != null) groupEdgeVarNames.add(edgeVar);
                 }
                 final int[] bounds = extractQuantifier(quantifierCtx);
-                // The edge variable becomes a group variable exactly when the edge is quantified
-                // and carries a (non-null) variable name.
-                final boolean edgeVariableIsGroup = quantifierCtx != null && edgeVar != null;
 
                 edges.add(new QueryEdge(edgeVar, edgeLabel, dir, current, next, edgePredicates,
-                        bounds[0], bounds[1], edgeVariableIsGroup));
+                        bounds[0], bounds[1], quantifierCtx != null));
                 current = next;
             }
         }

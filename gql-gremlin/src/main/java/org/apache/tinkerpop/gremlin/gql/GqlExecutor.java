@@ -41,6 +41,9 @@ import java.util.Map;
  *   <li>Emit one {@link GqlRow} per complete match, built with {@link GqlRow#of} and populated
  *       as described on {@link GqlRow}.</li>
  *   <li>Return results lazily rather than materialising the full result set in memory.</li>
+ *   <li>Honor thread interruption while iterating by throwing
+ *       {@link org.apache.tinkerpop.gremlin.process.traversal.util.TraversalInterruptedException},
+ *       so that a traversal timeout can stop a long-running match.</li>
  * </ul>
  */
 public interface GqlExecutor {

@@ -450,7 +450,7 @@ public class QueryGraphTest {
         final QueryGraph g = QueryGraph.parse("MATCH (a)-[:KNOWS]->{1,3}(b)");
         final QueryEdge e = g.getEdges().get(0);
         assertTrue(e.isQuantified());
-        assertTrue("anonymous quantified edge must not be a group variable", !e.isEdgeVariableGroup());
+        assertFalse("anonymous quantified edge must not be a group variable", e.isEdgeVariableGroup());
     }
 
     @Test
@@ -460,8 +460,8 @@ public class QueryGraphTest {
         final QueryEdge e = g.getEdges().get(0);
         assertEquals(1, e.getMinHops());
         assertEquals(1, e.getMaxHops());
-        assertTrue("plain edge must not be quantified", !e.isQuantified());
-        assertTrue("plain edge must not be a group variable", !e.isEdgeVariableGroup());
+        assertFalse("plain edge must not be quantified", e.isQuantified());
+        assertFalse("plain edge must not be a group variable", e.isEdgeVariableGroup());
     }
 
     // -------------------------------------------------------------------------
