@@ -47,7 +47,8 @@ import java.util.Objects;
  *   <li><b>Group</b>: an ordered {@code List<Edge>}, read with {@link #getGroup(int)}. The edge
  *       variable of a quantified (variable-length) relationship such as
  *       {@code (a)-[r:knows]->{1,3}(b)} is a group. The list holds the edges of the walk in
- *       traversal order, first hop first, and is never empty for a matched walk. A group edge
+ *       pattern order, left to right in the {@code MATCH} pattern regardless of which endpoint
+ *       the walk started from, and is never empty for a matched walk. A group edge
  *       variable is a list even when the walk has a single edge.</li>
  * </ul>
  *

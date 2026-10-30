@@ -3388,10 +3388,10 @@ The following `MATCH` patterns are supported:
 |`-[:Label]-` |Labeled undirected edge
 |`-[e:Label]-` |Named and labeled undirected edge
 |`-[e:Label {key: 'value'}]-` |Named, labeled undirected edge with an inline property filter
-|`-[e:Label]->{m,n}` |Quantified edge that matches a walk of `m` to `n` repeated edges
-|`-[e:Label]->{m}` |Quantified edge that matches a walk of exactly `m` repeated edges
-|`-[e:Label]->{m,}` |Quantified edge that matches a walk of `m` or more repeated edges
-|`-[e:Label]->+` |Quantified edge that matches a walk of one or more repeated edges, equivalent to `{1,}`
+|`-[e:Label]->{m,n}` |Quantified edge that matches a walk of `m` to `n` edges
+|`-[e:Label]->{m}` |Quantified edge that matches a walk of exactly `m` edges
+|`-[e:Label]->{m,}` |Quantified edge that matches a walk of `m` or more edges
+|`-[e:Label]->+` |Quantified edge that matches a walk of one or more edges, equivalent to `{1,}`
 |=========================================================
 
 Multiple comma-separated path patterns are supported in a single `MATCH` clause. Patterns that share a variable
@@ -3400,8 +3400,14 @@ clause — `match()` always returns the full binding `Map` and any projection is
 `select()`.
 
 A quantifier may follow any directed, reverse, or undirected edge, as in `<-[e:Label]-{m,n}` or
-`-[e:Label]-{m,n}`, and the quantified walk matches once at every length in its range. A walk never repeats an
-edge, and a named edge variable binds to the ordered list of edges in the walk.
+`-[e:Label]-{m,n}`, and the quantified walk matches once at every length in its range. Bounds may not exceed
+`2147483646`. A walk never repeats an edge, and each distinct walk produces its own row, so the same endpoints can
+appear in several rows and `dedup()` reduces the result to distinct endpoints. A named edge variable binds to a
+`List` of the walk's edges in pattern order, from left to right, and it is a `List` even for `{1}`. Every quantifier,
+including `{1}` and `{1,1}`, matches a walk, so an anonymous `{1}` edge over parallel edges produces one row per
+edge. Matching is lazy, so `limit()` ends the search once enough rows are produced, and a traversal timeout or
+interruption stops a match in progress. The unbounded forms `{m,}` and `+` can still be expensive on dense or cyclic
+graphs because the number of walks can grow exponentially with their length.
 
 The following examples use the modern toy graph to demonstrate more complex usage patterns.
 
@@ -3585,6 +3591,7 @@ performs an index-backed seed lookup rather than a full scan. Whether `Graph.Ind
 structure depends on the graph system; see <<tinkerpop-providers-tinkergql,the provider documentation>> and
 your specific graph system's documentation for details.
 
+[[tinkergql-unsupported-features]]
 ===== Unsupported Features
 
 TinkerGQL is a minimal subset of ISO GQL. The following ISO GQL `MATCH` features are not yet implemented:
@@ -3595,7 +3602,10 @@ TinkerGQL is a minimal subset of ISO GQL. The following ISO GQL `MATCH` features
 |`WHERE` clause |Post-match filtering is not supported inside the `MATCH` string. Use Gremlin's `where()` step after `match()` instead.
 |`RETURN` clause |Projection inside the `MATCH` string is not supported. Use `select()` after `match()` to project named variables.
 |Inequality / range predicates |Only equality tests (`{key: value}`) are supported. Expressions like `n.age > 30` are not part of the grammar.
-|Some quantified paths |Zero-length quantifiers (`*`, `{0,n}`, `{,n}`) and quantified edges that close a pattern cycle are not supported. Edge uniqueness is enforced within each quantified walk rather than across the whole pattern.
+|Zero-length quantifiers |`*`, `{0,n}`, and `{,n}` would match a path of no edges and are rejected. The minimum bound of a quantifier must be at least 1.
+|Cycle-closing quantified edges |A quantified edge that closes a pattern cycle, including a self-loop such as `(a)-[r]->{2,3}(a)`, is rejected, even when its quantifier is `{1}`.
+|Pattern-wide edge uniqueness |Edge uniqueness is enforced within each quantified walk rather than across the whole pattern, so two walks in one match may share an edge.
+|Quantified edge variable reuse |A quantified edge variable, such as `r` in `-[r]->{1,3}`, cannot appear more than once in a `MATCH` clause.
 |Multiple labels per element |`(n:Person:Employee)` — more than one label per node pattern — is not supported.
 |`OPTIONAL MATCH` |Optional pattern matching (outer joins) is not supported.
 |Aggregation functions |`COUNT`, `SUM`, `AVG`, and similar functions are not part of the grammar.

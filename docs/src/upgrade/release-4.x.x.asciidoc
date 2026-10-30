@@ -167,6 +167,30 @@ still forwarded like any other custom `With()` key, but Gremlin Server ignores i
 
 See: link:https://lists.apache.org/thread/clyxxp8t6mg3y7y8nj1z48l19j7pk2v8[\[DISCUSS\] Only Support User Agent in Request Header]
 
+==== Variable-Length Paths in TinkerGQL
+
+TinkerGQL now supports ISO GQL quantified relationships, so a single `MATCH` pattern can follow an edge a variable
+number of times. A quantifier of `{m,n}`, `{m}`, `{m,}` or `+` may follow any directed, reverse or undirected edge,
+and the pattern matches a walk at every length in the range without repeating an edge. Questions such as "who is
+within three `knows` hops of marko" previously required chaining several patterns or falling back to `repeat()`, and
+now read as one pattern. A named quantified edge variable binds to the `List` of edges in the walk, in pattern order,
+and remains a `List` even for `{1}`.
+
+[source,groovy]
+----
+g.match("MATCH (a:person {name: 'marko'})-[:created]-{2}(b:person)").
+  select("a", "b").by("name")
+==>[a:marko,b:josh]
+==>[a:marko,b:peter]
+----
+
+Zero-length quantifiers, quantified edges that close a pattern cycle or self-loop, reuse of a quantified edge
+variable, and bounds above `2147483646` are rejected, as listed under
+link:https://tinkerpop.apache.org/docs/4.0.0/reference/#tinkergql-unsupported-features[Unsupported Features].
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-3256[TINKERPOP-3256],
+link:https://tinkerpop.apache.org/docs/4.0.0/reference/#tinkergql[TinkerGQL]
+
 === Upgrading for Providers
 
 ==== Graph System Providers
@@ -194,6 +218,34 @@ ClassRegistry.unregister(MyClass.class);
 Registration is required in Java for deserialization only, which typically only impacts the server. Without
 registration, read attempts fail with a `Class not recognized` message naming the class, raised as a
 `MismatchedInputException` for GraphSON and a `RuntimeException` for Gryo.
+
+===== GqlExecutor Returns GqlRow
+
+`GqlExecutor.execute()` now returns `Iterator<GqlRow>` instead of the `Iterator<Element[]>` it returned in
+4.0.0-beta.3. This is a breaking change for providers that implement a custom `GqlExecutor`. A plain array cannot
+hold the `List<Edge>` that a quantified relationship variable binds to, so `GqlRow` is a new public, immutable value
+type that carries both kinds of binding. `GqlRow.of(Element[] scalars, Map<Integer, List<Edge>> groups)` builds a
+row, while `getScalar(int)`, `getGroup(int)`, `isGroup(int)` and `size()` read it back, and rows compare by value.
+
+An executor that does not support quantified relationships migrates by wrapping each array it previously emitted:
+
+[source,java]
+----
+// 4.0.0-beta.3
+return Collections.singletonList(scalars).iterator();
+
+// 4.0.0
+return Collections.singletonList(GqlRow.of(scalars, Map.of())).iterator();
+----
+
+To support quantified relationships, an executor places the walk's edges in the `groups` map as a non-empty
+`List<Edge>` in pattern order, keyed by the edge variable's index, and leaves that index `null` in the scalar array.
+Every row must have a `size()` equal to `GqlMatchPlan.getVariableCount()`, otherwise `GqlMatchStep` throws an
+`IllegalStateException`. Executors should also honor thread interruption by throwing
+`TraversalInterruptedException`, so that a traversal timeout can stop a long-running match. A custom executor is
+registered as before with `GqlDeclarativeMatchStrategy.create(planner, executor)`.
+
+See: link:https://tinkerpop.apache.org/docs/4.0.0/dev/provider/#tinkerpop-providers-tinkergql[Supporting Declarative Pattern Matching (TinkerGQL)]
 
 ==== Graph Driver Providers
 
