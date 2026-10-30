@@ -52,12 +52,17 @@ public final class QueryEdge {
     private final List<PropertyPredicate> predicates;
     private final int minHops;
     private final int maxHops;
-    private final boolean edgeVariableIsGroup;
+    private final boolean quantified;
 
+    /**
+     * Creates an edge pattern element. {@code quantified} records whether the pattern carried an
+     * explicit quantifier, so {@code {1}} and {@code {1,1}} are quantified even though their
+     * bounds equal those of a plain edge.
+     */
     public QueryEdge(final String variable, final String label, final Direction direction,
                      final QueryVertex source, final QueryVertex target,
                      final List<PropertyPredicate> predicates,
-                     final int minHops, final int maxHops, final boolean edgeVariableIsGroup) {
+                     final int minHops, final int maxHops, final boolean quantified) {
         this.variable = variable;
         this.label = label;
         this.direction = direction;
@@ -68,13 +73,12 @@ public final class QueryEdge {
                 : Collections.unmodifiableList(new ArrayList<>(predicates));
         this.minHops = minHops;
         this.maxHops = maxHops;
-        this.edgeVariableIsGroup = edgeVariableIsGroup;
+        this.quantified = quantified;
     }
 
     public QueryEdge(final String variable, final String label, final Direction direction,
                      final QueryVertex source, final QueryVertex target,
                      final List<PropertyPredicate> predicates) {
-        // Non-quantified edge: exactly one hop, edge variable is not a group variable.
         this(variable, label, direction, source, target, predicates, 1, 1, false);
     }
 
@@ -143,20 +147,20 @@ public final class QueryEdge {
     }
 
     /**
-     * Returns {@code true} if this edge carries a variable-length quantifier (e.g. {@code {1,3}},
-     * {@code +}, {@code {2,}}), as opposed to a plain single-hop edge.
+     * Returns {@code true} if this edge pattern carries a quantifier (e.g. {@code {1,3}}, {@code {1}},
+     * {@code +}, {@code {2,}}), as opposed to a plain edge. This reflects the presence of the
+     * quantifier in the query, not the hop bounds, so {@code {1}} and {@code {1,1}} are quantified.
      */
     public boolean isQuantified() {
-        return !(minHops == 1 && maxHops == 1);
+        return quantified;
     }
 
     /**
-     * Returns {@code true} if this edge's variable is a group variable, modelled as a per-variable
-     * flag. The edge variable becomes a group variable exactly when the edge is quantified and has
-     * a (non-{@code null}) variable name.
+     * Returns {@code true} if this edge's variable is a group variable, which binds an ordered
+     * {@code List<Edge>}. That is the case exactly when the edge is quantified and named.
      */
     public boolean isEdgeVariableGroup() {
-        return edgeVariableIsGroup;
+        return quantified && variable != null;
     }
 
     @Override

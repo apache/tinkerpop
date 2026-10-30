@@ -40,10 +40,12 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static org.junit.Assert.*;
@@ -513,7 +515,7 @@ public class GqlMatchStepTest {
     private List<Edge> buildKnowsChain(final int hops) {
         Vertex prev = graph.addVertex("person");
         prev.property("name", "head");
-        final java.util.List<Edge> edges = new java.util.ArrayList<>();
+        final List<Edge> edges = new ArrayList<>();
         for (int i = 0; i < hops; i++) {
             final Vertex next = graph.addVertex("person");
             edges.add(prev.addEdge("knows", next));
@@ -546,16 +548,16 @@ public class GqlMatchStepTest {
         // emit-at-each-depth: three rows (depths 1, 2, 3).
         assertEquals(3, rValues.size());
 
-        final java.util.Set<List<Edge>> edgeLists = rValues.stream()
+        final Set<List<Edge>> edgeLists = rValues.stream()
                 .map(GqlMatchStepTest::asEdgeList)
                 .collect(Collectors.toSet());
 
         assertTrue("depth-1 edge list [e0]",
                 edgeLists.contains(Collections.singletonList(chain.get(0))));
         assertTrue("depth-2 edge list [e0, e1]",
-                edgeLists.contains(java.util.Arrays.asList(chain.get(0), chain.get(1))));
+                edgeLists.contains(List.of(chain.get(0), chain.get(1))));
         assertTrue("depth-3 edge list [e0, e1, e2]",
-                edgeLists.contains(java.util.Arrays.asList(chain.get(0), chain.get(1), chain.get(2))));
+                edgeLists.contains(List.of(chain.get(0), chain.get(1), chain.get(2))));
     }
 
     @Test
@@ -671,8 +673,8 @@ public class GqlMatchStepTest {
 
     @Test
     public void testExactlyOneHopQuantifierSurfacesSingletonEdgeListInBothChannels() {
-        // {1,1}: the executor runs this as a plain single hop, but the edge variable still
-        // carries a quantifier and is therefore a group variable, so it must be a List, not an Edge.
+        // {1,1}: the edge carries a quantifier, so it runs as a walk of length one and its
+        // variable is a group variable, so it must be a List, not an Edge.
         final List<Edge> chain = buildKnowsChain(1); // single edge e0
 
         final List<Object> viaMap = g.<Integer>inject(1)
@@ -737,7 +739,7 @@ public class GqlMatchStepTest {
                 .toList();
 
         assertEquals(3, viaPathLabel.size());
-        final java.util.Set<List<Edge>> pathLists = viaPathLabel.stream()
+        final Set<List<Edge>> pathLists = viaPathLabel.stream()
                 .map(GqlMatchStepTest::asEdgeList)
                 .collect(Collectors.toSet());
         assertTrue("depth-1 singleton edge list [e0] in path channel",
@@ -861,5 +863,68 @@ public class GqlMatchStepTest {
             assertTrue(ex.getMessage(), ex.getMessage().contains(providerExecutor.getClass().getName()));
             assertTrue(ex.getMessage(), ex.getMessage().contains("size 4"));
         }
+    }
+
+    @Test
+    public void testQuantifiedGroupEdgeVariableInPatternOrderWhenSeededAtTarget() {
+        // p0 -knows-> p1 -knows-> acme. The single company is the seed, so the walk runs from the
+        // pattern edge's target back to its source, and r must still read left to right.
+        final Vertex p0 = graph.addVertex("person");
+        final Vertex p1 = graph.addVertex("person");
+        final Vertex acme = graph.addVertex("company");
+        for (int i = 0; i < 8; i++) graph.addVertex("person");
+        final Edge e01 = p0.addEdge("knows", p1);
+        final Edge e1c = p1.addEdge("knows", acme);
+
+        final String query = "MATCH (a:person)-[r:knows]->{2}(b:company)";
+        assertEquals("b", new DefaultGqlPlanner(graph).plan(query).getSeedVariable());
+
+        final List<Object> rValues = g.<Integer>inject(1).match(query).<Object>select("r").toList();
+        assertEquals(1, rValues.size());
+        assertEquals(List.of(e01, e1c), asEdgeList(rValues.get(0)));
+    }
+
+    @Test(timeout = 10000)
+    public void testLimitOneOnUnboundedUndirectedWalkOverDenseGraphIsPrompt() {
+        // The number of trails on a complete graph is astronomically large, so this only returns
+        // if the executor produces rows on demand rather than buffering a seed's whole search.
+        final List<Vertex> vs = new ArrayList<>();
+        for (int i = 0; i < 10; i++) vs.add(graph.addVertex("person"));
+        for (int i = 0; i < vs.size(); i++)
+            for (int j = i + 1; j < vs.size(); j++)
+                vs.get(i).addEdge("knows", vs.get(j));
+
+        final List<Object> rows = g.<Integer>inject(1)
+                .match("MATCH (a:person)-[]-+(b:person)").select("b").limit(1).toList();
+        assertEquals(1, rows.size());
+    }
+
+    @Test
+    public void testQuantifiedAndPlainEdgesInOnePattern() {
+        // head -knows-> m1 -knows-> m2, m1 -created-> sw1, m2 -created-> sw2
+        final List<Edge> chain = buildKnowsChain(2);
+        final Vertex m1 = chain.get(0).inVertex();
+        final Vertex m2 = chain.get(1).inVertex();
+        final Vertex sw1 = graph.addVertex("software");
+        final Vertex sw2 = graph.addVertex("software");
+        final Edge c1 = m1.addEdge("created", sw1);
+        final Edge c2 = m2.addEdge("created", sw2);
+
+        @SuppressWarnings("unchecked")
+        final List<Map<String, Object>> rows = (List<Map<String, Object>>) (List<?>) g.<Integer>inject(1)
+                .match("MATCH (s:person {name: 'head'})-[r:knows]->{1,2}(p:person)-[c:created]->(w:software)")
+                .select("r", "p", "c", "w")
+                .toList();
+
+        assertEquals(2, rows.size());
+        final Map<Object, Map<String, Object>> byP = rows.stream()
+                .collect(Collectors.toMap(row -> row.get("p"), row -> row));
+        assertEquals(Set.of(m1, m2), byP.keySet());
+        assertEquals(List.of(chain.get(0)), asEdgeList(byP.get(m1).get("r")));
+        assertEquals(c1, byP.get(m1).get("c"));
+        assertEquals(sw1, byP.get(m1).get("w"));
+        assertEquals(List.of(chain.get(0), chain.get(1)), asEdgeList(byP.get(m2).get("r")));
+        assertEquals(c2, byP.get(m2).get("c"));
+        assertEquals(sw2, byP.get(m2).get("w"));
     }
 }
