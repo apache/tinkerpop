@@ -19,6 +19,12 @@
 package org.apache.tinkerpop.gremlin.process.traversal;
 
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.MutablePath;
+import org.apache.tinkerpop.gremlin.structure.geo.Geometry;
+import org.apache.tinkerpop.gremlin.structure.geo.LineString;
+import org.apache.tinkerpop.gremlin.structure.geo.Model;
+import org.apache.tinkerpop.gremlin.structure.geo.MultiLineString;
+import org.apache.tinkerpop.gremlin.structure.geo.MultiPoint;
+import org.apache.tinkerpop.gremlin.structure.geo.Point;
 import org.javatuples.Pair;
 import org.junit.Rule;
 import org.junit.Test;
@@ -362,6 +368,93 @@ public class CompareTest {
                 {Compare.neq, p(1, 2), asList(1, 2), true},
                 {Compare.lt,  p(1, 2), asList(1, 2), false},
                 {Compare.gt,  p(1, 2), asList(1, 2), false},
+
+                /*
+                 * Geometries: eq and neq follow equals, and lt/lte/gt/gte follow the geometry
+                 * order, which compares the SRID, then emptiness, then locality, then the
+                 * coordinates, then the kind and structure.
+                 */
+                {Compare.eq,  Point.of(1, 2), Point.of(1, 2), true},
+                {Compare.neq, Point.of(1, 2), Point.of(1, 2), false},
+                {Compare.eq,  Point.of(1, 2), Point.of(2, 1), false},
+                {Compare.neq, Point.of(1, 2), Point.of(2, 1), true},
+                {Compare.eq,  Point.of(0, 0), Point.of(-0.0, -0.0), true},
+                {Compare.neq, Point.of(0, 0), Point.of(-0.0, -0.0), false},
+                {Compare.eq,  Point.of(1, 2), Point.of(1, 2, Model.GEOGRAPHIC), false},
+                {Compare.eq,  Point.of(1, 2), Point.of(1, 2, 3), false},
+                {Compare.eq,  Point.empty(), LineString.empty(), false},
+                {Compare.eq,  Point.empty(), Point.empty(), true},
+
+                {Compare.lt,  Point.of(0, 0), Point.of(1, 1), true},
+                {Compare.lte, Point.of(0, 0), Point.of(1, 1), true},
+                {Compare.gt,  Point.of(0, 0), Point.of(1, 1), false},
+                {Compare.gte, Point.of(0, 0), Point.of(1, 1), false},
+                {Compare.gt,  Point.of(1, 1), Point.of(0, 0), true},
+                {Compare.lt,  Point.of(1, 2), Point.of(1, 2), false},
+                {Compare.lte, Point.of(1, 2), Point.of(1, 2), true},
+                {Compare.gte, Point.of(1, 2), Point.of(1, 2), true},
+                {Compare.lt,  Point.empty(), Point.of(0, 0), true},
+                {Compare.gt,  Point.of(0, 0), Point.empty(), true},
+                {Compare.lt,  Point.of(1, 2), Point.of(1, 2, Model.GEOGRAPHIC), true},
+                {Compare.lt,  Point.of(1, 2, Model.GEOGRAPHIC), Geometry.fromWkt("POINT(1 2)", 32618), true},
+
+                // the tie-break pairs: exactly one of lt and gt holds, and eq is false
+                {Compare.eq,  Point.empty(), LineString.empty(), false},
+                {Compare.lt,  Point.empty(), LineString.empty(), true},
+                {Compare.gt,  Point.empty(), LineString.empty(), false},
+                {Compare.eq,  Point.of(0, 0), MultiPoint.of(Point.of(0, 0)), false},
+                {Compare.lt,  Point.of(0, 0), MultiPoint.of(Point.of(0, 0)), true},
+                {Compare.gt,  Point.of(0, 0), MultiPoint.of(Point.of(0, 0)), false},
+                {Compare.eq,  LineString.of(Point.of(0, 0), Point.of(1, 1)),
+                        MultiPoint.of(Point.of(0, 0), Point.of(1, 1)), false},
+                {Compare.lt,  LineString.of(Point.of(0, 0), Point.of(1, 1)),
+                        MultiPoint.of(Point.of(0, 0), Point.of(1, 1)), true},
+                {Compare.gt,  LineString.of(Point.of(0, 0), Point.of(1, 1)),
+                        MultiPoint.of(Point.of(0, 0), Point.of(1, 1)), false},
+                {Compare.eq,  MultiLineString.of(LineString.of(Point.of(0, 0), Point.of(1, 1),
+                        Point.of(2, 2), Point.of(3, 3))),
+                        MultiLineString.of(LineString.of(Point.of(0, 0), Point.of(1, 1)),
+                                LineString.of(Point.of(2, 2), Point.of(3, 3))), false},
+                {Compare.lt,  MultiLineString.of(LineString.of(Point.of(0, 0), Point.of(1, 1),
+                        Point.of(2, 2), Point.of(3, 3))),
+                        MultiLineString.of(LineString.of(Point.of(0, 0), Point.of(1, 1)),
+                                LineString.of(Point.of(2, 2), Point.of(3, 3))), true},
+                {Compare.gt,  MultiLineString.of(LineString.of(Point.of(0, 0), Point.of(1, 1),
+                        Point.of(2, 2), Point.of(3, 3))),
+                        MultiLineString.of(LineString.of(Point.of(0, 0), Point.of(1, 1)),
+                                LineString.of(Point.of(2, 2), Point.of(3, 3))), false},
+                {Compare.eq,  Point.empty(), Geometry.fromWkt("POINT Z EMPTY"), false},
+                {Compare.lt,  Point.empty(), Geometry.fromWkt("POINT Z EMPTY"), true},
+                {Compare.gt,  Point.empty(), Geometry.fromWkt("POINT Z EMPTY"), false},
+                {Compare.eq,  Geometry.fromWkt("MULTIPOINT(EMPTY, (1 2))"),
+                        Geometry.fromWkt("MULTIPOINT((1 2), EMPTY)"), false},
+                {Compare.lt,  Geometry.fromWkt("MULTIPOINT(EMPTY, (1 2))"),
+                        Geometry.fromWkt("MULTIPOINT((1 2), EMPTY)"), true},
+                {Compare.gt,  Geometry.fromWkt("MULTIPOINT(EMPTY, (1 2))"),
+                        Geometry.fromWkt("MULTIPOINT((1 2), EMPTY)"), false},
+                {Compare.eq,  Geometry.fromWkt("GEOMETRYCOLLECTION(POINT EMPTY, POINT(1 2))"),
+                        Geometry.fromWkt("GEOMETRYCOLLECTION(POINT(1 2), POINT EMPTY)"), false},
+                {Compare.lt,  Geometry.fromWkt("GEOMETRYCOLLECTION(POINT EMPTY, POINT(1 2))"),
+                        Geometry.fromWkt("GEOMETRYCOLLECTION(POINT(1 2), POINT EMPTY)"), true},
+                {Compare.gt,  Geometry.fromWkt("GEOMETRYCOLLECTION(POINT EMPTY, POINT(1 2))"),
+                        Geometry.fromWkt("GEOMETRYCOLLECTION(POINT(1 2), POINT EMPTY)"), false},
+
+                // a geometry is in its own type space, so it never compares with another type
+                {Compare.eq,  Point.of(1, 2), "POINT(1 2)", false},
+                {Compare.neq, Point.of(1, 2), "POINT(1 2)", true},
+                {Compare.lt,  Point.of(1, 2), "POINT(1 2)", false},
+                {Compare.lte, Point.of(1, 2), "POINT(1 2)", false},
+                {Compare.gt,  Point.of(1, 2), "POINT(1 2)", false},
+                {Compare.gte, Point.of(1, 2), "POINT(1 2)", false},
+                {Compare.eq,  Point.of(1, 2), 42, false},
+                {Compare.lt,  Point.of(1, 2), 42, false},
+                {Compare.gt,  Point.of(1, 2), 42, false},
+                {Compare.eq,  Point.of(1, 2), null, false},
+                {Compare.neq, Point.of(1, 2), null, true},
+                {Compare.lt,  Point.of(1, 2), null, false},
+                {Compare.gt,  Point.of(1, 2), null, false},
+                {Compare.lte, Point.of(1, 2), null, false},
+                {Compare.gte, Point.of(1, 2), null, false},
         }));
         // Compare Numbers of mixed types.
         final List<Object> one = Arrays.asList(1, 1l, 1d, 1f, BigDecimal.ONE, BigInteger.ONE);
