@@ -42,6 +42,7 @@ import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -926,5 +927,89 @@ public class GqlMatchStepTest {
         assertEquals(List.of(chain.get(0), chain.get(1)), asEdgeList(byP.get(m2).get("r")));
         assertEquals(c2, byP.get(m2).get("c"));
         assertEquals(sw2, byP.get(m2).get("w"));
+    }
+
+    // -------------------------------------------------------------------------
+    // Quantified edges that close a pattern cycle
+    // -------------------------------------------------------------------------
+
+    /** u -knows-> v -knows-> u (a 2-cycle) and u -knows-> w (a dead end). Returns {u, v, uv, vu}. */
+    private Object[] buildKnowsTwoCycle() {
+        final Vertex u = graph.addVertex("person");
+        final Vertex v = graph.addVertex("person");
+        final Vertex w = graph.addVertex("person");
+        final Edge uv = u.addEdge("knows", v);
+        final Edge vu = v.addEdge("knows", u);
+        u.addEdge("knows", w);
+        return new Object[]{u, v, uv, vu};
+    }
+
+    @SuppressWarnings("unchecked")
+    private static List<List<Object>> aAndR(final List<Map<String, Object>> rows) {
+        return rows.stream().map(row -> List.of(row.get("a"), asEdgeList(row.get("r"))))
+                .sorted(Comparator.comparing(Object::toString)).collect(Collectors.toList());
+    }
+
+    @Test(timeout = 10000)
+    @SuppressWarnings("unchecked")
+    public void testQuantifiedPatternSelfLoopSurfacesClosedWalks() {
+        final Object[] c = buildKnowsTwoCycle();
+        final Vertex u = (Vertex) c[0], v = (Vertex) c[1];
+        final Edge uv = (Edge) c[2], vu = (Edge) c[3];
+
+        final List<Map<String, Object>> rows = (List<Map<String, Object>>) (List<?>) g.<Integer>inject(1)
+                .match("MATCH (a:person)-[r:knows]->{1,3}(a)").select("a", "r").toList();
+        final List<List<Object>> expected = new ArrayList<>(List.of(
+                List.of(u, List.of(uv, vu)),
+                List.of(v, List.of(vu, uv))));
+        expected.sort(Comparator.comparing(Object::toString));
+        assertEquals(expected, aAndR(rows));
+    }
+
+    @Test(timeout = 10000)
+    @SuppressWarnings("unchecked")
+    public void testQuantifiedPatternSelfLoopMidTraversalResetsPerTraverser() {
+        // Each incoming traverser runs the whole match afresh, so two traversers give the cycle
+        // rows twice, and the second set is not cut short by the first traverser's walk state.
+        final Object[] c = buildKnowsTwoCycle();
+        final Vertex u = (Vertex) c[0], v = (Vertex) c[1];
+        final Edge uv = (Edge) c[2], vu = (Edge) c[3];
+
+        final List<Map<String, Object>> viaV = (List<Map<String, Object>>) (List<?>) g.V(u, v)
+                .match("MATCH (a:person)-[r:knows]->{1,3}(a)").select("a", "r").toList();
+        final List<Map<String, Object>> viaInject = (List<Map<String, Object>>) (List<?>) g.<Integer>inject(1, 2)
+                .match("MATCH (a:person)-[r:knows]->{1,3}(a)").select("a", "r").toList();
+
+        final List<List<Object>> expected = new ArrayList<>(List.of(
+                List.of(u, List.of(uv, vu)), List.of(u, List.of(uv, vu)),
+                List.of(v, List.of(vu, uv)), List.of(v, List.of(vu, uv))));
+        expected.sort(Comparator.comparing(Object::toString));
+        assertEquals(expected, aAndR(viaV));
+        assertEquals(expected, aAndR(viaInject));
+    }
+
+    @Test(timeout = 10000)
+    @SuppressWarnings("unchecked")
+    public void testQuantifiedEdgeClosingTriangleSurfacesRows() {
+        // a -ab-> b, b reaches c by bc at depths 1 and 2, c -ca-> a.
+        final Vertex a = graph.addVertex("a");
+        final Vertex b = graph.addVertex("b");
+        final Vertex c = graph.addVertex("c");
+        final Vertex m = graph.addVertex("m");
+        a.addEdge("ab", b);
+        final Edge bc = b.addEdge("bc", c);
+        final Edge bm = b.addEdge("bc", m);
+        final Edge mc = m.addEdge("bc", c);
+        c.addEdge("ca", a);
+
+        final List<Map<String, Object>> rows = (List<Map<String, Object>>) (List<?>) g.<Integer>inject(1)
+                .match("MATCH (a:a)-[:ab]->(b:b)-[r:bc]->{1,3}(c:c)-[:ca]->(a)").select("a", "b", "c", "r").toList();
+
+        final List<List<Object>> expected = new ArrayList<>(List.of(
+                List.of(a, b, c, List.of(bc)), List.of(a, b, c, List.of(bm, mc))));
+        expected.sort(Comparator.comparing(Object::toString));
+        assertEquals(expected, rows.stream()
+                .map(row -> List.of(row.get("a"), row.get("b"), row.get("c"), asEdgeList(row.get("r"))))
+                .sorted(Comparator.comparing(Object::toString)).collect(Collectors.toList()));
     }
 }

@@ -225,9 +225,12 @@ public final class DefaultGqlPlanner implements GqlPlanner {
      * <p>Back edges (both endpoints already visited) are still emitted as steps so the
      * executor can verify the join constraint against the already-bound variable.
      *
-     * <p>Quantified edges are forward-only: a quantified edge classified as a back edge
-     * (closing a pattern cycle, including a pattern self-loop) raises an
-     * {@link IllegalArgumentException}.
+     * <p>A quantified back edge, including a pattern self-loop such as {@code (a)-[r]->{2,3}(a)},
+     * is emitted like any other back edge, anchored at its earlier-visited endpoint. Back-edge
+     * status is a property of this plan order only: the executor may reorder steps at runtime,
+     * so a planned back edge can run with its target still unbound. When the target is already
+     * bound, the executor joins each walk's end vertex against it, so only walks that close the
+     * cycle produce rows.
      */
     private List<ExtensionStep> buildSteps(final QueryGraph queryGraph,
                                            final QueryVertex seed,
@@ -265,13 +268,6 @@ public final class DefaultGqlPlanner implements GqlPlanner {
                 // so a self-loop is treated as a back edge.
                 final QueryVertex other = edge.getSource() == current ? edge.getTarget() : edge.getSource();
                 final boolean isBackEdge = visitOrder.containsKey(other);
-
-                // Quantified edges are forward-only. A quantified edge that closes a pattern cycle,
-                // including a pattern self-loop such as (a)-[]->{2,3}(a), is not yet supported.
-                if (isBackEdge && edge.isQuantified()) {
-                    throw new IllegalArgumentException(
-                            "quantified edges closing a pattern cycle are not yet supported");
-                }
 
                 // Anchor at current, except for a back edge whose other endpoint was visited
                 // earlier, which is anchored there instead.

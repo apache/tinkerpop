@@ -629,32 +629,117 @@ Feature: Step - match() (String form)
     When iterated to list
     Then the traversal will raise an error with message containing text of "zero-length paths"
 
-  Scenario: g_match_personXknows_1_3X_personXknows_1_3X_cycle_selectXa_bX_byXnameX
-    Given the modern graph
+  Scenario: g_match_airportXname_AAAX_route_1_3X_airportXroute_1_3X_cycle_selectXa_bX_byXnameX
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("airport").property("name", "AAA").as("a").
+        addV("airport").property("name", "BBB").as("b").
+        addV("airport").property("name", "CCC").as("c").
+        addV("airport").property("name", "DDD").as("d").
+        addE("route").from("a").to("b").
+        addE("route").from("b").to("a").
+        addE("route").from("b").to("c").
+        addE("route").from("c").to("a").
+        addE("route").from("c").to("d")
+      """
     And the traversal of
       """
-      g.match("MATCH (a:person)-[:knows]->{1,3}(b:person), (b)-[:knows]->{1,3}(a)").select("a","b").by("name")
+      g.match("MATCH (a:airport {name: 'AAA'})-[:route]->{1,3}(b:airport), (b)-[:route]->{1,3}(a)").select("a","b").by("name")
       """
     When iterated to list
-    Then the traversal will raise an error with message containing text of "quantified edges closing a pattern cycle are not yet supported"
+    Then the result should be unordered
+      | result |
+      | m[{"a":"AAA","b":"AAA"}] |
+      | m[{"a":"AAA","b":"AAA"}] |
+      | m[{"a":"AAA","b":"AAA"}] |
+      | m[{"a":"AAA","b":"AAA"}] |
+      | m[{"a":"AAA","b":"BBB"}] |
+      | m[{"a":"AAA","b":"BBB"}] |
+      | m[{"a":"AAA","b":"CCC"}] |
+      | m[{"a":"AAA","b":"CCC"}] |
 
-  Scenario: g_match_personXknows_1X_personXknows_1X_cycle_selectXa_bX_byXnameX
-    Given the modern graph
+  Scenario: g_match_airportXname_AAAX_routeXr1Var_1_3X_airportXrouteXr2Var_1_3X_cycle_selectXr1_r2X
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("airport").property("name", "AAA").as("a").
+        addV("airport").property("name", "BBB").as("b").
+        addV("airport").property("name", "CCC").as("c").
+        addV("airport").property("name", "DDD").as("d").
+        addE("route").from("a").to("b").
+        addE("route").from("b").to("a").
+        addE("route").from("b").to("c").
+        addE("route").from("c").to("a").
+        addE("route").from("c").to("d")
+      """
     And the traversal of
       """
-      g.match("MATCH (a:person)-[:knows]->{1}(b:person), (b)-[:knows]->{1}(a)").select("a","b").by("name")
+      g.match("MATCH (a:airport {name: 'AAA'})-[r1:route]->{1,3}(b:airport), (b)-[r2:route]->{1,3}(a)").select("r1","r2")
       """
     When iterated to list
-    Then the traversal will raise an error with message containing text of "quantified edges closing a pattern cycle are not yet supported"
+    Then the result should be unordered
+      | result |
+      | m[{"r1":"l[e[AAA-route->BBB]]","r2":"l[e[BBB-route->AAA]]"}] |
+      | m[{"r1":"l[e[AAA-route->BBB]]","r2":"l[e[BBB-route->CCC],e[CCC-route->AAA]]"}] |
+      | m[{"r1":"l[e[AAA-route->BBB],e[BBB-route->AAA]]","r2":"l[e[AAA-route->BBB],e[BBB-route->AAA]]"}] |
+      | m[{"r1":"l[e[AAA-route->BBB],e[BBB-route->AAA]]","r2":"l[e[AAA-route->BBB],e[BBB-route->CCC],e[CCC-route->AAA]]"}] |
+      | m[{"r1":"l[e[AAA-route->BBB],e[BBB-route->CCC]]","r2":"l[e[CCC-route->AAA]]"}] |
+      | m[{"r1":"l[e[AAA-route->BBB],e[BBB-route->CCC]]","r2":"l[e[CCC-route->AAA],e[AAA-route->BBB],e[BBB-route->AAA]]"}] |
+      | m[{"r1":"l[e[AAA-route->BBB],e[BBB-route->CCC],e[CCC-route->AAA]]","r2":"l[e[AAA-route->BBB],e[BBB-route->AAA]]"}] |
+      | m[{"r1":"l[e[AAA-route->BBB],e[BBB-route->CCC],e[CCC-route->AAA]]","r2":"l[e[AAA-route->BBB],e[BBB-route->CCC],e[CCC-route->AAA]]"}] |
 
-  Scenario: g_match_personXknowsXrVar_2_3X_selfLoop_selectXrX
-    Given the modern graph
+  Scenario: g_match_airportXparallelRoute_1X_airportXroute_1X_cycle_selectXa_bX_byXnameX
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("airport").property("name", "AAA").as("a").
+        addV("airport").property("name", "BBB").as("b").
+        addV("airport").property("name", "CCC").as("c").
+        addE("route").from("a").to("b").
+        addE("route").from("b").to("a").
+        addE("route").from("b").to("a").
+        addE("route").from("b").to("c")
+      """
     And the traversal of
       """
-      g.match("MATCH (a:person)-[r:knows]->{2,3}(a)").select("r")
+      g.match("MATCH (a:airport)-[:route]->{1}(b:airport), (b)-[:route]->{1}(a)").select("a","b").by("name")
       """
     When iterated to list
-    Then the traversal will raise an error with message containing text of "quantified edges closing a pattern cycle are not yet supported"
+    Then the result should be unordered
+      | result |
+      | m[{"a":"AAA","b":"BBB"}] |
+      | m[{"a":"AAA","b":"BBB"}] |
+      | m[{"a":"BBB","b":"AAA"}] |
+      | m[{"a":"BBB","b":"AAA"}] |
+
+  Scenario: g_match_airportXrouteXrVar_1_3X_selfLoop_selectXrX
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("airport").property("name", "AAA").as("a").
+        addV("airport").property("name", "BBB").as("b").
+        addV("airport").property("name", "CCC").as("c").
+        addV("airport").property("name", "DDD").as("d").
+        addE("route").from("a").to("b").
+        addE("route").from("b").to("a").
+        addE("route").from("b").to("c").
+        addE("route").from("c").to("a").
+        addE("route").from("d").to("d")
+      """
+    And the traversal of
+      """
+      g.match("MATCH (a:airport)-[r:route]->{1,3}(a)").select("r")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | l[e[DDD-route->DDD]] |
+      | l[e[AAA-route->BBB],e[BBB-route->AAA]] |
+      | l[e[BBB-route->AAA],e[AAA-route->BBB]] |
+      | l[e[AAA-route->BBB],e[BBB-route->CCC],e[CCC-route->AAA]] |
+      | l[e[BBB-route->CCC],e[CCC-route->AAA],e[AAA-route->BBB]] |
+      | l[e[CCC-route->AAA],e[AAA-route->BBB],e[BBB-route->CCC]] |
 
   Scenario: g_match_personXknowsXrVar_1_2X_personXcreatedXrVarX_software_selectXrX
     Given the modern graph

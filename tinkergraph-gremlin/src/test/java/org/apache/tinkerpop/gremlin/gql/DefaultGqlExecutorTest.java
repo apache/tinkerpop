@@ -34,7 +34,9 @@ import org.junit.Test;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -44,6 +46,7 @@ import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import static org.junit.Assert.*;
@@ -2082,5 +2085,484 @@ public class DefaultGqlExecutorTest {
         assertEquals(Set.of(p, q), byX.keySet());
         assertEquals(List.of(e1, e2), edgeList(byX.get(p).get(0), "r"));
         assertEquals(List.of(e1, e2, e3, e4), edgeList(byX.get(q).get(0), "r"));
+    }
+
+    // -------------------------------------------------------------------------
+    // Quantified edges that close a pattern cycle
+    //
+    // A quantified back edge, including a pattern self-loop, runs as a forward walk from its
+    // anchor. Each walk end is joined against the already-bound target, so only walks that end
+    // at the already-matched vertex produce rows.
+    // -------------------------------------------------------------------------
+
+    private static final String TRIANGLE = "MATCH (a:A)-[:AB]->(b:B)-[r:BC]->{1,3}(c:C)-[:CA]->(a)";
+
+    /**
+     * Projects rows onto the named variables, reading group variables as their edge lists, and
+     * counts each distinct tuple so duplicate rows are not hidden.
+     */
+    private static Map<List<Object>, Long> tuples(final List<Map<String, Element>> rows, final String... vars) {
+        return rows.stream().map(row -> {
+            final List<Object> tuple = new ArrayList<>();
+            for (final String var : vars) {
+                final List<Edge> group = ((Row) row).groups.get(var);
+                tuple.add(group != null ? group : row.get(var));
+            }
+            return tuple;
+        }).collect(Collectors.groupingBy(t -> t, LinkedHashMap::new, Collectors.counting()));
+    }
+
+    /** Counts each expected tuple, so a tuple listed twice expects two identical rows. */
+    @SafeVarargs
+    private static Map<List<Object>, Long> expectedTuples(final List<Object>... tuples) {
+        return Arrays.stream(tuples)
+                .collect(Collectors.groupingBy(t -> t, LinkedHashMap::new, Collectors.counting()));
+    }
+
+    /**
+     * Whether the step's target variable is already bound by the seed or an earlier step in the
+     * plan. This is a plan-level property: the executor may reorder steps at runtime, so a planned
+     * back edge is not guaranteed to run with its target bound.
+     */
+    private static boolean isBackEdge(final GqlMatchPlan plan, final ExtensionStep step) {
+        final Set<String> bound = new HashSet<>();
+        bound.add(plan.getSeedVariable());
+        for (final ExtensionStep s : plan.getSteps()) {
+            if (s == step) return bound.contains(s.getTargetVariable());
+            bound.add(s.getTargetVariable());
+        }
+        throw new IllegalArgumentException(step + " is not in the plan");
+    }
+
+    private static ExtensionStep stepByLabel(final GqlMatchPlan plan, final String label) {
+        return plan.getSteps().stream()
+                .filter(s -> label.equals(s.getEdgeLabel())).findFirst().orElseThrow();
+    }
+
+    /** Adds {@code count} edges with {@code label} between isolated X vertices to skew label density. */
+    private static void addUnreachableEdges(final TinkerGraph g, final String label, final int count) {
+        for (int i = 0; i < count; i++) g.addVertex("X").addEdge(label, g.addVertex("X"));
+    }
+
+    /**
+     * a -AB-> b -BC-> c -CA-> a, where b reaches c by BC at depths 1, 2 and 3 through the M
+     * vertices, and also reaches a decoy C vertex that has no CA edge back to a.
+     */
+    private static final class TriangleGraph {
+        final Vertex a, b, c;
+        final Edge bc, bm, mc, bn, nm;
+
+        TriangleGraph(final TinkerGraph g) {
+            a = g.addVertex("A");
+            b = g.addVertex("B");
+            c = g.addVertex("C");
+            final Vertex decoy = g.addVertex("C");
+            final Vertex m = g.addVertex("M");
+            final Vertex n = g.addVertex("M");
+            a.addEdge("AB", b);
+            bc = b.addEdge("BC", c);
+            bm = b.addEdge("BC", m);
+            mc = m.addEdge("BC", c);
+            bn = b.addEdge("BC", n);
+            nm = n.addEdge("BC", m);
+            b.addEdge("BC", decoy);
+            c.addEdge("CA", a);
+        }
+
+        Map<List<Object>, Long> expected() {
+            return expectedTuples(
+                    List.of(a, b, c, List.of(bc)),
+                    List.of(a, b, c, List.of(bm, mc)),
+                    List.of(a, b, c, List.of(bn, nm, mc)));
+        }
+    }
+
+    @Test(timeout = 10000)
+    public void testQuantifiedEdgeClosingTriangleReturnsOnlyWalksEndingAtBoundTarget() {
+        final TriangleGraph t = new TriangleGraph(graph);
+
+        final GqlMatchPlan plan = planner.plan(TRIANGLE);
+        assertEquals("a", plan.getSeedVariable());
+        final ExtensionStep bc = stepByLabel(plan, "BC");
+        assertTrue("BC must close the cycle for this test", isBackEdge(plan, bc));
+        assertTrue(bc.isQuantified());
+
+        assertEquals(t.expected(), tuples(materialize(executor.execute(plan), plan), "a", "b", "c", "r"));
+    }
+
+    @Test(timeout = 30000)
+    public void testQuantifiedCycleRowsDoNotDependOnPatternOrEdgeOrder() {
+        // The same triangle written with the quantified edge in each of the three positions, run
+        // on graphs whose label counts move the seed and reorder the edges. The quantified edge is
+        // a back edge in some of these plans and a forward edge in others, and the rows must not
+        // change, whichever way the plan orders it.
+        final String[] patterns = {
+                TRIANGLE,
+                "MATCH (b:B)-[r:BC]->{1,3}(c:C)-[:CA]->(a:A)-[:AB]->(b)",
+                "MATCH (c:C)-[:CA]->(a:A)-[:AB]->(b:B)-[r:BC]->{1,3}(c)"};
+        final Map<String, Consumer<TinkerGraph>> skews = new LinkedHashMap<>();
+        skews.put("base", g -> { });
+        skews.put("seed at b", g -> { for (int i = 0; i < 5; i++) g.addVertex("A"); });
+        skews.put("seed at c", g -> { for (int i = 0; i < 5; i++) { g.addVertex("A"); g.addVertex("B"); } });
+        skews.put("dense AB", g -> addUnreachableEdges(g, "AB", 10));
+        skews.put("dense CA", g -> addUnreachableEdges(g, "CA", 10));
+        skews.put("dense BC", g -> addUnreachableEdges(g, "BC", 10));
+
+        final Set<Boolean> backEdgeSeen = new HashSet<>();
+        for (final String pattern : patterns) {
+            for (final Map.Entry<String, Consumer<TinkerGraph>> skew : skews.entrySet()) {
+                try (final TinkerGraph g = TinkerGraph.open()) {
+                    final TriangleGraph t = new TriangleGraph(g);
+                    skew.getValue().accept(g);
+                    final GqlMatchPlan plan = new DefaultGqlPlanner(g).plan(pattern);
+                    backEdgeSeen.add(isBackEdge(plan, stepByLabel(plan, "BC")));
+                    final List<Map<String, Element>> rows =
+                            materialize(new DefaultGqlExecutor(g).execute(plan), plan);
+                    assertEquals(pattern + " / " + skew.getKey(),
+                            t.expected(), tuples(rows, "a", "b", "c", "r"));
+                }
+            }
+        }
+        assertEquals("the matrix must plan BC both as a back edge and as a forward edge",
+                Set.of(true, false), backEdgeSeen);
+    }
+
+    @Test(timeout = 10000)
+    public void testQuantifiedEdgeWithBothEndpointsPinnedByProperties() {
+        // x -L-> y, x -L-> m -L-> y, x -L-> z, y -L-> p -L-> y. Only walks ending at y are rows,
+        // including the depth-3 walk that passes through y and returns to it.
+        final Vertex x = graph.addVertex("V");
+        x.property("name", "x");
+        final Vertex y = graph.addVertex("V");
+        y.property("name", "y");
+        final Vertex z = graph.addVertex("V");
+        z.property("name", "z");
+        final Vertex m = graph.addVertex("V");
+        final Vertex p = graph.addVertex("V");
+        final Edge xy = x.addEdge("L", y);
+        final Edge xm = x.addEdge("L", m);
+        final Edge my = m.addEdge("L", y);
+        x.addEdge("L", z);
+        final Edge yp = y.addEdge("L", p);
+        final Edge py = p.addEdge("L", y);
+
+        final List<Map<String, Element>> rows =
+                execute("MATCH (a {name: 'x'})-[r:L]->{1,3}(b {name: 'y'})");
+        assertEquals(expectedTuples(
+                List.of(x, y, List.of(xy)),
+                List.of(x, y, List.of(xm, my)),
+                List.of(x, y, List.of(xy, yp, py))), tuples(rows, "a", "b", "r"));
+    }
+
+    /**
+     * a -L-> b -L-> a (a 2-cycle) and a -L-> c -L-> d -L-> a (a 3-cycle), all labelled P.
+     * Returns {a, b, c, d, ab, ba, ac, cd, da}.
+     */
+    private Element[] addTwoAndThreeCycleThroughA() {
+        final Vertex a = graph.addVertex("P");
+        final Vertex b = graph.addVertex("P");
+        final Vertex c = graph.addVertex("P");
+        final Vertex d = graph.addVertex("P");
+        final Edge ab = a.addEdge("L", b);
+        final Edge ba = b.addEdge("L", a);
+        final Edge ac = a.addEdge("L", c);
+        final Edge cd = c.addEdge("L", d);
+        final Edge da = d.addEdge("L", a);
+        return new Element[]{a, b, c, d, ab, ba, ac, cd, da};
+    }
+
+    @Test(timeout = 10000)
+    public void testQuantifiedPatternSelfLoopReturnsClosedWalksInPatternOrder() {
+        final Element[] e = addTwoAndThreeCycleThroughA();
+        final Element a = e[0], b = e[1], c = e[2], d = e[3];
+        final Edge ab = (Edge) e[4], ba = (Edge) e[5], ac = (Edge) e[6], cd = (Edge) e[7], da = (Edge) e[8];
+
+        final GqlMatchPlan plan = planner.plan("MATCH (a:P)-[r:L]->{2,3}(a)");
+        assertFalse(plan.getSteps().get(0).isAnchoredAtPatternTarget());
+        // Every vertex on a cycle is a seed, so each closed walk appears once per start vertex.
+        assertEquals(expectedTuples(
+                List.of(a, List.of(ab, ba)),
+                List.of(a, List.of(ac, cd, da)),
+                List.of(b, List.of(ba, ab)),
+                List.of(c, List.of(cd, da, ac)),
+                List.of(d, List.of(da, ac, cd))), tuples(materialize(executor.execute(plan), plan), "a", "r"));
+    }
+
+    @Test(timeout = 10000)
+    public void testReverseQuantifiedPatternSelfLoopReturnsClosedWalksInPatternOrder() {
+        // (a)<-[r]-{2,3}(a) reads right to left against the edges, so r lists edges in the order
+        // the walk follows them backwards from a.
+        final Element[] e = addTwoAndThreeCycleThroughA();
+        final Element a = e[0], b = e[1], c = e[2], d = e[3];
+        final Edge ab = (Edge) e[4], ba = (Edge) e[5], ac = (Edge) e[6], cd = (Edge) e[7], da = (Edge) e[8];
+
+        assertEquals(expectedTuples(
+                List.of(a, List.of(ba, ab)),
+                List.of(a, List.of(da, cd, ac)),
+                List.of(b, List.of(ab, ba)),
+                List.of(c, List.of(ac, da, cd)),
+                List.of(d, List.of(cd, ac, da))), tuples(execute("MATCH (a:P)<-[r:L]-{2,3}(a)"), "a", "r"));
+    }
+
+    @Test(timeout = 10000)
+    public void testExactlyOneQuantifierClosingCycleReturnsOneRowPerParallelEdge() {
+        // Two parallel BC edges close the triangle. {1} and {1,1} are quantified walks, so each
+        // parallel edge is its own row, named or anonymous.
+        final Vertex a = graph.addVertex("A");
+        final Vertex b = graph.addVertex("B");
+        final Vertex c = graph.addVertex("C");
+        a.addEdge("AB", b);
+        final Edge p1 = b.addEdge("BC", c);
+        final Edge p2 = b.addEdge("BC", c);
+        c.addEdge("CA", a);
+
+        for (final String q : new String[]{"{1}", "{1,1}"}) {
+            final GqlMatchPlan plan = planner.plan("MATCH (a:A)-[:AB]->(b:B)-[r:BC]->" + q + "(c:C)-[:CA]->(a)");
+            assertTrue(q, isBackEdge(plan, stepByLabel(plan, "BC")));
+            assertEquals(q, expectedTuples(
+                    List.of(a, b, c, List.of(p1)),
+                    List.of(a, b, c, List.of(p2))), tuples(materialize(executor.execute(plan), plan), "a", "b", "c", "r"));
+
+            assertEquals(q, expectedTuples(List.of(a, b, c), List.of(a, b, c)),
+                    tuples(execute("MATCH (a:A)-[:AB]->(b:B)-[:BC]->" + q + "(c:C)-[:CA]->(a)"), "a", "b", "c"));
+        }
+    }
+
+    @Test(timeout = 10000)
+    public void testExactlyOneQuantifiedPatternSelfLoopReturnsOneRowPerParallelDataSelfLoop() {
+        final Vertex a = graph.addVertex("P");
+        final Edge s1 = a.addEdge("L", a);
+        final Edge s2 = a.addEdge("L", a);
+        graph.addVertex("P");
+
+        for (final String q : new String[]{"{1}", "{1,1}"}) {
+            assertEquals(q, expectedTuples(List.of(a, List.of(s1)), List.of(a, List.of(s2))),
+                    tuples(execute("MATCH (a:P)-[r:L]->" + q + "(a)"), "a", "r"));
+        }
+    }
+
+    /**
+     * Triangle a -AB-> b ... c -CA-> a with extra unreachable AB edges, so the planner processes CA
+     * before AB from the seed a, visits c before b, and anchors the quantified b-c edge at c, the
+     * pattern edge's target.
+     */
+    private void assertQuantifiedBackEdgeAnchoredAtPatternTarget(final String query, final Direction direction,
+                                                                 final Map<List<Object>, Long> expected) {
+        final GqlMatchPlan plan = planner.plan(query);
+        assertEquals("a", plan.getSeedVariable());
+        final ExtensionStep step = plan.getSteps().stream().filter(ExtensionStep::isQuantified).findFirst().orElseThrow();
+        assertTrue(isBackEdge(plan, step));
+        assertEquals("c", step.getAnchorVariable());
+        assertEquals("b", step.getTargetVariable());
+        assertEquals(direction, step.getDirection());
+        assertTrue(step.isAnchoredAtPatternTarget());
+
+        assertEquals(expected, tuples(materialize(executor.execute(plan), plan), "a", "b", "c", "r"));
+    }
+
+    @Test(timeout = 10000)
+    public void testQuantifiedBackEdgeAnchoredAtPatternTargetBindsGroupInPatternOrder() {
+        final Vertex a = graph.addVertex("A");
+        final Vertex b = graph.addVertex("B");
+        final Vertex c = graph.addVertex("C");
+        final Vertex m = graph.addVertex("M");
+        a.addEdge("AB", b);
+        final Edge bm = b.addEdge("BC", m);
+        final Edge mc = m.addEdge("BC", c);
+        final Edge bc = b.addEdge("BC", c);
+        c.addEdge("CA", a);
+        addUnreachableEdges(graph, "AB", 3);
+
+        assertQuantifiedBackEdgeAnchoredAtPatternTarget(TRIANGLE, Direction.IN, expectedTuples(
+                List.of(a, b, c, List.of(bc)),
+                List.of(a, b, c, List.of(bm, mc))));
+    }
+
+    @Test(timeout = 10000)
+    public void testReverseQuantifiedBackEdgeAnchoredAtPatternTargetBindsGroupInPatternOrder() {
+        // Data edges run c -> m -> b; the pattern reads them from b, so r lists the b edge first.
+        final Vertex a = graph.addVertex("A");
+        final Vertex b = graph.addVertex("B");
+        final Vertex c = graph.addVertex("C");
+        final Vertex m = graph.addVertex("M");
+        a.addEdge("AB", b);
+        final Edge cm = c.addEdge("CB", m);
+        final Edge mb = m.addEdge("CB", b);
+        final Edge cb = c.addEdge("CB", b);
+        c.addEdge("CA", a);
+        addUnreachableEdges(graph, "AB", 3);
+
+        assertQuantifiedBackEdgeAnchoredAtPatternTarget(
+                "MATCH (a:A)-[:AB]->(b:B)<-[r:CB]-{1,3}(c:C)-[:CA]->(a)", Direction.OUT, expectedTuples(
+                        List.of(a, b, c, List.of(cb)),
+                        List.of(a, b, c, List.of(mb, cm))));
+    }
+
+    @Test(timeout = 10000)
+    public void testUndirectedQuantifiedBackEdgeAnchoredAtPatternTargetBindsGroupInPatternOrder() {
+        final Vertex a = graph.addVertex("A");
+        final Vertex b = graph.addVertex("B");
+        final Vertex c = graph.addVertex("C");
+        final Vertex m = graph.addVertex("M");
+        a.addEdge("AB", b);
+        final Edge bm = b.addEdge("BC", m);
+        final Edge mc = m.addEdge("BC", c);
+        final Edge bc = b.addEdge("BC", c);
+        c.addEdge("CA", a);
+        addUnreachableEdges(graph, "AB", 3);
+
+        // Undirected walks from c of length 1-3 that end at b: c-b and c-m-b. The length-3 walks
+        // c-b-m-c and c-m-b-c end at c, so they are not rows.
+        assertQuantifiedBackEdgeAnchoredAtPatternTarget(
+                "MATCH (a:A)-[:AB]->(b:B)-[r:BC]-{1,3}(c:C)-[:CA]->(a)", Direction.BOTH, expectedTuples(
+                        List.of(a, b, c, List.of(bc)),
+                        List.of(a, b, c, List.of(bm, mc))));
+    }
+
+    @Test(timeout = 10000)
+    public void testUnboundedQuantifiedEdgeWithBothEndpointsBoundTerminatesOnCycle() {
+        // L cycle x -> y -> z -> x plus a parallel x -> y edge, and M edges y -> x and z -> y.
+        // The plain M step binds b first (M is rarer than L), so the + walk from a joins against b.
+        final Vertex x = graph.addVertex("V");
+        final Vertex y = graph.addVertex("V");
+        final Vertex z = graph.addVertex("V");
+        final Edge l1 = x.addEdge("L", y);
+        final Edge l2 = y.addEdge("L", z);
+        final Edge l3 = z.addEdge("L", x);
+        final Edge l4 = x.addEdge("L", y);
+        y.addEdge("M", x);
+        z.addEdge("M", y);
+
+        final GqlMatchPlan plan = planner.plan("MATCH (a)-[r:L]->+(b), (b)-[:M]->(a)");
+        assertTrue(isBackEdge(plan, stepByLabel(plan, "L")));
+
+        // a = x, b = y: both one-hop edges, and both trails that go round the cycle and leave x
+        // again by the other parallel edge. a = y, b = z: only the one-hop edge, because the
+        // trails back to y have used y's only outgoing L edge.
+        assertEquals(expectedTuples(
+                List.of(x, y, List.of(l1)),
+                List.of(x, y, List.of(l4)),
+                List.of(x, y, List.of(l1, l2, l3, l4)),
+                List.of(x, y, List.of(l4, l2, l3, l1)),
+                List.of(y, z, List.of(l2))), tuples(materialize(executor.execute(plan), plan), "a", "b", "r"));
+    }
+
+    @Test(timeout = 10000)
+    public void testTwoQuantifiedEdgesFormingTwoCycleMayShareEdges() {
+        // u -K-> v -K-> u. Edge uniqueness is per walk, so r1 and r2 may share edges.
+        final Vertex u = graph.addVertex("V");
+        final Vertex v = graph.addVertex("V");
+        final Edge uv = u.addEdge("K", v);
+        final Edge vu = v.addEdge("K", u);
+
+        final GqlMatchPlan plan = planner.plan("MATCH (a)-[r1:K]->{1,3}(b), (b)-[r2:K]->{1,3}(a)");
+        final ExtensionStep r2 = plan.getSteps().stream()
+                .filter(s -> "r2".equals(s.getEdgeVariable())).findFirst().orElseThrow();
+        assertTrue(isBackEdge(plan, r2));
+
+        // r1 and r2 are both anchored at a, and the executor reorders them by observed
+        // selectivity once the first seed has updated the step counters. So r2 is not guaranteed
+        // to run with b already bound for every seed; for some seeds r2 may run first and r1
+        // then joins against the b that r2 bound. The rows are the same either way.
+        // testTwoQuantifiedEdgesFormingTwoCycleJoinsR2AgainstBoundTarget covers the r2 join alone.
+        final List<Map<String, Element>> rows = materialize(executor.execute(plan), plan);
+        assertEquals(expectedTuples(
+                List.of(u, v, List.of(uv), List.of(vu)),
+                List.of(u, u, List.of(uv, vu), List.of(uv, vu)),
+                List.of(v, u, List.of(vu), List.of(uv)),
+                List.of(v, v, List.of(vu, uv), List.of(vu, uv))), tuples(rows, "a", "b", "r1", "r2"));
+        assertTrue("some row must reuse an edge across r1 and r2", rows.stream().anyMatch(row ->
+                edgeList(row, "r1").stream().anyMatch(edgeList(row, "r2")::contains)));
+    }
+
+    @Test(timeout = 10000)
+    public void testTwoQuantifiedEdgesFormingTwoCycleJoinsR2AgainstBoundTarget() {
+        // Same 2-cycle, with a pinned to u so there is a single seed. On a fresh plan both steps
+        // have equal selectivity and cost, so the executor keeps plan order: r1 runs first and
+        // binds b, and r2 runs as the back edge, joining each walk's end vertex against that b.
+        final Vertex u = graph.addVertex("V");
+        u.property("name", "u");
+        final Vertex v = graph.addVertex("V");
+        v.property("name", "v");
+        final Edge uv = u.addEdge("K", v);
+        final Edge vu = v.addEdge("K", u);
+
+        final GqlMatchPlan plan = planner.plan("MATCH (a {name: 'u'})-[r1:K]->{1,3}(b), (b)-[r2:K]->{1,3}(a)");
+        assertEquals("a", plan.getSeedVariable());
+        assertEquals("r1", plan.getSteps().get(0).getEdgeVariable());
+        final ExtensionStep r2 = plan.getSteps().get(1);
+        assertEquals("r2", r2.getEdgeVariable());
+        assertTrue(isBackEdge(plan, r2));
+        assertEquals(r2.getEstimatedCost(), plan.getSteps().get(0).getEstimatedCost());
+
+        assertEquals(expectedTuples(
+                List.of(u, v, List.of(uv), List.of(vu)),
+                List.of(u, u, List.of(uv, vu), List.of(uv, vu))),
+                tuples(materialize(executor.execute(plan), plan), "a", "b", "r1", "r2"));
+    }
+
+    /** Drains the iterator, calling {@code hasNext()} {@code hasNextCalls} times before each row. */
+    private static List<List<Object>> drain(final Iterator<GqlRow> iter, final GqlMatchPlan plan,
+                                            final int hasNextCalls) {
+        final int a = plan.getIndex("a"), b = plan.getIndex("b"), r = plan.getIndex("r");
+        final List<List<Object>> rows = new ArrayList<>();
+        while (true) {
+            boolean more = false;
+            for (int i = 0; i < hasNextCalls; i++) more = iter.hasNext();
+            if (!more) return rows;
+            final GqlRow row = iter.next();
+            rows.add(List.of(row.getScalar(a), row.getScalar(b), row.getGroup(r)));
+        }
+    }
+
+    @Test(timeout = 10000)
+    public void testBoundTargetIsRestoredAcrossSiblingWalkRows() {
+        // A plain M step binds b, then the L walk from a emits at several depths. Each sibling row
+        // must still join against that b, including after walks that ended elsewhere.
+        final Vertex a = graph.addVertex("A");
+        final Vertex b1 = graph.addVertex("B");
+        final Vertex b2 = graph.addVertex("B");
+        a.addEdge("M", b1);
+        a.addEdge("M", b2);
+        final Edge l1 = a.addEdge("L", b1);
+        final Edge l2 = b1.addEdge("L", b2);
+        final Edge l3 = b2.addEdge("L", b1);
+        final Edge l4 = a.addEdge("L", b2);
+
+        final String query = "MATCH (a:A)-[:M]->(b:B), (a)-[r:L]->{1,3}(b)";
+        final GqlMatchPlan plan = planner.plan(query);
+        assertTrue(isBackEdge(plan, stepByLabel(plan, "L")));
+
+        // Fresh plans, so the adaptive step counters start equal and the row order is comparable.
+        final List<List<Object>> once = drain(executor.execute(planner.plan(query)), plan, 1);
+        final List<List<Object>> twice = drain(executor.execute(planner.plan(query)), plan, 2);
+        assertEquals("calling hasNext() twice between rows must not change the sequence", once, twice);
+        assertEquals(expectedTuples(
+                List.of(a, b1, List.of(l1)),
+                List.of(a, b1, List.of(l1, l2, l3)),
+                List.of(a, b1, List.of(l4, l3)),
+                List.of(a, b2, List.of(l1, l2)),
+                List.of(a, b2, List.of(l4)),
+                List.of(a, b2, List.of(l4, l3, l2))),
+                once.stream().collect(Collectors.groupingBy(t -> t, LinkedHashMap::new, Collectors.counting())));
+    }
+
+    @Test(timeout = 10000)
+    public void testUndirectedQuantifiedPatternSelfLoopOverDataSelfLoop() {
+        // edges(Direction.BOTH) returns a self-loop once as an out-edge and once as an in-edge, so
+        // an undirected walk takes the one loop edge two ways and returns two identical rows. This
+        // matches the named single-hop convention pinned above. The duplicate count is current
+        // behaviour, pinned pending an open design question on undirected data self-loops
+        // (TINKERPOP-3256); it is not a decision that it is correct. TRAIL uniqueness prevents a
+        // depth-2 row.
+        final Vertex a = graph.addVertex("P");
+        final Edge loop = a.addEdge("L", a);
+        graph.addVertex("P");
+
+        assertEquals(expectedTuples(List.of(a, List.of(loop)), List.of(a, List.of(loop))),
+                tuples(execute("MATCH (a:P)-[r:L]-{1,2}(a)"), "a", "r"));
+        // A directed walk sees the loop once.
+        assertEquals(expectedTuples(List.of(a, List.of(loop))),
+                tuples(execute("MATCH (a:P)-[r:L]->{1,2}(a)"), "a", "r"));
     }
 }
