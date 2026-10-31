@@ -20,6 +20,12 @@ package org.apache.tinkerpop.gremlin.process.traversal;
 
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.MutablePath;
 import org.apache.tinkerpop.gremlin.structure.T;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.geo.Geometry;
+import org.apache.tinkerpop.gremlin.structure.geo.Model;
+import org.apache.tinkerpop.gremlin.structure.geo.MultiPoint;
+import org.apache.tinkerpop.gremlin.structure.geo.Point;
+import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceVertex;
 import org.apache.tinkerpop.gremlin.util.GremlinValueComparator;
 import org.javatuples.Pair;
 import org.junit.Test;
@@ -36,6 +42,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
+import java.util.UUID;
 import java.time.OffsetDateTime;
 
 import static org.apache.tinkerpop.gremlin.util.CollectionUtil.asSet;
@@ -53,6 +60,13 @@ public class OrderTest {
      */
     @RunWith(Parameterized.class)
     public static class OrderListTest {
+
+        private static final UUID UUID_VALUE = UUID.fromString("0f6b0e0d-9a7f-4d4f-9b0b-5b8a2f1c7d11");
+        private static final Vertex VERTEX_VALUE = new ReferenceVertex(1);
+        private static final Geometry GEOMETRY_VALUE = Point.of(1, 1);
+        private static final Geometry CARTESIAN_POINT = Geometry.fromWkt("POINT(1 2)");
+        private static final Geometry GEOGRAPHIC_POINT = Geometry.fromWkt("POINT(1 2)", Model.GEOGRAPHIC);
+        private static final Geometry PROJECTED_POINT = Geometry.fromWkt("POINT(1 2)", 32618);
 
         @Parameterized.Parameters(name = "{0}.sort({1}) = {2}")
         public static Iterable<Object[]> data() throws ParseException {
@@ -93,7 +107,17 @@ public class OrderTest {
                     {Order.asc, Arrays.asList(100, 1, -1, 0), Arrays.asList(-1, 0, 1, 100)},
                     {Order.desc, Arrays.asList(100, 1, -1, 0), Arrays.asList(100, 1, 0, -1)},
                     {Order.asc, Arrays.asList("b", "a", T.id, "c", "d"), Arrays.asList("a", "b", "c", "d", T.id)},
-                    {Order.desc, Arrays.asList("b", "a", T.id, "c", "d"), Arrays.asList(T.id, "d", "c", "b", "a")}}));
+                    {Order.desc, Arrays.asList("b", "a", T.id, "c", "d"), Arrays.asList(T.id, "d", "c", "b", "a")},
+                    // a geometry sorts after a UUID and before a vertex
+                    {Order.asc, Arrays.asList(VERTEX_VALUE, GEOMETRY_VALUE, "a", UUID_VALUE),
+                            Arrays.asList("a", UUID_VALUE, GEOMETRY_VALUE, VERTEX_VALUE)},
+                    {Order.desc, Arrays.asList(VERTEX_VALUE, GEOMETRY_VALUE, "a", UUID_VALUE),
+                            Arrays.asList(VERTEX_VALUE, GEOMETRY_VALUE, UUID_VALUE, "a")},
+                    // geometries sort by SRID first
+                    {Order.asc, Arrays.asList(PROJECTED_POINT, GEOGRAPHIC_POINT, CARTESIAN_POINT),
+                            Arrays.asList(CARTESIAN_POINT, GEOGRAPHIC_POINT, PROJECTED_POINT)},
+                    {Order.desc, Arrays.asList(CARTESIAN_POINT, PROJECTED_POINT, GEOGRAPHIC_POINT),
+                            Arrays.asList(PROJECTED_POINT, GEOGRAPHIC_POINT, CARTESIAN_POINT)}}));
         }
 
         @Parameterized.Parameter(value = 0)
@@ -144,7 +168,16 @@ public class OrderTest {
                     // cross type
                     {"foo", 1, Type.String.priority() - Type.Number.priority()},
                     {MutablePath.make(), Collections.emptySet(), Type.Path.priority() - Type.Set.priority()},
-                    
+                    {Point.of(1, 1), "foo", Type.Geometry.priority() - Type.String.priority()},
+                    {Point.of(1, 1), UUID.fromString("0f6b0e0d-9a7f-4d4f-9b0b-5b8a2f1c7d11"),
+                            Type.Geometry.priority() - Type.UUID.priority()},
+                    {new ReferenceVertex(1), Point.of(1, 1), Type.Vertex.priority() - Type.Geometry.priority()},
+
+                    // geometries of one type space compare by the geometry order
+                    {Point.empty(), Point.of(0, 0), -1},
+                    {Point.of(0, 0), Point.of(-0.0, -0.0), 0},
+                    {Point.of(0, 0), MultiPoint.of(Point.of(0, 0)), -1},
+
                     // Collections
                     {asList(1, 2, 3), asList(1, 2, 3), 0},
                     {asList(1, 2, 3), asList(1, 2, 3, 4), -1},

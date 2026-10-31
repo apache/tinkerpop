@@ -24,6 +24,7 @@ import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
+import org.apache.tinkerpop.gremlin.structure.geo.Geometry;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.time.OffsetDateTime;
@@ -153,7 +154,7 @@ public abstract class GremlinValueComparator implements Comparator<Object> {
     };
 
     /**
-     * Boolean, Date, String, UUID.
+     * Boolean, Date, String, UUID, Geometry.
      */
     private final Comparator<Comparable> naturalOrderComparator = Comparator.naturalOrder();
 
@@ -243,6 +244,7 @@ public abstract class GremlinValueComparator implements Comparator<Object> {
         Date            (OffsetDateTime.class),
         String          (String.class),
         UUID            (UUID.class),
+        Geometry        (Geometry.class),
         Vertex          (Vertex.class),
         Edge            (Edge.class),
         VertexProperty  (VertexProperty.class),
@@ -379,6 +381,7 @@ public abstract class GremlinValueComparator implements Comparator<Object> {
         put(Type.Date,           naturalOrderComparator);
         put(Type.String,         naturalOrderComparator);
         put(Type.UUID,           naturalOrderComparator);
+        put(Type.Geometry,       naturalOrderComparator);
         put(Type.Vertex,         elementComparator);
         put(Type.Edge,           elementComparator);
         put(Type.VertexProperty, elementComparator);

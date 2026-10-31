@@ -23,6 +23,15 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.B_O_Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.util.AndP;
 import org.apache.tinkerpop.gremlin.process.traversal.util.OrP;
+import org.apache.tinkerpop.gremlin.structure.geo.Geometry;
+import org.apache.tinkerpop.gremlin.structure.geo.GeometryCollection;
+import org.apache.tinkerpop.gremlin.structure.geo.LineString;
+import org.apache.tinkerpop.gremlin.structure.geo.Model;
+import org.apache.tinkerpop.gremlin.structure.geo.MultiLineString;
+import org.apache.tinkerpop.gremlin.structure.geo.MultiPoint;
+import org.apache.tinkerpop.gremlin.structure.geo.MultiPolygon;
+import org.apache.tinkerpop.gremlin.structure.geo.Point;
+import org.apache.tinkerpop.gremlin.structure.geo.Polygon;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -251,6 +260,77 @@ public class PTest {
                     {P.typeOf(GType.CHAR), "c", false},
                     {P.typeOf(GType.BINARY), ByteBuffer.wrap("some bytes for you".getBytes()), true},
                     {P.typeOf(GType.BINARY), "some non-bytes for you", false},
+
+                    // GEOMETRY matches every kind and every model
+                    {P.typeOf(GType.GEOMETRY), Point.of(1, 2), true},
+                    {P.typeOf(GType.GEOMETRY), LineString.of(Point.of(0, 0), Point.of(1, 1)), true},
+                    {P.typeOf(GType.GEOMETRY), Polygon.empty(), true},
+                    {P.typeOf(GType.GEOMETRY), MultiPoint.of(Point.of(1, 2)), true},
+                    {P.typeOf(GType.GEOMETRY), MultiLineString.empty(), true},
+                    {P.typeOf(GType.GEOMETRY), MultiPolygon.empty(), true},
+                    {P.typeOf(GType.GEOMETRY), GeometryCollection.of(Point.of(1, 2)), true},
+                    {P.typeOf(GType.GEOMETRY), Point.of(1, 2, Model.GEOGRAPHIC), true},
+                    {P.typeOf(GType.GEOMETRY), Geometry.fromWkt("POINT(1 2)", 32618), true},
+
+                    // Each shape entry matches its own kind
+                    {P.typeOf(GType.POINT), Point.of(1, 2), true},
+                    {P.typeOf(GType.POINT), MultiPoint.of(Point.of(1, 2)), false},
+                    {P.typeOf(GType.LINESTRING), LineString.of(Point.of(0, 0), Point.of(1, 1)), true},
+                    {P.typeOf(GType.LINESTRING), MultiLineString.empty(), false},
+                    {P.typeOf(GType.POLYGON), Polygon.empty(), true},
+                    {P.typeOf(GType.POLYGON), MultiPolygon.empty(), false},
+                    {P.typeOf(GType.MULTILINESTRING), MultiLineString.empty(), true},
+                    {P.typeOf(GType.MULTIPOLYGON), MultiPolygon.empty(), true},
+                    {P.typeOf(GType.GEOMETRYCOLLECTION), GeometryCollection.of(Point.of(1, 2)), true},
+
+                    // GEOMETRYCOLLECTION matches the multi-part kinds too
+                    {P.typeOf(GType.GEOMETRYCOLLECTION), MultiPoint.of(Point.of(1, 2)), true},
+                    {P.typeOf(GType.GEOMETRYCOLLECTION), MultiLineString.empty(), true},
+                    {P.typeOf(GType.GEOMETRYCOLLECTION), MultiPolygon.empty(), true},
+                    {P.typeOf(GType.GEOMETRYCOLLECTION), Point.of(1, 2), false},
+
+                    // The model entries test the value's model, and an SRID that is neither
+                    // matches neither
+                    {P.typeOf(GType.CARTESIAN), Point.of(1, 2), true},
+                    {P.typeOf(GType.CARTESIAN), Point.of(1, 2, Model.GEOGRAPHIC), false},
+                    {P.typeOf(GType.CARTESIAN), Geometry.fromWkt("POINT(1 2)", 32618), false},
+                    {P.typeOf(GType.GEOGRAPHIC), Point.of(1, 2, Model.GEOGRAPHIC), true},
+                    {P.typeOf(GType.GEOGRAPHIC), Point.of(1, 2), false},
+                    {P.typeOf(GType.GEOGRAPHIC), Geometry.fromWkt("POINT(1 2)", 32618), false},
+                    {P.typeOf(GType.CARTESIAN), "POINT(1 2)", false},
+                    {P.typeOf(GType.GEOGRAPHIC), 1, false},
+
+                    // A model entry and a shape entry together
+                    {P.typeOf(GType.GEOGRAPHIC).and(P.typeOf(GType.POINT)),
+                            Point.of(1, 2, Model.GEOGRAPHIC), true},
+                    {P.typeOf(GType.GEOGRAPHIC).and(P.typeOf(GType.POINT)), Point.of(1, 2), false},
+                    {P.typeOf(GType.GEOGRAPHIC).and(P.typeOf(GType.POINT)),
+                            LineString.of(Point.of(0, 0, Model.GEOGRAPHIC),
+                                    Point.of(1, 1, Model.GEOGRAPHIC)), false},
+
+                    // The string form behaves as the enum
+                    {P.typeOf("GEOGRAPHIC"), Point.of(1, 2, Model.GEOGRAPHIC), true},
+                    {P.typeOf("GEOGRAPHIC"), Point.of(1, 2), false},
+                    {P.typeOf("CARTESIAN"), Point.of(1, 2), true},
+                    {P.typeOf("CARTESIAN"), Point.of(1, 2, Model.GEOGRAPHIC), false},
+                    {P.typeOf("Geometry"), Point.of(1, 2), true},
+                    {P.typeOf("Point"), MultiPoint.of(Point.of(1, 2)), false},
+
+                    // A WKT string is a string, not a geometry
+                    {P.typeOf(GType.GEOMETRY), "POINT(1 2)", false},
+                    {P.typeOf(GType.STRING), Point.of(1, 2), false},
+
+                    // the model entries match only geometries
+                    {P.typeOf(GType.GEOGRAPHIC), "POINT(1 2)", false},
+                    {P.typeOf("CARTESIAN"), 1, false},
+                    {P.typeOf("GEOGRAPHIC"), null, false},
+                    {P.typeOf(GType.GEOGRAPHIC), null, false},
+
+                    // MULTIPOINT matches neither a plain collection nor another multi kind
+                    {P.typeOf(GType.MULTIPOINT), MultiPoint.of(Point.of(1, 2)), true},
+                    {P.typeOf(GType.MULTIPOINT), GeometryCollection.of(Point.of(1, 2)), false},
+                    {P.typeOf(GType.MULTIPOINT), MultiPolygon.empty(), false},
+
 
                     // text predicates
                     {TextP.containing("ark"), "marko", true},
