@@ -128,7 +128,7 @@ limitations under the License.
         <dependency>
             <groupId>org.jline</groupId>
             <artifactId>jline</artifactId>
-            <version>3.22.0</version>
+            <version>4.4.8</version>
         </dependency>
         <dependency>
             <groupId>ch.qos.reload4j</groupId>
