@@ -19,8 +19,8 @@
 package org.apache.tinkerpop.gremlin.tinkergraph.structure.storage;
 
 import org.apache.commons.configuration2.Configuration;
-import org.apache.tinkerpop.gremlin.tinkergraph.structure.AbstractTinkerGraph;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerEdge;
+import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerStorageGraph;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerVertex;
 
 import java.util.Collection;
@@ -32,13 +32,13 @@ import java.util.Collection;
  * <p/>
  * The lifecycle is:
  * <ol>
- *     <li>{@link #open(AbstractTinkerGraph, Configuration)} — resolve the backing location and ready the store.</li>
- *     <li>{@link #replay(AbstractTinkerGraph)} — rebuild in-memory state from what was previously persisted.</li>
+ *     <li>{@link #open(TinkerStorageGraph, Configuration)} — resolve the backing location and ready the store.</li>
+ *     <li>{@link #replay(TinkerStorageGraph)} — rebuild in-memory state from what was previously persisted.</li>
  *     <li>{@link #persist(long, Collection, Collection)} then {@link #flush()} — called on each transaction commit,
  *     before the indexes and in-memory state are committed, so a failure aborts the commit and leaves the graph as it
  *     was. Whether a commit that failed in the engine reached disk is up to the engine; one that cannot say should
  *     refuse further commits until the graph is reopened.</li>
- *     <li>{@link #compact(AbstractTinkerGraph)} — optionally fold accumulated changes into a compact snapshot.</li>
+ *     <li>{@link #compact(TinkerStorageGraph)} — optionally fold accumulated changes into a compact snapshot.</li>
  *     <li>{@link #close()} — release resources.</li>
  * </ol>
  * A new engine can be selected by name (see {@link DefaultStorage}) or by fully-qualified class name via the
@@ -48,12 +48,12 @@ public interface TinkerStorage extends AutoCloseable {
 
     /**
      * Prepare the storage engine for use, resolving its backing location from the supplied configuration. Called once
-     * during graph construction before {@link #replay(AbstractTinkerGraph)}.
+     * during graph construction before {@link #replay(TinkerStorageGraph)}.
      *
      * @param graph  the graph that owns this engine
      * @param config the graph configuration, including {@code gremlin.tinkergraph.storage.directory}
      */
-    void open(AbstractTinkerGraph graph, Configuration config);
+    void open(TinkerStorageGraph graph, Configuration config);
 
     /**
      * Rebuild the in-memory state of the graph from previously persisted data. Called once during graph construction.
@@ -62,7 +62,7 @@ public interface TinkerStorage extends AutoCloseable {
      *
      * @param graph the graph to populate
      */
-    void replay(AbstractTinkerGraph graph);
+    void replay(TinkerStorageGraph graph);
 
     /**
      * Durably record the changeset of a committing transaction. Called from within the transaction commit, while the
@@ -89,17 +89,17 @@ public interface TinkerStorage extends AutoCloseable {
      *
      * @param graph the graph whose current committed state should be snapshotted
      */
-    void compact(AbstractTinkerGraph graph);
+    void compact(TinkerStorageGraph graph);
 
     /**
      * Compact if the engine's accumulated data has grown past its own threshold, otherwise do nothing. Called on the
      * commit path after {@link #flush()} (while the graph's commit lock is held) so a long-running graph that is never
      * explicitly closed does not grow its backing storage without bound. The default is a no-op, leaving compaction
-     * entirely under the control of {@link #compact(AbstractTinkerGraph)} and {@link #close()}.
+     * entirely under the control of {@link #compact(TinkerStorageGraph)} and {@link #close()}.
      *
      * @param graph the graph whose current committed state would be snapshotted
      */
-    default void maybeCompact(final AbstractTinkerGraph graph) {
+    default void maybeCompact(final TinkerStorageGraph graph) {
         // no-op by default; engines that accumulate an on-disk log override this to bound its growth
     }
 
@@ -115,7 +115,7 @@ public interface TinkerStorage extends AutoCloseable {
      *
      * @param graph the graph, already emptied, whose committed state the store should now hold
      */
-    void clear(final AbstractTinkerGraph graph);
+    void clear(final TinkerStorageGraph graph);
 
     /**
      * Whether this engine accepts no writes at all, such as when a damaged store was opened for recovery. The graph

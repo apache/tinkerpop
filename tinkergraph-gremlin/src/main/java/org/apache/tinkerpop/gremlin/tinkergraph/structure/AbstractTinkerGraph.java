@@ -35,23 +35,14 @@ import org.apache.tinkerpop.gremlin.tinkergraph.process.computer.TinkerGraphComp
 import org.apache.tinkerpop.gremlin.tinkergraph.process.computer.TinkerGraphComputerView;
 import org.apache.tinkerpop.gremlin.gql.GqlDeclarativeMatchStrategy;
 import org.apache.tinkerpop.gremlin.tinkergraph.services.TinkerServiceRegistry;
-import org.apache.tinkerpop.gremlin.tinkergraph.structure.storage.DefaultStorage;
-import org.apache.tinkerpop.gremlin.tinkergraph.structure.storage.DirectoryLock;
-import org.apache.tinkerpop.gremlin.tinkergraph.structure.storage.TinkerStorage;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.concurrent.locks.ReentrantLock;
-import java.util.stream.Collectors;
 
 /**
  * Base class for {@link TinkerMemoryGraph} and {@link TinkerStorageGraph}.
@@ -61,8 +52,6 @@ import java.util.stream.Collectors;
  * @author Valentyn Kahamlyk
  */
 public abstract class AbstractTinkerGraph implements TinkerGraph {
-
-    private static final Logger logger = LoggerFactory.getLogger(AbstractTinkerGraph.class);
 
     protected AtomicLong currentId = new AtomicLong(-1L);
     protected Map<Object, VertexProperty> vertexProperties = new ConcurrentHashMap<>();
@@ -85,42 +74,6 @@ public abstract class AbstractTinkerGraph implements TinkerGraph {
     protected TinkerServiceRegistry serviceRegistry;
 
     protected Configuration configuration;
-
-    /**
-     * The filesystem directory backing the storage engine, from {@code gremlin.tinkergraph.storage.directory}, or
-     * {@code null} when the graph holds data only in memory.
-     */
-    protected String storageDirectory;
-
-    /**
-     * The pluggable durable storage engine, or {@code null} when the graph holds data only in memory. Only set by
-     * transactional implementations that support persistence.
-     */
-    protected TinkerStorage storage;
-
-    /**
-     * Exclusive lock on the storage directory, held for the graph's lifetime so no second graph — in this or another
-     * process — can open the same location and corrupt its files. {@code null} when the graph is purely in-memory, and
-     * once it is closed. Released and cleared under {@link #storageCommitLock}.
-     */
-    protected DirectoryLock directoryLock;
-
-    /**
-     * Serializes the durable write of a committing transaction. TinkerGraph transactions lock only their own changed
-     * elements, so two commits touching disjoint elements run their commit paths concurrently; without this lock they
-     * would both write to the storage engine's single append log at once and interleave (corrupt) its records. Held
-     * from the engine's persist/flush through the index commit, the in-memory apply and any automatic compaction, so
-     * a compaction never snapshots a graph missing a transaction the log already holds, and transactions become
-     * visible in the order they were recorded. Commits of disjoint elements still proceed in parallel up to that
-     * point. Fair, so committers are served in arrival order and none is starved.
-     */
-    protected final ReentrantLock storageCommitLock = new ReentrantLock(true);
-
-    /**
-     * Guard set while a graph is replaying its storage log on open. While {@code true}, mutations must not be
-     * re-persisted, otherwise replay would append the loaded data back to the log.
-     */
-    protected volatile boolean loading = false;
 
     /**
      * {@inheritDoc}
@@ -333,53 +286,12 @@ public abstract class AbstractTinkerGraph implements TinkerGraph {
 
     /**
      * Closes the graph, releasing any resources held by its {@link TinkerServiceRegistry}. This method may be called
-     * multiple times and is a no-op with respect to graph data for the in-memory implementation. Transactional
-     * implementations that are backed by a {@link org.apache.tinkerpop.gremlin.tinkergraph.structure.storage.TinkerStorage}
-     * engine flush, compact and close that engine here. A failure to flush or compact is logged rather than thrown,
-     * since the next open replays the log, and the engine and its directory lock are released regardless.
+     * multiple times and is a no-op with respect to graph data for the in-memory implementation.
      */
     @Override
     public void close() {
-        try {
-            if (storage != null) {
-                // serialize against concurrent commit writes: close flushes, compacts, and closes the log, which must
-                // not interleave with a transaction appending to it.
-                storageCommitLock.lock();
-                try {
-                    try {
-                        storage.flush();
-                        storage.compact(this);
-                    } catch (RuntimeException ex) {
-                        // every acknowledged commit was flushed when it committed and compaction leaves the snapshot
-                        // and log intact, so the next open replays what this one could not fold. The engine must still
-                        // be closed, or a later commit on this graph would reopen a log whose lock is released below.
-                        logger.warn(String.format("Could not flush and compact storage at %s on close",
-                                storageDirectory), ex);
-                    } finally {
-                        storage.close();
-                    }
-                } finally {
-                    // release the exclusive directory lock last, so the location is only reopenable once the engine
-                    // has fully released its files. Still under the commit lock, so nothing that writes into the
-                    // directory while holding it, such as recording index definitions, can follow the release.
-                    try {
-                        if (directoryLock != null) {
-                            // a store opened for recovery is left exactly as it was found, LOCK file included
-                            if (storage.isReadOnly())
-                                directoryLock.closeAndRemoveIfCreated();
-                            else
-                                directoryLock.close();
-                            directoryLock = null;
-                        }
-                    } finally {
-                        storageCommitLock.unlock();
-                    }
-                }
-            }
-        } finally {
-            serviceRegistry.close();
-            GqlDeclarativeMatchStrategy.evict(this);
-        }
+        serviceRegistry.close();
+        GqlDeclarativeMatchStrategy.evict(this);
     }
 
     @Override
@@ -585,52 +497,6 @@ public abstract class AbstractTinkerGraph implements TinkerGraph {
                 return (IdManager) Class.forName(idManagerConfigValue).newInstance();
             } catch (Exception ex) {
                 throw new IllegalStateException(String.format("Could not configure TinkerGraph %s id manager with %s", clazz.getSimpleName(), idManagerConfigValue));
-            }
-        }
-    }
-
-    ///////////// Storage engine ///////////////
-    /**
-     * The committed vertices of the graph, for a storage engine to snapshot during compaction. Unlike {@link #vertices()},
-     * this view excludes any uncommitted transaction-local state, so compaction never persists changes that a caller has
-     * not committed. The base implementation, which has no transactional isolation, is equivalent to {@link #vertices()};
-     * a transactional subclass overrides it to read only committed element state.
-     */
-    public Iterator<Vertex> committedVertices() {
-        return vertices();
-    }
-
-    /**
-     * The committed edges of the graph, for a storage engine to snapshot during compaction. The edge counterpart of
-     * {@link #committedVertices()}.
-     */
-    public Iterator<Edge> committedEdges() {
-        return edges();
-    }
-
-    /**
-     * Construct a {@link TinkerStorage} engine from the TinkerGraph {@code Configuration}, or return {@code null} when
-     * no storage engine is configured. The configuration value is either a {@link DefaultStorage} enum name (matched
-     * case-insensitively, e.g. {@code graphbinary}) or the fully-qualified class name of a {@link TinkerStorage}
-     * implementation with a public no-argument constructor. Mirrors {@link #selectIdManager}.
-     */
-    protected static TinkerStorage selectStorage(final Configuration config, final String configKey) {
-        final String configured = config.getString(configKey, null);
-        if (null == configured)
-            return null;
-        final String storageConfigValue = configured.trim();
-        try {
-            return DefaultStorage.valueOf(storageConfigValue.toUpperCase(Locale.ROOT)).get();
-        } catch (IllegalArgumentException iae) {
-            try {
-                return (TinkerStorage) Class.forName(storageConfigValue).getDeclaredConstructor().newInstance();
-            } catch (Exception ex) {
-                throw new IllegalStateException(String.format(
-                        "Could not configure TinkerGraph storage engine with '%s': it is neither a built-in engine " +
-                                "(%s) nor the class name of a TinkerStorage implementation with a public no-argument " +
-                                "constructor",
-                        storageConfigValue, Arrays.stream(DefaultStorage.values())
-                                .map(e -> e.name().toLowerCase(Locale.ROOT)).collect(Collectors.joining(", "))), ex);
             }
         }
     }

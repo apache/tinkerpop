@@ -201,10 +201,10 @@ public class TinkerStorageGraphTest {
         static final AtomicBoolean closed = new AtomicBoolean();
 
         @Override
-        public void open(final AbstractTinkerGraph graph, final Configuration config) { }
+        public void open(final TinkerStorageGraph graph, final Configuration config) { }
 
         @Override
-        public void replay(final AbstractTinkerGraph graph) {
+        public void replay(final TinkerStorageGraph graph) {
             throw new IllegalStateException("replay failure");
         }
 
@@ -216,10 +216,10 @@ public class TinkerStorageGraphTest {
         public void flush() { }
 
         @Override
-        public void compact(final AbstractTinkerGraph graph) { }
+        public void compact(final TinkerStorageGraph graph) { }
 
         @Override
-        public void clear(final AbstractTinkerGraph graph) { }
+        public void clear(final TinkerStorageGraph graph) { }
 
         @Override
         public void failStop(final Throwable cause) { }
