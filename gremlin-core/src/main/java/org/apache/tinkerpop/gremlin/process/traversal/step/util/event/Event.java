@@ -61,7 +61,7 @@ public interface Event {
 
     /**
      * Represents an action where an {@link Edge} {@link Property} is added/modified.  If the {@link Property} is
-     * new then the {@code oldValue} will be {@code null}.
+     * new then the {@code oldValue} will be a {@code KeyedProperty} that only carries the key.
      */
     class EdgePropertyChangedEvent extends ElementPropertyChangedEvent {
 
@@ -130,7 +130,7 @@ public interface Event {
 
     /**
      * Represents an action where a {@link VertexProperty} is modified on a {@link Vertex}. If the {@link Property} is
-     * new then the {@code oldValue} will be {@code null}.
+     * new then the {@code oldValue} will be a {@code KeyedVertexProperty} that only carries the key.
      */
     class VertexPropertyChangedEvent extends ElementPropertyChangedEvent {
 

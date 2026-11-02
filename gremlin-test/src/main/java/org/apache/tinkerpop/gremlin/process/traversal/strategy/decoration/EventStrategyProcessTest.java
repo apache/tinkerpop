@@ -54,6 +54,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.addV;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.unfold;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.junit.Assert.assertEquals;
@@ -277,6 +278,8 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
         assertEquals(1, listener2.addVertexEventRecorded());
         assertEquals(1, listener2.vertexPropertyChangedEventRecorded());
         assertEquals(1, listener1.vertexPropertyChangedEventRecorded());
+        assertKeyedProperty(listener1.vertexPropertyChangedOldValues().get(0), KeyedVertexProperty.class, "this");
+        assertKeyedProperty(listener2.vertexPropertyChangedOldValues().get(0), KeyedVertexProperty.class, "this");
     }
 
     @Test
@@ -305,6 +308,8 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
         assertEquals(1, listener2.addVertexEventRecorded());
         assertEquals(1, listener2.vertexPropertyChangedEventRecorded());
         assertEquals(1, listener1.vertexPropertyChangedEventRecorded());
+        assertProperty(listener1.vertexPropertyChangedOldValues().get(0), "any", "thing");
+        assertProperty(listener2.vertexPropertyChangedOldValues().get(0), "any", "thing");
     }
 
     @Test
@@ -339,6 +344,44 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
         assertEquals(1, listener2.addVertexEventRecorded());
         assertEquals(1, listener2.vertexPropertyChangedEventRecorded());
         assertEquals(1, listener1.vertexPropertyChangedEventRecorded());
+        assertProperty(listener1.vertexPropertyChangedOldValues().get(0), "any", "thing");
+        assertProperty(listener2.vertexPropertyChangedOldValues().get(0), "any", "thing");
+    }
+
+    @Test
+    @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
+    public void shouldTriggerAddVertexPropertyAddedViaMergeV() {
+        final StubMutationListener listener1 = new StubMutationListener();
+        final StubMutationListener listener2 = new StubMutationListener();
+        final EventStrategy.Builder builder = EventStrategy.build()
+                .addListener(listener1)
+                .addListener(listener2);
+
+        if (graph.features().graph().supportsTransactions())
+            builder.eventQueue(new EventStrategy.TransactionalEventQueue(graph));
+
+        final EventStrategy eventStrategy = builder.create();
+
+        final Vertex vSome = graph.addVertex("some", "thing");
+        vSome.property(VertexProperty.Cardinality.single, "that", "thing");
+        final GraphTraversalSource gts = create(eventStrategy);
+
+        final Map<Object,Object> m1 = new HashMap<>();
+        m1.put("any", "thing");
+        gts.mergeV(m1).iterate();
+
+        final Map<Object,Object> m2 = new HashMap<>();
+        m2.put("new", "thing");
+        gts.mergeV(m1).option(Merge.onMatch, m2).iterate();
+
+        tryCommit(graph, g -> assertEquals(1, IteratorUtils.count(gts.V().has("any", "thing").has("new", "thing"))));
+
+        assertEquals(1, listener1.addVertexEventRecorded());
+        assertEquals(1, listener2.addVertexEventRecorded());
+        assertEquals(1, listener2.vertexPropertyChangedEventRecorded());
+        assertEquals(1, listener1.vertexPropertyChangedEventRecorded());
+        assertKeyedProperty(listener1.vertexPropertyChangedOldValues().get(0), KeyedVertexProperty.class, "new");
+        assertKeyedProperty(listener2.vertexPropertyChangedOldValues().get(0), KeyedVertexProperty.class, "new");
     }
 
     @Test
@@ -368,6 +411,8 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
         assertEquals(1, listener2.addVertexEventRecorded());
         assertEquals(1, listener2.vertexPropertyPropertyChangedEventRecorded());
         assertEquals(1, listener1.vertexPropertyPropertyChangedEventRecorded());
+        assertKeyedProperty(listener1.vertexPropertyPropertyChangedOldValues().get(0), KeyedProperty.class, "is");
+        assertKeyedProperty(listener2.vertexPropertyPropertyChangedOldValues().get(0), KeyedProperty.class, "is");
     }
 
     @Test
@@ -438,6 +483,76 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
 
         assertEquals(1, listener2.edgePropertyChangedEventRecorded());
         assertEquals(1, listener1.edgePropertyChangedEventRecorded());
+        assertKeyedProperty(listener1.edgePropertyChangedOldValues().get(0), KeyedProperty.class, "some");
+        assertKeyedProperty(listener2.edgePropertyChangedOldValues().get(0), KeyedProperty.class, "some");
+    }
+
+    @Test
+    @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
+    public void shouldTriggerUpdateEdgePropertyChangedViaMergeE() {
+        final StubMutationListener listener1 = new StubMutationListener();
+        final StubMutationListener listener2 = new StubMutationListener();
+        final EventStrategy.Builder builder = EventStrategy.build()
+                .addListener(listener1)
+                .addListener(listener2);
+
+        if (graph.features().graph().supportsTransactions())
+            builder.eventQueue(new EventStrategy.TransactionalEventQueue(graph));
+
+        final EventStrategy eventStrategy = builder.create();
+
+        final Vertex v = graph.addVertex();
+        v.addEdge("self", v, "some", "thing");
+
+        final GraphTraversalSource gts = create(eventStrategy);
+        final Map<Object,Object> m = new HashMap<>();
+        m.put(T.label, "self");
+        final Map<Object,Object> mMatch = new HashMap<>();
+        mMatch.put("some", "other thing");
+        gts.V(v).mergeE(m).option(Merge.onMatch, mMatch).next();
+
+        tryCommit(graph, g -> assertEquals(1, IteratorUtils.count(gts.E().has("some", "other thing"))));
+
+        assertEquals(1, IteratorUtils.count(gts.E()));
+
+        assertEquals(0, listener1.addEdgeEventRecorded());
+        assertEquals(0, listener2.addEdgeEventRecorded());
+
+        assertEquals(1, listener2.edgePropertyChangedEventRecorded());
+        assertEquals(1, listener1.edgePropertyChangedEventRecorded());
+        assertProperty(listener1.edgePropertyChangedOldValues().get(0), "some", "thing");
+        assertProperty(listener2.edgePropertyChangedOldValues().get(0), "some", "thing");
+    }
+
+    @Test
+    @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
+    public void shouldTriggerEdgePropertyAdded() {
+        final StubMutationListener listener1 = new StubMutationListener();
+        final StubMutationListener listener2 = new StubMutationListener();
+        final EventStrategy.Builder builder = EventStrategy.build()
+                .addListener(listener1)
+                .addListener(listener2);
+
+        if (graph.features().graph().supportsTransactions())
+            builder.eventQueue(new EventStrategy.TransactionalEventQueue(graph));
+
+        final EventStrategy eventStrategy = builder.create();
+
+        final Vertex v = graph.addVertex();
+        final Edge e = v.addEdge("self", v);
+
+        final GraphTraversalSource gts = create(eventStrategy);
+        gts.E(e).property("some", "thing").next();
+
+        tryCommit(graph, g -> assertEquals(1, IteratorUtils.count(gts.E().has("some", "thing"))));
+
+        assertEquals(0, listener1.addEdgeEventRecorded());
+        assertEquals(0, listener2.addEdgeEventRecorded());
+
+        assertEquals(1, listener2.edgePropertyChangedEventRecorded());
+        assertEquals(1, listener1.edgePropertyChangedEventRecorded());
+        assertKeyedProperty(listener1.edgePropertyChangedOldValues().get(0), KeyedProperty.class, "some");
+        assertKeyedProperty(listener2.edgePropertyChangedOldValues().get(0), KeyedProperty.class, "some");
     }
 
     @Test
@@ -471,6 +586,8 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
 
         assertEquals(1, listener2.edgePropertyChangedEventRecorded());
         assertEquals(1, listener1.edgePropertyChangedEventRecorded());
+        assertProperty(listener1.edgePropertyChangedOldValues().get(0), "some", "thing");
+        assertProperty(listener2.edgePropertyChangedOldValues().get(0), "some", "thing");
     }
 
     @Test
@@ -547,6 +664,8 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
 
         assertEquals(1, listener1.vertexPropertyRemovedEventRecorded());
         assertEquals(1, listener2.vertexPropertyRemovedEventRecorded());
+        assertProperty(listener1.vertexPropertiesRemoved().get(0), "some", "thing");
+        assertProperty(listener2.vertexPropertiesRemoved().get(0), "some", "thing");
     }
 
     @Test
@@ -573,6 +692,8 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
 
         assertEquals(1, listener1.edgePropertyRemovedEventRecorded());
         assertEquals(1, listener2.edgePropertyRemovedEventRecorded());
+        assertProperty(listener1.edgePropertiesRemoved().get(0), "some", "thing");
+        assertProperty(listener2.edgePropertiesRemoved().get(0), "some", "thing");
     }
 
     @Test
@@ -605,6 +726,10 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
         assertEquals(1, listener1.vertexPropertyPropertyChangedEventRecorded());
         assertEquals(1, listener2.vertexPropertyPropertyRemovedEventRecorded());
         assertEquals(1, listener1.vertexPropertyPropertyRemovedEventRecorded());
+        assertKeyedProperty(listener1.vertexPropertyPropertyChangedOldValues().get(0), KeyedProperty.class, "is");
+        assertKeyedProperty(listener2.vertexPropertyPropertyChangedOldValues().get(0), KeyedProperty.class, "is");
+        assertProperty(listener1.vertexPropertyPropertiesRemoved().get(0), "is", "bad");
+        assertProperty(listener2.vertexPropertyPropertiesRemoved().get(0), "is", "bad");
     }
 
     @Test
@@ -2177,6 +2302,18 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
         }
     }
 
+    private static void assertKeyedProperty(final Property<?> oldValue, final Class<?> keyedClass, final String key) {
+        assertThat(oldValue, instanceOf(keyedClass));
+        assertEquals(key, oldValue.key());
+    }
+
+    private static void assertProperty(final Property<?> property, final String key, final Object value) {
+        assertThat(property, not(instanceOf(KeyedProperty.class)));
+        assertThat(property, not(instanceOf(KeyedVertexProperty.class)));
+        assertEquals(key, property.key());
+        assertEquals(value, property.value());
+    }
+
     static class StubMutationListener implements MutationListener {
         private final AtomicLong addEdgeEvent = new AtomicLong(0);
         private final AtomicLong addVertexEvent = new AtomicLong(0);
@@ -2191,6 +2328,13 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
 
         private final ConcurrentLinkedQueue<String> order = new ConcurrentLinkedQueue<>();
 
+        private final ConcurrentLinkedQueue<Property> edgePropertyChangedOldValues = new ConcurrentLinkedQueue<>();
+        private final ConcurrentLinkedQueue<VertexProperty> vertexPropertyChangedOldValues = new ConcurrentLinkedQueue<>();
+        private final ConcurrentLinkedQueue<Property> vertexPropertyPropertyChangedOldValues = new ConcurrentLinkedQueue<>();
+        private final ConcurrentLinkedQueue<Property> edgePropertiesRemoved = new ConcurrentLinkedQueue<>();
+        private final ConcurrentLinkedQueue<VertexProperty> vertexPropertiesRemoved = new ConcurrentLinkedQueue<>();
+        private final ConcurrentLinkedQueue<Property> vertexPropertyPropertiesRemoved = new ConcurrentLinkedQueue<>();
+
         public void reset() {
             addEdgeEvent.set(0);
             addVertexEvent.set(0);
@@ -2204,6 +2348,13 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
             vertexPropertyRemovedEvent.set(0);
 
             order.clear();
+
+            edgePropertyChangedOldValues.clear();
+            vertexPropertyChangedOldValues.clear();
+            vertexPropertyPropertyChangedOldValues.clear();
+            edgePropertiesRemoved.clear();
+            vertexPropertiesRemoved.clear();
+            vertexPropertyPropertiesRemoved.clear();
         }
 
         public List<String> getOrder() {
@@ -2231,12 +2382,14 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
         @Override
         public void edgePropertyRemoved(final Edge element, final Property o) {
             edgePropertyRemovedEvent.incrementAndGet();
+            edgePropertiesRemoved.add(o);
             order.add("e-property-removed-" + element.id() + "-" + o);
         }
 
         @Override
         public void vertexPropertyPropertyRemoved(final VertexProperty element, final Property o) {
             vertexPropertyPropertyRemovedEvent.incrementAndGet();
+            vertexPropertyPropertiesRemoved.add(o);
             order.add("vp-property-removed-" + element.id() + "-" + o);
         }
 
@@ -2249,24 +2402,28 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
         @Override
         public void vertexPropertyRemoved(final VertexProperty vertexProperty) {
             vertexPropertyRemovedEvent.incrementAndGet();
+            vertexPropertiesRemoved.add(vertexProperty);
             order.add("vp-property-removed-" + vertexProperty.id());
         }
 
         @Override
         public void edgePropertyChanged(final Edge element, final Property oldValue, final Object setValue) {
             edgePropertyChangedEvent.incrementAndGet();
+            edgePropertyChangedOldValues.add(oldValue);
             order.add("e-property-chanaged-" + element.id());
         }
 
         @Override
         public void vertexPropertyPropertyChanged(final VertexProperty element, final Property oldValue, final Object setValue) {
             vertexPropertyPropertyChangedEvent.incrementAndGet();
+            vertexPropertyPropertyChangedOldValues.add(oldValue);
             order.add("vp-property-changed-" + element.id());
         }
 
         @Override
         public void vertexPropertyChanged(final Vertex element, final VertexProperty oldValue, final Object setValue, final Object... vertexPropertyKeyValues) {
             vertexPropertyChangedEvent.incrementAndGet();
+            vertexPropertyChangedOldValues.add(oldValue);
             order.add("v-property-changed-" + element.id());
         }
 
@@ -2308,6 +2465,30 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
 
         public long vertexPropertyPropertyChangedEventRecorded() {
             return vertexPropertyPropertyChangedEvent.get();
+        }
+
+        public List<Property> edgePropertyChangedOldValues() {
+            return new ArrayList<>(edgePropertyChangedOldValues);
+        }
+
+        public List<VertexProperty> vertexPropertyChangedOldValues() {
+            return new ArrayList<>(vertexPropertyChangedOldValues);
+        }
+
+        public List<Property> vertexPropertyPropertyChangedOldValues() {
+            return new ArrayList<>(vertexPropertyPropertyChangedOldValues);
+        }
+
+        public List<Property> edgePropertiesRemoved() {
+            return new ArrayList<>(edgePropertiesRemoved);
+        }
+
+        public List<VertexProperty> vertexPropertiesRemoved() {
+            return new ArrayList<>(vertexPropertiesRemoved);
+        }
+
+        public List<Property> vertexPropertyPropertiesRemoved() {
+            return new ArrayList<>(vertexPropertyPropertiesRemoved);
         }
     }
 
