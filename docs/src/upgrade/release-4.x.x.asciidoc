@@ -149,6 +149,40 @@ which opens a `TinkerStorageGraph` with disk storage.
 
 See: link:https://tinkerpop.apache.org/docs/4.0.0/reference/#tinkergraph-gremlin-persistence[TinkerGraph Persistence]
 
+==== TinkerGraph Close Ends Use of the Graph
+
+Calling `close()` on a TinkerGraph now ends its use, in line with what `close()` means for a graph backed by durable
+storage. Previously, `TinkerMemoryGraph` ignored `close()` entirely, so a graph kept accepting reads and writes after it
+was closed. A closed TinkerGraph, whether a `TinkerMemoryGraph` or a `TinkerStorageGraph`, now throws an
+`IllegalStateException` for any use of the `Graph` API, for a new traversal, and for a write through an element obtained
+before the graph was closed. Reads through such an element, and traversals already being iterated, still see the data
+as it stood at close.
+
+[source,text]
+----
+gremlin> graph = TinkerGraph.open()
+==>tinkermemorygraph[vertices:0 edges:0]
+gremlin> g = traversal().with(graph)
+==>graphtraversalsource[tinkermemorygraph[vertices:0 edges:0], standard]
+gremlin> g.addV('person')
+==>v[0]
+gremlin> graph.close()
+==>null
+gremlin> g.addV('person')
+TinkerMemoryGraph is closed and can no longer be used; open a new graph instead
+Type ':help' or ':h' for help.
+Display stack trace? [yN]
+----
+
+Code that closed a graph and then kept using it should open a new graph instead, or defer `close()` until the graph is
+no longer needed. Because `graph.tx()` also throws once the graph is closed, a thread with a transaction still open on
+a `TinkerStorageGraph` can end it only through a `Transaction` it obtained before the close. Rolling back always
+succeeds, and so does committing a transaction that made no changes, but committing changes rolls them back and throws,
+since they can no longer reach storage. That failure is an `IllegalStateException`, as for any other use of a closed
+graph, rather than a `TransactionException`.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-3290[TINKERPOP-3290]
+
 ==== User Agent Only in the Request Header
 
 The user agent is now sent only as the `User-Agent` HTTP header. Every driver sends that header by default, and the
@@ -177,6 +211,15 @@ Code that extends `AbstractTinkerGraph` loses the hooks for the retired whole-gr
 Storage" above: the protected `graphLocation` and `graphFormat` fields and the `loadGraph()` and `saveGraph()` methods
 are removed, as is `requiresPersistence()` on the test provider `TinkerMemoryGraphProvider`. Durable storage is now
 the job of a `TinkerStorage` engine on `TinkerStorageGraph`.
+
+===== AbstractTinkerGraph Entry Points Are Final
+
+So that a closed TinkerGraph reliably refuses further use, the public entry points of `AbstractTinkerGraph` are now
+`final` methods that check the graph is open and then delegate to a protected `do`-prefixed counterpart. Code that
+extends `AbstractTinkerGraph` or `TinkerMemoryGraph` and overrode one of `addVertex()`, `removeVertex()`, `addEdge()`,
+`removeEdge()`, `vertex()`, `vertices()`, `edge()`, `edges()`, `tx()`, `getVerticesCount()`, `getEdgesCount()`,
+`hasVertex()`, `hasEdge()`, `countVerticesByLabel()`, `countEdgesByLabel()`, `createIndex()`, `dropIndex()`, `clear()`
+or `touch()` should override the matching method instead, such as `doVertices()` for `vertices()`.
 
 ===== Class Values Must Be Registered
 

@@ -156,7 +156,7 @@ public class TinkerMemoryGraph extends AbstractTinkerGraph {
     ////////////// STRUCTURE API METHODS //////////////////
 
     @Override
-    public Vertex addVertex(final Object... keyValues) {
+    protected Vertex doAddVertex(final Object... keyValues) {
         ElementHelper.legalPropertyKeyValueArray(keyValues);
         Object idValue = vertexIdManager.convert(ElementHelper.getIdValue(keyValues).orElse(null));
         final Set<String> labels = ElementHelper.getLabelsValue(keyValues).orElse(null);
@@ -179,7 +179,7 @@ public class TinkerMemoryGraph extends AbstractTinkerGraph {
     }
 
     @Override
-    public void removeVertex(final Object vertexId)
+    protected void doRemoveVertex(final Object vertexId)
     {
         final Vertex removed = this.vertices.remove(vertexId);
         if (removed != null) {
@@ -190,7 +190,7 @@ public class TinkerMemoryGraph extends AbstractTinkerGraph {
     }
 
     @Override
-    public Edge addEdge(final TinkerVertex outVertex, final TinkerVertex inVertex, final String label, final Object... keyValues) {
+    protected Edge doAddEdge(final TinkerVertex outVertex, final TinkerVertex inVertex, final String label, final Object... keyValues) {
         ElementHelper.validateLabel(label);
         ElementHelper.legalPropertyKeyValueArray(keyValues);
 
@@ -214,7 +214,7 @@ public class TinkerMemoryGraph extends AbstractTinkerGraph {
     }
 
     @Override
-    public void removeEdge(final Object edgeId) {
+    protected void doRemoveEdge(final Object edgeId) {
         final Edge edge = edges.get(edgeId);
         // already removed?
         if (null == edge) return;
@@ -238,14 +238,14 @@ public class TinkerMemoryGraph extends AbstractTinkerGraph {
     }
 
     @Override
-    public long countVerticesByLabel(final String label) {
+    protected long doCountVerticesByLabel(final String label) {
         if (label == null) return getVerticesCount();
         final AtomicInteger count = vertexLabelCounts.get(label);
         return count == null ? 0L : count.get();
     }
 
     @Override
-    public long countEdgesByLabel(final String label) {
+    protected long doCountEdgesByLabel(final String label) {
         if (label == null) return getEdgesCount();
         final AtomicInteger count = edgeLabelCounts.get(label);
         return count == null ? 0L : count.get();
@@ -266,8 +266,8 @@ public class TinkerMemoryGraph extends AbstractTinkerGraph {
     }
 
     @Override
-    public void clear() {
-        super.clear();
+    protected void doClear() {
+        super.doClear();
         this.vertices.clear();
         this.edges.clear();
         this.vertexLabelCounts.clear();
@@ -275,21 +275,21 @@ public class TinkerMemoryGraph extends AbstractTinkerGraph {
     }
 
     @Override
-    public Transaction tx() {
+    protected Transaction doTx() {
         throw Exceptions.transactionsNotSupported();
     }
 
     @Override
-    public int getVerticesCount() { return vertices.size(); }
+    protected int doGetVerticesCount() { return vertices.size(); }
 
     @Override
-    public boolean hasVertex(Object id) { return vertices.containsKey(id); }
+    protected boolean doHasVertex(Object id) { return vertices.containsKey(id); }
 
     @Override
-    public int getEdgesCount() {  return edges.size(); }
+    protected int doGetEdgesCount() {  return edges.size(); }
 
     @Override
-    public boolean hasEdge(Object id) { return edges.containsKey(id); }
+    protected boolean doHasEdge(Object id) { return edges.containsKey(id); }
 
     @Override
     public TinkerServiceRegistry getServiceRegistry() {
@@ -297,22 +297,22 @@ public class TinkerMemoryGraph extends AbstractTinkerGraph {
     }
 
     @Override
-    public Vertex vertex(final Object vertexId) {
+    protected Vertex doVertex(final Object vertexId) {
         return vertices.get(vertexIdManager.convert(vertexId));
     }
 
     @Override
-    public Iterator<Vertex> vertices(final Object... vertexIds) {
+    protected Iterator<Vertex> doVertices(final Object... vertexIds) {
         return createElementIterator(Vertex.class, vertices, vertexIdManager, vertexIds);
     }
 
     @Override
-    public Iterator<Edge> edges(final Object... edgeIds) {
+    protected Iterator<Edge> doEdges(final Object... edgeIds) {
         return createElementIterator(Edge.class, edges, edgeIdManager, edgeIds);
     }
 
     @Override
-    public Edge edge(final Object edgeId) {
+    protected Edge doEdge(final Object edgeId) {
         return edges.get(edgeIdManager.convert(edgeId));
     }
 
@@ -483,7 +483,7 @@ public class TinkerMemoryGraph extends AbstractTinkerGraph {
      * @param <E>          The type of the element class
      */
     @Override
-    public <E extends Element> void createIndex(final String key, final Class<E> elementClass) {
+    protected <E extends Element> void doCreateIndex(final String key, final Class<E> elementClass) {
         if (Vertex.class.isAssignableFrom(elementClass)) {
             if (null == this.vertexIndex) this.vertexIndex = new TinkerIndex<>(this, TinkerVertex.class);
             this.vertexIndex.createKeyIndex(key);
@@ -503,7 +503,7 @@ public class TinkerMemoryGraph extends AbstractTinkerGraph {
      * @param <E>          The type of the element class
      */
     @Override
-    public <E extends Element> void dropIndex(final String key, final Class<E> elementClass) {
+    protected <E extends Element> void doDropIndex(final String key, final Class<E> elementClass) {
         if (Vertex.class.isAssignableFrom(elementClass)) {
             if (null != this.vertexIndex) this.vertexIndex.dropKeyIndex(key);
         } else if (Edge.class.isAssignableFrom(elementClass)) {

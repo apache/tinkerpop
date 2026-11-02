@@ -76,38 +76,89 @@ public abstract class AbstractTinkerGraph implements TinkerGraph {
     protected Configuration configuration;
 
     /**
-     * {@inheritDoc}
+     * Set once {@link #close()} has run, after which the graph refuses further use.
      */
-    public abstract Vertex addVertex(final Object... keyValues);
+    private volatile boolean closed = false;
 
     /**
      * {@inheritDoc}
      */
-    public abstract void removeVertex(final Object vertexId);
+    @Override
+    public final Vertex addVertex(final Object... keyValues) {
+        checkOpen();
+        return doAddVertex(keyValues);
+    }
 
     /**
-     * {@inheritDoc}
+     * Implementation of {@link #addVertex}, called once the graph is known to be open.
      */
-    public abstract Edge addEdge(final TinkerVertex outVertex, final TinkerVertex inVertex, final String label, final Object... keyValues);
+    protected abstract Vertex doAddVertex(final Object... keyValues);
 
     /**
-     * {@inheritDoc}
+     * Remove the {@link Vertex} with the given id.
      */
-    public abstract void removeEdge(final Object edgeId);
+    public final void removeVertex(final Object vertexId) {
+        checkOpen();
+        doRemoveVertex(vertexId);
+    }
 
     /**
-     * Mark {@link Vertex} as changed in transaction.
-     * If the graph does not support transactions, then does nothing.
-     * @param vertex
+     * Implementation of {@link #removeVertex}, called once the graph is known to be open.
      */
-    public void touch(final TinkerVertex vertex) {};
+    protected abstract void doRemoveVertex(final Object vertexId);
 
     /**
-     * Mark {@link Edge} as changed in transaction.
-     * If the graph does not support transactions, then does nothing.
-     * @param edge
+     * Add an {@link Edge} between two vertices of this graph.
      */
-    public void touch(final TinkerEdge edge) {};
+    public final Edge addEdge(final TinkerVertex outVertex, final TinkerVertex inVertex, final String label, final Object... keyValues) {
+        checkOpen();
+        return doAddEdge(outVertex, inVertex, label, keyValues);
+    }
+
+    /**
+     * Implementation of {@link #addEdge}, called once the graph is known to be open.
+     */
+    protected abstract Edge doAddEdge(final TinkerVertex outVertex, final TinkerVertex inVertex, final String label, final Object... keyValues);
+
+    /**
+     * Remove the {@link Edge} with the given id.
+     */
+    public final void removeEdge(final Object edgeId) {
+        checkOpen();
+        doRemoveEdge(edgeId);
+    }
+
+    /**
+     * Implementation of {@link #removeEdge}, called once the graph is known to be open.
+     */
+    protected abstract void doRemoveEdge(final Object edgeId);
+
+    /**
+     * Mark {@link Vertex} as changed in transaction. Every mutation made through a TinkerGraph element calls this
+     * first, so it also refuses a change made through an element held from before the graph was closed.
+     */
+    public final void touch(final TinkerVertex vertex) {
+        checkOpen();
+        doTouch(vertex);
+    }
+
+    /**
+     * Mark {@link Edge} as changed in transaction. The edge counterpart of {@link #touch(TinkerVertex)}.
+     */
+    public final void touch(final TinkerEdge edge) {
+        checkOpen();
+        doTouch(edge);
+    }
+
+    /**
+     * Implementation of {@link #touch(TinkerVertex)}. If the graph does not support transactions, then does nothing.
+     */
+    protected void doTouch(final TinkerVertex vertex) {}
+
+    /**
+     * Implementation of {@link #touch(TinkerEdge)}. If the graph does not support transactions, then does nothing.
+     */
+    protected void doTouch(final TinkerEdge edge) {}
 
     /**
      * Determines if this graph stores elements in transactional containers, meaning elements are held by id
@@ -121,61 +172,139 @@ public abstract class AbstractTinkerGraph implements TinkerGraph {
     /**
      * Return {@link Vertex} by id.
      * Does not create an iterator, so is the preferred method when only 1 element needs to be returned.
-     * @param vertexId
-     * @return Vertex
      */
-    public abstract Vertex vertex(final Object vertexId);
+    public final Vertex vertex(final Object vertexId) {
+        checkOpen();
+        return doVertex(vertexId);
+    }
+
+    /**
+     * Implementation of {@link #vertex}, called once the graph is known to be open.
+     * Element reads and iterators already being consumed also call it after the graph is closed, so they can
+     * keep reading the in-memory state as it stood at close.
+     */
+    protected abstract Vertex doVertex(final Object vertexId);
 
     /**
      * {@inheritDoc}
      */
-    public abstract Iterator<Vertex> vertices(final Object... vertexIds);
+    @Override
+    public final Iterator<Vertex> vertices(final Object... vertexIds) {
+        checkOpen();
+        return doVertices(vertexIds);
+    }
+
+    /**
+     * Implementation of {@link #vertices}, called once the graph is known to be open.
+     * Element reads and iterators already being consumed also call it after the graph is closed, so they can
+     * keep reading the in-memory state as it stood at close.
+     */
+    protected abstract Iterator<Vertex> doVertices(final Object... vertexIds);
 
     /**
      * Return {@link Edge} by id.
      * Does not create an iterator, so is the preferred method when only 1 element needs to be returned.
-     * @param edgeId
-     * @return Edge
      */
-    public abstract Edge edge(final Object edgeId);
+    public final Edge edge(final Object edgeId) {
+        checkOpen();
+        return doEdge(edgeId);
+    }
+
+    /**
+     * Implementation of {@link #edge}, called once the graph is known to be open.
+     * Element reads and iterators already being consumed also call it after the graph is closed, so they can
+     * keep reading the in-memory state as it stood at close.
+     */
+    protected abstract Edge doEdge(final Object edgeId);
 
     /**
      * {@inheritDoc}
-     */
-    public abstract Iterator<Edge> edges(final Object... edgeIds);
-
-    /**
-     * {@inheritDoc}
-     */
-    public abstract Transaction tx();
-
-    /**
-     * Graph-specific implementation for number of vertices.
-     * @return count of vertices in Graph.
-     */
-    public abstract int getVerticesCount();
-
-    /**
-     * {@inheritDoc}
-     */
-    public abstract boolean hasVertex(final Object id);
-
-    /**
-     * Graph-specific implementation for number of vertices.
-     * @return count of vertices in Graph.
-     */
-    public abstract int getEdgesCount();
-
-    /**
-     * Returns the number of vertices with the given label. A {@code null} label returns the
-     * total vertex count. The default implementation does a full vertex scan; subclasses that
-     * maintain a label index should override this for O(1) performance.
      */
     @Override
-    public long countVerticesByLabel(final String label) {
-        if (label == null) return getVerticesCount();
+    public final Iterator<Edge> edges(final Object... edgeIds) {
+        checkOpen();
+        return doEdges(edgeIds);
+    }
+
+    /**
+     * Implementation of {@link #edges}, called once the graph is known to be open.
+     * Element reads and iterators already being consumed also call it after the graph is closed, so they can
+     * keep reading the in-memory state as it stood at close.
+     */
+    protected abstract Iterator<Edge> doEdges(final Object... edgeIds);
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public final Transaction tx() {
+        checkOpen();
+        return doTx();
+    }
+
+    /**
+     * Implementation of {@link #tx}, called once the graph is known to be open.
+     * Element reads and iterators already being consumed also call it after the graph is closed, so they can
+     * keep reading the in-memory state as it stood at close.
+     */
+    protected abstract Transaction doTx();
+
+    /**
+     * The number of vertices in the graph.
+     */
+    public final int getVerticesCount() {
+        checkOpen();
+        return doGetVerticesCount();
+    }
+
+    /**
+     * Implementation of {@link #getVerticesCount}, called once the graph is known to be open.
+     */
+    protected abstract int doGetVerticesCount();
+
+    /**
+     * Returns true if a {@link Vertex} with the given identifier exists in this graph.
+     */
+    public final boolean hasVertex(final Object id) {
+        checkOpen();
+        return doHasVertex(id);
+    }
+
+    /**
+     * Implementation of {@link #hasVertex}, called once the graph is known to be open.
+     */
+    protected abstract boolean doHasVertex(final Object id);
+
+    /**
+     * The number of edges in the graph.
+     */
+    public final int getEdgesCount() {
+        checkOpen();
+        return doGetEdgesCount();
+    }
+
+    /**
+     * Implementation of {@link #getEdgesCount}, called once the graph is known to be open.
+     */
+    protected abstract int doGetEdgesCount();
+
+    /**
+     * Returns the number of vertices with the given label. A {@code null} label returns the total vertex count.
+     */
+    @Override
+    public final long countVerticesByLabel(final String label) {
+        checkOpen();
+        return doCountVerticesByLabel(label);
+    }
+
+    /**
+     * Implementation of {@link #countVerticesByLabel}. The default implementation does a full vertex scan; subclasses
+     * that maintain a label index should override this for O(1) performance.
+     */
+    protected long doCountVerticesByLabel(final String label) {
+        if (label == null) return doGetVerticesCount();
         long count = 0;
-        final Iterator<Vertex> it = vertices();
+        final Iterator<Vertex> it = doVertices();
         while (it.hasNext()) {
             if (it.next().labels().contains(label)) count++;
         }
@@ -183,15 +312,22 @@ public abstract class AbstractTinkerGraph implements TinkerGraph {
     }
 
     /**
-     * Returns the number of edges with the given label. A {@code null} label returns the
-     * total edge count. The default implementation does a full edge scan; subclasses that
-     * maintain a label index should override this for O(1) performance.
+     * Returns the number of edges with the given label. A {@code null} label returns the total edge count.
      */
     @Override
-    public long countEdgesByLabel(final String label) {
-        if (label == null) return getEdgesCount();
+    public final long countEdgesByLabel(final String label) {
+        checkOpen();
+        return doCountEdgesByLabel(label);
+    }
+
+    /**
+     * Implementation of {@link #countEdgesByLabel}. The default implementation does a full edge scan; subclasses
+     * that maintain a label index should override this for O(1) performance.
+     */
+    protected long doCountEdgesByLabel(final String label) {
+        if (label == null) return doGetEdgesCount();
         long count = 0;
-        final Iterator<Edge> it = edges();
+        final Iterator<Edge> it = doEdges();
         while (it.hasNext()) {
             if (it.next().labels().contains(label)) count++;
         }
@@ -206,12 +342,14 @@ public abstract class AbstractTinkerGraph implements TinkerGraph {
     private final class TinkerGraphIndex implements Graph.Index {
         @Override
         public Iterator<Vertex> queryVertexIndex(final String key, final Object value) {
+            checkOpen();
             return TinkerIndexHelper.queryVertexIndex(AbstractTinkerGraph.this, key, value)
                     .stream().map(v -> (Vertex) v).iterator();
         }
 
         @Override
         public long countVertexIndex(final String key, final Object value) {
+            checkOpen();
             if (vertexIndex == null) return Long.MAX_VALUE;
             // TinkerIndex.count() returns 0 for keys that are not indexed, which is
             // indistinguishable from "indexed but empty". Use getIndexedKeys() to distinguish.
@@ -228,19 +366,29 @@ public abstract class AbstractTinkerGraph implements TinkerGraph {
     }
 
     /**
-     * {@inheritDoc}
+     * Returns true if an {@link Edge} with the given identifier exists in this graph.
      */
-    public abstract boolean hasEdge(final Object id);
+    public final boolean hasEdge(final Object id) {
+        checkOpen();
+        return doHasEdge(id);
+    }
+
+    /**
+     * Implementation of {@link #hasEdge}, called once the graph is known to be open.
+     */
+    protected abstract boolean doHasEdge(final Object id);
 
     /**
      * Returns true if a {@link VertexProperty} with the given identifier exists in this graph.
      */
     public boolean hasVertexProperty(final Object id) {
+        checkOpen();
         return vertexProperties.containsKey(id);
     }
 
     @Override
     public <I extends Io> I io(final Io.Builder<I> builder) {
+        checkOpen();
         if (builder.requiresVersion(GryoVersion.V1_0) || builder.requiresVersion(GraphSONVersion.V1_0))
             return (I) builder.graph(this).onMapper(mapper -> mapper.addRegistry(TinkerIoRegistryV1.instance())).create();
         else if (builder.requiresVersion(GraphSONVersion.V2_0))   // there is no gryo v2
@@ -255,12 +403,17 @@ public abstract class AbstractTinkerGraph implements TinkerGraph {
     public <C extends GraphComputer> C compute(final Class<C> graphComputerClass) {
         if (!graphComputerClass.equals(TinkerGraphComputer.class))
             throw Exceptions.graphDoesNotSupportProvidedGraphComputer(graphComputerClass);
+        checkOpen();
         return (C) new TinkerGraphComputer(this);
     }
 
-    public GraphComputer compute() { return new TinkerGraphComputer(this); }
+    public GraphComputer compute() {
+        checkOpen();
+        return new TinkerGraphComputer(this);
+    }
 
     public Variables variables() {
+        checkOpen();
         if (null == this.variables)
             this.variables = new TinkerGraphVariables();
         return this.variables;
@@ -268,14 +421,23 @@ public abstract class AbstractTinkerGraph implements TinkerGraph {
 
     @Override
     public String toString() {
-        return StringFactory.graphString(this, "vertices:" + this.getVerticesCount() + " edges:" + this.getEdgesCount());
+        if (closed) return StringFactory.graphString(this, "closed");
+        return StringFactory.graphString(this, "vertices:" + this.doGetVerticesCount() + " edges:" + this.doGetEdgesCount());
     }
 
     /**
      * Clear internal graph data
      */
     @Override
-    public void clear() {
+    public final void clear() {
+        checkOpen();
+        doClear();
+    }
+
+    /**
+     * Implementation of {@link #clear()}. Subclasses that hold more data extend it and call this one.
+     */
+    protected void doClear() {
         this.variables = null;
         this.currentId.set(-1L);
         this.vertexIndex = null;
@@ -285,13 +447,28 @@ public abstract class AbstractTinkerGraph implements TinkerGraph {
     }
 
     /**
-     * Closes the graph, releasing any resources held by its {@link TinkerServiceRegistry}. This method may be called
-     * multiple times and is a no-op with respect to graph data for the in-memory implementation.
+     * Closes the graph, releasing any resources held by its {@link TinkerServiceRegistry}. Once closed, the graph
+     * refuses further use: its methods, and mutations made through elements obtained from it, throw an
+     * {@code IllegalStateException}. This method may be called multiple times.
      */
     @Override
     public void close() {
-        serviceRegistry.close();
-        GqlDeclarativeMatchStrategy.evict(this);
+        try {
+            serviceRegistry.close();
+            GqlDeclarativeMatchStrategy.evict(this);
+        } finally {
+            closed = true;
+        }
+    }
+
+    /**
+     * Throws an {@code IllegalStateException} if the graph was closed. Every entry point of the graph, and the
+     * {@link #touch} hook each element mutation runs through, calls this first.
+     */
+    protected void checkOpen() {
+        if (closed)
+            throw new IllegalStateException(String.format(
+                    "%s is closed and can no longer be used; open a new graph instead", getClass().getSimpleName()));
     }
 
     @Override
@@ -467,6 +644,34 @@ public abstract class AbstractTinkerGraph implements TinkerGraph {
     ///////////// GRAPH SPECIFIC INDEXING METHODS ///////////////
 
     /**
+     * {@inheritDoc}
+     */
+    @Override
+    public final <E extends Element> void createIndex(final String key, final Class<E> elementClass) {
+        checkOpen();
+        doCreateIndex(key, elementClass);
+    }
+
+    /**
+     * Implementation of {@link #createIndex}, called once the graph is known to be open.
+     */
+    protected abstract <E extends Element> void doCreateIndex(final String key, final Class<E> elementClass);
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public final <E extends Element> void dropIndex(final String key, final Class<E> elementClass) {
+        checkOpen();
+        doDropIndex(key, elementClass);
+    }
+
+    /**
+     * Implementation of {@link #dropIndex}, called once the graph is known to be open.
+     */
+    protected abstract <E extends Element> void doDropIndex(final String key, final Class<E> elementClass);
+
+    /**
      * Return all the keys currently being index for said element class  ({@link Vertex} or {@link Edge}).
      *
      * @param elementClass the element class to get the indexed keys for
@@ -475,6 +680,7 @@ public abstract class AbstractTinkerGraph implements TinkerGraph {
      */
     @Override
     public <E extends Element> Set<String> getIndexedKeys(final Class<E> elementClass) {
+        checkOpen();
         if (Vertex.class.isAssignableFrom(elementClass)) {
             return null == this.vertexIndex ? Collections.emptySet() : this.vertexIndex.getIndexedKeys();
         } else if (Edge.class.isAssignableFrom(elementClass)) {

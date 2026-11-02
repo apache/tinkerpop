@@ -23,6 +23,7 @@ import org.apache.commons.configuration2.Configuration;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.T;
+import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
@@ -680,20 +681,27 @@ public abstract class AbstractTinkerStorageConformanceTest {
         TinkerStorageGraph graph = open();
         graph.addVertex(T.id, 1, "name", "marko");
         graph.tx().commit();
+
+        // a transaction left open across close() holds a change it must not be able to commit afterwards
+        final Transaction tx = graph.tx();
+        graph.addVertex(T.id, 2, "name", "vadas");
         graph.close();
 
         // the storage is closed and its directory lock released, so a further commit must neither succeed nor
         // touch any file another graph could now own
         final Map<String, Long> filesAtClose = directoryContents();
-        graph.addVertex(T.id, 2, "name", "vadas");
         try {
-            graph.tx().commit();
+            tx.commit();
             fail("a commit on a closed durable graph should fail");
         } catch (IllegalStateException expected) {
             // expected
         }
-        assertFalse("the rejected commit must not be visible", graph.vertices(2).hasNext());
-        graph.tx().rollback();
+        try {
+            graph.addVertex(T.id, 3, "name", "lop");
+            fail("a closed durable graph should refuse further use");
+        } catch (IllegalStateException expected) {
+            // expected
+        }
         assertEquals("a rejected commit must not change the storage directory", filesAtClose, directoryContents());
 
         graph = open();
