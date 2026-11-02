@@ -164,6 +164,11 @@ final class TinkerTransaction extends AbstractThreadLocalTransaction {
         // nothing that fails later may roll it back or report it unapplied
         boolean applied = false;
         try {
+            // a transaction opened before the graph was closed may not change it afterwards. One that changed nothing
+            // still ends normally, so a thread can finish a transaction it only read in.
+            if (!(changedVertices.isEmpty() && changedEdges.isEmpty()))
+                graph.checkOpen();
+
             // Double-checked locking to reduce lock time
             if (changedVertices.stream().anyMatch(v -> v.updatedOutsideTransaction()) ||
                     changedEdges.stream().anyMatch(v -> v.updatedOutsideTransaction()))

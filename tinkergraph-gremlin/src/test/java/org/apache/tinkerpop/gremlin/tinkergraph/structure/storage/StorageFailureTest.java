@@ -478,8 +478,12 @@ public class StorageFailureTest {
         FaultInjectingStorage.failCompaction = false;
 
         // the closed graph must not write to a directory whose lock it has released
-        graph.addVertex(T.id, 2);
-        assertCommitFails(graph);
+        try {
+            graph.addVertex(T.id, 2);
+            fail("a closed graph should refuse further use");
+        } catch (IllegalStateException expected) {
+            // expected
+        }
 
         final TinkerStorageGraph reopened = TinkerStorageGraph.open(conf);
         assertEquals(Arrays.asList(1), vertexIds(reopened));

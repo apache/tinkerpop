@@ -60,13 +60,13 @@ public class TinkerShuffleGraph extends TinkerMemoryGraph {
     }
 
     @Override
-    public Iterator<Vertex> vertices(final Object... vertexIds) {
-        return shuffleIterator(super.vertices(vertexIds));
+    protected Iterator<Vertex> doVertices(final Object... vertexIds) {
+        return shuffleIterator(super.doVertices(vertexIds));
     }
 
     @Override
-    public Iterator<Edge> edges(final Object... edgeIds) {
-        return shuffleIterator(super.edges(edgeIds));
+    protected Iterator<Edge> doEdges(final Object... edgeIds) {
+        return shuffleIterator(super.doEdges(edgeIds));
     }
 
     @Override
