@@ -19,8 +19,8 @@
 package org.apache.tinkerpop.gremlin.tinkergraph.structure.storage;
 
 import org.apache.commons.configuration2.Configuration;
-import org.apache.tinkerpop.gremlin.tinkergraph.structure.AbstractTinkerGraph;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerEdge;
+import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerStorageGraph;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerVertex;
 
 import java.util.Collection;
@@ -46,10 +46,10 @@ public final class ConcurrencyProbeStorage implements TinkerStorage {
     }
 
     @Override
-    public void open(final AbstractTinkerGraph graph, final Configuration config) { }
+    public void open(final TinkerStorageGraph graph, final Configuration config) { }
 
     @Override
-    public void replay(final AbstractTinkerGraph graph) { }
+    public void replay(final TinkerStorageGraph graph) { }
 
     @Override
     public void persist(final long txVersion,
@@ -76,10 +76,10 @@ public final class ConcurrencyProbeStorage implements TinkerStorage {
     public void flush() { }
 
     @Override
-    public void compact(final AbstractTinkerGraph graph) { }
+    public void compact(final TinkerStorageGraph graph) { }
 
     @Override
-    public void clear(final AbstractTinkerGraph graph) { }
+    public void clear(final TinkerStorageGraph graph) { }
 
     @Override
     public void failStop(final Throwable cause) { }

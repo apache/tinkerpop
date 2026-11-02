@@ -33,9 +33,9 @@ import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedEdge;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedProperty;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertexProperty;
-import org.apache.tinkerpop.gremlin.tinkergraph.structure.AbstractTinkerGraph;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerEdge;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
+import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerStorageGraph;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerVertex;
 
 import java.io.DataOutputStream;
@@ -165,7 +165,7 @@ public final class GraphBinaryStorage extends AbstractLogStorage {
     }
 
     @Override
-    protected void writeSnapshot(final AbstractTinkerGraph graph, final DataOutputStream out) throws IOException {
+    protected void writeSnapshot(final TinkerStorageGraph graph, final DataOutputStream out) throws IOException {
         // Preserve the existing dictionary numbering rather than renumbering. No log is ever replayed against a newer
         // snapshot, since an open sets aside the old log of an interrupted compaction, so this is not needed for
         // correctness, but it costs nothing. Register any not-yet-seen live strings (this only extends the

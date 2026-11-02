@@ -22,9 +22,9 @@ import org.apache.commons.configuration2.Configuration;
 import org.apache.tinkerpop.gremlin.structure.util.Attachable;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedEdge;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
-import org.apache.tinkerpop.gremlin.tinkergraph.structure.AbstractTinkerGraph;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerEdge;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
+import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerStorageGraph;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerVertex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -264,7 +264,7 @@ public abstract class AbstractLogStorage implements TinkerStorage {
      * Write the entire current committed state of the graph to {@code out} as framed records (via {@link #writeFrame}),
      * for compaction. The file header has already been written to {@code out}.
      */
-    protected abstract void writeSnapshot(AbstractTinkerGraph graph, DataOutputStream out) throws IOException;
+    protected abstract void writeSnapshot(TinkerStorageGraph graph, DataOutputStream out) throws IOException;
 
     /**
      * Reset any per-replay decode state (e.g. a dictionary) before a fold begins. Default is a no-op.
@@ -276,7 +276,7 @@ public abstract class AbstractLogStorage implements TinkerStorage {
     // ----------------------------------------------------------------------------------------- lifecycle
 
     @Override
-    public void open(final AbstractTinkerGraph graph, final Configuration config) {
+    public void open(final TinkerStorageGraph graph, final Configuration config) {
         final String location = config.getString(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE_DIRECTORY, null);
         if (null == location)
             throw new IllegalStateException(String.format("%s must be set to use a durable storage engine",
@@ -320,7 +320,7 @@ public abstract class AbstractLogStorage implements TinkerStorage {
     }
 
     @Override
-    public void replay(final AbstractTinkerGraph graph) {
+    public void replay(final TinkerStorageGraph graph) {
         beginReplay();
         // Fold snapshot then log into final state: last write per id wins, deletes remove.
         final Map<Object, DetachedVertex> vertices = new LinkedHashMap<>();
@@ -411,7 +411,7 @@ public abstract class AbstractLogStorage implements TinkerStorage {
     }
 
     @Override
-    public void compact(final AbstractTinkerGraph graph) {
+    public void compact(final TinkerStorageGraph graph) {
         compact(graph, false);
     }
 
@@ -421,7 +421,7 @@ public abstract class AbstractLogStorage implements TinkerStorage {
      * @param force rewrite the store even when nothing was logged since the last compaction, as {@link #clear} must,
      *              since the graph it writes then no longer matches the snapshot
      */
-    protected void compact(final AbstractTinkerGraph graph, final boolean force) {
+    protected void compact(final TinkerStorageGraph graph, final boolean force) {
         // after a write failure the disk is suspect and the log's buffered tail must not be written, so leave the
         // files as they are for the next open to replay
         if (closed || recovering || failure != null)
@@ -494,7 +494,7 @@ public abstract class AbstractLogStorage implements TinkerStorage {
     }
 
     @Override
-    public void maybeCompact(final AbstractTinkerGraph graph) {
+    public void maybeCompact(final TinkerStorageGraph graph) {
         if (closed || compactThresholdBytes <= 0)
             return;
         if (logBytesSinceCompaction < compactThresholdBytes || logBytesSinceCompaction < compactionDeferredUntil)
@@ -508,7 +508,7 @@ public abstract class AbstractLogStorage implements TinkerStorage {
     }
 
     @Override
-    public void clear(final AbstractTinkerGraph graph) {
+    public void clear(final TinkerStorageGraph graph) {
         checkNotClosed();
         checkNotRecovering();
         checkNotFailed();

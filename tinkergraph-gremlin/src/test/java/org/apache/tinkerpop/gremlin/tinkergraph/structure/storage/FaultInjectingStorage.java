@@ -21,8 +21,8 @@ package org.apache.tinkerpop.gremlin.tinkergraph.structure.storage;
 import org.apache.commons.configuration2.Configuration;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedEdge;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
-import org.apache.tinkerpop.gremlin.tinkergraph.structure.AbstractTinkerGraph;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerEdge;
+import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerStorageGraph;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerVertex;
 
 import java.io.DataOutputStream;
@@ -99,7 +99,7 @@ public final class FaultInjectingStorage extends AbstractLogStorage {
     }
 
     @Override
-    protected void compact(final AbstractTinkerGraph graph, final boolean force) {
+    protected void compact(final TinkerStorageGraph graph, final boolean force) {
         compactionAttempts.incrementAndGet();
         final CountDownLatch gate = compactionGate;
         if (gate != null) {
@@ -152,7 +152,7 @@ public final class FaultInjectingStorage extends AbstractLogStorage {
     }
 
     @Override
-    protected void writeSnapshot(final AbstractTinkerGraph graph, final DataOutputStream out) throws IOException {
+    protected void writeSnapshot(final TinkerStorageGraph graph, final DataOutputStream out) throws IOException {
         if (failSnapshotWrites) {
             out.write(new byte[]{ 0x01, 0x02, 0x03 });
             throw new IOException("injected snapshot write failure");
