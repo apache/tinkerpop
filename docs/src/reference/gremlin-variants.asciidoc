@@ -1977,6 +1977,9 @@ const g = traversal().with_(new DriverRemoteConnection('http://localhost:8182/gr
 }));
 ----
 
+NOTE: `auth.sigv4()` is only supported when running in Node.js. In a browser, `auth.sigv4()` throws an error as soon as
+it is called. `auth.basic()` works in both environments.
+
 Given that I/O operations in Node.js are asynchronous by default, <<terminal-steps,Terminal Steps>> return a `Promise`:
 
 * `Traversal.hasNext()`: Returns a `Promise` with a `Boolean` indicating whether a further result is available.

@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.server.channel;
 
 import io.netty.channel.ChannelInboundHandlerAdapter;
+import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpServerKeepAliveHandler;
 import io.netty.handler.codec.http.cors.CorsConfig;
 import io.netty.handler.codec.http.cors.CorsConfigBuilder;
@@ -126,15 +127,21 @@ public class HttpChannelizer extends AbstractChannelizer {
         final List<String> allowedOrigins = settings.cors.allowedOrigins;
         final boolean isWildcard = allowedOrigins.size() == 1 && allowedOrigins.get(0).equals("*");
 
+        final CorsConfigBuilder builder;
         if (isWildcard) {
             final boolean hasRealAuth = !AllowAllAuthenticator.class.getName().equals(settings.authentication.authenticator);
             if (hasRealAuth) {
                 logger.warn("CORS is configured to allow any origin while authentication is enabled. " +
                         "Consider setting cors.allowedOrigins to specific origins for browser-facing deployments.");
             }
-            return CorsConfigBuilder.forAnyOrigin().build();
+            builder = CorsConfigBuilder.forAnyOrigin();
+        } else {
+            builder = CorsConfigBuilder.forOrigins(allowedOrigins.toArray(new String[0]));
         }
 
-        return CorsConfigBuilder.forOrigins(allowedOrigins.toArray(new String[0])).build();
+        return builder.allowedRequestMethods(settings.cors.allowedMethods.stream().map(HttpMethod::valueOf).toArray(HttpMethod[]::new))
+                .allowedRequestHeaders(settings.cors.allowedRequestHeaders.toArray(new String[0]))
+                .exposeHeaders(settings.cors.exposedHeaders.toArray(new String[0]))
+                .build();
     }
 }

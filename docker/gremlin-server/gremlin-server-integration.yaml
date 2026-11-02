@@ -82,3 +82,8 @@ maxAccumulationBufferComponents: 1024
 resultIterationBatchSize: 64
 writeBufferLowWaterMark: 32768
 writeBufferHighWaterMark: 65536
+cors:
+  allowedOrigins: ["*"]
+  allowedMethods: ["POST"]
+  allowedRequestHeaders: ["Content-Type", "Accept", "Authorization", "X-Transaction-Id"]
+  exposedHeaders: ["X-Transaction-Id", "Gremlin-RequestId"]

@@ -586,6 +586,23 @@ public class Settings {
          * Set to specific origins (e.g. {@code ["https://myapp.com"]}) to restrict access.
          */
         public List<String> allowedOrigins = new ArrayList<>(Collections.singletonList("*"));
+
+        /**
+         * List of HTTP methods that browsers may use for cross-origin requests, returned in the preflight response.
+         * Empty by default. Gremlin Server only accepts {@code POST} for requests.
+         */
+        public List<String> allowedMethods = new ArrayList<>();
+
+        /**
+         * List of request headers that browsers may send on cross-origin requests, returned in the preflight response.
+         * Empty by default. A browser only sends a JSON request if {@code Content-Type} is listed.
+         */
+        public List<String> allowedRequestHeaders = new ArrayList<>();
+
+        /**
+         * List of response headers that browser scripts may read on cross-origin requests. Empty by default.
+         */
+        public List<String> exposedHeaders = new ArrayList<>();
     }
 
     /**
