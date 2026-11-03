@@ -70,6 +70,28 @@ public class MarkdownSplitterTest {
     // the first summarized sibling.
 
     @Test
+    public void licenseCommentIsCarriedOntoEveryPageAfterThePointer() {
+        final String md = MarkdownConverter.LICENSE_COMMENT + "preamble\n\n" + heading("io", 1, "IO Reference")
+                + "\nintro\n\n" + summarized("a", 1, "A", "About A.") + "\ncontent a\n\n"
+                + summarized("b", 1, "B", "About B.") + "\ncontent b\n";
+        final List<MarkdownSplitter.Page> pages = new MarkdownSplitter(50_000, "4.0.0").split(md, "index.md");
+        assertThat(pages.size(), is(3));
+        final String pointer = MarkdownSplitter.llmsPointer("4.0.0");
+        for (final MarkdownSplitter.Page p : pages) {
+            assertThat(p.getFileName(), p.getContent().startsWith(pointer + MarkdownConverter.LICENSE_COMMENT), is(true));
+            assertThat(p.getContent().indexOf("Licensed to the Apache"),
+                    is(p.getContent().lastIndexOf("Licensed to the Apache")));
+        }
+    }
+
+    @Test
+    public void bookWithoutLicenseCommentGetsNone() {
+        final String md = "preamble\n\n" + heading("io", 1, "IO Reference") + "\nintro\n";
+        final List<MarkdownSplitter.Page> pages = new MarkdownSplitter(50_000, "4.0.0").split(md, "index.md");
+        assertThat(pages.get(0).getContent(), not(containsString("Licensed to the Apache")));
+    }
+
+    @Test
     public void bookWithNoSummariesIsASinglePage() {
         final String md = "preamble\n\n" + heading("io", 1, "IO Reference") + "\nintro\n\n"
                 + heading("a", 1, "A") + "\ncontent a\n\n"

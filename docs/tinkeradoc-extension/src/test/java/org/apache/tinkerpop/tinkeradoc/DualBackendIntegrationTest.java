@@ -115,4 +115,15 @@ public class DualBackendIntegrationTest {
             assertThat(markdown.contains("CodeRay"), is(false));
         }
     }
+
+    @Test
+    public void markdownStartsWithTheLicenseComment() {
+        try (final Asciidoctor asciidoctor = Asciidoctor.Factory.create()) {
+            asciidoctor.javaConverterRegistry().register(MarkdownConverter.class);
+            asciidoctor.unregisterAllExtensions();
+            final String markdown = asciidoctor.convert(DOC, Options.builder().backend("tpmarkdown").build());
+            assertThat(markdown.startsWith(MarkdownConverter.LICENSE_COMMENT), is(true));
+            assertThat(markdown.indexOf("Licensed to the Apache"), is(markdown.lastIndexOf("Licensed to the Apache")));
+        }
+    }
 }

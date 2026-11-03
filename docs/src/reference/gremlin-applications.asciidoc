@@ -2426,10 +2426,11 @@ input schema, and a result schema. When connected to a Gremlin MCP server, the a
 * Execute Gremlin traversals
 * Translate Gremlin queries between language variants
 * Format Gremlin queries for readability
+* Look up the TinkerPop documentation for a specific TinkerPop version
 
 The Gremlin MCP server sits alongside Gremlin Server (or any TinkerPop‑compatible endpoint) and forwards tool calls to
-the graph via standard Gremlin traversals. The translation and formatting tools are utility tools that work
-independently and do not require a graph connection.
+the graph via standard Gremlin traversals. The translation, formatting and documentation tools are utility tools that
+work independently and do not require a graph connection.
 
 IMPORTANT: This MCP server is designed for development and trusted environments.
 
@@ -2458,6 +2459,8 @@ The Gremlin MCP server exposes these tools:
 * `refresh_schema_cache` — Forces schema discovery to run again when the graph has changed.
 * `translate_gremlin_query` — Translates a Gremlin query to a target language variant with optional normalization.
 * `format_gremlin_query` — Formats a Gremlin query using gremlint.
+* `search_gremlin_docs` — Searches the reference documentation and Gremlin Semantics for a given TinkerPop version.
+* `get_gremlin_doc_page` — Returns one page of that documentation as Markdown.
 
 === Schema discovery
 
@@ -2563,6 +2566,39 @@ For example, the assistant may execute a traversal like the following:
 g.V().hasLabel('person').has('age', gt(30)).out('knows').values('name')
 ----
 
+[[gremlin-mcp-docs]]
+=== Gremlin documentation
+
+An assistant writes better Gremlin when it can check the documentation for the version of TinkerPop its graph runs. The
+`search_gremlin_docs` and `get_gremlin_doc_page` tools serve the Markdown form of this reference documentation
+and the link:https://tinkerpop.apache.org/docs/x.y.z/dev/provider/#gremlin-semantics[Gremlin Semantics] section of the
+provider documentation. Search ranks pages by their titles, summaries and text, so a step name such as `mergeV` or a
+concept such as "numeric type promotion" leads to the relevant pages, and each page links to related pages by an id that
+the assistant can pass back to `get_gremlin_doc_page`. For a large page, a search result also names the section that
+best matches the query, and passing that section's `page#anchor` form to `get_gremlin_doc_page` returns only that
+section rather than the whole page.
+
+Both tools require a `version`, and their input schema lists the versions that are available. There is no default
+because the documentation differs between versions, and documentation for the wrong version leads an assistant to
+write Gremlin that its graph does not support. The tool descriptions therefore direct the assistant to ask the user for
+the TinkerPop version of the target graph when it does not know it.
+
+Each Gremlin MCP release includes the documentation for its own TinkerPop version. Documentation for other versions is
+added with the `docs install` command, which downloads the pages for that version from the TinkerPop website, and the
+`docs list` command shows what is available:
+
+[source,text]
+----
+npx gremlin-mcp docs install 3.8.2
+npx gremlin-mcp docs list
+----
+
+Installed versions are written to `~/.gremlin-mcp/docs/<version>/`, and installing a version again replaces it. The
+Gremlin MCP server reads the available versions when it starts, so it must be restarted before a newly installed version
+is offered to the assistant. For a host without internet access, the versions can be installed on another machine and
+the `~/.gremlin-mcp/docs/` directory copied to the same location on that host. Markdown documentation is published
+from TinkerPop 3.7.7 and 3.8.2 onward, so earlier versions cannot be installed.
+
 === Configuring an MCP Client
 
 The MCP client is responsible for launching the Gremlin MCP server and providing connection details for the Gremlin
@@ -2570,7 +2606,7 @@ endpoint the server should use.
 
 Basic connection settings:
 
-* `GREMLIN_MCP_ENDPOINT` — `host:port` or `host:port/traversal_source` for the target Gremlin Server or compatible endpoint (default traversal source: `g`). Optional — when not set, graph tools are not registered but `translate_gremlin_query` and `format_gremlin_query` remain available.
+* `GREMLIN_MCP_ENDPOINT` — `host:port` or `host:port/traversal_source` for the target Gremlin Server or compatible endpoint (default traversal source: `g`). Optional — when not set, graph tools are not registered but `translate_gremlin_query`, `format_gremlin_query` and the documentation tools remain available.
 * `GREMLIN_MCP_USE_SSL` — set to `true` when TLS is required by the endpoint (default: `false`)
 * `GREMLIN_MCP_USERNAME` / `GREMLIN_PASSWORD` — credentials when authentication is enabled (optional)
 * `GREMLIN_MCP_IDLE_TIMEOUT` — idle connection timeout in seconds (default: `300`)

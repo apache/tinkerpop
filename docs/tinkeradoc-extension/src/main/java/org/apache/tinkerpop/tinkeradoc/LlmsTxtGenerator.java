@@ -98,6 +98,8 @@ class LlmsTxtGenerator {
         final StringBuilder sb = new StringBuilder();
         sb.append("# ").append(projectName).append("\n\n");
         sb.append("> ").append(summary).append("\n\n");
+        // The llms.txt format expects the H1 and summary first, so the license comment follows them.
+        sb.append(MarkdownConverter.LICENSE_COMMENT);
 
         // Group by book (the directory portion of the relative path).
         final Map<String, List<Entry>> byBook = new LinkedHashMap<>();
