@@ -50,6 +50,9 @@ import { SchemaServiceLive } from './gremlin/schema.js';
 import { registerEffectToolHandlers } from './handlers/tools.js';
 import { registerEffectResourceHandlers } from './handlers/resources.js';
 import { Errors } from './errors.js';
+import { loadDocsStore } from './docs/store.js';
+import { defaultDocsLocations } from './docs/locations.js';
+import { registerDocsTools } from './docs/tools.js';
 
 /**
  * Service tag for the MCP server instance using Effect 3.x Context.Tag pattern.
@@ -97,6 +100,24 @@ const makeMcpServerService = Effect.gen(function* () {
   // Register handlers with dependency injection
   registerEffectToolHandlers(server, runtime, config);
   registerEffectResourceHandlers(server, runtime, config);
+
+  // Docs tools: the version enum is fixed by what is bundled and installed right now
+  const docs = yield* Effect.promise(() => loadDocsStore(defaultDocsLocations()));
+  for (const problem of docs.problems) {
+    yield* Effect.logWarning(problem, { service: config.server.name });
+  }
+  const docsVersions = registerDocsTools(server, docs);
+  if (docsVersions.length === 0) {
+    yield* Effect.logWarning(
+      'No TinkerPop docs available; docs tools are not registered. Add a version with: gremlin-mcp docs install <version>',
+      { service: config.server.name }
+    );
+  } else {
+    yield* Effect.logInfo('📚 Docs tools registered', {
+      service: config.server.name,
+      versions: docsVersions,
+    });
+  }
 
   yield* Effect.logInfo('✅ Handlers registered successfully', {
     service: config.server.name,
@@ -448,4 +469,22 @@ async function run(): Promise<void> {
   await Effect.runPromise(runMain);
 }
 
-run();
+/**
+ * `gremlin-mcp docs ...` runs a docs command and exits; anything else starts the MCP server.
+ */
+async function runDocsCli(args: readonly string[]): Promise<void> {
+  const { runDocsCommand } = await import('./docs/install.js');
+  process.exitCode = await runDocsCommand(
+    args,
+    defaultDocsLocations(),
+    url => fetch(url),
+    line => process.stdout.write(`${line}\n`),
+    line => process.stderr.write(`${line}\n`)
+  );
+}
+
+if (process.argv[2] === 'docs') {
+  runDocsCli(process.argv.slice(3));
+} else {
+  run();
+}

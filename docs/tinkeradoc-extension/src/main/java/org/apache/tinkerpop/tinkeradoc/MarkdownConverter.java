@@ -62,6 +62,31 @@ public class MarkdownConverter extends StringConverter {
      */
     static final String LLMS_ALLOW_OVERSIZE_ATTR = "allow-oversize";
 
+    /**
+     * The ASF license header as an HTML comment, emitted at the top of every rendered book. ASF
+     * policy asks that human-readable documentation in a distribution carry the header, and an HTML
+     * comment keeps it out of the rendered page, as {@code docinfo.html} does for the HTML backend.
+     * {@link MarkdownSplitter} moves it onto every page it splits a book into.
+     */
+    static final String LICENSE_COMMENT = "<!--\n"
+            + "Licensed to the Apache Software Foundation (ASF) under one\n"
+            + "or more contributor license agreements.  See the NOTICE file\n"
+            + "distributed with this work for additional information\n"
+            + "regarding copyright ownership.  The ASF licenses this file\n"
+            + "to you under the Apache License, Version 2.0 (the\n"
+            + "\"License\"); you may not use this file except in compliance\n"
+            + "with the License.  You may obtain a copy of the License at\n"
+            + "\n"
+            + "  http://www.apache.org/licenses/LICENSE-2.0\n"
+            + "\n"
+            + "Unless required by applicable law or agreed to in writing,\n"
+            + "software distributed under the License is distributed on an\n"
+            + "\"AS IS\" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY\n"
+            + "KIND, either express or implied.  See the License for the\n"
+            + "specific language governing permissions and limitations\n"
+            + "under the License.\n"
+            + "-->\n\n";
+
     public MarkdownConverter(final String backend, final Map<String, Object> opts) {
         super(backend, opts);
     }
@@ -182,7 +207,7 @@ public class MarkdownConverter extends StringConverter {
         // AsciidoctorJ discards a postprocessor's return value for a custom StringConverter backend,
         // so the Markdown file would otherwise keep the literal x.y.z. The HTML backend still relies
         // on the postprocessor for the same substitution.
-        return substituteVersion(doc, assembled);
+        return LICENSE_COMMENT + substituteVersion(doc, assembled);
     }
 
     /**

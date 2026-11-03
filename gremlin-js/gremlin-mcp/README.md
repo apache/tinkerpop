@@ -50,6 +50,8 @@ Your AI assistant gets access to these powerful tools:
 | 🔄 **refresh_schema_cache**    | Cache Management | Force immediate refresh of cached schema information         |
 | 🔄 **translate_gremlin_query** | Translation      | Translate a Gremlin query to a target language variant       |
 | 👌 **format_gremlin_query**    | Query Formatting | Format a Gremlin query string using gremlint                 |
+| 📚 **search_gremlin_docs**     | Documentation    | Search the TinkerPop docs for a given TinkerPop version      |
+| 📄 **get_gremlin_doc_page**    | Documentation    | Read one page of those docs as Markdown                      |
 
 ### Gremlin Query Translation
 
@@ -62,11 +64,32 @@ sampling before translating. If the MCP client does not support sampling, the LL
 is included in the response. Set `source` to `canonical` to skip normalization entirely when the input is already
 in canonical gremlin-language ANTLR format.
 
+### TinkerPop Documentation
+
+`search_gremlin_docs` and `get_gremlin_doc_page` serve the reference documentation and the Gremlin Semantics
+section of the provider documentation, so the assistant can check step syntax and behavior while it writes Gremlin.
+For large pages, search results also name the best-matching section (`page#anchor`), which `get_gremlin_doc_page`
+returns on its own.
+Both tools require a `version`, chosen from the versions listed in their input schema. There is no default, and the
+assistant is told to ask you for your graph's TinkerPop version when it does not know it.
+
+Each gremlin-mcp release includes the docs for its own TinkerPop version. Add docs for other versions (3.7.7, 3.8.2
+and later) from the TinkerPop website:
+
+```bash
+npx gremlin-mcp docs install 3.8.2
+npx gremlin-mcp docs list
+```
+
+Installed docs are written to `~/.gremlin-mcp/docs/<version>/`. **Restart gremlin-mcp after installing** so the new
+version is offered to the assistant. For a host without internet access, install on another machine and copy
+`~/.gremlin-mcp/docs/` to the same location on that host.
+
 ### Offline Mode
 
 `GREMLIN_MCP_ENDPOINT` is optional. When not set, graph tools (`get_graph_status`, `get_graph_schema`,
-`run_gremlin_query`, `refresh_schema_cache`) are not registered, but `translate_gremlin_query` and
-`format_gremlin_query` remain fully available.
+`run_gremlin_query`, `refresh_schema_cache`) are not registered, but `translate_gremlin_query`,
+`format_gremlin_query` and the documentation tools remain fully available.
 
 ## 🚀 Quick Setup
 
