@@ -133,6 +133,32 @@ public class GqlRowTest {
         GqlRow.of(new Element[]{a}, Collections.emptyMap()).getScalar(1);
     }
 
+    @Test
+    public void shouldRejectOutOfRangeAndNegativeIndexOnEveryReader() {
+        // Readers check the index against size() whether or not the row has groups, so an index
+        // past the end or below zero fails the same way on all three.
+        final GqlRow row = GqlRow.of(new Element[]{a, null}, Map.of(1, List.of(ab)));
+        for (final int index : new int[]{2, 3, -1, Integer.MIN_VALUE, Integer.MAX_VALUE}) {
+            assertOutOfBounds("getScalar(" + index + ")", () -> row.getScalar(index));
+            assertOutOfBounds("getGroup(" + index + ")", () -> row.getGroup(index));
+            assertOutOfBounds("isGroup(" + index + ")", () -> row.isGroup(index));
+        }
+        final GqlRow empty = GqlRow.of(new Element[0], Collections.emptyMap());
+        assertEquals(0, empty.size());
+        assertOutOfBounds("getScalar(0) on an empty row", () -> empty.getScalar(0));
+        assertOutOfBounds("getGroup(0) on an empty row", () -> empty.getGroup(0));
+        assertOutOfBounds("isGroup(0) on an empty row", () -> empty.isGroup(0));
+    }
+
+    private static void assertOutOfBounds(final String call, final Runnable read) {
+        try {
+            read.run();
+            fail(call + " must throw IndexOutOfBoundsException");
+        } catch (IndexOutOfBoundsException expected) {
+            // expected
+        }
+    }
+
     @Test(expected = IllegalArgumentException.class)
     public void shouldRejectNegativeGroupIndex() {
         GqlRow.of(new Element[]{a}, Map.of(-1, List.of(ab)));

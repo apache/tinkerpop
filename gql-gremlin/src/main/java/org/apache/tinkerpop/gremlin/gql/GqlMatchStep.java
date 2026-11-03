@@ -24,6 +24,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.DeclarativeMatchS
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.util.FastNoSuchElementException;
 import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.util.CloseableIterator;
 
 import java.util.Collections;
 import java.util.Iterator;
@@ -50,9 +51,20 @@ import java.util.Set;
  * <p>Only the {@code "gql"} query language is supported. If the step's query language is
  * set to any other non-null value, {@link UnsupportedOperationException} is thrown.</p>
  *
+ * <p>The step closes the executor's row iterator with
+ * {@link CloseableIterator#closeIterator(Iterator)} when it moves on to the next incoming
+ * traverser, on {@link #reset()}, and on {@link #close()}. An executor whose iterator holds
+ * provider resources, such as {@link DefaultGqlExecutor}, releases them then, including when the
+ * traversal finishes early because of a downstream {@code limit()}. A caller that stops pulling
+ * results before the traversal is exhausted keeps the iterator open until it closes the traversal.
+ * {@link org.apache.tinkerpop.gremlin.process.traversal.Traversal#close()} calls {@link #close()}
+ * only on the steps of the traversal it is called on, so a {@code match()} nested in a child
+ * traversal is not closed by it; as with {@code GraphStep}, such a step releases its row iterator
+ * when the parent step resets the child traversal or when its own match is exhausted.</p>
+ *
  * @param <S> the traverser start type
  */
-public final class GqlMatchStep<S> extends DeclarativeMatchStep<S> {
+public final class GqlMatchStep<S> extends DeclarativeMatchStep<S> implements AutoCloseable {
 
     /**
      * The query language identifier that this step accepts when set explicitly.
@@ -146,6 +158,7 @@ public final class GqlMatchStep<S> extends DeclarativeMatchStep<S> {
                 if (rowIterator.hasNext())
                     return rowToSpawnTraverser(rowIterator.next(), plan);
                 done = true;
+                closeRowIterator();
             }
             throw FastNoSuchElementException.instance();
         }
@@ -155,12 +168,20 @@ public final class GqlMatchStep<S> extends DeclarativeMatchStep<S> {
             if (rowIterator != null && rowIterator.hasNext())
                 return rowToSplitTraverser(rowIterator.next(), plan, currentStart);
 
-            // Current row iterator exhausted — advance to the next incoming traverser.
+            // Current row iterator exhausted — release it and advance to the next incoming traverser.
+            closeRowIterator();
             if (!this.starts.hasNext()) throw FastNoSuchElementException.instance();
             currentStart = this.starts.next();
             checkNoPathLabelOverlap(currentStart, plan);
             rowIterator = executor.execute(plan, resolvedParams);
         }
+    }
+
+    /** Closes the current row iterator, if any, and forgets it. */
+    private void closeRowIterator() {
+        final Iterator<GqlRow> it = rowIterator;
+        rowIterator = null;
+        CloseableIterator.closeIterator(it);
     }
 
     /**
@@ -253,17 +274,31 @@ public final class GqlMatchStep<S> extends DeclarativeMatchStep<S> {
     }
 
     /**
-     * Resets lazy row state. The planner and executor singletons are preserved so the
+     * Resets lazy row state, closing the current row iterator. The planner and executor
+     * singletons are preserved so the
      * QueryGraph parse cache survives a traversal reset, but the compiled {@link GqlMatchPlan}
      * is cleared so that seed selection is recomputed from live label counts on the next
-     * execution — ensuring graph mutations between resets are reflected.
+     * execution — ensuring graph mutations between resets are reflected. The row state is cleared
+     * even when closing the row iterator throws, so the step is never left half-reset.
      */
     @Override
     public void reset() {
         super.reset();
-        rowIterator = null;
         currentStart = null;
         plan = null;
         done = false;
+        closeRowIterator();
+    }
+
+    /**
+     * Closes the current row iterator so that the executor can release any provider resources it
+     * holds, for example when a downstream {@code limit()} ends the traversal before the match is
+     * exhausted. A spawn step that has been closed produces no more rows, so a caller that keeps
+     * pulling from it does not run the match again; {@link #reset()} makes it runnable again.
+     */
+    @Override
+    public void close() {
+        done = true;
+        closeRowIterator();
     }
 }

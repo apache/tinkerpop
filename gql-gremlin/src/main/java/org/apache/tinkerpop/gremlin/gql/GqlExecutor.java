@@ -44,6 +44,14 @@ import java.util.Map;
  *   <li>Honor thread interruption while iterating by throwing
  *       {@link org.apache.tinkerpop.gremlin.process.traversal.util.TraversalInterruptedException},
  *       so that a traversal timeout can stop a long-running match.</li>
+ *   <li>If the iterator holds provider resources, return a
+ *       {@link org.apache.tinkerpop.gremlin.structure.util.CloseableIterator} that releases them on
+ *       {@code close()}. {@link GqlMatchStep} closes the iterator when it moves on to the next
+ *       incoming traverser, when the step is reset, and when the top-level traversal holding the
+ *       step is closed, including when it finishes early because of a downstream
+ *       {@code limit()}. A {@code match()} nested in a child traversal is not closed by the
+ *       top-level {@code close()}; like {@code GraphStep}, it relies on its parent resetting the
+ *       child traversal.</li>
  * </ul>
  */
 public interface GqlExecutor {

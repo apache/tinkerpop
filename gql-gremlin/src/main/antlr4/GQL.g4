@@ -179,7 +179,7 @@ edgePattern
 /**
  * Directed edge:  -[var?:Label?]->  with an optional trailing quantifier
  *
- * Examples: -[e:KNOWS]->   -[:KNOWS]->{1,3}   -[:KNOWS]->*
+ * Examples: -[e:KNOWS]->   -[:KNOWS]->{1,3}   -[:KNOWS]->+
  */
 directedEdge
     : DASH LBRACKET elementPatternFiller RBRACKET ARROW quantifier?
@@ -206,7 +206,7 @@ undirectedEdge
 /**
  * A trailing quantifier on a relationship, in the ISO GQL quantified-relationship
  * abbreviation form (a)-[r]->{q}(b). The grammar accepts every structural form; semantic
- * validation (zero lower bound, max &lt; min, bound range) is performed by QueryGraph.
+ * validation (zero lower bound, max less than min, bound range) is performed by QueryGraph.
  *
  * Forms:
  *   {m,n}  fixed lower and upper bound
@@ -233,11 +233,11 @@ quantifier
  * An unsigned-integer quantifier bound.
  *
  * A dedicated UNSIGNED_INTEGER lexer token (bare digits, no sign, no type suffix) would be
- * the natural backing here, but a bare {@code [0-9]+} token is unreachable: for a bare digit
+ * the natural backing here, but a bare [0-9]+ token is unreachable: for a bare digit
  * sequence it ties with INTEGER_LITERAL, which must win so that property-filter values keep
  * their INTEGER_LITERAL token type, which QueryGraph relies on when parsing literals. The bound
  * therefore accepts INTEGER_LITERAL; QueryGraph rejects a leading sign or type suffix, along
- * with the zero-lower-bound, out-of-range and max &lt; min cases.
+ * with the zero-lower-bound, out-of-range and max-less-than-min cases.
  */
 unsignedInteger
     : INTEGER_LITERAL
