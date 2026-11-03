@@ -187,6 +187,10 @@ g.match("MATCH (a:person {name: 'marko'})-[:created]-{2}(b:person)").
 Zero-length quantifiers, reuse of a quantified edge variable, and bounds above `2147483646` are rejected, as
 listed under link:https://tinkerpop.apache.org/docs/4.0.0/reference/#tinkergql-unsupported-features[Unsupported Features].
 
+An undirected relationship, quantified or not, now matches a self-loop edge once, as GQL specifies. In
+4.0.0-beta.3 a named undirected relationship, as in `MATCH (a)-[r]-(b)`, returned two identical rows for each
+self-loop, and it now returns one.
+
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-3256[TINKERPOP-3256],
 link:https://tinkerpop.apache.org/docs/4.0.0/reference/#tinkergql[TinkerGQL]
 

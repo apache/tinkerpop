@@ -798,9 +798,13 @@ predicates, extend through each `ExtensionStep` in an order that keeps every ste
 before that step executes, and emit one `GqlRow` per complete match. A step's target variable may already be
 bound when the step runs. The step must then be joined on that binding, so only edges or walks that end at the
 bound vertex produce rows. This applies equally to a quantified step that closes a pattern cycle or loops back to
-its own node. Results are returned lazily as an `Iterator<GqlRow>`. An executor must honor thread interruption by
-throwing `TraversalInterruptedException`, so that a traversal timeout can stop a long-running match. See
-`DefaultGqlExecutor` for a reference implementation.
+its own node. An undirected step, and each hop of an undirected walk, treats a self-loop in the data as a single
+candidate edge, however `Vertex.edges(Direction.BOTH)` reports it. TinkerGraph's `edges(Direction.BOTH)` reports a
+self-loop twice, once as an out-edge and once as an in-edge, and `DefaultGqlExecutor` skips the repeat. An executor
+that compiles an undirected step to Gremlin's `bothE()` must remove the repeat itself, because `bothE()` reports a
+self-loop once for each of its ends. Results are returned lazily as an `Iterator<GqlRow>`. An executor must honor
+thread interruption by throwing `TraversalInterruptedException`, so that a traversal timeout can stop a long-running
+match. See `DefaultGqlExecutor` for a reference implementation.
 
 If the returned iterator holds provider resources, such as open cursors or edge iterators, the executor returns a
 `CloseableIterator` that releases them on `close()`. `GqlMatchStep` closes the row iterator when it moves on to the
@@ -833,8 +837,8 @@ parallel edges, triangles and self-loops. Because edges cannot repeat, an unboun
 graph.
 * Each distinct walk produces its own row, so the same endpoints can appear in several rows. That holds even for
 `{1}` over parallel edges and for a walk that ends at an already-bound target.
-* An undirected walk yields one row per incidence returned by `Vertex.edges(Direction.BOTH)`. TinkerGraph returns a
-self-loop twice, once as an out-edge and once as an in-edge, so a walk over a self-loop produces a row for each.
+* Each hop of an undirected walk treats a self-loop in the data as a single candidate edge, as described above for
+undirected steps.
 * A walk is emitted at every length from `getMinHops()` to `getMaxHops()`, and continues to longer lengths whether
 or not it was emitted at a shorter one.
 * The edge label and `getEdgePredicates()` apply to every edge of the walk.

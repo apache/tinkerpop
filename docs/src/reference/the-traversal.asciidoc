@@ -3397,7 +3397,8 @@ The following `MATCH` patterns are supported:
 Multiple comma-separated path patterns are supported in a single `MATCH` clause. Patterns that share a variable
 name are joined on that variable, which must resolve to the same element across all patterns. There is no `RETURN`
 clause — `match()` always returns the full binding `Map` and any projection is performed with Gremlin steps like
-`select()`.
+`select()`. An undirected edge pattern, quantified or not, matches a self-loop once, unlike `bothE()`, which returns
+it once for each of its ends.
 
 A quantifier may follow any directed, reverse, or undirected edge, as in `<-[e:Label]-{m,n}` or
 `-[e:Label]-{m,n}`, and the quantified walk matches once at every length in its range. Bounds may not exceed

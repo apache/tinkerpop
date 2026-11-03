@@ -770,6 +770,48 @@ Feature: Step - match() (String form)
       | m[{"a":"CCC","b":"AAA","c":"DDD","r":"l[e[AAA-route->BBB],e[BBB-route->DDD]]"}] |
       | m[{"a":"DDD","b":"CCC","c":"BBB","r":"l[e[CCC-route->AAA],e[AAA-route->BBB]]"}] |
 
+  Scenario: g_match_airportXundirectedRouteXrVarX_selfLoop_selectXa_r_bX_byXnameX_by_byXnameX
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("airport").property("name", "AAA").as("a").
+        addV("airport").property("name", "DDD").as("d").
+        addE("route").from("a").to("d").
+        addE("route").from("d").to("d")
+      """
+    And the traversal of
+      """
+      g.match("MATCH (a:airport)-[r:route]-(b:airport)").select("a","r","b").by("name").by().by("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | m[{"a":"AAA","r":"e[AAA-route->DDD]","b":"DDD"}] |
+      | m[{"a":"DDD","r":"e[AAA-route->DDD]","b":"AAA"}] |
+      | m[{"a":"DDD","r":"e[DDD-route->DDD]","b":"DDD"}] |
+
+  Scenario: g_match_airportXundirectedRouteXrVar_1_2X_selfLoop_selectXa_b_rX_byXnameX_byXnameX_by
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("airport").property("name", "AAA").as("a").
+        addV("airport").property("name", "DDD").as("d").
+        addE("route").from("a").to("d").
+        addE("route").from("d").to("d")
+      """
+    And the traversal of
+      """
+      g.match("MATCH (a:airport)-[r:route]-{1,2}(b:airport)").select("a","b","r").by("name").by("name").by()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | m[{"a":"AAA","b":"DDD","r":"l[e[AAA-route->DDD]]"}] |
+      | m[{"a":"AAA","b":"DDD","r":"l[e[AAA-route->DDD],e[DDD-route->DDD]]"}] |
+      | m[{"a":"DDD","b":"AAA","r":"l[e[AAA-route->DDD]]"}] |
+      | m[{"a":"DDD","b":"DDD","r":"l[e[DDD-route->DDD]]"}] |
+      | m[{"a":"DDD","b":"AAA","r":"l[e[DDD-route->DDD],e[AAA-route->DDD]]"}] |
+
   Scenario: g_match_personXknowsXrVar_1_2X_personXcreatedXrVarX_software_selectXrX
     Given the modern graph
     And the traversal of

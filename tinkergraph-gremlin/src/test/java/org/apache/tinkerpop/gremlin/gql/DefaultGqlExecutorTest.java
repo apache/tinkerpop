@@ -24,11 +24,13 @@ import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalInterruptedE
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
+import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.CloseableIterator;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.AbstractTinkerGraph;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -1901,62 +1903,253 @@ public class DefaultGqlExecutorTest {
     // -------------------------------------------------------------------------
 
     @Test(timeout = 10000)
-    public void testUndirectedSingleHopOverDataSelfLoopReturnsOneRowPerIncidence() {
-        // Established convention: an undirected step sees a self-loop edge once as an out-edge
-        // and once as an in-edge, as Gremlin's bothE() does, so a named edge yields two identical
-        // rows. An anonymous edge collapses them through the anonymous-target dedup.
+    public void testUndirectedSingleHopOverDataSelfLoopMatchesLoopOnce() {
+        // An undirected edge pattern binds each edge once, so a self-loop is one row even though
+        // TinkerGraph's edges(BOTH) reports it as both an out-edge and an in-edge.
         final Vertex a = graph.addVertex("P");
         final Edge loop = a.addEdge("L", a);
 
         final List<Map<String, Element>> named = execute("MATCH (a:P)-[r:L]-(b:P)");
-        assertEquals(2, named.size());
-        for (final Map<String, Element> row : named) {
-            assertEquals(a, row.get("a"));
-            assertEquals(a, row.get("b"));
-            assertEquals(loop, row.get("r"));
-        }
+        assertEquals(1, named.size());
+        assertEquals(a, named.get(0).get("a"));
+        assertEquals(a, named.get(0).get("b"));
+        assertEquals(loop, named.get(0).get("r"));
         assertEquals(1, execute("MATCH (a:P)-[:L]-(b:P)").size());
     }
 
     @Test(timeout = 10000)
     public void testUndirectedQuantifiedWalkOverDataSelfLoopMatchesSingleHop() {
-        // The walk follows the same convention as the named single-hop step: one row per incidence
-        // of the self-loop, each binding r to the one-edge list. TRAIL uniqueness stops the walk
-        // from taking the loop a second time, so {1,2} adds no depth-2 rows.
+        // As with the single-hop step, the walk takes the self-loop once, binding r to the
+        // one-edge list. TRAIL uniqueness stops the walk from taking the loop a second time, so
+        // {1,2} adds no depth-2 rows.
         final Vertex a = graph.addVertex("P");
         final Edge loop = a.addEdge("L", a);
 
         for (final String q : new String[]{"{1}", "{1,2}", "+"}) {
             final List<Map<String, Element>> rows = execute("MATCH (a:P)-[r:L]-" + q + "(b:P)");
-            assertEquals(q, 2, rows.size());
-            for (final Map<String, Element> row : rows) {
-                assertEquals(q, a, row.get("b"));
-                assertEquals(q, List.of(loop), edgeList(row, "r"));
-            }
+            assertEquals(q, 1, rows.size());
+            assertEquals(q, a, rows.get(0).get("a"));
+            assertEquals(q, a, rows.get(0).get("b"));
+            assertEquals(q, List.of(loop), edgeList(rows.get(0), "r"));
         }
-        // Anonymous quantified edges are not deduplicated by target, as with parallel edges.
-        assertEquals(2, execute("MATCH (a:P)-[:L]-{1,2}(b:P)").size());
+        assertEquals(1, execute("MATCH (a:P)-[:L]-{1,2}(b:P)").size());
     }
 
     @Test(timeout = 10000)
     public void testPlainPatternSelfLoopOverDataSelfLoopInEveryDirection() {
-        // A plain pattern self-loop follows the single-hop convention: a reverse step sees the
-        // loop once, an undirected named step sees it once per incidence.
+        // A plain pattern self-loop matches a data self-loop once in every direction.
         final Vertex a = graph.addVertex("P");
         final Edge loop = a.addEdge("L", a);
         graph.addVertex("P");
 
-        final List<Map<String, Element>> reverse = execute("MATCH (a:P)<-[r:L]-(a)");
-        assertEquals(1, reverse.size());
-        assertEquals(a, reverse.get(0).get("a"));
-        assertEquals(loop, reverse.get(0).get("r"));
-
-        final List<Map<String, Element>> undirected = execute("MATCH (a:P)-[r:L]-(a)");
-        assertEquals(2, undirected.size());
-        for (final Map<String, Element> row : undirected) {
-            assertEquals(a, row.get("a"));
-            assertEquals(loop, row.get("r"));
+        for (final String query : new String[]{"MATCH (a:P)-[r:L]->(a)", "MATCH (a:P)<-[r:L]-(a)",
+                "MATCH (a:P)-[r:L]-(a)"}) {
+            final List<Map<String, Element>> rows = execute(query);
+            assertEquals(query, 1, rows.size());
+            assertEquals(query, a, rows.get(0).get("a"));
+            assertEquals(query, loop, rows.get(0).get("r"));
         }
+    }
+
+    @Test(timeout = 10000)
+    public void testUndirectedTwoHopWalkOverTwoDataSelfLoopsReturnsEachOrderOnce() {
+        final Vertex a = graph.addVertex("P");
+        final Edge s1 = a.addEdge("L", a);
+        final Edge s2 = a.addEdge("L", a);
+
+        final Map<List<Object>, Long> expected = expectedTuples(
+                List.of(a, List.of(s1, s2)),
+                List.of(a, List.of(s2, s1)));
+        assertEquals(expected, tuples(execute("MATCH (a:P)-[r:L]-{2}(a)"), "a", "r"));
+        // The same rows as the directed walk.
+        assertEquals(expected, tuples(execute("MATCH (a:P)-[r:L]->{2}(a)"), "a", "r"));
+    }
+
+    @Test(timeout = 10000)
+    public void testUndirectedWalkOverDataSelfLoopAndEdgeReturnsEachWalkOnce() {
+        // a carries loop s and edge e: a -> b.
+        final Vertex a = graph.addVertex("P");
+        final Vertex b = graph.addVertex("P");
+        final Edge s = a.addEdge("L", a);
+        final Edge e = a.addEdge("L", b);
+
+        assertEquals(expectedTuples(
+                List.of(a, List.of(s), a),
+                List.of(a, List.of(e), b),
+                List.of(a, List.of(s, e), b),
+                List.of(b, List.of(e), a),
+                List.of(b, List.of(e, s), a)), tuples(execute("MATCH (a:P)-[r:L]-{1,2}(b:P)"), "a", "r", "b"));
+    }
+
+    @Test(timeout = 10000)
+    public void testUndirectedStepOverParallelEdgesReturnsOneRowPerEdge() {
+        // Only self-loops are deduplicated: parallel edges between distinct vertices, in either
+        // direction, are each their own row.
+        final Vertex a = graph.addVertex("P");
+        final Vertex b = graph.addVertex("Q");
+        final Edge p1 = a.addEdge("L", b);
+        final Edge p2 = a.addEdge("L", b);
+        final Edge p3 = b.addEdge("L", a);
+
+        assertEquals(expectedTuples(
+                List.of(a, p1, b),
+                List.of(a, p2, b),
+                List.of(a, p3, b)), tuples(execute("MATCH (a:P)-[r:L]-(b:Q)"), "a", "r", "b"));
+        assertEquals(expectedTuples(
+                List.of(a, List.of(p1), b),
+                List.of(a, List.of(p2), b),
+                List.of(a, List.of(p3), b)), tuples(execute("MATCH (a:P)-[r:L]-{1}(b:Q)"), "a", "r", "b"));
+    }
+
+    @Test(timeout = 10000)
+    public void testUndirectedSelfLoopRowsSameWhenProviderReportsLoopOnce() {
+        // A provider whose edges(BOTH) reports a self-loop once gets the same rows as TinkerGraph,
+        // which reports it twice: nothing is lost by the dedup.
+        final Vertex a = graph.addVertex("P");
+        final Vertex b = graph.addVertex("P");
+        final Edge s = a.addEdge("L", a);
+        final Edge e = a.addEdge("L", b);
+
+        // A separate probe for the check, so its unclosed iterators do not count against the match.
+        assertEquals("the probe must report a's loop once under BOTH", 2, IteratorUtils.count(
+                new ProbeGraph(graph).withSelfLoopsReportedOnce().graph().vertices(a.id()).next()
+                        .edges(Direction.BOTH, "L")));
+        assertEquals("TinkerGraph reports a's loop twice under BOTH", 3,
+                IteratorUtils.count(a.edges(Direction.BOTH, "L")));
+
+        final Map<List<Object>, Long> single = expectedTuples(
+                List.of(a, s, a),
+                List.of(a, e, b),
+                List.of(b, e, a));
+        final Map<List<Object>, Long> walk = expectedTuples(
+                List.of(a, List.of(s), a),
+                List.of(a, List.of(e), b),
+                List.of(a, List.of(s, e), b),
+                List.of(b, List.of(e), a),
+                List.of(b, List.of(e, s), a));
+        final ProbeGraph probe = new ProbeGraph(graph).withSelfLoopsReportedOnce();
+        for (final Graph g : new Graph[]{graph, probe.graph()}) {
+            final GqlMatchPlan singlePlan = new DefaultGqlPlanner(g).plan("MATCH (a:P)-[r:L]-(b:P)");
+            assertEquals(single, tuples(materialize(new DefaultGqlExecutor(g).execute(singlePlan), singlePlan), "a", "r", "b"));
+            final GqlMatchPlan walkPlan = new DefaultGqlPlanner(g).plan("MATCH (a:P)-[r:L]-{1,2}(b:P)");
+            assertEquals(walk, tuples(materialize(new DefaultGqlExecutor(g).execute(walkPlan), walkPlan), "a", "r", "b"));
+        }
+        probe.assertAllClosedOnce("after the matches");
+    }
+
+    @Test(timeout = 10000)
+    public void testUndirectedSelfLoopDedupedWhenProviderReportsIncidencesApart() {
+        // A provider whose edges(BOTH) reports a self-loop's two incidences with other edges
+        // between them gets the same rows: the dedup does not rely on the repeat being adjacent.
+        // a carries loop s, e: a -> b and f: c -> a.
+        final Vertex a = graph.addVertex("P");
+        final Vertex b = graph.addVertex("P");
+        final Vertex c = graph.addVertex("P");
+        final Edge s = a.addEdge("L", a);
+        final Edge e = a.addEdge("L", b);
+        final Edge f = c.addEdge("L", a);
+
+        final ProbeGraph probe = new ProbeGraph(graph).withSelfLoopsReportedAroundOtherEdges();
+        // A separate probe for the check, so its unclosed iterators do not count against the match.
+        assertEquals("the probe must report a's loop first and last, with e and f between", List.of(s, e, f, s),
+                IteratorUtils.list(new ProbeGraph(graph).withSelfLoopsReportedAroundOtherEdges().graph()
+                        .vertices(a.id()).next().edges(Direction.BOTH, "L")));
+
+        final GqlMatchPlan singlePlan = new DefaultGqlPlanner(probe.graph()).plan("MATCH (a:P)-[r:L]-(b:P)");
+        assertEquals(expectedTuples(
+                List.of(a, s, a),
+                List.of(a, e, b),
+                List.of(a, f, c),
+                List.of(b, e, a),
+                List.of(c, f, a)),
+                tuples(materialize(new DefaultGqlExecutor(probe.graph()).execute(singlePlan), singlePlan), "a", "r", "b"));
+
+        final GqlMatchPlan walkPlan = new DefaultGqlPlanner(probe.graph()).plan("MATCH (a:P)-[r:L]-{1,2}(b:P)");
+        assertEquals(expectedTuples(
+                List.of(a, List.of(s), a),
+                List.of(a, List.of(s, e), b),
+                List.of(a, List.of(s, f), c),
+                List.of(a, List.of(e), b),
+                List.of(a, List.of(f), c),
+                List.of(b, List.of(e), a),
+                List.of(b, List.of(e, s), a),
+                List.of(b, List.of(e, f), c),
+                List.of(c, List.of(f), a),
+                List.of(c, List.of(f, s), a),
+                List.of(c, List.of(f, e), b)),
+                tuples(materialize(new DefaultGqlExecutor(probe.graph()).execute(walkPlan), walkPlan), "a", "r", "b"));
+        probe.assertAllClosedOnce("after the matches");
+    }
+
+    @Test(timeout = 10000)
+    public void testUndirectedSelfLoopDedupFailsLoudlyWhenProviderThrowsWhileSkippingRepeat() {
+        // a carries only loop s, which TinkerGraph's edges(BOTH) reports twice. The probe's
+        // edges(BOTH) iterator for a throws from next() after both reports, so the failure comes
+        // while the dedup is skipping s's repeat and reading on. It must propagate, a later
+        // hasNext() or next() must fail rather than resume, and every provider iterator must be
+        // closed once.
+        final Vertex a = graph.addVertex("P");
+        final Edge s = a.addEdge("L", a);
+        final ProbeGraph probe = new ProbeGraph(graph).failNextBothEdgesAtEnd(a);
+        final GqlMatchPlan plan = new DefaultGqlPlanner(probe.graph()).plan("MATCH (a:P)-[r:L]-(b:P)");
+        final int aIdx = plan.getIndex("a");
+        final int rIdx = plan.getIndex("r");
+        final int bIdx = plan.getIndex("b");
+        final Iterator<GqlRow> iter = new DefaultGqlExecutor(probe.graph()).execute(plan);
+
+        assertTrue(iter.hasNext());
+        final GqlRow row = iter.next();
+        assertEquals(a, row.getScalar(aIdx));
+        assertEquals(s, row.getScalar(rIdx));
+        assertEquals(a, row.getScalar(bIdx));
+        try {
+            iter.hasNext();
+            fail("the provider's next() exception must propagate");
+        } catch (final ProbeGraph.InjectedFailure expected) {
+            // expected
+        }
+        probe.assertAllClosedOnce("every provider iterator must be closed after the failure");
+
+        for (int i = 0; i < 2; i++) {
+            try {
+                iter.hasNext();
+                fail("hasNext() after a failure must not resume the search");
+            } catch (final IllegalStateException expected) {
+                assertTrue(expected.getCause() instanceof ProbeGraph.InjectedFailure);
+            }
+        }
+        try {
+            iter.next();
+            fail("next() after a failure must not resume the search");
+        } catch (final IllegalStateException expected) {
+            assertTrue(expected.getCause() instanceof ProbeGraph.InjectedFailure);
+        }
+        probe.assertAllClosedOnce("no provider iterator may be opened or closed again after the failure");
+    }
+
+    @Test(timeout = 10000)
+    public void testProviderIteratorsClosedUnderUndirectedSelfLoopDedup() {
+        final Vertex a = graph.addVertex("P");
+        final Vertex b = graph.addVertex("P");
+        a.addEdge("L", a);
+        a.addEdge("L", a);
+        a.addEdge("L", b);
+        final String query = "MATCH (x:P)-[:L]-(y:P)-[r:L]-{1,2}(z:P)";
+
+        final ProbeGraph drained = new ProbeGraph(graph);
+        final GqlMatchPlan plan = new DefaultGqlPlanner(drained.graph()).plan(query);
+        assertFalse(materialize(new DefaultGqlExecutor(drained.graph()).execute(plan), plan).isEmpty());
+        assertTrue(drained.opened() > 1);
+        drained.assertAllClosedOnce("after the match");
+
+        final ProbeGraph early = new ProbeGraph(graph);
+        final GqlMatchPlan earlyPlan = new DefaultGqlPlanner(early.graph()).plan(query);
+        final Iterator<GqlRow> iter = new DefaultGqlExecutor(early.graph()).execute(earlyPlan);
+        assertTrue(iter.hasNext());
+        iter.next();
+        assertTrue("the search must hold provider iterators open mid-way", early.opened() > early.closed());
+        CloseableIterator.closeIterator(iter);
+        early.assertAllClosedOnce("after closing early");
     }
 
     // -------------------------------------------------------------------------
@@ -2638,19 +2831,16 @@ public class DefaultGqlExecutorTest {
 
     @Test(timeout = 10000)
     public void testUndirectedQuantifiedPatternSelfLoopOverDataSelfLoop() {
-        // edges(Direction.BOTH) returns a self-loop once as an out-edge and once as an in-edge, so
-        // an undirected walk takes the one loop edge two ways and returns two identical rows. This
-        // matches the named single-hop convention pinned above. The duplicate count is current
-        // behaviour, pinned pending an open design question on undirected data self-loops
-        // (TINKERPOP-3256); it is not a decision that it is correct. TRAIL uniqueness prevents a
-        // depth-2 row.
+        // TinkerGraph's edges(Direction.BOTH) reports a self-loop once as an out-edge and once as
+        // an in-edge, but an undirected walk takes the loop edge once, as the single-hop step
+        // does, so there is one row. TRAIL uniqueness prevents a depth-2 row.
         final Vertex a = graph.addVertex("P");
         final Edge loop = a.addEdge("L", a);
         graph.addVertex("P");
 
-        assertEquals(expectedTuples(List.of(a, List.of(loop)), List.of(a, List.of(loop))),
+        assertEquals(expectedTuples(List.of(a, List.of(loop))),
                 tuples(execute("MATCH (a:P)-[r:L]-{1,2}(a)"), "a", "r"));
-        // A directed walk sees the loop once.
+        // A directed walk also sees the loop once.
         assertEquals(expectedTuples(List.of(a, List.of(loop))),
                 tuples(execute("MATCH (a:P)-[r:L]->{1,2}(a)"), "a", "r"));
     }
