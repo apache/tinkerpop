@@ -186,6 +186,47 @@ public class GqlGrammarTest {
                 {"MATCH (n {limit: Infinity})"},
                 {"MATCH (n {limit: +Infinity})"},
                 {"MATCH (n {limit: -Infinity})"},
+
+                // ── Quantified relationships: directed edges -[...]->{q} ──────────────
+                {"MATCH (a)-[:KNOWS]->{1,3}(b)"},
+                {"MATCH (a)-[:KNOWS]->{2,}(b)"},
+                {"MATCH (a)-[:KNOWS]->{,3}(b)"},
+                {"MATCH (a)-[:KNOWS]->{2}(b)"},
+                {"MATCH (a)-[:KNOWS]->*(b)"},
+                {"MATCH (a)-[:KNOWS]->+(b)"},
+                // Zero lower bound parses structurally (QueryGraph rejects it as not yet supported)
+                {"MATCH (a)-[:KNOWS]->{0,3}(b)"},
+                // max < min parses structurally (semantic validation is handled by QueryGraph, not the grammar)
+                {"MATCH (a)-[:KNOWS]->{3,1}(b)"},
+                // Bound text the grammar accepts and QueryGraph validates: exact zero, sign,
+                // out-of-range value and leading zeros
+                {"MATCH (a)-[:KNOWS]->{0}(b)"},
+                {"MATCH (a)-[:KNOWS]->{+1}(b)"},
+                {"MATCH (a)-[:KNOWS]->{99999999999}(b)"},
+                {"MATCH (a)-[:KNOWS]->{01,3}(b)"},
+                {"MATCH (a)<-[:KNOWS]-{+1}(b)"},
+                {"MATCH (a)-[:KNOWS]-{99999999999}(b)"},
+
+                // ── Quantified relationships: reverse directed edges <-[...]-{q} ───────
+                {"MATCH (a)<-[:KNOWS]-{1,3}(b)"},
+                {"MATCH (a)<-[:KNOWS]-{2,}(b)"},
+                {"MATCH (a)<-[:KNOWS]-{,3}(b)"},
+                {"MATCH (a)<-[:KNOWS]-{2}(b)"},
+                {"MATCH (a)<-[:KNOWS]-*(b)"},
+                {"MATCH (a)<-[:KNOWS]-+(b)"},
+
+                // ── Quantified relationships: undirected edges -[...]-{q} ─────────────
+                {"MATCH (a)-[:KNOWS]-{1,3}(b)"},
+                {"MATCH (a)-[:KNOWS]-{2,}(b)"},
+                {"MATCH (a)-[:KNOWS]-{,3}(b)"},
+                {"MATCH (a)-[:KNOWS]-{2}(b)"},
+                {"MATCH (a)-[:KNOWS]-*(b)"},
+                {"MATCH (a)-[:KNOWS]-+(b)"},
+
+                // ── Quantified relationships: with edge variable + label ──────────────
+                {"MATCH (a)-[r:KNOWS]->{1,3}(b)"},
+                {"MATCH (a)-[r]->{2,}(b)"},
+                {"MATCH (a:Person)-[r:KNOWS]->{1,3}(b:Person)"},
         });
     }
 
@@ -229,6 +270,18 @@ public class GqlGrammarTest {
     @Test
     public void shouldRejectUnbalancedParentheses() {
         assertThrows(ParseCancellationException.class, () -> parse("MATCH (n"));
+    }
+
+    @Test
+    public void shouldRejectEmptyQuantifier() {
+        // {} has no bound and is structurally invalid
+        assertThrows(ParseCancellationException.class, () -> parse("MATCH (a)-[:KNOWS]->{}(b)"));
+    }
+
+    @Test
+    public void shouldRejectMalformedQuantifier() {
+        // a bare comma with no bounds is not a valid quantifier
+        assertThrows(ParseCancellationException.class, () -> parse("MATCH (a)-[:KNOWS]->{,}(b)"));
     }
 
     private void parse(final String input) {

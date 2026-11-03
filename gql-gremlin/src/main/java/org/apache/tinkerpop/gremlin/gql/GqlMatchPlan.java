@@ -53,7 +53,7 @@ public final class GqlMatchPlan {
     private final List<ExtensionStep> steps;
     /**
      * Maps every variable name (including {@code $anon*} synthetics) to its slot index in
-     * the {@code Element[]} binding array used by the executor. Seed variable is always at
+     * each {@link GqlRow} produced by the executor. Seed variable is always at
      * index 0; subsequent indices follow step order (edge variable before target variable
      * for each step).
      */

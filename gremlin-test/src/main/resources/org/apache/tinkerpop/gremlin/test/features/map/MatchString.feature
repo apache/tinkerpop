@@ -320,3 +320,512 @@ Feature: Step - match() (String form)
       | result |
       | marko knows vadas |
       | marko knows josh  |
+
+  Scenario: g_match_personXknows_1_2X_person_selectXa_bX_byXnameX
+    Given the modern graph
+    And the traversal of
+      """
+      g.match("MATCH (a:person)-[:knows]->{1,2}(b:person)").select("a","b").by("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | m[{"a":"marko","b":"vadas"}] |
+      | m[{"a":"marko","b":"josh"}]  |
+
+  Scenario: g_match_airportXroute_1_2X_airport_selectXbX_byXnameX
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("airport").property("name", "AAA").as("a").
+        addV("airport").property("name", "BBB").as("b").
+        addV("airport").property("name", "CCC").as("c").
+        addV("airport").property("name", "DDD").as("d").
+        addE("route").from("a").to("b").
+        addE("route").from("b").to("c").
+        addE("route").from("c").to("d")
+      """
+    And the traversal of
+      """
+      g.match("MATCH (a:airport {name: 'AAA'})-[:route]->{1,2}(b:airport)").select("b").by("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | BBB    |
+      | CCC    |
+
+  Scenario: g_match_airportXroute_2_X_airport_selectXbX_byXnameX
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("airport").property("name", "AAA").as("a").
+        addV("airport").property("name", "BBB").as("b").
+        addV("airport").property("name", "CCC").as("c").
+        addV("airport").property("name", "DDD").as("d").
+        addE("route").from("a").to("b").
+        addE("route").from("b").to("c").
+        addE("route").from("c").to("d")
+      """
+    And the traversal of
+      """
+      g.match("MATCH (a:airport {name: 'AAA'})-[:route]->{2,}(b:airport)").select("b").by("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | CCC    |
+      | DDD    |
+
+  Scenario: g_match_airportXroute_plusX_airport_selectXbX_byXnameX
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("airport").property("name", "AAA").as("a").
+        addV("airport").property("name", "BBB").as("b").
+        addV("airport").property("name", "CCC").as("c").
+        addV("airport").property("name", "DDD").as("d").
+        addE("route").from("a").to("b").
+        addE("route").from("b").to("c").
+        addE("route").from("c").to("d")
+      """
+    And the traversal of
+      """
+      g.match("MATCH (a:airport {name: 'AAA'})-[:route]->+(b:airport)").select("b").by("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | BBB    |
+      | CCC    |
+      | DDD    |
+
+  Scenario: g_match_airportXreversedRoute_1_2X_airport_selectXbX_byXnameX
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("airport").property("name", "AAA").as("a").
+        addV("airport").property("name", "BBB").as("b").
+        addV("airport").property("name", "CCC").as("c").
+        addV("airport").property("name", "DDD").as("d").
+        addE("route").from("a").to("b").
+        addE("route").from("b").to("c").
+        addE("route").from("c").to("d")
+      """
+    And the traversal of
+      """
+      g.match("MATCH (a:airport {name: 'CCC'})<-[:route]-{1,2}(b:airport)").select("b").by("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | BBB    |
+      | AAA    |
+
+  Scenario: g_match_airportXundirectedRoute_1X_airport_selectXbX_byXnameX
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("airport").property("name", "AAA").as("a").
+        addV("airport").property("name", "BBB").as("b").
+        addV("airport").property("name", "CCC").as("c").
+        addV("airport").property("name", "DDD").as("d").
+        addE("route").from("a").to("b").
+        addE("route").from("b").to("c").
+        addE("route").from("c").to("d")
+      """
+    And the traversal of
+      """
+      g.match("MATCH (a:airport {name: 'BBB'})-[:route]-{1}(b:airport)").select("b").by("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | AAA    |
+      | CCC    |
+
+  Scenario: g_match_airportXundirectedRoute_1_2X_airport_selectXa_bX_byXnameX
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("airport").property("name", "AAA").as("a").
+        addV("airport").property("name", "BBB").as("b").
+        addV("airport").property("name", "CCC").as("c").
+        addV("airport").property("name", "DDD").as("d").
+        addE("route").from("a").to("b").
+        addE("route").from("b").to("c").
+        addE("route").from("c").to("d")
+      """
+    And the traversal of
+      """
+      g.match("MATCH (a:airport)-[:route]-{1,2}(b:airport)").select("a","b").by("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | m[{"a":"AAA","b":"BBB"}] |
+      | m[{"a":"BBB","b":"AAA"}] |
+      | m[{"a":"BBB","b":"CCC"}] |
+      | m[{"a":"CCC","b":"BBB"}] |
+      | m[{"a":"CCC","b":"DDD"}] |
+      | m[{"a":"DDD","b":"CCC"}] |
+      | m[{"a":"AAA","b":"CCC"}] |
+      | m[{"a":"CCC","b":"AAA"}] |
+      | m[{"a":"BBB","b":"DDD"}] |
+      | m[{"a":"DDD","b":"BBB"}] |
+
+  Scenario: g_match_airportXrouteXrVar_1X_airport_selectXrX
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("airport").property("name", "AAA").as("a").
+        addV("airport").property("name", "BBB").as("b").
+        addV("airport").property("name", "CCC").as("c").
+        addV("airport").property("name", "DDD").as("d").
+        addE("route").from("a").to("b").
+        addE("route").from("b").to("c").
+        addE("route").from("c").to("d")
+      """
+    And the traversal of
+      """
+      g.match("MATCH (a:airport {name: 'AAA'})-[r:route]->{1}(b:airport)").select("r")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | l[e[AAA-route->BBB]] |
+
+  Scenario: g_match_airportXrouteXrVar_2X_airport_selectXrX
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("airport").property("name", "AAA").as("a").
+        addV("airport").property("name", "BBB").as("b").
+        addV("airport").property("name", "CCC").as("c").
+        addV("airport").property("name", "DDD").as("d").
+        addE("route").from("a").to("b").
+        addE("route").from("b").to("c").
+        addE("route").from("c").to("d")
+      """
+    And the traversal of
+      """
+      g.match("MATCH (a:airport {name: 'AAA'})-[r:route]->{2}(b:airport)").select("r")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | l[e[AAA-route->BBB],e[BBB-route->CCC]] |
+
+  Scenario: g_match_airportXrouteXrVar_2_3X_hub_selectXrX
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("airport").property("name", "AAA").as("a").
+        addV("airport").property("name", "BBB").as("b").
+        addV("airport").property("name", "CCC").as("c").
+        addV("hub").property("name", "DDD").as("d").
+        addE("route").from("a").to("b").
+        addE("route").from("b").to("c").
+        addE("route").from("c").to("d")
+      """
+    And the traversal of
+      """
+      g.match("MATCH (a:airport)-[r:route]->{2,3}(b:hub)").select("r")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | l[e[BBB-route->CCC],e[CCC-route->DDD]] |
+      | l[e[AAA-route->BBB],e[BBB-route->CCC],e[CCC-route->DDD]] |
+
+  Scenario: g_match_airportXreversedRouteXrVar_2X_hub_selectXrX
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("airport").property("name", "AAA").as("a").
+        addV("airport").property("name", "BBB").as("b").
+        addV("airport").property("name", "CCC").as("c").
+        addV("hub").property("name", "DDD").as("d").
+        addE("route").from("d").to("c").
+        addE("route").from("c").to("b").
+        addE("route").from("c").to("a")
+      """
+    And the traversal of
+      """
+      g.match("MATCH (a:airport)<-[r:route]-{2}(b:hub)").select("r")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | l[e[CCC-route->BBB],e[DDD-route->CCC]] |
+      | l[e[CCC-route->AAA],e[DDD-route->CCC]] |
+
+  Scenario: g_match_airportXundirectedRouteXrVar_2X_hub_selectXrX
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("airport").property("name", "AAA").as("a").
+        addV("airport").property("name", "BBB").as("b").
+        addV("airport").property("name", "CCC").as("c").
+        addV("hub").property("name", "DDD").as("d").
+        addE("route").from("c").to("b").
+        addE("route").from("c").to("d").
+        addE("route").from("b").to("a").
+        addE("route").from("d").to("a")
+      """
+    And the traversal of
+      """
+      g.match("MATCH (a:airport)-[r:route]-{2}(b:hub)").select("r")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | l[e[CCC-route->BBB],e[CCC-route->DDD]] |
+      | l[e[BBB-route->AAA],e[DDD-route->AAA]] |
+
+  Scenario: g_match_airportXparallelRoute_1X_airport_selectXbX_byXnameX
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("airport").property("name", "AAA").as("a").
+        addV("airport").property("name", "BBB").as("b").
+        addE("route").from("a").to("b").
+        addE("route").from("a").to("b")
+      """
+    And the traversal of
+      """
+      g.match("MATCH (a:airport {name: 'AAA'})-[:route]->{1}(b:airport)").select("b").by("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | BBB    |
+      | BBB    |
+
+  Scenario: g_match_personXknows_starX_person_selectXa_bX_byXnameX
+    Given the modern graph
+    And the traversal of
+      """
+      g.match("MATCH (a:person)-[:knows]->*(b:person)").select("a","b").by("name")
+      """
+    When iterated to list
+    Then the traversal will raise an error with message containing text of "zero-length paths"
+
+  Scenario: g_match_personXknows_0_2X_person_selectXa_bX_byXnameX
+    Given the modern graph
+    And the traversal of
+      """
+      g.match("MATCH (a:person)-[:knows]->{0,2}(b:person)").select("a","b").by("name")
+      """
+    When iterated to list
+    Then the traversal will raise an error with message containing text of "zero-length paths"
+
+  Scenario: g_match_personXknows_noMin_2X_person_selectXa_bX_byXnameX
+    Given the modern graph
+    And the traversal of
+      """
+      g.match("MATCH (a:person)-[:knows]->{,2}(b:person)").select("a","b").by("name")
+      """
+    When iterated to list
+    Then the traversal will raise an error with message containing text of "zero-length paths"
+
+  Scenario: g_match_airportXname_AAAX_route_1_3X_airportXroute_1_3X_cycle_selectXa_bX_byXnameX
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("airport").property("name", "AAA").as("a").
+        addV("airport").property("name", "BBB").as("b").
+        addV("airport").property("name", "CCC").as("c").
+        addV("airport").property("name", "DDD").as("d").
+        addE("route").from("a").to("b").
+        addE("route").from("b").to("a").
+        addE("route").from("b").to("c").
+        addE("route").from("c").to("a").
+        addE("route").from("c").to("d")
+      """
+    And the traversal of
+      """
+      g.match("MATCH (a:airport {name: 'AAA'})-[:route]->{1,3}(b:airport), (b)-[:route]->{1,3}(a)").select("a","b").by("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | m[{"a":"AAA","b":"AAA"}] |
+      | m[{"a":"AAA","b":"AAA"}] |
+      | m[{"a":"AAA","b":"AAA"}] |
+      | m[{"a":"AAA","b":"AAA"}] |
+      | m[{"a":"AAA","b":"BBB"}] |
+      | m[{"a":"AAA","b":"BBB"}] |
+      | m[{"a":"AAA","b":"CCC"}] |
+      | m[{"a":"AAA","b":"CCC"}] |
+
+  Scenario: g_match_airportXname_AAAX_routeXr1Var_1_3X_airportXrouteXr2Var_1_3X_cycle_selectXr1_r2X
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("airport").property("name", "AAA").as("a").
+        addV("airport").property("name", "BBB").as("b").
+        addV("airport").property("name", "CCC").as("c").
+        addV("airport").property("name", "DDD").as("d").
+        addE("route").from("a").to("b").
+        addE("route").from("b").to("a").
+        addE("route").from("b").to("c").
+        addE("route").from("c").to("a").
+        addE("route").from("c").to("d")
+      """
+    And the traversal of
+      """
+      g.match("MATCH (a:airport {name: 'AAA'})-[r1:route]->{1,3}(b:airport), (b)-[r2:route]->{1,3}(a)").select("r1","r2")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | m[{"r1":"l[e[AAA-route->BBB]]","r2":"l[e[BBB-route->AAA]]"}] |
+      | m[{"r1":"l[e[AAA-route->BBB]]","r2":"l[e[BBB-route->CCC],e[CCC-route->AAA]]"}] |
+      | m[{"r1":"l[e[AAA-route->BBB],e[BBB-route->AAA]]","r2":"l[e[AAA-route->BBB],e[BBB-route->AAA]]"}] |
+      | m[{"r1":"l[e[AAA-route->BBB],e[BBB-route->AAA]]","r2":"l[e[AAA-route->BBB],e[BBB-route->CCC],e[CCC-route->AAA]]"}] |
+      | m[{"r1":"l[e[AAA-route->BBB],e[BBB-route->CCC]]","r2":"l[e[CCC-route->AAA]]"}] |
+      | m[{"r1":"l[e[AAA-route->BBB],e[BBB-route->CCC]]","r2":"l[e[CCC-route->AAA],e[AAA-route->BBB],e[BBB-route->AAA]]"}] |
+      | m[{"r1":"l[e[AAA-route->BBB],e[BBB-route->CCC],e[CCC-route->AAA]]","r2":"l[e[AAA-route->BBB],e[BBB-route->AAA]]"}] |
+      | m[{"r1":"l[e[AAA-route->BBB],e[BBB-route->CCC],e[CCC-route->AAA]]","r2":"l[e[AAA-route->BBB],e[BBB-route->CCC],e[CCC-route->AAA]]"}] |
+
+  Scenario: g_match_airportXparallelRoute_1X_airportXroute_1X_cycle_selectXa_bX_byXnameX
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("airport").property("name", "AAA").as("a").
+        addV("airport").property("name", "BBB").as("b").
+        addV("airport").property("name", "CCC").as("c").
+        addE("route").from("a").to("b").
+        addE("route").from("b").to("a").
+        addE("route").from("b").to("a").
+        addE("route").from("b").to("c")
+      """
+    And the traversal of
+      """
+      g.match("MATCH (a:airport)-[:route]->{1}(b:airport), (b)-[:route]->{1}(a)").select("a","b").by("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | m[{"a":"AAA","b":"BBB"}] |
+      | m[{"a":"AAA","b":"BBB"}] |
+      | m[{"a":"BBB","b":"AAA"}] |
+      | m[{"a":"BBB","b":"AAA"}] |
+
+  Scenario: g_match_airportXrouteXrVar_1_3X_selfLoop_selectXrX
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("airport").property("name", "AAA").as("a").
+        addV("airport").property("name", "BBB").as("b").
+        addV("airport").property("name", "CCC").as("c").
+        addV("airport").property("name", "DDD").as("d").
+        addE("route").from("a").to("b").
+        addE("route").from("b").to("a").
+        addE("route").from("b").to("c").
+        addE("route").from("c").to("a").
+        addE("route").from("d").to("d")
+      """
+    And the traversal of
+      """
+      g.match("MATCH (a:airport)-[r:route]->{1,3}(a)").select("r")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | l[e[DDD-route->DDD]] |
+      | l[e[AAA-route->BBB],e[BBB-route->AAA]] |
+      | l[e[BBB-route->AAA],e[AAA-route->BBB]] |
+      | l[e[AAA-route->BBB],e[BBB-route->CCC],e[CCC-route->AAA]] |
+      | l[e[BBB-route->CCC],e[CCC-route->AAA],e[AAA-route->BBB]] |
+      | l[e[CCC-route->AAA],e[AAA-route->BBB],e[BBB-route->CCC]] |
+
+  Scenario: g_match_airportXrouteXrVar_1_3X_triangle_selectXa_b_c_rX_byXnameX_byXnameX_byXnameX_by
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("airport").property("name", "AAA").as("a").
+        addV("airport").property("name", "BBB").as("b").
+        addV("airport").property("name", "CCC").as("c").
+        addV("airport").property("name", "DDD").as("d").
+        addE("route").from("a").to("b").
+        addE("route").from("b").to("c").
+        addE("route").from("c").to("a").
+        addE("route").from("b").to("d").
+        addE("route").from("d").to("c")
+      """
+    And the traversal of
+      """
+      g.match("MATCH (a:airport)-[:route]->(b:airport)-[r:route]->{1,3}(c:airport)-[:route]->(a)").select("a","b","c","r").by("name").by("name").by("name").by()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | m[{"a":"AAA","b":"BBB","c":"CCC","r":"l[e[BBB-route->CCC]]"}] |
+      | m[{"a":"AAA","b":"BBB","c":"CCC","r":"l[e[BBB-route->DDD],e[DDD-route->CCC]]"}] |
+      | m[{"a":"BBB","b":"CCC","c":"AAA","r":"l[e[CCC-route->AAA]]"}] |
+      | m[{"a":"BBB","b":"DDD","c":"AAA","r":"l[e[DDD-route->CCC],e[CCC-route->AAA]]"}] |
+      | m[{"a":"CCC","b":"AAA","c":"BBB","r":"l[e[AAA-route->BBB]]"}] |
+      | m[{"a":"CCC","b":"AAA","c":"DDD","r":"l[e[AAA-route->BBB],e[BBB-route->DDD]]"}] |
+      | m[{"a":"DDD","b":"CCC","c":"BBB","r":"l[e[CCC-route->AAA],e[AAA-route->BBB]]"}] |
+
+  Scenario: g_match_airportXundirectedRouteXrVarX_selfLoop_selectXa_r_bX_byXnameX_by_byXnameX
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("airport").property("name", "AAA").as("a").
+        addV("airport").property("name", "DDD").as("d").
+        addE("route").from("a").to("d").
+        addE("route").from("d").to("d")
+      """
+    And the traversal of
+      """
+      g.match("MATCH (a:airport)-[r:route]-(b:airport)").select("a","r","b").by("name").by().by("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | m[{"a":"AAA","r":"e[AAA-route->DDD]","b":"DDD"}] |
+      | m[{"a":"DDD","r":"e[AAA-route->DDD]","b":"AAA"}] |
+      | m[{"a":"DDD","r":"e[DDD-route->DDD]","b":"DDD"}] |
+
+  Scenario: g_match_airportXundirectedRouteXrVar_1_2X_selfLoop_selectXa_b_rX_byXnameX_byXnameX_by
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("airport").property("name", "AAA").as("a").
+        addV("airport").property("name", "DDD").as("d").
+        addE("route").from("a").to("d").
+        addE("route").from("d").to("d")
+      """
+    And the traversal of
+      """
+      g.match("MATCH (a:airport)-[r:route]-{1,2}(b:airport)").select("a","b","r").by("name").by("name").by()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | m[{"a":"AAA","b":"DDD","r":"l[e[AAA-route->DDD]]"}] |
+      | m[{"a":"AAA","b":"DDD","r":"l[e[AAA-route->DDD],e[DDD-route->DDD]]"}] |
+      | m[{"a":"DDD","b":"AAA","r":"l[e[AAA-route->DDD]]"}] |
+      | m[{"a":"DDD","b":"DDD","r":"l[e[DDD-route->DDD]]"}] |
+      | m[{"a":"DDD","b":"AAA","r":"l[e[DDD-route->DDD],e[AAA-route->DDD]]"}] |
+
+  Scenario: g_match_personXknowsXrVar_1_2X_personXcreatedXrVarX_software_selectXrX
+    Given the modern graph
+    And the traversal of
+      """
+      g.match("MATCH (a:person)-[r:knows]->{1,2}(b:person), (b)-[r:created]->(s:software)").select("r")
+      """
+    When iterated to list
+    Then the traversal will raise an error with message containing text of "a quantified edge variable cannot be reused"
+
+  Scenario: g_match_personXknows_1_2147483647X_person_selectXa_bX_byXnameX
+    Given the modern graph
+    And the traversal of
+      """
+      g.match("MATCH (a:person)-[:knows]->{1,2147483647}(b:person)").select("a","b").by("name")
+      """
+    When iterated to list
+    Then the traversal will raise an error with message containing text of "exceeds the maximum supported value"

@@ -795,9 +795,83 @@ public class AcmeGraph implements Graph {
 
 The contract for a `GqlExecutor` implementation is: for each seed vertex matching the plan's seed label and
 predicates, extend through each `ExtensionStep` in an order that keeps every step's anchor variable bound
-before that step executes, and emit one `Element[]` per complete match. Each array's indices must match
-`GqlMatchPlan.getVariables()`, with the seed variable at index 0. See `DefaultGqlExecutor` for a reference
-implementation.
+before that step executes, and emit one `GqlRow` per complete match. A step's target variable may already be
+bound when the step runs. The step must then be joined on that binding, so only edges or walks that end at the
+bound vertex produce rows. This applies equally to a quantified step that closes a pattern cycle or loops back to
+its own node. An undirected step, and each hop of an undirected walk, treats a self-loop in the data as a single
+candidate edge, however `Vertex.edges(Direction.BOTH)` reports it. TinkerGraph's `edges(Direction.BOTH)` reports a
+self-loop twice, once as an out-edge and once as an in-edge, and `DefaultGqlExecutor` skips the repeat. An executor
+that compiles an undirected step to Gremlin's `bothE()` must remove the repeat itself, because `bothE()` reports a
+self-loop once for each of its ends. Results are returned lazily as an `Iterator<GqlRow>`. An executor must honor
+thread interruption by throwing `TraversalInterruptedException`, so that a traversal timeout can stop a long-running
+match. See `DefaultGqlExecutor` for a reference implementation.
+
+If the returned iterator holds provider resources, such as open cursors or edge iterators, the executor returns a
+`CloseableIterator` that releases them on `close()`. `GqlMatchStep` closes the row iterator when it moves on to the
+next incoming traverser, when the traversal is reset and when the traversal is closed, including when it finishes
+early because of a downstream `limit()`. A traversal closes itself when it is exhausted, but a caller that stops
+pulling results early, as with `limit(1).next()`, keeps the iterators open until it closes the traversal. A `match()`
+nested in a child traversal is not closed by the parent traversal's `close()`, and like `GraphStep` it relies on its
+parent step resetting the child traversal. `DefaultGqlExecutor` returns a `CloseableIterator` that closes every
+iterator it opens from `Graph.vertices()`, `Graph.Index.queryVertexIndex()` and `Vertex.edges()`.
+
+An `ExtensionStep` for which `isQuantified()` returns `true` comes from a quantified relationship such as
+`(a)-[r:knows]->{1,3}(b)`. A quantified step has the same anchor, edge label, direction and target as a plain step,
+so an executor that ignores `isQuantified()` silently runs it as a single hop. An executor that does not support
+quantified relationships must throw an exception, such as `UnsupportedOperationException`, for a plan that contains
+a quantified step. An executor that supports them reads these accessors:
+
+* `isQuantified()` is `true` when the pattern edge carried a quantifier, including `{1}` and `{1,1}`. Every
+quantified step is matched as a walk, even when its bounds equal those of a plain edge.
+* `getMinHops()` and `getMaxHops()` give the inclusive range of walk lengths. `getMaxHops()` returns
+`QueryEdge.UNBOUNDED` for the open-ended forms `{m,}` and `+`.
+* `isEdgeVariableGroup()` is `true` when the step's edge variable binds a `List<Edge>` group rather than a scalar,
+which is the case exactly when the step is quantified and its edge is named.
+* `isAnchoredAtPatternTarget()` is `true` when the step's anchor is the pattern edge's right-hand node, so the walk
+runs from right to left.
+
+The walk follows these rules:
+
+* An edge is never traversed twice within the same walk, but vertices may repeat through distinct edges, such as
+parallel edges, triangles and self-loops. Because edges cannot repeat, an unbounded walk always ends on a finite
+graph.
+* Each distinct walk produces its own row, so the same endpoints can appear in several rows. That holds even for
+`{1}` over parallel edges and for a walk that ends at an already-bound target.
+* Each hop of an undirected walk treats a self-loop in the data as a single candidate edge, as described above for
+undirected steps.
+* A walk is emitted at every length from `getMinHops()` to `getMaxHops()`, and continues to longer lengths whether
+or not it was emitted at a shorter one.
+* The edge label and `getEdgePredicates()` apply to every edge of the walk.
+* The target label and `getTargetPredicates()` apply only to the vertex at which the walk ends, not to the
+intermediate vertices.
+* The group list holds the walk's edges in pattern order, from left to right. When `isAnchoredAtPatternTarget()` is
+`true` the walk runs right to left, so the edges are listed in reverse of the order in which the walk traverses them.
+
+A `GqlRow` is an immutable value addressed by variable index. Each index matches a position in
+`GqlMatchPlan.getVariables()`, with the seed variable at index 0, and `GqlMatchPlan.getIndex(String)` resolves
+a variable name to its index. Each index holds at most one kind of binding. A scalar binding is a single
+`Element`, used for node variables and non-quantified edge variables. A group binding is an ordered
+`List<Edge>`, used for the edge variable of a quantified relationship such as `(a)-[r:knows]->{1,3}(b)`. The
+list holds the edges of the walk in pattern order, from left to right in the `MATCH` pattern regardless of which
+endpoint the walk started from, and it is a list even when the walk has a single edge. An
+index with neither binding is unbound and is omitted from the traversal result.
+
+An executor builds a row with `GqlRow.of(Element[] scalars, Map<Integer, List<Edge>> groups)`. The `scalars`
+array is sized to `GqlMatchPlan.getVariableCount()` and holds the scalar bindings, with `null` in every slot
+that is unbound or holds a group. The `groups` map holds the group bindings by variable index and is empty for
+a match with no quantified relationships. The factory copies both arguments, so an executor may reuse and
+mutate its own working array and lists after the call. It rejects an index outside the row, an index bound as both
+a scalar and a group, and an empty group list. `GqlRow.getScalar(int)`, `GqlRow.getGroup(int)` and `GqlRow.isGroup(int)`
+read the bindings back. Rows compare by value. The match step rejects a row whose `size()` differs from
+`GqlMatchPlan.getVariableCount()` with an `IllegalStateException`.
+
+[source,java]
+----
+Element[] scalars = new Element[plan.getVariableCount()];
+scalars[plan.getIndex("a")] = startVertex;
+scalars[plan.getIndex("b")] = endVertex;
+GqlRow row = GqlRow.of(scalars, Map.of(plan.getIndex("r"), List.of(firstEdge, secondEdge)));
+----
 
 NOTE: Replacing only the *planner* is rarely worthwhile. Producing a valid `GqlMatchPlan` requires
       constructing `ExtensionStep` objects, assigning variable index maps, and satisfying all other
