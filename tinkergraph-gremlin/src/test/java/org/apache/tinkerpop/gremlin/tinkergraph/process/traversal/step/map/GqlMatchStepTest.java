@@ -1057,6 +1057,24 @@ public class GqlMatchStepTest {
                 .sorted(Comparator.comparing(Object::toString)).collect(Collectors.toList()));
     }
 
+    @Test(timeout = 10000)
+    @SuppressWarnings("unchecked")
+    public void testUndirectedMatchSurfacesDataSelfLoopOnce() {
+        // An undirected edge pattern binds a self-loop once, as a plain step and as a walk, even
+        // though TinkerGraph's bothE() reports it twice.
+        final Vertex a = graph.addVertex("person");
+        final Edge loop = a.addEdge("knows", a);
+        assertEquals(2, g.V(a).bothE("knows").count().next().intValue());
+
+        final List<Map<String, Object>> plain = (List<Map<String, Object>>) (List<?>) g.<Integer>inject(1)
+                .match("MATCH (a:person)-[r:knows]-(b:person)").select("a", "r", "b").toList();
+        assertEquals(List.of(Map.of("a", a, "r", loop, "b", a)), plain);
+
+        final List<Map<String, Object>> walk = (List<Map<String, Object>>) (List<?>) g.<Integer>inject(1)
+                .match("MATCH (a:person)-[r:knows]-{1,2}(a)").select("a", "r").toList();
+        assertEquals(List.of(List.of(a, List.of(loop))), aAndR(walk));
+    }
+
     // -------------------------------------------------------------------------
     // Closing the executor's provider iterators
     // -------------------------------------------------------------------------

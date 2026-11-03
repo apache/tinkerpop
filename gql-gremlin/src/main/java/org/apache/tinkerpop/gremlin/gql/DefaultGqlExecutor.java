@@ -675,10 +675,65 @@ public final class DefaultGqlExecutor implements GqlExecutor {
     // Candidate edges and target checks shared by plain steps and walks
     // -------------------------------------------------------------------------
 
+    /**
+     * Returns the provider's candidate edges for a step from {@code from}. For an undirected
+     * ({@link Direction#BOTH}) step the provider's iterator is wrapped in a
+     * {@link SelfLoopOnceIterator}, so a self-loop edge is a candidate once however the provider's
+     * {@link Vertex#edges} reports it: an undirected GQL edge pattern binds a self-loop once, while
+     * a non-loop edge still binds once from each of its ends.
+     */
     private static Iterator<Edge> candidateEdges(final Vertex from, final ExtensionStep step) {
-        return step.getEdgeLabel() != null
+        final Iterator<Edge> edges = step.getEdgeLabel() != null
                 ? from.edges(step.getDirection(), step.getEdgeLabel())
                 : from.edges(step.getDirection());
+        return step.getDirection() == Direction.BOTH ? new SelfLoopOnceIterator(edges) : edges;
+    }
+
+    /**
+     * Passes a provider's {@link Direction#BOTH} edge iterator through unchanged, except that a
+     * self-loop edge, one whose out-vertex is its in-vertex, is returned only the first time it
+     * appears. A provider may report a self-loop once as an out-edge and once as an in-edge, as
+     * TinkerGraph does; the second report is skipped. Edges that are not self-loops, including
+     * parallel edges, are never skipped, and a provider that reports a self-loop once loses
+     * nothing. Only self-loops are tracked, per iterator and by {@link Edge#equals}. Iteration is
+     * lazy, with a one-edge look-ahead, and {@link #close()} closes the provider's iterator.
+     */
+    private static final class SelfLoopOnceIterator implements CloseableIterator<Edge> {
+        private final Iterator<Edge> source;
+        private Set<Edge> seenSelfLoops;
+        private Edge next;
+
+        private SelfLoopOnceIterator(final Iterator<Edge> source) {
+            this.source = source;
+        }
+
+        @Override
+        public boolean hasNext() {
+            if (next != null) return true;
+            while (source.hasNext()) {
+                final Edge edge = source.next();
+                if (edge.outVertex().equals(edge.inVertex())) {
+                    if (seenSelfLoops == null) seenSelfLoops = new HashSet<>();
+                    if (!seenSelfLoops.add(edge)) continue;
+                }
+                next = edge;
+                return true;
+            }
+            return false;
+        }
+
+        @Override
+        public Edge next() {
+            if (!hasNext()) throw new NoSuchElementException();
+            final Edge result = next;
+            next = null;
+            return result;
+        }
+
+        @Override
+        public void close() {
+            CloseableIterator.closeIterator(source);
+        }
     }
 
     /** Whether {@code target} satisfies the step's target label and target property predicates. */

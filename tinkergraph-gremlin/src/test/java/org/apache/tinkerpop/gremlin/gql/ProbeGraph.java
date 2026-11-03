@@ -18,11 +18,13 @@
  */
 package org.apache.tinkerpop.gremlin.gql;
 
+import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.CloseableIterator;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
@@ -45,8 +47,12 @@ import static org.junit.Assert.assertEquals;
  * {@link Graph.Index#queryVertexIndex} and {@link Vertex#edges}, how many of them were closed,
  * how many {@code close()} calls they received, and how many elements were read from them. It can
  * be told to report unknown ({@code Long.MAX_VALUE}) label counts, to scan vertices in id order,
- * to fail a vertex's next {@code edges()} call, to fail a vertex scan part way, or to park the
- * calling thread in a chosen {@code edges()} call until it is interrupted.
+ * to fail a vertex's next {@code edges()} call, to fail a vertex scan part way, to park the
+ * calling thread in a chosen {@code edges()} call until it is interrupted, to report a self-loop
+ * once rather than twice from {@code edges(Direction.BOTH)}, to report a self-loop's two
+ * {@code edges(Direction.BOTH)} incidences with the vertex's other edges between them, or to fail a
+ * vertex's next {@code edges(Direction.BOTH)} iterator from {@code next()} once it has reported
+ * every edge.
  *
  * <p>Vertices and edges reached through it are proxies of the real elements, so that the
  * executor's later {@code edges()} calls also come through the probe. They are equal to, and
@@ -65,8 +71,11 @@ public final class ProbeGraph {
     private final AtomicInteger indexQueries = new AtomicInteger();
     private final Set<String> unknownVertexLabels = new HashSet<>();
     private final Set<Object> failNextEdgesFor = new HashSet<>();
+    private final Set<Object> failBothEdgesAtEndFor = new HashSet<>();
     private boolean unknownEdgeCounts;
     private boolean verticesInIdOrder;
+    private boolean selfLoopsReportedOnce;
+    private boolean selfLoopsReportedAroundOtherEdges;
     private int failVertexScanAfter = -1;
     private int parkAtEdgesCall = -1;
     private CountDownLatch parked;
@@ -91,6 +100,36 @@ public final class ProbeGraph {
     /** Makes a full {@code vertices()} scan return the vertices in ascending id order, so seed order is fixed. */
     public ProbeGraph withVerticesInIdOrder() {
         verticesInIdOrder = true;
+        return this;
+    }
+
+    /**
+     * Makes {@code Vertex.edges(Direction.BOTH, ...)} report each self-loop once, as the vertex's
+     * out-edges followed by its in-edges that are not self-loops, rather than once as an out-edge
+     * and once as an in-edge as the base graph may.
+     */
+    public ProbeGraph withSelfLoopsReportedOnce() {
+        selfLoopsReportedOnce = true;
+        return this;
+    }
+
+    /**
+     * Makes {@code Vertex.edges(Direction.BOTH, ...)} report the vertex's self-loops, then its
+     * other edges, then its self-loops again, so each self-loop is reported twice with the other
+     * edges, when there are any, between its two reports rather than next to each other.
+     */
+    public ProbeGraph withSelfLoopsReportedAroundOtherEdges() {
+        selfLoopsReportedAroundOtherEdges = true;
+        return this;
+    }
+
+    /**
+     * Makes the next {@code edges(Direction.BOTH, ...)} call on {@code vertex} return an iterator
+     * that, once it has reported every edge, still answers {@code true} from {@code hasNext()} and
+     * then throws {@link InjectedFailure} from {@code next()}, once.
+     */
+    public ProbeGraph failNextBothEdgesAtEnd(final Vertex vertex) {
+        failBothEdgesAtEndFor.add(vertex.id());
         return this;
     }
 
@@ -223,6 +262,30 @@ public final class ProbeGraph {
                         if (method.getName().equals("edges")) {
                             if (failNextEdgesFor.remove(v.id())) throw new InjectedFailure("injected edges() failure for vertex " + v.id());
                             if (edgesCalls.incrementAndGet() == parkAtEdgesCall) parkUntilInterrupted();
+                            if (args[0] == Direction.BOTH) {
+                                final String[] labels = (String[]) args[1];
+                                Iterator<Edge> both;
+                                if (selfLoopsReportedOnce) {
+                                    final Iterator<Edge> in = IteratorUtils.filter(v.edges(Direction.IN, labels),
+                                            e -> !isSelfLoop(e));
+                                    both = IteratorUtils.concat(v.edges(Direction.OUT, labels), in);
+                                } else if (selfLoopsReportedAroundOtherEdges) {
+                                    final List<Edge> loops = new ArrayList<>();
+                                    v.edges(Direction.OUT, labels).forEachRemaining(e -> {
+                                        if (isSelfLoop(e)) loops.add(e);
+                                    });
+                                    final List<Edge> reported = new ArrayList<>(loops);
+                                    v.edges(Direction.BOTH, labels).forEachRemaining(e -> {
+                                        if (!isSelfLoop(e)) reported.add(e);
+                                    });
+                                    reported.addAll(loops);
+                                    both = reported.iterator();
+                                } else {
+                                    both = (Iterator<Edge>) forward(v, method, args);
+                                }
+                                if (failBothEdgesAtEndFor.remove(v.id())) both = new FailingAtEnd<>(both);
+                                return counting(both, ProbeGraph.this::wrapEdge);
+                            }
                             return counting((Iterator<Edge>) forward(v, method, args), ProbeGraph.this::wrapEdge);
                         }
                         if (method.getName().equals("vertices"))
@@ -245,6 +308,10 @@ public final class ProbeGraph {
                         return result;
                     }
                 });
+    }
+
+    private static boolean isSelfLoop(final Edge e) {
+        return e.outVertex().equals(e.inVertex());
     }
 
     private void parkUntilInterrupted() {
@@ -339,6 +406,29 @@ public final class ProbeGraph {
         @Override
         public T next() {
             if (remaining-- == 0) throw new InjectedFailure("injected vertices() scan failure");
+            return it.next();
+        }
+    }
+
+    /**
+     * Returns every element, then answers {@code true} from {@code hasNext()} and throws
+     * {@link InjectedFailure} from {@code next()}.
+     */
+    private static final class FailingAtEnd<T> implements Iterator<T> {
+        private final Iterator<T> it;
+
+        FailingAtEnd(final Iterator<T> it) {
+            this.it = it;
+        }
+
+        @Override
+        public boolean hasNext() {
+            return true;
+        }
+
+        @Override
+        public T next() {
+            if (!it.hasNext()) throw new InjectedFailure("injected edges(BOTH) failure after the last edge");
             return it.next();
         }
     }
