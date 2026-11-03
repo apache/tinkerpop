@@ -351,7 +351,7 @@ public class TinkerMemoryGraphTest {
 
     @Test
     public void shouldReplaceNullValueInVertexIndex() throws Exception {
-        try (final TinkerGraph g = openWithNullPropertyValues()) {
+        try (final TinkerMemoryGraph g = openWithNullPropertyValues()) {
             g.createIndex("name", Vertex.class);
             final Vertex v = g.addVertex();
             v.property("name", null);
@@ -366,7 +366,7 @@ public class TinkerMemoryGraphTest {
 
     @Test
     public void shouldRemoveNullValueFromVertexIndex() throws Exception {
-        try (final TinkerGraph g = openWithNullPropertyValues()) {
+        try (final TinkerMemoryGraph g = openWithNullPropertyValues()) {
             g.createIndex("name", Vertex.class);
             final Vertex v = g.addVertex();
             v.property("name", null);
@@ -379,7 +379,7 @@ public class TinkerMemoryGraphTest {
 
     @Test
     public void shouldReplaceNullValueInEdgeIndex() throws Exception {
-        try (final TinkerGraph g = openWithNullPropertyValues()) {
+        try (final TinkerMemoryGraph g = openWithNullPropertyValues()) {
             g.createIndex("oid", Edge.class);
             final Vertex v = g.addVertex();
             final Edge e = v.addEdge("friend", v);
@@ -395,7 +395,7 @@ public class TinkerMemoryGraphTest {
 
     @Test
     public void shouldRemoveNullValueFromEdgeIndex() throws Exception {
-        try (final TinkerGraph g = openWithNullPropertyValues()) {
+        try (final TinkerMemoryGraph g = openWithNullPropertyValues()) {
             g.createIndex("oid", Edge.class);
             final Vertex v = g.addVertex();
             final Edge e = v.addEdge("friend", v);
@@ -407,10 +407,10 @@ public class TinkerMemoryGraphTest {
         }
     }
 
-    private static TinkerGraph openWithNullPropertyValues() {
+    private static TinkerMemoryGraph openWithNullPropertyValues() {
         final Configuration conf = new BaseConfiguration();
         conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_ALLOW_NULL_PROPERTY_VALUES, true);
-        return TinkerGraph.open(conf);
+        return TinkerMemoryGraph.open(conf);
     }
 
     private static void assertNullNotIndexed(final AbstractTinkerIndex<?> index, final String key) {
