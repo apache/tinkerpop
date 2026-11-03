@@ -92,7 +92,7 @@ final class TinkerIndex<T extends Element> extends AbstractTinkerIndex<T> {
             if (null != objects) {
                 objects.remove(element);
                 if (objects.size() == 0) {
-                    keyMap.remove(value);
+                    keyMap.remove(indexable(value));
                 }
             }
         }

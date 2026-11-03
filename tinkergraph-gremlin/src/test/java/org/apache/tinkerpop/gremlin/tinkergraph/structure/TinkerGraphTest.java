@@ -323,6 +323,75 @@ public class TinkerGraphTest {
     }
 
     @Test
+    public void shouldReplaceNullValueInVertexIndex() throws Exception {
+        try (final TinkerGraph g = openWithNullPropertyValues()) {
+            g.createIndex("name", Vertex.class);
+            final Vertex v = g.addVertex();
+            v.property("name", null);
+            assertEquals(1L, (long) g.traversal().V().has("name", (Object) null).count().next());
+
+            v.property("name", "marko");
+            assertEquals(0L, (long) g.traversal().V().has("name", (Object) null).count().next());
+            assertEquals(1L, (long) g.traversal().V().has("name", "marko").count().next());
+            assertNullNotIndexed(g.vertexIndex, "name");
+        }
+    }
+
+    @Test
+    public void shouldRemoveNullValueFromVertexIndex() throws Exception {
+        try (final TinkerGraph g = openWithNullPropertyValues()) {
+            g.createIndex("name", Vertex.class);
+            final Vertex v = g.addVertex();
+            v.property("name", null);
+
+            v.property("name").remove();
+            assertEquals(0L, (long) g.traversal().V().has("name", (Object) null).count().next());
+            assertNullNotIndexed(g.vertexIndex, "name");
+        }
+    }
+
+    @Test
+    public void shouldReplaceNullValueInEdgeIndex() throws Exception {
+        try (final TinkerGraph g = openWithNullPropertyValues()) {
+            g.createIndex("oid", Edge.class);
+            final Vertex v = g.addVertex();
+            final Edge e = v.addEdge("friend", v);
+            e.property("oid", null);
+            assertEquals(1L, (long) g.traversal().E().has("oid", (Object) null).count().next());
+
+            e.property("oid", "1");
+            assertEquals(0L, (long) g.traversal().E().has("oid", (Object) null).count().next());
+            assertEquals(1L, (long) g.traversal().E().has("oid", "1").count().next());
+            assertNullNotIndexed(g.edgeIndex, "oid");
+        }
+    }
+
+    @Test
+    public void shouldRemoveNullValueFromEdgeIndex() throws Exception {
+        try (final TinkerGraph g = openWithNullPropertyValues()) {
+            g.createIndex("oid", Edge.class);
+            final Vertex v = g.addVertex();
+            final Edge e = v.addEdge("friend", v);
+            e.property("oid", null);
+
+            e.property("oid").remove();
+            assertEquals(0L, (long) g.traversal().E().has("oid", (Object) null).count().next());
+            assertNullNotIndexed(g.edgeIndex, "oid");
+        }
+    }
+
+    private static TinkerGraph openWithNullPropertyValues() {
+        final Configuration conf = new BaseConfiguration();
+        conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_ALLOW_NULL_PROPERTY_VALUES, true);
+        return TinkerGraph.open(conf);
+    }
+
+    private static void assertNullNotIndexed(final AbstractTinkerIndex<?> index, final String key) {
+        assertThat(((TinkerIndex<?>) index).index.get(key).containsKey(AbstractTinkerIndex.IndexedNull.instance()),
+                is(false));
+    }
+
+    @Test
     public void shouldSerializeTinkerGraphToGryo() throws Exception {
         final TinkerGraph graph = TinkerFactory.createModern();
         try (final ByteArrayOutputStream out = new ByteArrayOutputStream()) {
