@@ -226,23 +226,34 @@ hold the `List<Edge>` that a quantified relationship variable binds to, so `GqlR
 type that carries both kinds of binding. `GqlRow.of(Element[] scalars, Map<Integer, List<Edge>> groups)` builds a
 row, while `getScalar(int)`, `getGroup(int)`, `isGroup(int)` and `size()` read it back, and rows compare by value.
 
-An executor that does not support quantified relationships migrates by wrapping each array it previously emitted:
+An executor that does not support quantified relationships migrates by wrapping each array it previously emitted
+in a `GqlRow`, and by throwing an exception, such as `UnsupportedOperationException`, for any plan with a step where
+`ExtensionStep.isQuantified()` is `true`:
 
 [source,java]
 ----
 // 4.0.0-beta.3
-return Collections.singletonList(scalars).iterator();
+public Iterator<Element[]> execute(GqlMatchPlan plan, Map<String, Object> params) {
+    // ... match the plan into scalars ...
+    return Collections.singletonList(scalars).iterator();
+}
 
 // 4.0.0
-return Collections.singletonList(GqlRow.of(scalars, Map.of())).iterator();
+public Iterator<GqlRow> execute(GqlMatchPlan plan, Map<String, Object> params) {
+    for (ExtensionStep step : plan.getSteps())
+        if (step.isQuantified())
+            throw new UnsupportedOperationException("Quantified relationships are not supported");
+    // ... match the plan into scalars ...
+    return Collections.singletonList(GqlRow.of(scalars, Map.of())).iterator();
+}
 ----
 
-To support quantified relationships, an executor places the walk's edges in the `groups` map as a non-empty
-`List<Edge>` in pattern order, keyed by the edge variable's index, and leaves that index `null` in the scalar array.
-Every row must have a `size()` equal to `GqlMatchPlan.getVariableCount()`, otherwise `GqlMatchStep` throws an
-`IllegalStateException`. Executors should also honor thread interruption by throwing
-`TraversalInterruptedException`, so that a traversal timeout can stop a long-running match. A custom executor is
-registered as before with `GqlDeclarativeMatchStrategy.create(planner, executor)`.
+Wrapping alone is not enough, because a quantified step carries the same anchor, edge label and target as a plain
+step, so an executor that ignores `isQuantified()` silently runs `(a)-[:knows]->{1,3}(b)` as a single hop. An executor
+that supports quantified relationships walks between the step's hop bounds and binds the edge variable to a group
+list in pattern order, from left to right, as described in the provider documentation. If the returned iterator holds
+provider resources, the executor should return a `CloseableIterator`, which `GqlMatchStep` closes when the traversal
+is closed, including when it finishes early because of a downstream `limit()`.
 
 See: link:https://tinkerpop.apache.org/docs/4.0.0/dev/provider/#tinkerpop-providers-tinkergql[Supporting Declarative Pattern Matching (TinkerGQL)]
 

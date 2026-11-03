@@ -24,6 +24,7 @@ import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.util.CloseableIterator;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -50,7 +51,8 @@ import java.util.Set;
  *       stack frame is either one pending plain step expansion or one hop of a quantified walk,
  *       and holds its candidate edge iterator plus what to undo on backtrack. Steps are selected
  *       from the remaining list using DAG eligibility (anchor variable already bound), with
- *       observed selectivity and then estimated cost as the tiebreakers.</li>
+ *       observed selectivity, then estimated cost, then plain before quantified as the
+ *       tiebreakers.</li>
  *   <li><strong>Lazy delivery</strong>: {@link #execute} returns an {@code Iterator} that runs the
  *       DFS only until the next complete match, so each {@code hasNext()}/{@code next()} pair
  *       does the work for one row and nothing is buffered. Stack depth is bounded by heap, not
@@ -90,11 +92,18 @@ public final class DefaultGqlExecutor implements GqlExecutor {
      * next match, so a consumer that stops early (for example under {@code limit(1)}) does not pay
      * for the rest of the search. Iteration throws {@link TraversalInterruptedException} if the
      * calling thread is interrupted.</p>
+     *
+     * <p>The returned iterator is a {@link CloseableIterator}. It closes the provider iterators it
+     * opens (from {@link Graph#vertices(Object...)}, {@link Graph.Index#queryVertexIndex} and
+     * {@link Vertex#edges}) once they are exhausted, when the search ends, and when it is itself
+     * closed, so a consumer that stops early should close it. Once an exception escapes
+     * {@code hasNext()} the search cannot be resumed, and every later call throws
+     * {@link IllegalStateException} with that exception as its cause.</p>
      */
     @Override
     public Iterator<GqlRow> execute(final GqlMatchPlan plan, final Map<String, Object> params) {
         if (plan.getSeedVariable() == null) {
-            return Collections.emptyIterator();
+            return CloseableIterator.empty();
         }
         return new MatchIterator(plan, params,
                 seedIterator(plan.getSeedLabel(), plan.getSeedPredicates(), params));
@@ -131,59 +140,63 @@ public final class DefaultGqlExecutor implements GqlExecutor {
             }
 
             if (bestPredicate != null && bestCount < Long.MAX_VALUE) {
-                final Iterator<Vertex> indexResults =
-                        graph.index().queryVertexIndex(bestPredicate.getKey(), bestValue);
-                return new Iterator<Vertex>() {
-                    private Vertex next = advance();
-
-                    private Vertex advance() {
-                        while (indexResults.hasNext()) {
-                            if (Thread.interrupted()) throw new TraversalInterruptedException();
-                            final Vertex v = indexResults.next();
-                            if (label != null && !label.equals(v.label())) continue;
-                            if (!matchesPredicates(v, predicates, params)) continue;
-                            return v;
-                        }
-                        return null;
-                    }
-
-                    @Override public boolean hasNext() { return next != null; }
-
-                    @Override
-                    public Vertex next() {
-                        final Vertex result = next;
-                        next = advance();
-                        return result;
-                    }
-                };
+                return new SeedIterator(graph.index().queryVertexIndex(bestPredicate.getKey(), bestValue),
+                        label, predicates, params);
             }
         }
 
         // Full scan fallback: filter by label and all predicates.
-        final Iterator<Vertex> all = graph.vertices();
-        return new Iterator<Vertex>() {
-            private Vertex next = advance();
+        return new SeedIterator(graph.vertices(), label, predicates, params);
+    }
 
-            private Vertex advance() {
-                while (all.hasNext()) {
-                    if (Thread.interrupted()) throw new TraversalInterruptedException();
-                    final Vertex v = all.next();
-                    if (label != null && !label.equals(v.label())) continue;
-                    if (!matchesPredicates(v, predicates, params)) continue;
-                    return v;
-                }
-                return null;
+    /**
+     * Filters a provider's vertex iterator by the seed label and predicates. The look-ahead is
+     * lazy: nothing is read from the provider until the first {@link #hasNext()}, which
+     * {@link MatchIterator} calls inside its own failure handling, so a provider, predicate or
+     * interrupt exception during seed iteration always closes the provider iterator rather than
+     * escaping from {@link #execute} with it open.
+     */
+    private static final class SeedIterator implements CloseableIterator<Vertex> {
+        private final Iterator<Vertex> source;
+        private final String label;
+        private final List<PropertyPredicate> predicates;
+        private final Map<String, Object> params;
+        private Vertex next;
+
+        private SeedIterator(final Iterator<Vertex> source, final String label,
+                             final List<PropertyPredicate> predicates, final Map<String, Object> params) {
+            this.source = source;
+            this.label = label;
+            this.predicates = predicates;
+            this.params = params;
+        }
+
+        @Override
+        public boolean hasNext() {
+            if (next != null) return true;
+            while (source.hasNext()) {
+                if (Thread.interrupted()) throw new TraversalInterruptedException();
+                final Vertex v = source.next();
+                if (label != null && !label.equals(v.label())) continue;
+                if (!matchesPredicates(v, predicates, params)) continue;
+                next = v;
+                return true;
             }
+            return false;
+        }
 
-            @Override public boolean hasNext() { return next != null; }
+        @Override
+        public Vertex next() {
+            if (!hasNext()) throw new NoSuchElementException();
+            final Vertex result = next;
+            next = null;
+            return result;
+        }
 
-            @Override
-            public Vertex next() {
-                final Vertex result = next;
-                next = advance();
-                return result;
-            }
-        };
+        @Override
+        public void close() {
+            CloseableIterator.closeIterator(source);
+        }
     }
 
     // -------------------------------------------------------------------------
@@ -196,8 +209,18 @@ public final class DefaultGqlExecutor implements GqlExecutor {
      * edge-variable bindings in a side map, and the search position lives in {@link #stack}.
      * {@link #hasNext()} advances the top frame until a complete match is snapshotted into
      * {@link #pending}, then returns, leaving the stack positioned to resume from that match.
+     *
+     * <p>Every provider iterator the search opens, the seed iterator and each frame's candidate
+     * edges, is closed with {@link CloseableIterator#closeIterator(Iterator)}: a frame's when it is
+     * popped, and all that remain open when the search is exhausted, when {@link #close()} is
+     * called, or when an exception escapes {@link #hasNext()}.</p>
+     *
+     * <p>An exception escaping {@link #hasNext()}, whether from the provider, a predicate or an
+     * interrupt, ends the search: the partial match it was building cannot be resumed without
+     * dropping or duplicating rows, so every later {@link #hasNext()} or {@link #next()} throws
+     * {@link IllegalStateException} with that exception as its cause rather than continuing.</p>
      */
-    private final class MatchIterator implements Iterator<GqlRow> {
+    private final class MatchIterator implements CloseableIterator<GqlRow> {
         private final GqlMatchPlan plan;
         private final Map<String, Object> params;
         private final Iterator<Vertex> seeds;
@@ -205,6 +228,8 @@ public final class DefaultGqlExecutor implements GqlExecutor {
         private MatchState state;
         private List<ExtensionStep> remaining;
         private GqlRow pending;
+        private boolean closed;
+        private RuntimeException failure;
 
         private MatchIterator(final GqlMatchPlan plan, final Map<String, Object> params,
                               final Iterator<Vertex> seeds) {
@@ -215,23 +240,41 @@ public final class DefaultGqlExecutor implements GqlExecutor {
 
         @Override
         public boolean hasNext() {
-            while (pending == null) {
-                if (Thread.interrupted()) throw new TraversalInterruptedException();
-                if (stack.isEmpty()) {
-                    if (!seeds.hasNext()) return false;
-                    state = new MatchState(plan.getVariableCount());
-                    state.setScalar(plan.getSeedVariableIndex(), seeds.next());
-                    remaining = new ArrayList<>(plan.getSteps());
-                    extend();
-                } else {
-                    final Frame top = stack.peek();
-                    if (!top.advance()) {
-                        stack.pop();
-                        top.close();
+            if (pending != null) return true;
+            if (failure != null)
+                throw new IllegalStateException(
+                        "The match failed on an earlier call and cannot be resumed", failure);
+            if (closed) return false;
+            try {
+                while (pending == null) {
+                    if (Thread.interrupted()) throw new TraversalInterruptedException();
+                    if (stack.isEmpty()) {
+                        if (!seeds.hasNext()) {
+                            close();
+                            return false;
+                        }
+                        state = new MatchState(plan.getVariableCount());
+                        state.setScalar(plan.getSeedVariableIndex(), seeds.next());
+                        remaining = new ArrayList<>(plan.getSteps());
+                        extend();
+                    } else {
+                        final Frame top = stack.peek();
+                        if (!top.advance()) {
+                            stack.pop();
+                            top.close();
+                        }
                     }
                 }
+                return true;
+            } catch (final RuntimeException e) {
+                failure = e;
+                try {
+                    close();
+                } catch (final RuntimeException suppressed) {
+                    e.addSuppressed(suppressed);
+                }
+                throw e;
             }
-            return true;
         }
 
         @Override
@@ -243,11 +286,58 @@ public final class DefaultGqlExecutor implements GqlExecutor {
         }
 
         /**
+         * Stops the search and closes every provider iterator it still holds open. Idempotent;
+         * after it, {@link #hasNext()} returns {@code false} unless the search had already failed.
+         * If closing an iterator throws, the rest are still closed and the first exception is
+         * rethrown.
+         *
+         * <p>{@link #hasNext()} also calls this when the seeds run out. A close failure there
+         * escapes {@link #hasNext()} like any other exception, so it is recorded as the search's
+         * failure even though every row had already been returned: later calls throw
+         * {@link IllegalStateException} rather than returning {@code false}.</p>
+         */
+        @Override
+        public void close() {
+            if (closed) return;
+            closed = true;
+            pending = null;
+            state = null;
+            remaining = null;
+            RuntimeException first = null;
+            while (!stack.isEmpty()) {
+                try {
+                    stack.pop().release();
+                } catch (final RuntimeException e) {
+                    if (first == null) first = e;
+                    else first.addSuppressed(e);
+                }
+            }
+            try {
+                CloseableIterator.closeIterator(seeds);
+            } catch (final RuntimeException e) {
+                if (first == null) first = e;
+                else first.addSuppressed(e);
+            }
+            if (first != null) throw first;
+        }
+
+        /**
          * Extends the current partial match by one step. With no steps remaining the match is
-         * complete and is snapshotted into {@link #pending}. Otherwise the best eligible step
-         * (anchor bound, lowest {@code selectivityRatio()}, then lowest {@code estimatedCost}) is
+         * complete and is snapshotted into {@link #pending}. Otherwise the best eligible step is
          * removed from {@link #remaining} and a frame that expands it is pushed. When no step is
          * eligible the partial match is unsatisfiable and nothing is pushed, which backtracks.
+         *
+         * <p>The best eligible step has its anchor bound and the lowest
+         * {@code selectivityRatio()}, then the lowest {@code estimatedCost}, then is plain rather
+         * than quantified. The last tiebreak keeps plain steps ahead of quantified ones when the
+         * costs cannot separate them, for example when the graph reports no label counts and every
+         * step costs {@code Long.MAX_VALUE}; the scan otherwise keeps the earliest step.</p>
+         *
+         * <p>The frame, which asks the provider for the anchor's candidate edges, is built before
+         * the step is removed from {@link #remaining}, so a provider exception leaves the step
+         * list and the stack as they were. This ordering is defensive: any exception escaping
+         * {@link #hasNext()} already ends the search for good, so nothing currently reads the
+         * step list or stack after such a failure, but they are never left inconsistent.</p>
          */
         private void extend() {
             if (remaining.isEmpty()) {
@@ -258,46 +348,69 @@ public final class DefaultGqlExecutor implements GqlExecutor {
             int chosenIdx = -1;
             double chosenRatio = Double.MAX_VALUE;
             long chosenCost = Long.MAX_VALUE;
+            boolean chosenQuantified = false;
             for (int i = 0; i < remaining.size(); i++) {
                 final ExtensionStep candidate = remaining.get(i);
                 if (state.getScalar(plan.getIndex(candidate.getAnchorVariable())) == null) continue;
                 final double ratio = candidate.selectivityRatio();
                 final long cost = candidate.getEstimatedCost();
+                final boolean quantified = candidate.isQuantified();
                 if (chosenIdx < 0
                         || ratio < chosenRatio
-                        || (ratio == chosenRatio && cost < chosenCost)) {
+                        || (ratio == chosenRatio && cost < chosenCost)
+                        || (ratio == chosenRatio && cost == chosenCost && chosenQuantified && !quantified)) {
                     chosenIdx = i;
                     chosenRatio = ratio;
                     chosenCost = cost;
+                    chosenQuantified = quantified;
                 }
             }
             if (chosenIdx < 0) return;
 
-            final ExtensionStep step = remaining.remove(chosenIdx);
-            step.recordAttempt();
+            final ExtensionStep step = remaining.get(chosenIdx);
             final Vertex anchor = (Vertex) state.getScalar(plan.getIndex(step.getAnchorVariable()));
             final int edgeIdx   = step.getEdgeVariable()   != null ? plan.getIndex(step.getEdgeVariable())   : -1;
             final int targetIdx = step.getTargetVariable() != null ? plan.getIndex(step.getTargetVariable()) : -1;
 
             // Every quantified step, including {1} and {1,1}, is expanded as a walk with per-walk
             // TRAIL edge-uniqueness and emit-at-each-depth. See WalkFrame.
-            if (step.isQuantified())
-                stack.push(new WalkFrame(new Walk(step, chosenIdx, edgeIdx, targetIdx), anchor, 0));
-            else
-                stack.push(new StepFrame(step, chosenIdx, anchor, edgeIdx, targetIdx));
+            final Frame frame = step.isQuantified()
+                    ? new WalkFrame(new Walk(step, chosenIdx, edgeIdx, targetIdx), anchor, 0)
+                    : new StepFrame(step, chosenIdx, anchor, edgeIdx, targetIdx);
+            remaining.remove(chosenIdx);
+            step.recordAttempt();
+            stack.push(frame);
         }
 
-        /** One level of the explicit DFS stack. */
+        /** One level of the explicit DFS stack, holding the provider iterator of its candidate edges. */
         private abstract class Frame {
+            protected final Iterator<Edge> candidates;
+
+            Frame(final Iterator<Edge> candidates) {
+                this.candidates = candidates;
+            }
+
             /**
-             * Undoes the bindings made for the previous candidate and binds the next one,
-             * calling {@link #extend()} for it. Returns {@code false} once the frame has no more
-             * candidates, with its own bindings already undone.
+             * Moves the frame to its next search position. It first undoes the bindings made for its
+             * previous position, then either binds the next candidate and calls {@link #extend()} for
+             * it, which pushes a frame for the next step or completes the match, or, for a
+             * {@link WalkFrame}, pushes a child frame that continues the walk one hop deeper. Either
+             * way the new top of the stack is advanced next. Returns {@code false} once the frame has
+             * no more positions, with its own bindings already undone.
              */
             abstract boolean advance();
 
-            /** Called once when the frame is popped, after {@link #advance()} returned {@code false}. */
+            /**
+             * Called once when the frame is popped, after {@link #advance()} returned
+             * {@code false}: restores the frame's step to {@link #remaining} if the frame owns it,
+             * then {@linkplain #release() releases} the candidate iterator.
+             */
             abstract void close();
+
+            /** Closes the provider's candidate edge iterator. */
+            final void release() {
+                CloseableIterator.closeIterator(candidates);
+            }
         }
 
         /** Expands a plain, single-hop step from its anchor, one candidate edge per advance. */
@@ -307,7 +420,6 @@ public final class DefaultGqlExecutor implements GqlExecutor {
             private final Vertex anchor;
             private final int edgeIdx;
             private final int targetIdx;
-            private final Iterator<Edge> candidates;
             private final Set<Vertex> seenAnonymousTargets;
             private boolean boundEdge;
             private boolean boundTarget;
@@ -315,12 +427,12 @@ public final class DefaultGqlExecutor implements GqlExecutor {
 
             StepFrame(final ExtensionStep step, final int stepIdx, final Vertex anchor,
                       final int edgeIdx, final int targetIdx) {
+                super(candidateEdges(anchor, step));
                 this.step = step;
                 this.stepIdx = stepIdx;
                 this.anchor = anchor;
                 this.edgeIdx = edgeIdx;
                 this.targetIdx = targetIdx;
-                this.candidates = candidateEdges(anchor, step);
                 this.seenAnonymousTargets = edgeIdx < 0 ? new HashSet<>() : null;
             }
 
@@ -381,6 +493,7 @@ public final class DefaultGqlExecutor implements GqlExecutor {
             @Override
             void close() {
                 remaining.add(stepIdx, step);
+                release();
             }
         }
 
@@ -434,7 +547,6 @@ public final class DefaultGqlExecutor implements GqlExecutor {
             private final Walk walk;
             private final Vertex current;
             private final int depth;
-            private final Iterator<Edge> candidates;
             private int phase = NEXT_EDGE;
             private Edge edge;
             private Vertex next;
@@ -443,10 +555,10 @@ public final class DefaultGqlExecutor implements GqlExecutor {
             private List<Edge> savedGroup;
 
             WalkFrame(final Walk walk, final Vertex current, final int depth) {
+                super(candidateEdges(current, walk.step));
                 this.walk = walk;
                 this.current = current;
                 this.depth = depth;
-                this.candidates = candidateEdges(current, walk.step);
             }
 
             @Override
@@ -554,6 +666,7 @@ public final class DefaultGqlExecutor implements GqlExecutor {
             @Override
             void close() {
                 if (depth == 0) remaining.add(walk.stepIdx, walk.step);
+                release();
             }
         }
     }

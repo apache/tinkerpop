@@ -39,6 +39,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Removed the per-request `userAgent` option from all drivers so the user agent is sent only as the `User-Agent` header controlled by `enableUserAgentOnConnect`.
 * Added variable-length path patterns to TinkerGQL using quantified relationships such as `(a)-[:knows]->{1,3}(b)`.
 * Changed `GqlExecutor.execute()` to return `Iterator<GqlRow>`, a new public row type, instead of `Iterator<Element[]>` so that a result row can carry the edge list bound to a quantified relationship variable. *(breaking)*
+* Fixed TinkerGQL `match()` to close the provider iterators it opens when the match is exhausted or reset, and when the traversal is closed, including when it finishes early because of a downstream `limit()`.
 
 [[release-4-0-0-beta-3]]
 === TinkerPop 4.0.0-beta.3 (July 20, 2026)

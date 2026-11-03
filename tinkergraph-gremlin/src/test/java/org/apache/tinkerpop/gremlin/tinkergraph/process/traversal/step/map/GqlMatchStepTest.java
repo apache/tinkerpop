@@ -18,12 +18,15 @@
  */
 package org.apache.tinkerpop.gremlin.tinkergraph.process.traversal.step.map;
 
+import org.apache.tinkerpop.gremlin.gql.DefaultGqlExecutor;
 import org.apache.tinkerpop.gremlin.gql.DefaultGqlPlanner;
 import org.apache.tinkerpop.gremlin.gql.GqlDeclarativeMatchStrategy;
 import org.apache.tinkerpop.gremlin.gql.GqlExecutor;
 import org.apache.tinkerpop.gremlin.gql.GqlMatchPlan;
 import org.apache.tinkerpop.gremlin.gql.GqlMatchStep;
+import org.apache.tinkerpop.gremlin.gql.GqlPlanner;
 import org.apache.tinkerpop.gremlin.gql.GqlRow;
+import org.apache.tinkerpop.gremlin.gql.ProbeGraph;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
@@ -31,9 +34,11 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSo
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.DeclarativeMatchStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalInterruptedException;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.util.CloseableIterator;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.junit.After;
@@ -47,6 +52,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 import static org.junit.Assert.*;
@@ -536,7 +545,7 @@ public class GqlMatchStepTest {
         return (List<Edge>) value;
     }
 
-    @Test
+    @Test(timeout = 10000)
     public void testQuantifiedGroupEdgeVariableSurfacesAsEdgeListInMapChannel() {
         // head -[knows]-> m1 -[knows]-> m2 -[knows]-> m3 ; {1,3} from head emits at each depth.
         final List<Edge> chain = buildKnowsChain(3); // e0, e1, e2
@@ -561,7 +570,7 @@ public class GqlMatchStepTest {
                 edgeLists.contains(List.of(chain.get(0), chain.get(1), chain.get(2))));
     }
 
-    @Test
+    @Test(timeout = 10000)
     public void testQuantifiedGroupEdgeVariableAgreesAcrossMapAndPathLabelChannels() {
         // Map channel: select("r") reads the map's "r" value.
         // Path-label channel: constant("x") replaces the current object, forcing select("r")
@@ -592,9 +601,10 @@ public class GqlMatchStepTest {
                 mapLists, pathLists);
     }
 
-    @Test
+    @Test(timeout = 10000)
     public void testQuantifiedScalarEndpointsRemainSingleVertices() {
-        buildKnowsChain(3);
+        final List<Edge> chain = buildKnowsChain(3);
+        final Vertex head = chain.get(0).outVertex();
 
         final List<Object> sValues = g.<Integer>inject(1)
                 .match(CHAIN_QUERY)
@@ -605,14 +615,13 @@ public class GqlMatchStepTest {
                 .<Object>select("d")
                 .toList();
 
-        assertEquals(3, sValues.size());
-        assertEquals(3, dValues.size());
-        // Endpoints are single vertices, never lists.
-        sValues.forEach(v -> assertTrue("s must be a single Vertex, not a list", v instanceof Vertex));
-        dValues.forEach(v -> assertTrue("d must be a single Vertex, not a list", v instanceof Vertex));
+        // Endpoints are single vertices, never lists. On a chain the walk emits depth 1, 2 and 3
+        // in that order.
+        assertEquals(List.of(head, head, head), sValues);
+        assertEquals(List.of(chain.get(0).inVertex(), chain.get(1).inVertex(), chain.get(2).inVertex()), dValues);
     }
 
-    @Test
+    @Test(timeout = 10000)
     public void testNonQuantifiedEdgeVariableRemainsScalar() {
         // A fully non-quantified query binds r to a single Edge, not a list.
         final Vertex a = graph.addVertex("person");
@@ -629,7 +638,7 @@ public class GqlMatchStepTest {
         assertFalse("non-quantified edge variable must not be a list", rValues.get(0) instanceof List);
     }
 
-    @Test
+    @Test(timeout = 10000)
     public void testQuantifiedMultiSelectReturnsScalarEndpointsAndListEdgeVariable() {
         final List<Edge> chain = buildKnowsChain(3);
 
@@ -640,23 +649,12 @@ public class GqlMatchStepTest {
                         .select("s", "r", "d")
                         .toList();
 
-        assertEquals(3, results.size());
-        for (final Map<String, Object> row : results) {
-            assertTrue("s is a single Vertex", row.get("s") instanceof Vertex);
-            assertTrue("d is a single Vertex", row.get("d") instanceof Vertex);
-            final List<Edge> edges = asEdgeList(row.get("r"));
-            assertFalse("r edge list must not be empty", edges.isEmpty());
-            // The walk starts at s and ends at d; consistency: first edge leaves s, last reaches d.
-            assertEquals("first edge must originate from s", row.get("s"), edges.get(0).outVertex());
-            assertEquals("last edge must arrive at d",
-                    row.get("d"), edges.get(edges.size() - 1).inVertex());
-        }
-
-        // Exactly one row reaches the deepest target with the full 3-edge list.
-        final long fullDepthRows = results.stream()
-                .filter(r -> asEdgeList(r.get("r")).size() == chain.size())
-                .count();
-        assertEquals(1, fullDepthRows);
+        // s and d are single vertices and r is the walk's edge list, one row per depth in order.
+        final Vertex head = chain.get(0).outVertex();
+        assertEquals(List.of(
+                Map.of("s", head, "r", List.of(chain.get(0)), "d", chain.get(0).inVertex()),
+                Map.of("s", head, "r", List.of(chain.get(0), chain.get(1)), "d", chain.get(1).inVertex()),
+                Map.of("s", head, "r", chain, "d", chain.get(2).inVertex())), results);
     }
 
     // -------------------------------------------------------------------------
@@ -672,7 +670,7 @@ public class GqlMatchStepTest {
     private static final String EXACT1_QUERY =
             "MATCH (s:person {name: 'head'})-[r:knows]->{1,1}(d:person)";
 
-    @Test
+    @Test(timeout = 10000)
     public void testExactlyOneHopQuantifierSurfacesSingletonEdgeListInBothChannels() {
         // {1,1}: the edge carries a quantifier, so it runs as a walk of length one and its
         // variable is a group variable, so it must be a List, not an Edge.
@@ -699,7 +697,7 @@ public class GqlMatchStepTest {
         assertEquals("map and path-label channels must agree", mapList, pathList);
     }
 
-    @Test
+    @Test(timeout = 10000)
     public void testRangeQuantifierMatchingSingleHopSurfacesSingletonEdgeListInBothChannels() {
         // {1,3} against a graph offering only one hop => exactly one depth-1 row. The group
         // variable must be a one-element List<Edge>, consistent with the {1,1} case and with
@@ -727,7 +725,7 @@ public class GqlMatchStepTest {
         assertEquals(mapList, pathList);
     }
 
-    @Test
+    @Test(timeout = 10000)
     public void testDepth1RowOfLongerChainIsSingletonEdgeListInPathChannel() {
         // The depth-1 emission of a {1,3} walk over a 3-hop chain must also be a one-element
         // List in the path channel (regression guard for the length-dependent-type bug).
@@ -800,7 +798,7 @@ public class GqlMatchStepTest {
      * emits one fixed {@link GqlRow} built with the public factory. The step must surface its
      * scalar and group bindings by variable name.
      */
-    @Test
+    @Test(timeout = 10000)
     public void shouldSurfaceRowsFromProviderImplementedExecutor() {
         final List<Edge> chain = buildKnowsChain(2);
         final Vertex head = chain.get(0).outVertex();
@@ -839,7 +837,7 @@ public class GqlMatchStepTest {
      * A provider executor whose rows do not match the plan's variable count must be reported
      * rather than silently binding the wrong variables.
      */
-    @Test
+    @Test(timeout = 10000)
     public void shouldRejectProviderRowWithWrongSize() {
         final DefaultGqlPlanner planner = new DefaultGqlPlanner(graph);
         final GqlExecutor providerExecutor = new GqlExecutor() {
@@ -866,7 +864,7 @@ public class GqlMatchStepTest {
         }
     }
 
-    @Test
+    @Test(timeout = 10000)
     public void testQuantifiedGroupEdgeVariableInPatternOrderWhenSeededAtTarget() {
         // p0 -knows-> p1 -knows-> acme. The single company is the seed, so the walk runs from the
         // pattern edge's target back to its source, and r must still read left to right.
@@ -885,22 +883,68 @@ public class GqlMatchStepTest {
         assertEquals(List.of(e01, e1c), asEdgeList(rValues.get(0)));
     }
 
-    @Test(timeout = 10000)
-    public void testLimitOneOnUnboundedUndirectedWalkOverDenseGraphIsPrompt() {
-        // The number of trails on a complete graph is astronomically large, so this only returns
-        // if the executor produces rows on demand rather than buffering a seed's whole search.
+    /** A complete undirected graph on {@code n} person vertices, one knows edge per pair. */
+    private void buildCompleteKnowsGraph(final int n) {
         final List<Vertex> vs = new ArrayList<>();
-        for (int i = 0; i < 10; i++) vs.add(graph.addVertex("person"));
+        for (int i = 0; i < n; i++) vs.add(graph.addVertex("person"));
         for (int i = 0; i < vs.size(); i++)
             for (int j = i + 1; j < vs.size(); j++)
                 vs.get(i).addEdge("knows", vs.get(j));
-
-        final List<Object> rows = g.<Integer>inject(1)
-                .match("MATCH (a:person)-[]-+(b:person)").select("b").limit(1).toList();
-        assertEquals(1, rows.size());
     }
 
-    @Test
+    @Test(timeout = 10000)
+    public void testLimitOneOnUnboundedUndirectedWalkOverDenseGraphIsPrompt() {
+        // The number of trails on a complete graph is astronomically large, so the provider work
+        // for limit(1) is bounded only if the executor produces rows on demand rather than
+        // buffering a seed's whole search. The first row needs one seed and one edge; limit()
+        // may pull one more row before it stops, which is one more hop.
+        buildCompleteKnowsGraph(10);
+        final ProbeGraph probe = new ProbeGraph(graph);
+
+        final List<Object> rows = probing(probe).<Integer>inject(1)
+                .match("MATCH (a:person)-[]-+(b:person)").select("b").limit(1).toList();
+        assertEquals(1, rows.size());
+        assertTrue("provider iterators opened: " + probe.opened(), probe.opened() <= 3);
+        assertTrue("provider elements read: " + probe.read(), probe.read() <= 3);
+        probe.assertAllClosedOnce("after limit(1)");
+    }
+
+    @Test(timeout = 30000)
+    public void testInterruptStopsUnboundedWalkThroughTraversal() throws Exception {
+        // A traversal thread running an unbounded undirected walk over a dense graph is parked by
+        // the probe inside an edges() call deep in the walk, then interrupted. The interrupt must
+        // surface from the traversal as TraversalInterruptedException, and the executor must
+        // release its provider iterators.
+        buildCompleteKnowsGraph(8);
+        final CountDownLatch inWalk = new CountDownLatch(1);
+        final ProbeGraph probe = new ProbeGraph(graph).parkAtEdgesCall(20, inWalk);
+        final Traversal<?, ?> t = probing(probe).inject(1).match("MATCH (a)-[]-+(b)");
+        final AtomicReference<Throwable> thrown = new AtomicReference<>();
+
+        final Thread worker = new Thread(() -> {
+            try {
+                t.iterate();
+            } catch (final Throwable ex) {
+                thrown.set(ex);
+            }
+        });
+        worker.setDaemon(true);
+        try {
+            worker.start();
+            assertTrue("the walk must reach the 20th edges() call", inWalk.await(10, TimeUnit.SECONDS));
+            assertTrue("the traversal must still be running before the interrupt", worker.isAlive());
+            worker.interrupt();
+            worker.join(10000);
+            assertFalse("the traversal must stop after interruption", worker.isAlive());
+            assertTrue("expected TraversalInterruptedException but got " + thrown.get(),
+                    thrown.get() instanceof TraversalInterruptedException);
+            probe.assertAllClosedOnce("after the interrupt");
+        } finally {
+            worker.interrupt();
+        }
+    }
+
+    @Test(timeout = 10000)
     public void testQuantifiedAndPlainEdgesInOnePattern() {
         // head -knows-> m1 -knows-> m2, m1 -created-> sw1, m2 -created-> sw2
         final List<Edge> chain = buildKnowsChain(2);
@@ -1011,5 +1055,187 @@ public class GqlMatchStepTest {
         assertEquals(expected, rows.stream()
                 .map(row -> List.of(row.get("a"), row.get("b"), row.get("c"), asEdgeList(row.get("r"))))
                 .sorted(Comparator.comparing(Object::toString)).collect(Collectors.toList()));
+    }
+
+    // -------------------------------------------------------------------------
+    // Closing the executor's provider iterators
+    // -------------------------------------------------------------------------
+
+    /** A source whose match() steps plan and execute through {@code probe}, counting provider iterators. */
+    private GraphTraversalSource probing(final ProbeGraph probe) {
+        return graph.traversal().withStrategies(GqlDeclarativeMatchStrategy.create(
+                new DefaultGqlPlanner(probe.graph()), new DefaultGqlExecutor(probe.graph())));
+    }
+
+    /** A 6-vertex knows chain matched as a plain step then a walk, so every frame type opens iterators. */
+    private static final String PLAIN_THEN_WALK_QUERY = "MATCH (a:person)-[:knows]->(b:person)-[r:knows]->{1,2}(c:person)";
+
+    @Test(timeout = 10000)
+    public void shouldCloseProviderIteratorsWhenMatchIsDrained() {
+        buildKnowsChain(5);
+        final ProbeGraph probe = new ProbeGraph(graph);
+        // Two incoming traversers, so the step replaces its row iterator once.
+        assertEquals(14, probing(probe).inject(1, 2).match(PLAIN_THEN_WALK_QUERY).toList().size());
+        assertTrue(probe.opened() > 0);
+        probe.assertAllClosedOnce("after the match");
+    }
+
+    @Test(timeout = 10000)
+    public void shouldCloseProviderIteratorsWhenLimitStopsMatchEarly() {
+        buildKnowsChain(5);
+        for (final boolean spawn : new boolean[]{true, false}) {
+            final ProbeGraph probe = new ProbeGraph(graph);
+            final GraphTraversalSource gp = probing(probe);
+            final Traversal<?, Map<String, Object>> t = spawn
+                    ? gp.match(PLAIN_THEN_WALK_QUERY).limit(1)
+                    : gp.inject(1).match(PLAIN_THEN_WALK_QUERY).limit(1);
+            assertEquals(1, t.toList().size());
+            assertTrue(probe.opened() > 0);
+            probe.assertAllClosedOnce("spawn=" + spawn);
+        }
+    }
+
+    @Test(timeout = 10000)
+    public void shouldCloseProviderIteratorsWhenTraversalClosedAfterInterrupt() throws Exception {
+        // AbstractStep.next() checks the interrupt before it calls processNextStart(), so the
+        // interrupt is thrown by the step layer and the executor never sees it: its iterators are
+        // still open afterwards. This tests that Traversal.close() closes the step, which closes
+        // the executor's row iterator. The executor's own interrupt path is covered in
+        // DefaultGqlExecutorTest.testProviderIteratorsClosedOnInterrupt.
+        buildKnowsChain(5);
+        final ProbeGraph probe = new ProbeGraph(graph);
+        final Traversal<?, Map<String, Object>> t = probing(probe).match(PLAIN_THEN_WALK_QUERY);
+        t.next();
+        assertTrue("the match must hold provider iterators open mid-way", probe.opened() > probe.closed());
+        try {
+            Thread.currentThread().interrupt();
+            t.next();
+            fail("expected TraversalInterruptedException");
+        } catch (final TraversalInterruptedException expected) {
+            // expected
+        } finally {
+            Thread.interrupted();
+        }
+        assertTrue("the step layer threw before the executor ran", probe.opened() > probe.closed());
+        t.close();
+        probe.assertAllClosedOnce("after the match");
+    }
+
+    @Test(timeout = 10000)
+    public void shouldCloseProviderIteratorsOnReset() {
+        buildKnowsChain(5);
+        final ProbeGraph probe = new ProbeGraph(graph);
+        final Traversal.Admin<?, Map<String, Object>> t = probing(probe).match(PLAIN_THEN_WALK_QUERY).asAdmin();
+        t.next();
+        assertTrue(probe.opened() > probe.closed());
+        t.reset();
+        probe.assertAllClosedOnce("after the match");
+        // After the reset the step runs the match afresh.
+        assertEquals(7, t.toList().size());
+        probe.assertAllClosedOnce("after the match");
+    }
+
+    @Test(timeout = 10000)
+    public void shouldNotRerunSpawnMatchAfterStepIsClosed() {
+        // A consumer driving the spawn step directly, rather than through the traversal, keeps
+        // pulling after close(). The step must stay finished rather than run the match again,
+        // until reset() makes it runnable.
+        buildKnowsChain(5);
+        final ProbeGraph probe = new ProbeGraph(graph);
+        final Traversal.Admin<?, Map<String, Object>> t = probing(probe).match(PLAIN_THEN_WALK_QUERY).asAdmin();
+        t.applyStrategies();
+        @SuppressWarnings("unchecked")
+        final GqlMatchStep<Object> step = (GqlMatchStep<Object>) t.getStartStep();
+        assertTrue(step.isStart());
+
+        assertTrue(step.hasNext());
+        step.next();
+        final int openedBeforeClose = probe.opened();
+        step.close();
+        probe.assertAllClosedOnce("after close()");
+        assertFalse("a closed spawn step must not run the match again", step.hasNext());
+        assertEquals("no provider iterator may be opened after close()", openedBeforeClose, probe.opened());
+
+        step.reset();
+        int rows = 0;
+        while (step.hasNext()) {
+            step.next();
+            rows++;
+        }
+        assertEquals("after reset() the step runs the match afresh", 7, rows);
+        probe.assertAllClosedOnce("after the rerun");
+    }
+
+    @Test(timeout = 10000)
+    public void shouldFullyResetWhenRowIteratorCloseFails() {
+        // The first row iterator throws from close(). reset() must still clear the step's row
+        // state, so the next run plans again and runs the match afresh rather than reusing the
+        // stale plan.
+        buildKnowsChain(5);
+        final DefaultGqlPlanner basePlanner = new DefaultGqlPlanner(graph);
+        final AtomicInteger planCalls = new AtomicInteger();
+        final GqlPlanner countingPlanner = query -> {
+            planCalls.incrementAndGet();
+            return basePlanner.plan(query);
+        };
+        final DefaultGqlExecutor baseExecutor = new DefaultGqlExecutor(graph);
+        final AtomicInteger executions = new AtomicInteger();
+        final GqlExecutor failingCloseExecutor = new GqlExecutor() {
+            @Override
+            public Iterator<GqlRow> execute(final GqlMatchPlan p) {
+                return execute(p, Collections.emptyMap());
+            }
+
+            @Override
+            public Iterator<GqlRow> execute(final GqlMatchPlan p, final Map<String, Object> params) {
+                final Iterator<GqlRow> rows = baseExecutor.execute(p, params);
+                if (executions.incrementAndGet() > 1) return rows;
+                return new CloseableIterator<GqlRow>() {
+                    @Override
+                    public boolean hasNext() {
+                        return rows.hasNext();
+                    }
+
+                    @Override
+                    public GqlRow next() {
+                        return rows.next();
+                    }
+
+                    @Override
+                    public void close() {
+                        CloseableIterator.closeIterator(rows);
+                        throw new IllegalStateException("injected close() failure");
+                    }
+                };
+            }
+        };
+
+        final Traversal.Admin<?, Map<String, Object>> t = graph.traversal()
+                .withStrategies(GqlDeclarativeMatchStrategy.create(countingPlanner, failingCloseExecutor))
+                .match(PLAIN_THEN_WALK_QUERY).asAdmin();
+        t.applyStrategies();
+        @SuppressWarnings("unchecked")
+        final GqlMatchStep<Object> step = (GqlMatchStep<Object>) t.getStartStep();
+        assertTrue(step.hasNext());
+        step.next();
+        assertEquals(1, planCalls.get());
+
+        try {
+            step.reset();
+            fail("the injected close() failure must propagate from reset()");
+        } catch (final RuntimeException expected) {
+            // CloseableIterator.closeIterator() wraps the close() failure.
+            assertTrue(expected.getCause() instanceof IllegalStateException);
+            assertEquals("injected close() failure", expected.getCause().getMessage());
+        }
+
+        int rows = 0;
+        while (step.hasNext()) {
+            step.next();
+            rows++;
+        }
+        assertEquals("after the failed reset() the step runs the match afresh", 7, rows);
+        assertEquals("the failed reset() must still clear the compiled plan", 2, planCalls.get());
+        assertEquals(2, executions.get());
     }
 }

@@ -58,8 +58,8 @@ import java.util.concurrent.atomic.AtomicLong;
  *
  * <p>At runtime, the executor maintains adaptive counters ({@link #recordAttempt()} /
  * {@link #recordHit()}) so that {@link #selectivityRatio()} reflects observed throughput.
- * The executor uses this ratio, with {@code estimatedCost} as a tiebreaker, to choose
- * among simultaneously eligible steps.
+ * The executor uses this ratio, with {@code estimatedCost} and then plain-before-quantified as
+ * tiebreakers, to choose among simultaneously eligible steps.
  */
 public final class ExtensionStep {
 
@@ -235,10 +235,11 @@ public final class ExtensionStep {
 
     /**
      * Returns {@code true} if this step's anchor is the pattern edge's target (right-hand) node, so
-     * the step walks the pattern edge from right to left. For a quantified step, the executor
-     * reverses the walk's edges before binding the group variable so that the list is always in
-     * pattern order, left to right. This is not the same as a flipped {@link #getDirection()}: an
-     * undirected edge keeps {@link Direction#BOTH} when anchored at either end.
+     * the step walks the pattern edge from right to left. For a quantified step, the group
+     * variable's list is still in pattern order, left to right, so its edges are listed in reverse
+     * of the order in which the walk traverses them. This is not the same as a flipped
+     * {@link #getDirection()}: an undirected edge keeps {@link Direction#BOTH} when anchored at
+     * either end.
      */
     public boolean isAnchoredAtPatternTarget() {
         return anchoredAtPatternTarget;
@@ -253,9 +254,20 @@ public final class ExtensionStep {
         attempts.incrementAndGet();
     }
 
-    /** Called each time a candidate edge passes all filters and produces a recursive extend call. */
+    /**
+     * Called each time a candidate edge passes all filters and the executor extends the partial
+     * match with it. When the target variable is already bound, the edge must also join against
+     * that binding by ending at the bound vertex. For a quantified step, called once for each walk
+     * that reaches a depth in range at a vertex that passes the target constraints and, when the
+     * target is already bound, is that bound vertex.
+     */
     void recordHit() {
         hits.incrementAndGet();
+    }
+
+    /** The number of times the executor has started expanding this step. Visible for testing. */
+    long attemptCount() {
+        return attempts.get();
     }
 
     /**
@@ -278,7 +290,7 @@ public final class ExtensionStep {
                (isQuantified()
                        ? ", hops={" + minHops + "," + (maxHops == QueryEdge.UNBOUNDED ? "" : maxHops) + "}" +
                          (isEdgeVariableGroup() ? ", group" : "") +
-                         (anchoredAtPatternTarget ? ", reversed" : "")
+                         (anchoredAtPatternTarget ? ", anchoredAtPatternTarget" : "")
                        : "") +
                (targetPredicates.isEmpty() ? "" : ", filters=" + targetPredicates) + "}";
     }

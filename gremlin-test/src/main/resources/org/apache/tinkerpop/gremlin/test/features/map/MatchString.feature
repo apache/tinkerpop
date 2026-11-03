@@ -741,6 +741,35 @@ Feature: Step - match() (String form)
       | l[e[BBB-route->CCC],e[CCC-route->AAA],e[AAA-route->BBB]] |
       | l[e[CCC-route->AAA],e[AAA-route->BBB],e[BBB-route->CCC]] |
 
+  Scenario: g_match_airportXrouteXrVar_1_3X_triangle_selectXa_b_c_rX_byXnameX_byXnameX_byXnameX_by
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("airport").property("name", "AAA").as("a").
+        addV("airport").property("name", "BBB").as("b").
+        addV("airport").property("name", "CCC").as("c").
+        addV("airport").property("name", "DDD").as("d").
+        addE("route").from("a").to("b").
+        addE("route").from("b").to("c").
+        addE("route").from("c").to("a").
+        addE("route").from("b").to("d").
+        addE("route").from("d").to("c")
+      """
+    And the traversal of
+      """
+      g.match("MATCH (a:airport)-[:route]->(b:airport)-[r:route]->{1,3}(c:airport)-[:route]->(a)").select("a","b","c","r").by("name").by("name").by("name").by()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | m[{"a":"AAA","b":"BBB","c":"CCC","r":"l[e[BBB-route->CCC]]"}] |
+      | m[{"a":"AAA","b":"BBB","c":"CCC","r":"l[e[BBB-route->DDD],e[DDD-route->CCC]]"}] |
+      | m[{"a":"BBB","b":"CCC","c":"AAA","r":"l[e[CCC-route->AAA]]"}] |
+      | m[{"a":"BBB","b":"DDD","c":"AAA","r":"l[e[DDD-route->CCC],e[CCC-route->AAA]]"}] |
+      | m[{"a":"CCC","b":"AAA","c":"BBB","r":"l[e[AAA-route->BBB]]"}] |
+      | m[{"a":"CCC","b":"AAA","c":"DDD","r":"l[e[AAA-route->BBB],e[BBB-route->DDD]]"}] |
+      | m[{"a":"DDD","b":"CCC","c":"BBB","r":"l[e[CCC-route->AAA],e[AAA-route->BBB]]"}] |
+
   Scenario: g_match_personXknowsXrVar_1_2X_personXcreatedXrVarX_software_selectXrX
     Given the modern graph
     And the traversal of

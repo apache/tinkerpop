@@ -222,15 +222,12 @@ public final class DefaultGqlPlanner implements GqlPlanner {
      * {@link ExtensionStep} per edge. The BFS visit order guarantees each step's anchor
      * variable is bound before the step is emitted.
      *
-     * <p>Back edges (both endpoints already visited) are still emitted as steps so the
-     * executor can verify the join constraint against the already-bound variable.
-     *
-     * <p>A quantified back edge, including a pattern self-loop such as {@code (a)-[r]->{2,3}(a)},
-     * is emitted like any other back edge, anchored at its earlier-visited endpoint. Back-edge
-     * status is a property of this plan order only: the executor may reorder steps at runtime,
-     * so a planned back edge can run with its target still unbound. When the target is already
-     * bound, the executor joins each walk's end vertex against it, so only walks that close the
-     * cycle produce rows.
+     * <p>A back edge, whose endpoints have both been visited, is emitted like any other edge and
+     * anchored at its earlier-visited endpoint. That includes a quantified back edge and a pattern
+     * self-loop such as {@code (a)-[r]->{2,3}(a)}. Back-edge status is a property of this plan order
+     * only: the executor may reorder steps at runtime, so a planned back edge can run with its
+     * target still unbound. When the target is already bound, the executor joins the step's end
+     * vertex against it, so only edges or walks that close the cycle produce rows.
      */
     private List<ExtensionStep> buildSteps(final QueryGraph queryGraph,
                                            final QueryVertex seed,
