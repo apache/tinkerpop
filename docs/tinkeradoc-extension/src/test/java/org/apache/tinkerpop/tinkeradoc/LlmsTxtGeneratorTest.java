@@ -41,6 +41,9 @@ public class LlmsTxtGeneratorTest {
         final String out = gen.generate(Arrays.asList(
                 new LlmsTxtGenerator.Entry("dev/io/index.md", "IO Reference", "How IO works.")));
         assertThat(out, containsString("# Apache TinkerPop Documentation\n"));
+        // H1 and summary first, as llms.txt expects, then the license comment.
+        assertThat(out.startsWith("# Apache TinkerPop Documentation\n"), is(true));
+        assertThat(out, containsString("\n\n" + MarkdownConverter.LICENSE_COMMENT + "## "));
         assertThat(out, containsString("> Docs for a graph computing framework.\n"));
     }
 

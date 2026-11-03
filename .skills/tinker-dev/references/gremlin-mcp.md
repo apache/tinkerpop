@@ -19,6 +19,8 @@ Use gremlin-mcp when you need to:
 |------------------------------|-----------------|--------------------------------------------|
 | `translate_gremlin_query`    | No              | Translate Gremlin between language variants |
 | `format_gremlin_query`       | No              | Format a Gremlin query with gremlint       |
+| `search_gremlin_docs`        | No              | Search TinkerPop docs for a given version  |
+| `get_gremlin_doc_page`       | No              | Read one docs page as Markdown             |
 | `get_graph_status`           | Yes             | Check database connectivity                |
 | `get_graph_schema`           | Yes             | Get complete graph structure                |
 | `run_gremlin_query`          | Yes             | Execute a Gremlin traversal                |
@@ -27,8 +29,15 @@ Use gremlin-mcp when you need to:
 ## Offline Mode
 
 When `GREMLIN_MCP_ENDPOINT` is not set, graph tools are not registered but
-`translate_gremlin_query` and `format_gremlin_query` remain fully available. This is
+`translate_gremlin_query`, `format_gremlin_query` and the docs tools remain fully available. This is
 useful for query translation and formatting without a running database.
+
+## TinkerPop Docs
+
+The docs tools require a `version` from the enum in their schema (the bundled version plus any
+added with `gremlin-mcp docs install <version>` into `~/.gremlin-mcp/docs/`; restart to pick up
+new installs). Bundled docs come from `target/docs/markdown`, so run `bin/process-docs.sh`
+(`--dryRun` is enough locally) before building gremlin-mcp to test them.
 
 ## Translation
 

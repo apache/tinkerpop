@@ -8,6 +8,7 @@ yarn-error.log*
 
 # Build output
 dist/
+gremlin-docs/
 build/
 
 # TypeScript

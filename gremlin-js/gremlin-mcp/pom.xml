@@ -54,6 +54,9 @@ limitations under the License.
                             <directory>dist</directory>
                         </fileset>
                         <fileset>
+                            <directory>gremlin-docs</directory>
+                        </fileset>
+                        <fileset>
                             <directory>node_modules</directory>
                         </fileset>
                     </filesets>
@@ -186,6 +189,21 @@ limitations under the License.
                         <groupId>com.github.eirslett</groupId>
                         <artifactId>frontend-maven-plugin</artifactId>
                         <executions>
+                            <!--
+                            the release bundles this version's docs, so fail the deploy if the docs build
+                            (bin/process-docs.sh) has not been run for it. the npm build bundles them when
+                            present but only warns when they are missing.
+                            -->
+                            <execution>
+                                <id>npm bundle docs</id>
+                                <phase>deploy</phase>
+                                <goals>
+                                    <goal>npm</goal>
+                                </goals>
+                                <configuration>
+                                    <arguments>run bundle-docs -- --required</arguments>
+                                </configuration>
+                            </execution>
                             <execution>
                                 <id>npm publish</id>
                                 <phase>deploy</phase>

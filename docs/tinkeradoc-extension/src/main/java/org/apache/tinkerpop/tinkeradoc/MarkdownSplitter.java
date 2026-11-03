@@ -229,14 +229,21 @@ class MarkdownSplitter {
      * Splits {@code markdown} into pages. The first page always carries the file name
      * {@code indexFileName} (typically {@code index.md}) and holds the document preamble plus the
      * top-level structure that fits; deeper sections that individually exceed the budget become
-     * their own pages named from their anchor id.
+     * their own pages named from their anchor id. Every page starts with the llms.txt pointer and,
+     * when the book begins with {@link MarkdownConverter#LICENSE_COMMENT}, the license comment.
      *
      * @param markdown      the full rendered Markdown book
      * @param indexFileName the file name for the landing page (e.g. {@code index.md})
      * @return the ordered list of pages (always at least one)
      */
     List<Page> split(final String markdown, final String indexFileName) {
-        final Node root = parse(markdown);
+        // The license comment MarkdownConverter puts at the top of the book belongs on every page,
+        // not only the landing page that would otherwise inherit the book's preamble.
+        final boolean licensed = markdown.startsWith(MarkdownConverter.LICENSE_COMMENT);
+        final String header = llmsPointer + (licensed ? MarkdownConverter.LICENSE_COMMENT : "");
+        final Node root = parse(licensed
+                ? markdown.substring(MarkdownConverter.LICENSE_COMMENT.length())
+                : markdown);
 
         // Summary-driven splitting: a section becomes its own page if and only if it carries an
         // llms-summary (surfaced as the <!-- llms-summary: ... --> marker). The document root is
@@ -270,7 +277,7 @@ class MarkdownSplitter {
             final StringBuilder body = new StringBuilder();
             renderPage(plan.owner, body, plan == index, nodeToFile);
             final String rewritten = rewriteLinks(body.toString(), plan.fileName, anchorToFile);
-            pages.add(new Page(plan.fileName, llmsPointer + rewritten, isAllowOversize(plan.owner)));
+            pages.add(new Page(plan.fileName, header + rewritten, isAllowOversize(plan.owner)));
         }
         return pages;
     }

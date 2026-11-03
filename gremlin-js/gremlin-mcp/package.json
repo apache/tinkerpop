@@ -9,7 +9,8 @@
   },
   "scripts": {
     "generate-step-names": "node scripts/generate-step-names.js",
-    "build": "npm run generate-step-names && tsc && chmod +x dist/server.js",
+    "build": "npm run generate-step-names && tsc && chmod +x dist/server.js && npm run bundle-docs",
+    "bundle-docs": "node dist/docs/bundle.js",
     "dev": "tsx src/server.ts",
     "start": "node dist/server.js",
     "test": "jest",
@@ -22,7 +23,7 @@
     "format:check": "prettier --check \"src/**/*.ts\" \"tests/**/*.ts\" \"*.{js,json,md}\"",
     "type-check": "tsc --noEmit",
     "validate": "npm run format && npm run lint && npm run type-check && npm test",
-    "clean": "rm -rf dist",
+    "clean": "rm -rf dist gremlin-docs",
     "prepare": "husky",
     "prepublishOnly": "npm run clean && npm run build && npm run validate",
     "prepack": "npm run build",
@@ -81,6 +82,7 @@
   "homepage": "https://tinkerpop.apache.org/",
   "files": [
     "dist/",
+    "gremlin-docs/",
     "README.md",
     "LICENSE",
     "NOTICE"
