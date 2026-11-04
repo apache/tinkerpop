@@ -20,8 +20,11 @@ package org.apache.tinkerpop.gremlin.groovy.loaders
 
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy
+import groovy.transform.CompileStatic
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource
 
+import java.util.function.BiFunction
 import java.util.function.BinaryOperator
 import java.util.function.Function
 import java.util.function.Supplier
@@ -36,6 +39,22 @@ class StepLoader {
 
         GraphTraversal.metaClass.by = { final Closure closure ->
             return ((GraphTraversal) delegate).by(1 == closure.getMaximumNumberOfParameters() ? closure as Function : closure as Comparator);
+        }
+
+        // Groovy 5 added inject(BinaryOperator) and inject(Object, BiFunction) helpers that g.inject(null) would
+        // otherwise select. registered on TraversalSource because a GraphTraversalSource metaclass hides the other
+        // TraversalSource additions once sugar is loaded
+        TraversalSource.metaClass.inject = { final BinaryOperator injection ->
+            return injectStep((GraphTraversalSource) delegate, [injection] as Object[])
+        }
+        TraversalSource.metaClass.inject = { final Object first, final BiFunction second ->
+            return injectStep((GraphTraversalSource) delegate, [first, second] as Object[])
+        }
+        GraphTraversal.metaClass.inject = { final BinaryOperator injection ->
+            return injectStep((GraphTraversal) delegate, [injection] as Object[])
+        }
+        GraphTraversal.metaClass.inject = { final Object first, final BiFunction second ->
+            return injectStep((GraphTraversal) delegate, [first, second] as Object[])
         }
 
         TraversalSource.metaClass.withSideEffect = {
@@ -86,5 +105,15 @@ class StepLoader {
 
             return ((TraversalSource) delegate).withStrategies(instances)
         }
+    }
+
+    @CompileStatic
+    private static GraphTraversal injectStep(final GraphTraversalSource g, final Object[] injections) {
+        return g.inject(injections)
+    }
+
+    @CompileStatic
+    private static GraphTraversal injectStep(final GraphTraversal traversal, final Object[] injections) {
+        return traversal.inject(injections)
     }
 }

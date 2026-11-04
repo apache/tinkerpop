@@ -54,10 +54,28 @@ limitations under the License.
             <artifactId>logback-classic</artifactId>
             <optional>true</optional>
         </dependency>
+        <!-- the console embeds groovysh -->
         <dependency>
-            <groupId>org.fusesource.jansi</groupId>
+            <groupId>org.apache.groovy</groupId>
+            <artifactId>groovy-groovysh</artifactId>
+            <version>${groovy.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.ow2.asm</groupId>
+                    <artifactId>asm-util</artifactId>
+                </exclusion>
+                <!-- gremlin-groovy brings its own ivy version for security vulnerability fixes -->
+                <exclusion>
+                    <groupId>org.apache.ivy</groupId>
+                    <artifactId>ivy</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <!-- JLine's Jansi; keep the version in line with the JLine that groovy-groovysh brings -->
+        <dependency>
+            <groupId>org.jline</groupId>
             <artifactId>jansi</artifactId>
-            <version>2.4.1</version>
+            <version>4.4.5</version>
         </dependency>
         <!-- TESTING -->
         <dependency>
@@ -239,11 +257,20 @@ limitations under the License.
                                     <shadedPattern>io.shaded.netty</shadedPattern>
                                 </relocation>
                             </relocations>
-                            <!-- exclude jdk21 classes for now -->
                             <filters>
+                                <!-- exclude jdk21 classes for now -->
                                 <filter>
                                     <artifact>ch.qos.logback:logback-core</artifact>
                                     <excludes>versions/21/**</excludes>
+                                </filter>
+                                <!-- signatures of signed jars no longer match once merged and stop the jar from loading -->
+                                <filter>
+                                    <artifact>*:*</artifact>
+                                    <excludes>
+                                        <exclude>META-INF/*.SF</exclude>
+                                        <exclude>META-INF/*.DSA</exclude>
+                                        <exclude>META-INF/*.RSA</exclude>
+                                    </excludes>
                                 </filter>
                             </filters>
                             <transformers>
@@ -279,8 +306,8 @@ limitations under the License.
                                     <file>src/main/static/licenses/jbcrypt</file>
                                 </transformer>
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.IncludeResourceTransformer">
-                                    <resource>META-INF/licenses/jline2</resource>
-                                    <file>src/main/static/licenses/jline2</file>
+                                    <resource>META-INF/licenses/jline</resource>
+                                    <file>src/main/static/licenses/jline</file>
                                 </transformer>
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.IncludeResourceTransformer">
                                     <resource>META-INF/licenses/kryo</resource>

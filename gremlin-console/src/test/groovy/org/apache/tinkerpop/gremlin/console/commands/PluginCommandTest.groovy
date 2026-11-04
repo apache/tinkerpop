@@ -18,24 +18,26 @@
  */
 package org.apache.tinkerpop.gremlin.console.commands
 
-import org.apache.tinkerpop.gremlin.console.GremlinGroovysh
+import org.apache.groovy.groovysh.jline.GroovyEngine
 import org.apache.tinkerpop.gremlin.console.Mediator
 import org.apache.tinkerpop.gremlin.console.PluggedIn
 import org.apache.tinkerpop.gremlin.jsr223.GremlinPlugin
-import org.codehaus.groovy.tools.shell.IO
+import org.jline.builtins.Options.HelpException
+import org.jline.shell.CommandSession
 import org.junit.Before
 import org.junit.Test
 
+import static org.apache.tinkerpop.gremlin.console.commands.CommandCompletion.complete
+import static org.junit.Assert.assertEquals
 import static org.junit.Assert.assertTrue
+import static org.junit.Assert.fail
 
 class PluginCommandTest {
     private PluginCommand cmd
 
     @Before
     void setUp() {
-        def io = new IO(new ByteArrayInputStream(), new ByteArrayOutputStream(), new ByteArrayOutputStream())
-        def shell = new GremlinGroovysh(new Mediator(null), io)
-        cmd = new PluginCommand(shell, new Mediator(null))
+        cmd = new PluginCommand(new Mediator(null))
     }
 
     @Test
@@ -60,14 +62,64 @@ class PluginCommandTest {
 
     @Test
     void shouldDeactivateAnAvailablePlugin() {
-        def io = new IO(new ByteArrayInputStream(), new ByteArrayOutputStream(), new ByteArrayOutputStream())
+        def engine = new GroovyEngine()
         def mediator = new Mediator(null)
-        def shell = new GremlinGroovysh(mediator, io)
         // populate a real plugin from the classpath so do_unuse's any/find predicates + deactivate path run
-        def plugin = ServiceLoader.load(GremlinPlugin, shell.getInterp().getClassLoader()).iterator().next()
-        mediator.availablePlugins.put(plugin.class.name, new PluggedIn((GremlinPlugin) plugin, shell, io, false))
-        def cmd = new PluginCommand(shell, mediator)
+        def plugin = ServiceLoader.load(GremlinPlugin, engine.getClassLoader()).iterator().next()
+        mediator.availablePlugins.put(plugin.class.name, new PluggedIn((GremlinPlugin) plugin, engine, false))
+        def cmd = new PluginCommand(mediator)
         def result = (String) cmd.do_unuse.call([plugin.name])
         assertTrue(result.contains("deactivated"))
+    }
+
+    // the function handling groovysh 4's ComplexCommandSupport used to provide
+
+    @Test
+    void shouldUseByDefault() {
+        assertTrue(((String) cmd.execute([])).contains("Specify the name of the plugin to use"))
+    }
+
+    @Test(expected = UsageException)
+    void shouldRejectUnknownFunction() {
+        cmd.execute(["bogus"])
+    }
+
+    @Test
+    void shouldListPlugins() {
+        def engine = new GroovyEngine()
+        def mediator = new Mediator(null)
+        def plugin = ServiceLoader.load(GremlinPlugin, engine.getClassLoader()).iterator().next()
+        mediator.availablePlugins.put(plugin.class.name, new PluggedIn((GremlinPlugin) plugin, engine, true))
+        assertEquals([plugin.name + "[active]"], new PluginCommand(mediator).execute(["list"]))
+    }
+
+    @Test
+    void shouldCompleteFunctions() {
+        assertEquals(["list", "unuse", "use"], complete(cmd, "/plugin "))
+        assertEquals(["unuse", "use"], complete(cmd, "/pin u"))
+    }
+
+    // added with Groovy 6
+
+    @Test
+    void shouldShowUsageInHelp() {
+        def session = new CommandSession(null, new ByteArrayInputStream(new byte[0]),
+                new PrintStream(new ByteArrayOutputStream(), true), new PrintStream(new ByteArrayOutputStream(), true))
+        try {
+            cmd.execute(session, ["--help"] as String[])
+            fail("should have thrown HelpException")
+        } catch (HelpException e) {
+            assertTrue(e.message, e.message.contains("Usage: plugin [use <plugin-name>|list|unuse <plugin-name>]"))
+        }
+    }
+
+    @Test
+    void shouldCompletePluginNames() {
+        def engine = new GroovyEngine()
+        def mediator = new Mediator(null)
+        def plugin = ServiceLoader.load(GremlinPlugin, engine.getClassLoader()).iterator().next()
+        mediator.availablePlugins.put(plugin.class.name, new PluggedIn((GremlinPlugin) plugin, engine, false))
+        assertEquals([plugin.name], complete(new PluginCommand(mediator), "/plugin use "))
+        assertEquals([], complete(new PluginCommand(mediator), "/plugin nope "))
     }
 }
