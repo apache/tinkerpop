@@ -252,6 +252,86 @@ not exported from the package and are now available.
 See: link:https://tinkerpop.apache.org/docs/4.0.0/reference/#gremlin-javascript-imports[Common Imports],
 link:https://issues.apache.org/jira/browse/TINKERPOP-2492[TINKERPOP-2492]
 
+==== Gremlin Console on Groovy 6
+
+TinkerPop 4.0.0 upgrades Groovy from 4.0.32 to 6.0.0, and the Gremlin Console now runs on the Groovy 6 shell,
+groovysh, which is built on JLine 4. The Gremlin commands, plugins, preferences and the `==>` display of results carry
+over. The new shell brings better line editing, history and `<TAB>` completion, including the arguments of `:plugin`
+and `:set`, and `ctrl+c` now stops results that are printing as well as a running statement.
+
+groovysh 6 names its commands with a leading `/`, as in `/help`. A command typed with a leading `:` at the start of a
+line still works, so `:plugin list` and `:x` behave as before. Help for one command is shown with `:help /plugin` or
+`:plugin --help`. Commands must now begin with a letter, and several groovysh 4 commands no longer exist:
+
+[width="100%",cols="2,5",options="header"]
+|=========================================================
+|Removed |Replacement
+|`:?` |`:help` or `:h`
+|`:+` |`:install`
+|`:-` |`:uninstall`
+|`:=` |`:set`
+|`:clear` and `:c` for discarding an unfinished statement |`ctrl+c`. `:clear` now clears the screen like `:cls`.
+|`import` as a command, and `:i` |A Groovy `import` statement. `/imports` lists the imports.
+|`:show` and `:S` |`/show`, `/vars`, `/types` and `/imports`
+|`:purge` and `:p` |`/del`, for example `/del *`. No command resets all preferences.
+|`:save` shortcut `:s` and `:load` shortcut `:.` |`:save` and `:load`
+|`:display`, `:edit`, `:record`, `:register`, `:shadow` and their shortcuts |None
+|=========================================================
+
+The shortcuts `:l`, `:H`, `:a`, `:g`, `:D`, `:n` and `:quit` remain. Some commands changed:
+
+* `/history -s <n>` runs history entry `<n>` again.
+* `/inspect` takes a variable written with a `$`, as in `/inspect $g`.
+* `:load` runs a file as a whole and reports `Loaded: <file>` instead of the result of each line.
+* `:save` needs a file name.
+* Scripts run with `-i` or `-e` can use the Gremlin commands, such as `:plugin use` and `:set`, and the exit commands,
+but other commands, such as `:load`, stop the script with an error.
+
+Entering text and displaying results also changed:
+
+* `ctrl+c` at the prompt discards what has been typed, including an unfinished multi-line statement.
+* The lines of a multi-line statement are edited as one entry, so a command typed on a continuation line becomes part
+of the statement.
+* A line that assigns a variable displays `null` instead of the value, and an assigned `Traversal` is not iterated, so
+the `t = g.V();[]` and `t = g.V();null` forms are no longer needed.
+* Commands such as `:set`, an empty line, a comment on its own and an `import` statement display `null`, and defining
+a method or class displays `null` instead of `true`.
+* A traversal stopped by `fail()` shows only `FailException: <message>` when the console iterates it. Iterating it on
+the line, for example with `toList()`, shows the full failure details.
+
+[source,text]
+----
+// 3.8.x
+gremlin> x = 5
+==>5
+gremlin> def add(a, b) { a + b }
+==>true
+gremlin> :set max-iteration 50
+gremlin>
+
+// 4.0.0
+gremlin> x = 5
+==>null
+gremlin> x
+==>5
+gremlin> def add(a, b) { a + b }
+==>null
+gremlin> :set max-iteration 50
+==>null
+gremlin>
+----
+
+Preferences set in earlier versions are read as before. History is still kept in `~/.gremlin_groovy_history`, but in
+a new format, so earlier history is not available and the file is replaced when the new console saves its history.
+
+Gremlin Server users with a `gremlin-groovy` sandbox method allowlist should note that Groovy 5 moved the array
+extension methods from `DefaultGroovyMethods` to `ArrayGroovyMethods`. An allowlist that permits
+`+org\.codehaus\.groovy\.runtime\.DefaultGroovyMethods.*+` needs a matching entry for
+`+org\.codehaus\.groovy\.runtime\.ArrayGroovyMethods.*+` so that array operations in scripts are still accepted.
+
+See: link:https://tinkerpop.apache.org/docs/4.0.0/reference/#gremlin-console[Reference Documentation - Gremlin Console],
+link:https://docs.groovy-lang.org/docs/groovy-6.0.0/html/documentation/groovysh.html[groovysh Documentation]
+
 === Upgrading for Providers
 
 ==== Graph System Providers
@@ -311,6 +391,20 @@ And the traversal of
 ----
 
 See: link:https://tinkerpop.apache.org/docs/x.y.z/dev/developer/#gremlin-language-test-cases[Gremlin Language Test Cases]
+
+===== Gremlin Console Extensions
+
+`GremlinPlugin` implementations and other code compiled with Groovy should be rebuilt and tested against Groovy 6.
+Plugins still extend the console through their customizers for imports, scripts and bindings.
+
+Groovy 6 removed the groovysh 4 command classes, such as `org.apache.groovy.groovysh.CommandSupport`, and the
+`:register` command, so a command written for the old shell no longer loads. groovysh 6 commands can only be supplied
+by the application that starts the shell, and the Gremlin Console has no way for plugins to add them.
+
+The console classes tied to groovysh 4 changed with it: `GremlinGroovysh` is removed, the classes in
+`org.apache.tinkerpop.gremlin.console.commands` extend JLine's `AbstractCommand` instead of `CommandSupport`,
+`PluggedIn` is constructed with the console's Groovy engine instead of a `Groovysh` and `IO`, and `Mediator` no longer
+has the `evaluating` flag and `IMPORT_*` constants. These classes are internal to the console.
 
 ==== Graph Driver Providers
 

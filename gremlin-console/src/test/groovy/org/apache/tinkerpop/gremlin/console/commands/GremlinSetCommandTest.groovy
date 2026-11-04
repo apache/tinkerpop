@@ -18,21 +18,20 @@
  */
 package org.apache.tinkerpop.gremlin.console.commands
 
-import jline.console.completer.Completer
-import org.apache.tinkerpop.gremlin.console.GremlinGroovysh
-import org.apache.tinkerpop.gremlin.console.Mediator
 import org.apache.tinkerpop.gremlin.console.Preferences
-import org.codehaus.groovy.tools.shell.IO
-import org.codehaus.groovy.tools.shell.util.Preferences as ShellPreferences
+import org.jline.reader.Completer
+import org.jline.shell.CommandSession
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
 
+import static org.apache.tinkerpop.gremlin.console.commands.CommandCompletion.complete
 import static org.junit.Assert.assertEquals
 import static org.junit.Assert.assertFalse
 import static org.junit.Assert.assertNotNull
-import static org.junit.Assert.assertNull
+import static org.junit.Assert.assertSame
 import static org.junit.Assert.assertTrue
+import static org.junit.Assert.fail
 
 /**
  * Unit tests for {@link GremlinSetCommand} that exercise the Gremlin-specific completer and the preference
@@ -40,42 +39,37 @@ import static org.junit.Assert.assertTrue
  */
 class GremlinSetCommandTest {
 
+    // in-memory in tests (see InMemoryPreferencesFactory)
+    private static final java.util.prefs.Preferences STORE =
+            java.util.prefs.Preferences.userRoot().node("/org/apache/tinkerpop/gremlin/console")
+
     private ByteArrayOutputStream out
-    private ByteArrayOutputStream err
-    private GremlinGroovysh shell
     private GremlinSetCommand command
 
     @Before
     void setUp() {
         out = new ByteArrayOutputStream()
-        err = new ByteArrayOutputStream()
-        final IO testio = new IO(new ByteArrayInputStream(), out, err)
-        shell = new GremlinGroovysh(new Mediator(null), testio)
-        command = new GremlinSetCommand(shell)
+        command = new GremlinSetCommand()
+        command.out = new PrintStream(out, true)
     }
 
     @After
     void tearDown() {
-        // These tests write to the real per-user java.util.prefs store, so clear it to avoid polluting dev prefs.
-        ShellPreferences.clear()
+        STORE.clear()
     }
 
     @Test
-    void shouldCreateCompletersWithNullSecondEntry() {
-        final List<Completer> completers = command.createCompleters()
+    void shouldCreateCompletersForTheCommandWordAndTheName() {
+        final List<Completer> completers = command.completers()
         assertNotNull(completers)
         assertEquals(2, completers.size())
-        assertNotNull(completers[0])
-        assertNull(completers[1])
+        assertSame(GremlinCommand.COMMAND_WORD, completers[0])
+        assertNotNull(completers[1])
     }
 
     @Test
     void shouldIncludeGremlinSpecificPreferencesInCompleter() {
-        final Completer completer = command.createCompleters()[0]
-        final List<CharSequence> candidates = []
-        completer.complete("", 0, candidates)
-
-        final List<String> candidateStrings = candidates.collect { it.toString().trim() }
+        final List<String> candidateStrings = complete(command, "/set ")
 
         // Gremlin Console specific preferences that the base SetCommand does not offer.
         assertTrue("expected max-iteration in completer candidates: ${candidateStrings}".toString(),
@@ -90,11 +84,7 @@ class GremlinSetCommandTest {
 
     @Test
     void shouldFilterCompleterCandidatesByPrefix() {
-        final Completer completer = command.createCompleters()[0]
-        final List<CharSequence> candidates = []
-        completer.complete("max", 3, candidates)
-
-        final List<String> candidateStrings = candidates.collect { it.toString().trim() }
+        final List<String> candidateStrings = complete(command, "/set max")
         assertTrue("expected only 'max' prefixed candidates: ${candidateStrings}".toString(),
                 candidateStrings.contains(Preferences.PREFERENCE_ITERATION_MAX))
         assertFalse("did not expect unrelated keys: ${candidateStrings}".toString(),
@@ -104,14 +94,14 @@ class GremlinSetCommandTest {
     @Test
     void shouldSetAndRetrieveKnownPreference() {
         command.execute([Preferences.PREFERENCE_ITERATION_MAX, "42"])
-        assertEquals("42", ShellPreferences.get(Preferences.PREFERENCE_ITERATION_MAX, null))
+        assertEquals("42", STORE.get(Preferences.PREFERENCE_ITERATION_MAX, null))
     }
 
     @Test
     void shouldSetBooleanPreferenceToTrueWhenValueOmitted() {
         // With a single argument the value defaults to "true".
         command.execute([Preferences.PREF_WARNINGS])
-        assertEquals("true", ShellPreferences.get(Preferences.PREF_WARNINGS, null))
+        assertEquals("true", STORE.get(Preferences.PREF_WARNINGS, null))
     }
 
     @Test
@@ -124,5 +114,47 @@ class GremlinSetCommandTest {
         final String output = out.toString()
         assertTrue("expected a preferences listing but got: ${output}".toString(),
                 output.contains("Preferences:") && output.contains(Preferences.PREF_RESULT_PROMPT))
+    }
+
+    // the checks groovysh 4's SetCommand used to provide
+
+    @Test
+    void shouldReportWhenNoPreferencesAreSet() {
+        command.execute([])
+        assertTrue(out.toString(), out.toString().contains("No preferences are set"))
+    }
+
+    @Test(expected = UsageException)
+    void shouldRejectTooManyArguments() {
+        command.execute(["a", "b", "c"])
+    }
+
+    @Test
+    void shouldCompleteStoredPreferenceNames() {
+        STORE.put("custom.setting", "x")
+        assertTrue(complete(command, "/set ").contains("custom.setting"))
+    }
+
+    // added with Groovy 6
+
+    @Test
+    void shouldRejectAnArgumentWithAnUnclosedQuote() {
+        try {
+            command.execute(session(), ["result.prompt", '"oops'] as String[])
+            fail("expected an unclosed quote to be rejected")
+        } catch (IllegalArgumentException e) {
+            assertEquals('Missing closing "', e.message)
+        }
+    }
+
+    @Test
+    void shouldAcceptHelpFlagAsValue() {
+        command.execute(session(), [Preferences.PREF_RESULT_PROMPT, "-?"] as String[])
+        assertEquals("-?", STORE.get(Preferences.PREF_RESULT_PROMPT, null))
+    }
+
+    private CommandSession session() {
+        return new CommandSession(null, new ByteArrayInputStream(new byte[0]), new PrintStream(out, true),
+                new PrintStream(new ByteArrayOutputStream(), true))
     }
 }

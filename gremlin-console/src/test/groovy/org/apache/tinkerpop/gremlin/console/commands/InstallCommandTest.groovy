@@ -18,12 +18,10 @@
  */
 package org.apache.tinkerpop.gremlin.console.commands
 
-import org.apache.tinkerpop.gremlin.console.GremlinGroovysh
-import org.apache.tinkerpop.gremlin.console.GremlinGroovysh
+import org.apache.groovy.groovysh.jline.GroovyEngine
 import org.apache.tinkerpop.gremlin.console.Mediator
 import groovy.grape.Grape
 import org.junit.After
-import org.codehaus.groovy.tools.shell.IO
 import org.junit.Before
 import org.junit.Test
 
@@ -35,9 +33,7 @@ class InstallCommandTest {
 
     @Before
     void setUp() {
-        def io = new IO(new ByteArrayInputStream(), new ByteArrayOutputStream(), new ByteArrayOutputStream())
-        def shell = new GremlinGroovysh(new Mediator(null), io)
-        cmd = new InstallCommand(shell, new Mediator(null))
+        cmd = new InstallCommand(new Mediator(null), new GroovyEngine())
     }
 
     @Test(expected = IllegalArgumentException)
@@ -72,10 +68,8 @@ class InstallCommandTest {
         // stub the network-dependent Grape.grab so grabDeps proceeds offline;
         // ServiceLoader then finds the GremlinPlugin impls already on the classpath and runs the closure body
         Grape.metaClass.static.grab = { Map m -> null }
-        def io = new IO(new ByteArrayInputStream(), new ByteArrayOutputStream(), new ByteArrayOutputStream())
         def mediator = new Mediator(null)
-        def shell = new GremlinGroovysh(mediator, io)
-        def cmd = new InstallCommand(shell, mediator)
+        def cmd = new InstallCommand(mediator, new GroovyEngine())
         cmd.grabDeps([group: "x", module: "y", version: "z"])
         assertTrue(mediator.availablePlugins.size() > 0)
     }

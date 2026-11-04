@@ -23,12 +23,15 @@ import org.apache.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine
 import org.codehaus.groovy.ast.ASTNode
 import org.codehaus.groovy.ast.ClassHelper
 import org.codehaus.groovy.ast.ClassNode
+import org.codehaus.groovy.ast.DynamicVariable
 import org.codehaus.groovy.ast.MethodNode
 import org.codehaus.groovy.ast.Parameter
+import org.codehaus.groovy.ast.Variable
 import org.codehaus.groovy.ast.expr.ArgumentListExpression
 import org.codehaus.groovy.ast.expr.BinaryExpression
 import org.codehaus.groovy.ast.expr.ConstantExpression
 import org.codehaus.groovy.ast.expr.DeclarationExpression
+import org.codehaus.groovy.ast.expr.EmptyExpression
 import org.codehaus.groovy.ast.expr.MapExpression
 import org.codehaus.groovy.ast.expr.MethodCallExpression
 import org.codehaus.groovy.ast.expr.VariableExpression
@@ -63,8 +66,9 @@ class InterpreterModeASTTransformation implements ASTTransformation {
         // need to check that object is a Script to call run(). this scriptNode may be a user defined class via
         // "def class" in which case it can be ignored as there are no variables to promote to global status there
         if (scriptNode.isDerivedFrom(ClassHelper.make(Script))) {
-            def runMethodOfScript = scriptNode.declaredMethodsMap["java.lang.Object run()"]
-            runMethodOfScript.code = wrap(runMethodOfScript)
+            def runMethodOfScript = scriptNode.getDeclaredMethod("run", Parameter.EMPTY_ARRAY)
+            if (runMethodOfScript != null)
+                runMethodOfScript.code = wrap(runMethodOfScript)
         }
     }
 
@@ -72,18 +76,28 @@ class InterpreterModeASTTransformation implements ASTTransformation {
         BlockStatement wrappedBlock = new BlockStatement()
         BlockStatement existingBlock = ((BlockStatement) method.code)
 
-        // the variable names that will be written back to the global context
-        def variableNames = [] as Set<String>
-        variableNames.addAll(findTopLevelVariableDeclarations(existingBlock.statements))
-        method.variableScope.referencedClassVariablesIterator.each{variableNames << it.name}
+        // generated references are linked to their Variable as scopes are already resolved at this phase
+        def variables = [:] as LinkedHashMap<String, Variable>
+        def hoisted = hoistTopLevelVariableDeclarations(existingBlock)
+        hoisted.each { variables[it.name] = (Variable) it }
+        method.variableScope.referencedClassVariablesIterator.each { Variable v ->
+            if (!variables.containsKey(v.name)) variables[v.name] = v
+        }
+
+        // declare outside the try so the finally block can see them
+        wrappedBlock.variableScope = existingBlock.variableScope
+        hoisted.each { VariableExpression v ->
+            wrappedBlock.addStatement(new ExpressionStatement(
+                    new DeclarationExpression(v, Token.newSymbol(Types.EQUAL, 0, 0), EmptyExpression.INSTANCE)))
+        }
 
         // the map to hold the variables and values
         wrappedBlock.addStatement(createGlobalMapAST())
 
         // the finally block will capture all the vars in the "globals" map
         BlockStatement finallyBlock = new BlockStatement()
-        variableNames.each {
-            finallyBlock.addStatement(createAssignToGlobalMapAST(it))
+        variables.each { String name, Variable declared ->
+            finallyBlock.addStatement(createAssignToGlobalMapAST(name, declared))
         }
 
         wrappedBlock.addStatement(new TryCatchStatement(existingBlock, finallyBlock))
@@ -91,20 +105,34 @@ class InterpreterModeASTTransformation implements ASTTransformation {
         return wrappedBlock
     }
 
-    private static List<String> findTopLevelVariableDeclarations(def existingStatements) {
-        existingStatements.findAll{ it instanceof ExpressionStatement }
-                .collect{ ((ExpressionStatement) it).expression }
-                .findAll{ it instanceof DeclarationExpression}
-                .collect{ ((DeclarationExpression) it).leftExpression }
-                .collect{ ((VariableExpression) it).name }
+    /**
+     * Turns each top level {@code def x = value} into {@code x = value} and returns the declared variables.
+     */
+    private static List<VariableExpression> hoistTopLevelVariableDeclarations(final BlockStatement block) {
+        def hoisted = [] as List<VariableExpression>
+        block.statements.each { Statement statement ->
+            if (!(statement instanceof ExpressionStatement)) return
+            def expressionStatement = (ExpressionStatement) statement
+            if (!(expressionStatement.expression instanceof DeclarationExpression)) return
+            def declaration = (DeclarationExpression) expressionStatement.expression
+            if (!(declaration.leftExpression instanceof VariableExpression)) return
+
+            def variable = (VariableExpression) declaration.leftExpression
+            hoisted << variable
+            expressionStatement.expression = declaration.rightExpression instanceof EmptyExpression ?
+                    new VariableExpression(variable) :
+                    new BinaryExpression(new VariableExpression(variable), Token.newSymbol(Types.ASSIGN, 0, 0),
+                            declaration.rightExpression)
+        }
+        return hoisted
     }
 
-    private static Statement createAssignToGlobalMapAST(String varName) {
+    private static Statement createAssignToGlobalMapAST(String varName, Variable variable) {
         def tryCatch = new TryCatchStatement(new ExpressionStatement(
                 new MethodCallExpression(
-                        new VariableExpression(GremlinGroovyScriptEngine.COLLECTED_BOUND_VARS_MAP_VARNAME),
+                        globalMapVariable(),
                         "put",
-                        new ArgumentListExpression(new ConstantExpression(varName), new VariableExpression(varName)))), EmptyStatement.INSTANCE)
+                        new ArgumentListExpression(new ConstantExpression(varName), new VariableExpression(variable)))), EmptyStatement.INSTANCE)
 
         tryCatch.addCatch(new CatchStatement(new Parameter(ClassHelper.make(MissingPropertyException), "ex"), EmptyStatement.INSTANCE))
         return tryCatch
@@ -113,8 +141,12 @@ class InterpreterModeASTTransformation implements ASTTransformation {
     private static Statement createGlobalMapAST() {
         new ExpressionStatement(
                 new BinaryExpression(
-                        new VariableExpression(GremlinGroovyScriptEngine.COLLECTED_BOUND_VARS_MAP_VARNAME),
+                        globalMapVariable(),
                         Token.newSymbol(Types.EQUAL, 0, 0),
                         new MapExpression()))
+    }
+
+    private static VariableExpression globalMapVariable() {
+        new VariableExpression(new DynamicVariable(GremlinGroovyScriptEngine.COLLECTED_BOUND_VARS_MAP_VARNAME, false))
     }
 }

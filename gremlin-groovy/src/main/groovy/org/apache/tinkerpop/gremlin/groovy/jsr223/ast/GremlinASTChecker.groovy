@@ -94,7 +94,7 @@ final class GremlinASTChecker {
                 def value = getArgument(argumentExpressions[1])
 
                 if (isTimeoutKey(key) && value instanceof Number) {
-                    total += (Number) value
+                    total += ((Number) value).longValue()
                 }
             }
         }

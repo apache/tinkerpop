@@ -258,9 +258,10 @@ class TestConsole(object):
         TestConsole._expect_gremlin_header(child)
 
         child.sendline(":help")
-        # the help listing enumerates the available commands
-        child.expect_exact(":help")
-        child.expect_exact(":quit")
+        # the help listing enumerates the available commands, which groovysh names with a leading "/"
+        child.expect_exact("/exit")
+        child.expect_exact("/help")
+        child.expect_exact("/plugin")
         TestConsole._expect_prompt(child)
 
         TestConsole._close(child)
@@ -269,7 +270,7 @@ class TestConsole(object):
         child = TestConsole._spawn()
         TestConsole._expect_gremlin_header(child)
 
-        # :clear resets the buffer and returns to the prompt without error
+        # :clear clears the screen and returns to the prompt without error
         child.sendline(":clear")
         TestConsole._expect_prompt(child)
         # confirm the console is still usable afterwards
@@ -353,9 +354,15 @@ class TestConsole(object):
 
         # the fail() step raises a Failure which is rendered with the dedicated Failure formatter
         # (note: unlike other errors, this path does not prompt for a stack trace)
-        child.sendline("g.inject(1).fail('boomfailure123')")
+        child.sendline("g.inject(1).fail('boomfailure123').toList()")
         child.expect_exact("fail() Step Triggered")
         child.expect_exact("boomfailure123")
+        TestConsole._expect_prompt(child)
+
+        # a traversal that is not iterated on the line fails while the shell checks its result, which reports only
+        # the exception
+        child.sendline("g.inject(1).fail('boomfailure456')")
+        child.expect_exact("FailException: boomfailure456")
         TestConsole._expect_prompt(child)
 
         TestConsole._close(child)
@@ -541,10 +548,15 @@ class TestConsole(object):
     @staticmethod
     def _setup_modern_graph(child):
         # builds an in-memory TinkerGraph and an embedded traversal source, no server required
+        # an assignment reports a null result, so check each variable on its own line
         child.sendline("graph = org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory.createModern()")
+        TestConsole._expect_prompt(child)
+        child.sendline("graph")
         child.expect_exact("==>tinkermemorygraph[vertices:6 edges:6]")
         TestConsole._expect_prompt(child)
         child.sendline("g = traversal().withEmbedded(graph)")
+        TestConsole._expect_prompt(child)
+        child.sendline("g")
         child.expect_exact("==>graphtraversalsource[tinkermemorygraph[vertices:6 edges:6], standard]")
         TestConsole._expect_prompt(child)
 
@@ -560,7 +572,8 @@ class TestConsole(object):
     @staticmethod
     def _send(child, line):
         child.sendline(line)
-        child.expect(line + "\r\n")
+        # the line reader ends the echoed line with \r\n, which the terminal shows as \r\r\n
+        child.expect(line + "\r+\n")
 
     @staticmethod
     def _expect_prompt(child):
@@ -568,10 +581,14 @@ class TestConsole(object):
 
     @staticmethod
     def _close(child):
-        # Wait for the console to exit so a console that ignores :x fails the test, and force the pty
-        # closed either way so no console process outlives its test.
+        # an -e script ends the console by itself, so it may already be gone. Either way wait for the exit so a
+        # console that ignores :x fails the test, and force the pty closed so no console process outlives its test.
         try:
-            child.sendline(":x")
+            if child.isalive():
+                try:
+                    child.sendline(":x")
+                except OSError:
+                    pass
             child.expect(pexpect.EOF, timeout=10)
         finally:
             child.close(force=True)
