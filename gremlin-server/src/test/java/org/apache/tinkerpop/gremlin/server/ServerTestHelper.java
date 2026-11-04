@@ -35,7 +35,7 @@ public class ServerTestHelper {
     /**
      *  Tests from maven will pass this value in via failsafe plugin. basically we want to home this in on the
      *  gremlin-server directory to get stuff to reference scripts properly from the file system from any directory.
-     *  If an overriden path is determined to be absolute then the path is not re-written.
+     *  If an overridden path is determined to be absolute then the path is not re-written.
      */
     public static void rewritePathsInGremlinServerSettings(final Settings overridenSettings) {
         final File homeDir;
