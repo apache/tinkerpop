@@ -18,22 +18,50 @@
  */
 package org.apache.tinkerpop.gremlin.console.commands
 
-import org.apache.groovy.groovysh.ComplexCommandSupport
-import org.apache.groovy.groovysh.Groovysh
 import org.apache.tinkerpop.gremlin.console.ConsoleFs
 import org.apache.tinkerpop.gremlin.console.Mediator
+import org.jline.reader.Completer
+import org.jline.reader.impl.completer.StringsCompleter
 
 /**
  * Activate and manage a plugin.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-class PluginCommand extends ComplexCommandSupport {
+class PluginCommand extends GremlinCommand {
+    private static final List<String> FUNCTIONS = ["use", "list", "unuse"]
+
     private final Mediator mediator
 
-    public PluginCommand(final Groovysh shell, final Mediator mediator) {
-        super(shell, ":plugin", ":pin", ["use", "list", "unuse"], "use")
+    public PluginCommand(final Mediator mediator) {
+        super("/plugin", "/pin")
         this.mediator = mediator
+    }
+
+    @Override
+    String description() { "Manage plugins for the Console" }
+
+    @Override
+    String usage() { "[use <plugin-name>|list|unuse <plugin-name>]" }
+
+    @Override
+    String help() { "Manage plugins for the Console." }
+
+    @Override
+    List<Completer> completers() {
+        return [COMMAND_WORD,
+                new StringsCompleter(FUNCTIONS as String[]),
+                new StringsCompleter({ mediator.availablePlugins.values().collect { it.plugin.name } } as java.util.function.Supplier)]
+    }
+
+    /**
+     * Runs the {@code do_<function>} closure, as groovysh 4's {@code ComplexCommandSupport} did.
+     */
+    @Override
+    Object execute(final List<String> arguments) {
+        final String function = arguments.isEmpty() ? "use" : arguments[0]
+        if (!(function in FUNCTIONS)) fail("Unknown function name: '$function'. Valid arguments: $FUNCTIONS")
+        return ((Closure) this."do_$function").call(arguments.drop(1))
     }
 
     def Object do_use = { List<String> arguments ->

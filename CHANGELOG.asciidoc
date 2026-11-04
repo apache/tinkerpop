@@ -46,6 +46,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Bumped `jackson-databind` to 2.22.4.
 * Bumped Spark to 4.3.0 and Hadoop to 3.5.0.
 * Changed `gremlin-javascript` to export Gremlin symbols by name using their Gremlin spelling, such as `T`, `Order` and `__`.
+* Bumped Groovy to 6.0.0 *(breaking)*.
 
 [[release-4-0-0-beta-3]]
 === TinkerPop 4.0.0-beta.3 (July 20, 2026)

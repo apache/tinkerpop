@@ -45,8 +45,7 @@ SHIFT
 GOTO parse
 :endparse
 
-:: workaround for https://issues.apache.org/jira/browse/GROOVY-6453
-set JAVA_OPTIONS=-Xms32m -Xmx512m -Djline.terminal=none
+set JAVA_OPTIONS=-Xms32m -Xmx512m
 
 :: Launch the application
 

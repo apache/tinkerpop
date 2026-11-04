@@ -170,7 +170,7 @@ addition to the ones provided by TinkerPop. You can also request help on a speci
 
 [gremlin-groovy]
 ----
-:help :plugin
+:help /plugin
 ----
 
 The Gremlin Console can also provide you with code help via auto-complete functionality. Use the `<TAB>` key to
@@ -286,23 +286,21 @@ g.V(1).outE().
 
 In this case, the line of execution does not return a `Traversal`.  It returns the first item in the `Traversal` with
 the call to `next()`.  This first item is a `Map`.  When the console detects that it is a `Map`, it iterates the
-`entrySet()` and prints each `Map.Entry` to the screen. It is possible to "prevent" auto-iteration, which is useful
-when you want to work with a `Traversal` as a variable. You can do this with a clever use of a semi-colon:
+`entrySet()` and prints each `Map.Entry` to the screen. A line that assigns its result to a variable is not
+auto-iterated, which is useful when you want to work with a `Traversal` as a variable:
 
 [gremlin-groovy,modern]
 ----
 t = g.V(1).outE().
       group().
         by(label).
-        by(inV());null
+        by(inV())
 t.next()
 ----
 
-TIP: In addition to "returning null", you could also return an empty list as in: `t = g.V(1);[]'.
-
-image:gremlin-console-ide.png[float=left,width=300] The first line assigns the `Traversal` to `t`, but the line itself
-is actually two lines of code as denoted by the semi-colon. The line of execution actually returns `null`, which is
-what the console actual auto-iterates. At that point, you can work with `t` as you desire.
+image:gremlin-console-ide.png[float=left,width=300] The first line assigns the `Traversal` to `t` and the console
+reports a `null` result for it rather than iterating the `Traversal`. At that point, you can work with `t` as you
+desire.
 
 Turning your attention back to the original problem, you can now think about the issue with the `Traversal` not
 containing the appropriate number of vertices in the context of iteration. In the original `Traversal` the second

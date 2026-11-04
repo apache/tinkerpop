@@ -175,8 +175,12 @@ class SugarLoader {
     public static class GraphTraversalCategory {
 
         public static final get(final GraphTraversal graphTraversal, final String key) {
-            graphTraversal."$key"()
+            // a dynamic graphTraversal."$key"() for a missing step recurses back into this getter on Groovy 5+
+            final MetaMethod step = graphTraversal.metaClass.getMetaMethod(key, NO_ARGS)
+            return null != step ? step.invoke(graphTraversal, NO_ARGS) : graphTraversal.values(key)
         }
+
+        private static final Object[] NO_ARGS = new Object[0]
 
         public static final getAt(final GraphTraversal graphTraversal, final Integer index) {
             graphTraversal.range(index, index + 1);
