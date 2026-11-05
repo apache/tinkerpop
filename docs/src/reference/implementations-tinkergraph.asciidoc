@@ -17,6 +17,7 @@ specific language governing permissions and limitations
 under the License.
 ////
 [[tinkergraph-gremlin]]
+[llms-summary="TinkerGraph, TinkerPop's in-memory reference graph: its configuration and data types, multi-label support, the transactional and optionally persistent TinkerStorageGraph, and TinkerGQL indexing."]
 == TinkerGraph-Gremlin
 
 [source,xml]
@@ -371,11 +372,46 @@ appropriately.
 
 ==== Best Practices
 
-Errors can occur before a transaction gets committed. Specifically for `TinkerStorageGraph`, you may encounter many
-`TransactionException` errors in a highly concurrent environment due its optimistic approach to locking. Users should
-follow the try-catch-rollback pattern described in the
-link:https://tinkerpop.apache.org/docs/x.y.z/reference/#transactions[transactions] section in combination with
-exponential backoff based retries to mitigate this issue.
+Errors can occur before a transaction gets committed. `TinkerStorageGraph` in particular may raise many
+`TransactionException` errors in a highly concurrent environment because of its optimistic approach to locking. When two
+transactions modify the same element, the one that commits second fails with a `TransactionException`. The
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#transactions[transactions] section describes the
+try-catch-rollback pattern that every transaction should follow. For `TinkerStorageGraph`, that pattern should be
+combined with bounded, exponentially backed-off retries so that a transaction which lost a conflict is attempted again
+rather than surfaced to the caller as a hard failure.
+
+A `TransactionException` raised on commit is the retry signal for this graph. Some providers instead mark a retryable
+failure by implementing the `TemporaryException` interface, but `TinkerStorageGraph` reports a conflict as a plain
+`TransactionException`, so a retry loop catches that type directly. The pattern below starts a fresh transaction on each
+attempt, rolls back a failed attempt before the next one, waits for a delay that grows exponentially with the attempt
+count, and rethrows the final exception once a bounded number of attempts is exhausted.
+
+[source,java]
+----
+// a read-modify-write such as incrementing a counter on a contended vertex is the
+// classic case that produces optimistic-locking conflicts under concurrent writers
+public void incrementCount(GraphTraversalSource g, Object vertexId) throws InterruptedException {
+    final int maxAttempts = 5;
+    final long baseDelayMillis = 10L;
+
+    for (int attempt = 1; ; attempt++) {
+        GraphTraversalSource gtx = g.tx().begin();
+        try {
+            final long current = (long) gtx.V(vertexId).values("count").next();
+            gtx.V(vertexId).property("count", current + 1).iterate();
+            gtx.tx().commit();
+            return;
+        } catch (TransactionException ex) {
+            gtx.tx().rollback();
+            if (attempt >= maxAttempts)
+                throw ex;
+
+            // exponential backoff: baseDelayMillis * 2^(attempt - 1)
+            Thread.sleep(baseDelayMillis * (1L << (attempt - 1)));
+        }
+    }
+}
+----
 
 ==== Performance Considerations
 
