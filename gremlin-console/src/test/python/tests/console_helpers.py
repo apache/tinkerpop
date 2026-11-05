@@ -49,7 +49,8 @@ PLUGINS_TXT = os.path.join(CONSOLE_HOME, "ext", "plugins.txt")
 
 PROMPT = "gremlin> "
 STACK_TRACE_PROMPT = "Display stack trace? [yN]"
-DEFAULT_TIMEOUT = 120
+# as EXPECT_TIMEOUT in test_console.py: output that never arrives costs this much per wait
+DEFAULT_TIMEOUT = 60
 
 REMOTE_PLUGIN = "org.apache.tinkerpop.gremlin.console.jsr223.RemoteGremlinPlugin"
 UTILITIES_PLUGIN = "org.apache.tinkerpop.gremlin.console.jsr223.UtilitiesGremlinPlugin"
