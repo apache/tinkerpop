@@ -77,6 +77,7 @@ module.exports = {
     t: t.t,
     GraphTraversal: gt.GraphTraversal,
     GraphTraversalSource: gt.GraphTraversalSource,
+    CardinalityValue: gt.CardinalityValue,
     statics: gt.statics,
     Translator,
     traversal: AnonymousTraversalSource.traversal,
