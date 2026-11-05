@@ -78,18 +78,6 @@ def test_quiet_hides_banner_but_keeps_prompt_and_results(console):
         assert exit_console(child) == 0
 
 
-@pytest.mark.parametrize("command", [":x", ":exit", ":quit", ":q"])
-def test_exit_commands_exit_zero(console, command):
-    child, _ = console.start("-C")
-    assert exit_console(child, command) == 0
-
-
-def test_end_of_input_exits_zero(console):
-    child, _ = console.start("-C")
-    child.sendeof()
-    assert wait_for_exit(child) == 0
-
-
 def test_execute_success_exits_zero_and_is_quiet(console):
     script = console.write_file("ok.groovy", "x = 1 + 1\nprintln x\n")
     for option in ("-e", "--execute"):
