@@ -54,6 +54,7 @@ import org.jline.terminal.Terminal
 import org.jline.terminal.TerminalBuilder
 
 import java.lang.reflect.UndeclaredThrowableException
+import java.nio.file.Path
 import java.nio.file.Paths
 import java.util.function.BiConsumer
 import java.util.function.Consumer
@@ -89,6 +90,7 @@ class Console {
     private final IO io
     private final boolean interactive
     private final GroovyEngine engine
+    private final CommandGroup commands
     private LineReader reader
 
     public Console(final IO io, final List<List<String>> scriptsAndArgs, final boolean interactive) {
@@ -142,21 +144,23 @@ class Console {
         if (activePlugins.size() != mediator.activePlugins().size())
             mediator.writePluginState()
 
-        final CommandGroup commands = GremlinCommands.create(mediator, engine)
+        commands = GremlinCommands.create(mediator, engine)
 
         if (scriptsAndArgs != null && !scriptsAndArgs.isEmpty()) executeInShell(scriptsAndArgs, commands)
 
         showOutput = true
+    }
 
-        // built here so JLine doesn't send terminal capability queries at startup
-        final Terminal terminal = TerminalBuilder.builder().name("gremlin").graphemeCluster(false).build()
-
+    /**
+     * Runs the shell on the terminal until the session ends and returns its exit code.
+     */
+    int start(final Terminal terminal, final Path historyFile = Paths.get(ConsoleFs.HISTORY_FILE)) {
         final GroovyshOptions options = GroovyshOptions.builder()
                 .engine(engine)
                 .terminal(terminal)
                 .showBanner(false)
                 .prompt({ interactive ? Colorizer.render(Preferences.inputPromptColor, Preferences.inputPrompt + ' ') : "" } as Supplier<String>)
-                .historyFile(Paths.get(ConsoleFs.HISTORY_FILE))
+                .historyFile(historyFile)
                 .groups(commands)
                 .resultHandler({ printer, result -> handleResultIterate(result) } as GroovyshOptions.ResultHandler)
                 .errorHandler({ Throwable err, Consumer<Throwable> trace ->
@@ -189,8 +193,7 @@ class Console {
                 } as BiConsumer<LineReader, GroovySystemRegistry>)
                 .build()
 
-        final int code = Main.start(options, new String[0])
-        System.exit(code)
+        return Main.start(options, new String[0])
     }
 
     /**
@@ -576,7 +579,9 @@ class Console {
         }
 
         def scriptAndArgs = parseArgs(options.e ? ["-e", "--execute"] : ["-i", "--interactive"], args, cli)
-        new Console(io, scriptAndArgs, !options.e)
+        final Console console = new Console(io, scriptAndArgs, !options.e)
+        // built here so JLine doesn't send terminal capability queries at startup
+        System.exit(console.start(TerminalBuilder.builder().name("gremlin").graphemeCluster(false).build()))
     }
 
     /**
