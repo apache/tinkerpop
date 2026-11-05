@@ -169,7 +169,7 @@ g.V().repeat(groupCount('m').by('name').out().timeLimit(100)).times(5).cap('m').
 
 <1> The traversal iterates through each vertex in the graph and for each one repeatedly group counts each vertex that
 passes through using the vertex as the key. The `Map` of this group count is stored in a variable named "m". The
-`out()` traversal is repeated thirty times or until the paths are exhausted. Five iterations should provide enough
+`out()` traversal is repeated five times or until the paths are exhausted. Five iterations should provide enough
 time to converge on a solution. Calling `cap('m')` at the end simply extracts the `Map` side-effect stored in "m".
 <2> The entries in the `Map` are then iterated and sorted with the top ten most central vertices presented as output.
 <3> The previous examples can be expanded on a little bit by including a
