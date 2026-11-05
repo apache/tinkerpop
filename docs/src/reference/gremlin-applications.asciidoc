@@ -1806,17 +1806,29 @@ Server, it is imperative to use script parameterization. Period. There are at le
 reasons for doing so: script caching and protection from "Gremlin injection" (conceptually the same as the notion of
 SQL injection).
 
+NOTE: The `GremlinGroovyScriptEngine` discussed in this section is not enabled by default. It must be listed
+explicitly under `scriptEngines` in the Gremlin Server configuration before Groovy scripts are accepted, otherwise
+such requests are rejected with a `400 Bad Request` response. The default packaged configuration enables only the
+`gremlin-lang` `ScriptEngine`. See the <<server-scriptengines-behavior,scriptEngines Behavior>> Section for the
+configuration that enables `gremlin-groovy`.
+
 IMPORTANT: It is possible to use the `GremlinLangScriptEngine` in Gremlin Server as opposed to the
 `GremlinGroovyScriptEngine`. The former makes use of `gremlin-language` and its ANTLR grammar for parsing Gremlin
-scripts. This processing is different from the processing performed by Groovy and therefore spares users from the
-concerns of this section. When considering parameterization, users should also consider the graph database they are
-using to determine if it has native mechanisms that preclude the need for parameterization.
+scripts. This processing is different from the processing performed by Groovy and avoids the arbitrary code execution
+that the Groovy-specific injection examples in this section demonstrate. It does not, on its own, remove the need to
+guard against Gremlin injection. Because the grammar accepts multiple statements in a single string, a query assembled
+by concatenating unscrubbed input can still parse as valid Gremlin and execute unintended steps, such as an appended
+`drop()`. Parameterization therefore remains the recommended practice regardless of the `ScriptEngine` in use. When
+considering parameterization, the graph database in use should also be considered to determine whether it has native
+mechanisms that preclude the need for parameterization.
 
 With respect to caching, Gremlin Server caches all scripts that are passed to it.  The cache is keyed based on the
 hash of the script.  Therefore `g.V(1)` and `g.V(2)` will be recognized as two separate scripts in the cache.  If that
 script is parameterized to `g.V(x)` where `x` is passed as a parameter from the client, there will be no additional
 compilation cost for future requests on that script.  Compilation of a script should be considered "expensive" and
-avoided when possible.
+avoided when possible. This caching is internal to Gremlin Server and is not directly observable from the client. Its
+effect is a reduction in server-side compilation work on repeated requests rather than a distinct client-visible
+response.
 
 IMPORTANT: The parameterized script of `g.V(x)` is keyed in the cache differently than `g.V(y)` or even `g.V( x )`.
 Scripts must be exact string matches for recompilation to be avoided.
