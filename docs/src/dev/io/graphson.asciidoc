@@ -253,6 +253,36 @@ following values: "-Infinity", "Infinity", "NaN"
 100.0
 ----
 
+=== Geometry
+
+JSON Object with two required keys: "wkt" and "model" +
+"wkt" is a JSON String holding the ISO WKT of the geometry, exactly as `Geometry.toWKT()` writes it +
+"model" is a JSON String naming the coordinate interpretation model, either "CARTESIAN" or "GEOGRAPHIC"
+
+[source,json]
+----
+{
+  "@type" : "g:Geometry",
+  "@value" : {
+    "wkt" : "POINT(-122.3321 47.6062)",
+    "model" : "GEOGRAPHIC"
+  }
+}
+----
+
+[source,json]
+----
+{
+  "wkt" : "POINT(-122.3321 47.6062)",
+  "model" : "GEOGRAPHIC"
+}
+----
+
+GraphSON carries the coordinate system as a model rather than as a spatial reference identifier, so a geometry whose
+model is `OTHER` cannot be written. Reading fails when either field is absent, when "model" names anything other than
+"CARTESIAN" or "GEOGRAPHIC", including "OTHER", and when "wkt" carries an extended WKT `SRID=` prefix. Fields other
+than "wkt" and "model" are ignored.
+
 === Integer
 
 A JSON Number with the same range as a 4-byte signed integer.

@@ -18,6 +18,8 @@
  */
 package org.apache.tinkerpop.gremlin.structure.geo;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 
 /**
@@ -29,6 +31,7 @@ import java.util.List;
  *   <li>{@link #fromWkt(String, Model)} - parses WKT with explicit model</li>
  *   <li>{@link #fromWkt(String, int)} - parses WKT with explicit SRID</li>
  *   <li>{@link #fromWkb(byte[], int)} - parses ISO WKB with explicit SRID</li>
+ *   <li>{@link #fromWkb(InputStream, int)} - parses one ISO WKB geometry from a stream</li>
  * </ul>
  * <p>
  * Output formats:
@@ -169,10 +172,11 @@ public abstract class Geometry implements Comparable<Geometry> {
      *         {@code 0x40000000} for M or {@code 0x20000000} for SRID; if a type code is in the
      *         M range 2001 to 2007 or the ZM range 3001 to 3007; if a type code is outside
      *         1 to 7 and 1001 to 1007; if some geometries carry a Z type code and others do not;
-     *         if the input is truncated, a declared point, ring or geometry count is negative or
-     *         too large to address, or a count needs more bytes than remain; if bytes remain
-     *         after the geometry; if a line string declares exactly 1 point; if a polygon ring
-     *         declares fewer than 4 points or is not closed; if a line string or ring vertex has
+     *         if the input is truncated, which includes a declared point, ring or geometry count
+     *         that is rejected for needing more bytes than remain; if a declared point, ring or
+     *         geometry count is negative; if bytes remain after the geometry; if a line string
+     *         declares exactly 1 point; if a polygon ring declares fewer than 4 points or is
+     *         not closed; if a line string or ring vertex has
      *         {@code NaN} x and y, which encodes an empty point; if only one of x and y is
      *         {@code NaN}, an x or y is infinite, or the z of a point that is not empty is
      *         {@code NaN} or infinite; if an element of a {@link MultiPoint},
@@ -183,6 +187,34 @@ public abstract class Geometry implements Comparable<Geometry> {
      */
     public static Geometry fromWkb(final byte[] wkb, final int srid) {
         return WkbReader.parse(wkb, srid);
+    }
+
+    /**
+     * Parses one ISO WKB geometry from a stream with an explicit SRID, leaving the stream
+     * positioned on the byte after the geometry.
+     * <p>
+     * The bytes of one geometry are found by parsing them: the type code fixes the size of a
+     * coordinate, and the counts give the number of points, rings and parts. The stream is read one
+     * geometry at a time, so a stream holding several geometries back to back is read by calling
+     * this method once per geometry.
+     * <p>
+     * The same input is accepted as by {@link #fromWkb(byte[], int)}, except that a geometry ends
+     * where its own bytes end rather than at the end of the input, so bytes that follow it are
+     * left for the caller instead of being rejected as trailing bytes.
+     *
+     * @param in the stream holding ISO WKB bytes
+     * @param srid the spatial reference ID, applied as given and not itself validated
+     * @return the parsed geometry
+     * @throws java.io.EOFException if the stream ends before the geometry is complete, including
+     *         where a declared point, ring or geometry count needs more bytes than the stream holds
+     * @throws IOException if the stream cannot be read
+     * @throws IllegalArgumentException if {@code in} is null, or if the bytes are malformed in
+     *         any of the ways listed on {@link #fromWkb(byte[], int)} other than being truncated
+     *         or carrying trailing bytes
+     * @since 4.0.0
+     */
+    public static Geometry fromWkb(final InputStream in, final int srid) throws IOException {
+        return WkbReader.parse(in, srid);
     }
 
     // ------------------------------------------------------------------------

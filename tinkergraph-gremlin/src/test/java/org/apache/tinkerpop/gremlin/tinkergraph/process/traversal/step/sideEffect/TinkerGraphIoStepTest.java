@@ -18,10 +18,13 @@
  */
 package org.apache.tinkerpop.gremlin.tinkergraph.process.traversal.step.sideEffect;
 
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.tinkerpop.gremlin.TestHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.IO;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.geo.Geometry;
+import org.apache.tinkerpop.gremlin.structure.geo.Model;
 import org.apache.tinkerpop.gremlin.structure.io.util.CustomId;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.junit.Before;
@@ -30,6 +33,8 @@ import org.junit.Test;
 import java.io.File;
 import java.util.UUID;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
@@ -94,5 +99,69 @@ public class TinkerGraphIoStepTest {
         emptyG.io(file.getAbsolutePath()).with(IO.registry, CustomId.CustomIdIoRegistry.instance()).read().iterate();
 
         assertEquals(1, emptyG.V().has("custom", new CustomId("a", uuid)).count().next().intValue());
+    }
+
+    @Test
+    public void shouldWriteReadGeometryGryo() throws Exception {
+        final Geometry point = Geometry.fromWkt("POINT(-122.3321 47.6062)", Model.GEOGRAPHIC);
+        final Geometry collection = Geometry.fromWkt("GEOMETRYCOLLECTION(POINT(1 2), LINESTRING(0 0, 1 1))", Model.CARTESIAN);
+        final Geometry projected = Geometry.fromWkt("POINT(560000 5280000)", 32618);
+
+        g.addV("place").property("name", "seattle").
+                property("location", point).
+                property("area", collection).
+                property("projected", projected).iterate();
+
+        final File file = TestHelper.generateTempFile(TinkerGraphIoStepTest.class, "shouldWriteReadGeometryGryo", ".kryo");
+        g.io(file.getAbsolutePath()).with(IO.writer, IO.gryo).write().iterate();
+
+        final GraphTraversalSource emptyG = TinkerGraph.open().traversal();
+        emptyG.io(file.getAbsolutePath()).with(IO.reader, IO.gryo).read().iterate();
+
+        assertEquals(point, emptyG.V().has("name", "seattle").values("location").next());
+        assertEquals(collection, emptyG.V().has("name", "seattle").values("area").next());
+
+        final Geometry readProjected = (Geometry) emptyG.V().has("name", "seattle").values("projected").next();
+        assertEquals(projected, readProjected);
+        assertEquals(32618, readProjected.srid());
+        assertEquals(Model.OTHER, readProjected.model());
+    }
+
+    @Test
+    public void shouldWriteReadGeometryGraphSON() throws Exception {
+        final Geometry point = Geometry.fromWkt("POINT(-122.3321 47.6062)", Model.GEOGRAPHIC);
+        final Geometry collection = Geometry.fromWkt("GEOMETRYCOLLECTION(POINT(1 2), LINESTRING(0 0, 1 1))", Model.CARTESIAN);
+
+        g.addV("place").property("name", "seattle").
+                property("location", point).
+                property("area", collection).iterate();
+
+        final File file = TestHelper.generateTempFile(TinkerGraphIoStepTest.class, "shouldWriteReadGeometryGraphSON", ".json");
+        g.io(file.getAbsolutePath()).with(IO.writer, IO.graphson).write().iterate();
+
+        final GraphTraversalSource emptyG = TinkerGraph.open().traversal();
+        emptyG.io(file.getAbsolutePath()).with(IO.reader, IO.graphson).read().iterate();
+
+        assertEquals(point, emptyG.V().has("name", "seattle").values("location").next());
+        assertEquals(collection, emptyG.V().has("name", "seattle").values("area").next());
+    }
+
+    /**
+     * GraphSON names a geometry's coordinate system as {@code CARTESIAN} or {@code GEOGRAPHIC} and has no way to
+     * carry any other SRID, so a write that would lose one is refused rather than silently dropping it.
+     */
+    @Test
+    public void shouldFailToWriteGeometryWithOtherModelGraphSON() throws Exception {
+        g.addV("place").property("name", "zone18n").
+                property("projected", Geometry.fromWkt("POINT(560000 5280000)", 32618)).iterate();
+
+        final File file = TestHelper.generateTempFile(TinkerGraphIoStepTest.class, "shouldFailToWriteGeometryWithOtherModelGraphSON", ".json");
+        try {
+            g.io(file.getAbsolutePath()).with(IO.writer, IO.graphson).write().iterate();
+            fail("Can't write a geometry whose SRID has no GraphSON model");
+        } catch (Exception ex) {
+            final String message = ExceptionUtils.getRootCauseMessage(ex);
+            assertThat(message, containsString("32618"));
+        }
     }
 }

@@ -31,6 +31,7 @@ import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
+import org.apache.tinkerpop.gremlin.structure.geo.Geometry;
 import org.apache.tinkerpop.gremlin.structure.io.pdt.CompositePDT;
 import org.apache.tinkerpop.gremlin.structure.io.pdt.PrimitivePDT;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedFactory;
@@ -66,6 +67,8 @@ import java.util.UUID;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
+import static org.apache.tinkerpop.gremlin.structure.geo.Model.CARTESIAN;
+import static org.apache.tinkerpop.gremlin.structure.geo.Model.GEOGRAPHIC;
 import static org.apache.tinkerpop.gremlin.structure.util.detached.DetachedFactory.detach;
 
 /**
@@ -177,6 +180,18 @@ public class Model {
         final Tree<Object> deepTree = new Tree<>();
         deepTree.getOrCreateChild("root").getOrCreateChild("branch").getOrCreateChild("leaf");
         addCoreEntry(deepTree, "tree-deep-nesting", "");
+
+        addCoreEntry(Geometry.fromWkt("POINT(-122.3321 47.6062)", GEOGRAPHIC), "point-geometry",
+                "GraphBinary writes a `Geometry` as its SRID followed by its ISO WKB bytes, while GraphSON writes its WKT text together with its coordinate model.");
+        addCoreEntry(Geometry.fromWkt("POINT Z(1 2 3)", CARTESIAN), "point-z-geometry", "");
+        addCoreEntry(Geometry.fromWkt("POINT EMPTY", CARTESIAN), "empty-point-geometry", "");
+        addCoreEntry(Geometry.fromWkt("LINESTRING(0 0, 1 1, 2 0)", CARTESIAN), "linestring-geometry", "");
+        addCoreEntry(Geometry.fromWkt("POLYGON((0 0, 10 0, 10 10, 0 10, 0 0), (2 2, 2 4, 4 4, 2 2))", GEOGRAPHIC), "polygon-geometry", "");
+        addCoreEntry(Geometry.fromWkt("MULTIPOINT((1 2), (3 4))", CARTESIAN), "multipoint-geometry", "");
+        addCoreEntry(Geometry.fromWkt("MULTILINESTRING((0 0, 1 1), (2 2, 3 3))", CARTESIAN), "multilinestring-geometry", "");
+        addCoreEntry(Geometry.fromWkt("MULTIPOLYGON(((0 0, 1 0, 1 1, 0 1, 0 0)), ((2 2, 3 2, 3 3, 2 3, 2 2)))", GEOGRAPHIC), "multipolygon-geometry", "");
+        addCoreEntry(Geometry.fromWkt("GEOMETRYCOLLECTION(POINT(1 2), GEOMETRYCOLLECTION(LINESTRING(0 0, 1 1)), POINT EMPTY)", CARTESIAN), "geometrycollection-geometry", "");
+        addCoreEntry(Geometry.fromWkt("POINT(1 2)", 3857), "other-srid-geometry", "");
 
         addGraphStructureEntry(graph.edges().next(), "traversal-edge", "");
         addGraphStructureEntry(DetachedFactory.detach(graph.edges().next(), false), "no-prop-edge", "");

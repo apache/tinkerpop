@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.structure.io.gryo;
 
+import com.sun.management.ThreadMXBean;
 import org.apache.tinkerpop.gremlin.process.remote.traversal.DefaultRemoteTraverser;
 import org.apache.tinkerpop.gremlin.process.traversal.GremlinLang;
 import org.apache.tinkerpop.gremlin.process.traversal.Merge;
@@ -26,6 +27,15 @@ import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.Option
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalExplanation;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.geo.Geometry;
+import org.apache.tinkerpop.gremlin.structure.geo.GeometryCollection;
+import org.apache.tinkerpop.gremlin.structure.geo.LineString;
+import org.apache.tinkerpop.gremlin.structure.geo.Model;
+import org.apache.tinkerpop.gremlin.structure.geo.MultiLineString;
+import org.apache.tinkerpop.gremlin.structure.geo.MultiPoint;
+import org.apache.tinkerpop.gremlin.structure.geo.MultiPolygon;
+import org.apache.tinkerpop.gremlin.structure.geo.Point;
+import org.apache.tinkerpop.gremlin.structure.geo.Polygon;
 import org.apache.tinkerpop.gremlin.structure.io.Io;
 import org.apache.tinkerpop.gremlin.structure.io.IoX;
 import org.apache.tinkerpop.gremlin.structure.io.IoXIoRegistry;
@@ -36,6 +46,7 @@ import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 import org.apache.tinkerpop.shaded.kryo.ClassResolver;
 import org.apache.tinkerpop.shaded.kryo.Kryo;
+import org.apache.tinkerpop.shaded.kryo.KryoException;
 import org.apache.tinkerpop.shaded.kryo.Registration;
 import org.apache.tinkerpop.shaded.kryo.Serializer;
 import org.apache.tinkerpop.shaded.kryo.io.Input;
@@ -53,6 +64,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
+import java.lang.management.ManagementFactory;
 import java.net.InetAddress;
 import java.nio.ByteBuffer;
 import java.sql.Timestamp;
@@ -80,14 +92,17 @@ import java.util.function.Supplier;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.__;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThan;
+import static org.hamcrest.Matchers.lessThan;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.fail;
+import static org.junit.Assume.assumeTrue;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -124,6 +139,19 @@ public class GryoMapperTest {
      * Kryo's reference marker for an object being seen for the first time.
      */
     private static final int KRYO_NOT_NULL = 1;
+
+    /**
+     * The Gryo bytes of {@code POINT(-122.3321 47.6062)} with SRID 4326, shared by the test that pins what the
+     * writer produces and the test that reads the same form back.
+     */
+    private static final byte[] SEATTLE_POINT_GRYO_BYTES = bytes(
+            KRYO_NOT_NULL,
+            0x00, 0x00, 0x10, 0xe6,                           // SRID 4326
+            0x00, 0x00, 0x00, 0x15,                           // 21 bytes of WKB
+            0x00,                                             // big-endian
+            0x00, 0x00, 0x00, 0x01,                           // type 1, point
+            0xc0, 0x5e, 0x95, 0x41, 0x20, 0x5b, 0xc0, 0x1a,   // x -122.3321
+            0x40, 0x47, 0xcd, 0x97, 0xf6, 0x2b, 0x6a, 0xe8);  // y 47.6062
 
     @Test
     public void shouldMakeNewInstance() {
@@ -787,6 +815,228 @@ public class GryoMapperTest {
         assertEquals(startingWith, serializeDeserialize(startingWith, TextP.class));
         final TextP regex = TextP.regex("meh");
         assertEquals(regex, serializeDeserialize(regex, TextP.class));
+    }
+
+    @Test
+    public void shouldHandleEveryGeometryKind() throws Exception {
+        final String[] values = {
+                "POINT(1.5 -2.5)",
+                "LINESTRING(0 0, 1 1, 2 -2.5)",
+                "POLYGON((0 0, 10 0, 10 10, 0 0), (1 1, 2 1, 2 2, 1 1))",
+                "MULTIPOINT((0 0), (1 1))",
+                "MULTILINESTRING((0 0, 1 1), (2 2, 3 3))",
+                "MULTIPOLYGON(((0 0, 1 0, 1 1, 0 0)), ((2 2, 3 2, 3 3, 2 2)))",
+                "GEOMETRYCOLLECTION(POINT(1 2), GEOMETRYCOLLECTION(LINESTRING(0 0, 1 1)), POINT EMPTY)"
+        };
+
+        for (final String wkt : values) {
+            final Geometry geometry = Geometry.fromWkt(wkt);
+            final Geometry read = serializeDeserialize(geometry, geometry.getClass());
+
+            assertEquals(wkt, geometry, read);
+            assertEquals(wkt, geometry.getClass(), read.getClass());
+        }
+    }
+
+    @Test
+    public void shouldHandleEveryEmptyGeometryKind() throws Exception {
+        final String[] values = {
+                "POINT EMPTY", "POINT Z EMPTY",
+                "LINESTRING EMPTY", "LINESTRING Z EMPTY",
+                "POLYGON EMPTY", "POLYGON Z EMPTY",
+                "MULTIPOINT EMPTY", "MULTIPOINT Z EMPTY",
+                "MULTILINESTRING EMPTY", "MULTILINESTRING Z EMPTY",
+                "MULTIPOLYGON EMPTY", "MULTIPOLYGON Z EMPTY",
+                "GEOMETRYCOLLECTION EMPTY", "GEOMETRYCOLLECTION Z EMPTY"
+        };
+
+        for (final String wkt : values) {
+            final Geometry geometry = Geometry.fromWkt(wkt);
+            final Geometry read = serializeDeserialize(geometry, geometry.getClass());
+
+            assertEquals(wkt, geometry, read);
+            assertEquals(wkt, geometry.getClass(), read.getClass());
+            assertTrue(wkt, read.isEmpty());
+            assertEquals(wkt, geometry.hasZ(), read.hasZ());
+        }
+    }
+
+    @Test
+    public void shouldHandlePointWithZ() throws Exception {
+        final Point point = Point.of(1, 2, 3);
+        final Point read = serializeDeserialize(point, Point.class);
+
+        assertEquals(point, read);
+        assertTrue(read.hasZ());
+        assertEquals(3.0, read.z(), 0.0);
+    }
+
+    @Test
+    public void shouldHandleNegativeZeroOnRoundTrip() throws Exception {
+        final Point read = serializeDeserialize(Point.of(-0.0, 0.0), Point.class);
+
+        assertEquals(Long.MIN_VALUE, Double.doubleToRawLongBits(read.x()));
+        assertEquals(Point.of(0, 0), read);
+    }
+
+    @Test
+    public void shouldHandlePointWithCustomSrid() throws Exception {
+        final Geometry point = Geometry.fromWkt("POINT(1 2)", 3857);
+        final Geometry read = serializeDeserialize(point, Point.class);
+
+        assertEquals(point, read);
+        assertEquals(3857, read.srid());
+        assertEquals(Model.OTHER, read.model());
+    }
+
+    /**
+     * A geometry held inside a container reaches the same serializer as one written on its own, because Kryo writes
+     * the registered id of each element's own class.
+     */
+    @Test
+    public void shouldHandleGeometryInList() throws Exception {
+        final ArrayList<Geometry> geometries = new ArrayList<>(Arrays.asList(
+                Point.of(1, 2),
+                LineString.of(Point.of(0, 0), Point.of(1, 1))));
+
+        assertEquals(geometries, serializeDeserialize(geometries, ArrayList.class));
+    }
+
+    @Test
+    public void shouldHandleGeometryAsMapValue() throws Exception {
+        final HashMap<String, Geometry> geometries = new HashMap<>();
+        geometries.put("here", Point.of(-122.3321, 47.6062, Model.GEOGRAPHIC));
+
+        assertEquals(geometries, serializeDeserialize(geometries, HashMap.class));
+    }
+
+    /**
+     * The registration ids are the wire format, so they are pinned here rather than only being read back through a
+     * round trip, which would pass whatever ids the mapper happened to assign.
+     */
+    @Test
+    public void shouldRegisterGeometryKindsAtTheirIds() {
+        final Kryo kryo = builder.get().create().createMapper();
+
+        assertEquals(205, kryo.getRegistration(Point.class).getId());
+        assertEquals(206, kryo.getRegistration(LineString.class).getId());
+        assertEquals(207, kryo.getRegistration(Polygon.class).getId());
+        assertEquals(208, kryo.getRegistration(MultiPoint.class).getId());
+        assertEquals(209, kryo.getRegistration(MultiLineString.class).getId());
+        assertEquals(210, kryo.getRegistration(MultiPolygon.class).getId());
+        assertEquals(211, kryo.getRegistration(GeometryCollection.class).getId());
+    }
+
+    /**
+     * The bytes a geometry occupies are the wire format, so the body is pinned here rather than only being read back
+     * through a round trip. Kryo writes an {@code int} as four big-endian bytes, which is how the SRID and the
+     * declared WKB length appear, and the WKB follows big-endian as {@link Geometry#toWKB()} produces it. The leading
+     * byte is Kryo's own reference marker, written before the serializer is reached.
+     */
+    @Test
+    public void shouldWriteGeometryAsSridThenLengthThenWkb() {
+        final Kryo kryo = builder.get().create().createMapper();
+        final Output out = new Output(64, -1);
+        kryo.writeObject(out, Point.of(-122.3321, 47.6062, Model.GEOGRAPHIC));
+        out.flush();
+
+        assertArrayEquals(SEATTLE_POINT_GRYO_BYTES, out.toBytes());
+    }
+
+    /**
+     * The same bytes the writer produces read back as the point they describe, so the form is pinned from both
+     * sides rather than only from the writer.
+     */
+    @Test
+    public void shouldReadGeometryFromSridThenLengthThenWkb() {
+        final Kryo kryo = builder.get().create().createMapper();
+
+        final Point read = kryo.readObject(
+                new Input(new ByteArrayInputStream(SEATTLE_POINT_GRYO_BYTES)), Point.class);
+
+        assertEquals(Point.of(-122.3321, 47.6062, Model.GEOGRAPHIC), read);
+        assertEquals(4326, read.srid());
+        assertEquals(Model.GEOGRAPHIC, read.model());
+    }
+
+    @Test
+    public void shouldFailOnNegativeGeometryWkbLength() {
+        final Kryo kryo = builder.get().create().createMapper();
+        final byte[] crafted = craftedGeometryBytes(4326, -1, new byte[0]);
+
+        try {
+            kryo.readObject(new Input(new ByteArrayInputStream(crafted)), Point.class);
+            fail("a negative WKB length must be refused");
+        } catch (IllegalArgumentException expected) {
+            assertEquals("Geometry WKB length cannot be negative - -1", expected.getMessage());
+        }
+    }
+
+    /**
+     * The declared length is a number the stream supplies, so it decides how many more bytes to read rather than how
+     * much memory to reserve. A stream claiming two gigabytes and carrying five bytes fails because the bytes are not
+     * there, and the memory taken to reach that point stays within the chunk the reader works in.
+     */
+    @Test
+    public void shouldFailOnGeometryWkbLengthLongerThanTheStreamWithoutReservingIt() {
+        final Kryo kryo = builder.get().create().createMapper();
+        final byte[] crafted = craftedGeometryBytes(4326, Integer.MAX_VALUE,
+                new byte[]{0x00, 0x00, 0x00, 0x00, 0x01});
+
+        final ThreadMXBean threads = (ThreadMXBean) ManagementFactory.getThreadMXBean();
+        assumeTrue("this JVM does not report per thread allocation",
+                threads.isThreadAllocatedMemorySupported() && threads.isThreadAllocatedMemoryEnabled());
+        final long before = threads.getCurrentThreadAllocatedBytes();
+
+        try {
+            kryo.readObject(new Input(new ByteArrayInputStream(crafted)), Point.class);
+            fail("a WKB length longer than the stream must be refused");
+        } catch (KryoException expected) {
+            // the stream runs out before the declared length is reached, as any truncated Gryo value does
+        }
+
+        final long allocated = threads.getCurrentThreadAllocatedBytes() - before;
+        assertThat("a declared length must not be allocated from", allocated, lessThan(16L * 1024 * 1024));
+    }
+
+    /**
+     * Each kind holds its own registration id, so the kind a stream names and the kind its WKB decodes to have to
+     * agree. Were they not checked, Kryo would hand back a value of a class the caller was not told to expect.
+     */
+    @Test
+    public void shouldFailWhenGeometryWkbIsNotOfTheRegisteredKind() {
+        final Kryo kryo = builder.get().create().createMapper();
+        final byte[] wkb = LineString.of(Point.of(0, 0), Point.of(1, 1)).toWKB();
+        final byte[] crafted = craftedGeometryBytes(0, wkb.length, wkb);
+
+        try {
+            kryo.readObject(new Input(new ByteArrayInputStream(crafted)), Point.class);
+            fail("WKB of another kind read under the Point registration must be refused");
+        } catch (IllegalArgumentException expected) {
+            assertEquals("Geometry WKB read as LineString where Point was expected", expected.getMessage());
+        }
+    }
+
+    /**
+     * Gryo bytes for one geometry in the form {@link Kryo#readObject(Input, Class)} expects: the reference marker
+     * Kryo writes itself, then the SRID, the declared WKB length and the WKB. Crafting these needs no cooperation
+     * from the writer, which is the point of the tests that use it.
+     */
+    private byte[] craftedGeometryBytes(final int srid, final int length, final byte[] wkb) {
+        final Output out = new Output(wkb.length + 16, -1);
+        out.writeVarInt(KRYO_NOT_NULL, true);
+        out.writeInt(srid);
+        out.writeInt(length);
+        out.writeBytes(wkb);
+        out.flush();
+        return out.toBytes();
+    }
+
+    private static byte[] bytes(final int... values) {
+        final byte[] bytes = new byte[values.length];
+        for (int i = 0; i < values.length; i++)
+            bytes[i] = (byte) values[i];
+        return bytes;
     }
 
     public <T> T serializeDeserialize(final Object o, final Class<T> clazz) throws Exception {

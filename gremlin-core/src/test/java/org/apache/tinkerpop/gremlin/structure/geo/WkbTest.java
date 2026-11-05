@@ -20,9 +20,15 @@ package org.apache.tinkerpop.gremlin.structure.geo;
 
 import org.junit.Test;
 
+import java.io.ByteArrayInputStream;
+import java.io.EOFException;
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.Arrays;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -257,6 +263,18 @@ public class WkbTest {
         final Geometry mpRead = Geometry.fromWkb(mp.toWKB(), 0);
         assertTrue(mpRead instanceof MultiPoint);
         assertTrue(((MultiPoint) mpRead).geometries().get(0).isEmpty());
+
+        // A point is empty only when both ordinates are NaN, so a point carrying one NaN
+        // ordinate is rejected on that ordinate rather than read as empty
+        final long nan = Double.doubleToRawLongBits(Double.NaN);
+
+        final byte[] nanX = concat(new byte[]{0x00}, intBytes(1), longBytes(nan), doubleBytes(2.0));
+        assertEquals(21, nanX.length);
+        assertIae("x coordinate cannot be NaN or infinite", nanX);
+
+        final byte[] nanY = concat(new byte[]{0x00}, intBytes(1), doubleBytes(1.0), longBytes(nan));
+        assertEquals(21, nanY.length);
+        assertIae("y coordinate cannot be NaN or infinite", nanY);
     }
 
     // Doubles including -0.0, subnormals, MAX_VALUE - bit-identical after round trip
@@ -336,23 +354,6 @@ public class WkbTest {
             fail("Expected IAE for unknown type code");
         } catch (IllegalArgumentException e) {
             // expected
-        }
-    }
-
-    // Count larger than bytes remaining
-    @Test
-    public void testOversizedCount() {
-        // LineString with count 0x7fffffff but only 20 bytes
-        final byte[] oversized = new byte[]{
-                0x00, // XDR
-                0x00, 0x00, 0x00, 0x02, // LineString
-                0x7f, (byte) 0xff, (byte) 0xff, (byte) 0xff // count = MAX_INT
-        };
-        try {
-            Geometry.fromWkb(oversized, 0);
-            fail("Expected IAE for oversized count");
-        } catch (IllegalArgumentException e) {
-            assertTrue(e.getMessage().contains("count") || e.getMessage().contains("exceed"));
         }
     }
 
@@ -565,6 +566,20 @@ public class WkbTest {
         } catch (IllegalArgumentException e) {
             assertTrue(e.getMessage().contains("closed"));
         }
+
+        // A ring declaring 0 points is rejected on its declared count, before any coordinate
+        // is read, rather than read as an empty polygon
+        final byte[] emptyRing = concat(header(3, 1), intBytes(0));
+        assertEquals(13, emptyRing.length);
+        assertIae("Polygon ring must have at least 4 points, got 0", emptyRing);
+
+        // A ring declaring 3 points and holding 3 is rejected on its declared count
+        final byte[] threePointRing = concat(header(3, 1), intBytes(3),
+                doubleBytes(0.0), doubleBytes(0.0),
+                doubleBytes(1.0), doubleBytes(0.0),
+                doubleBytes(0.0), doubleBytes(0.0));
+        assertEquals(61, threePointRing.length);
+        assertIae("Polygon ring must have at least 4 points, got 3", threePointRing);
     }
 
     private void assertWkbRoundTrip(final Geometry g) {
@@ -612,17 +627,20 @@ public class WkbTest {
     public void testHostileCountsAtEveryCountSite() {
         final int[] hostile = {0x7FFFFFFF, 0x02000000};
         for (final int count : hostile) {
+            // 0x7FFFFFFF overflows the byte requirement of every item size used here, while
+            // 0x02000000 does not and is reported against the bytes remaining instead
+            final String expected = count == 0x7FFFFFFF ? "would overflow" : "exceeds available bytes";
             // LineString point count
-            assertIae(header(2, count));
+            assertIae(expected, header(2, count));
             // Polygon ring count
-            assertIae(header(3, count));
+            assertIae(expected, header(3, count));
             // Polygon ring point count, with one declared ring
-            assertIae(concat(header(3, 1), intBytes(count)));
+            assertIae(expected, concat(header(3, 1), intBytes(count)));
             // MultiPoint, MultiLineString, MultiPolygon and GeometryCollection element counts
-            assertIae(header(4, count));
-            assertIae(header(5, count));
-            assertIae(header(6, count));
-            assertIae(header(7, count));
+            assertIae(expected, header(4, count));
+            assertIae(expected, header(5, count));
+            assertIae(expected, header(6, count));
+            assertIae(expected, header(7, count));
         }
     }
 
@@ -662,13 +680,13 @@ public class WkbTest {
         final byte[] lineString = concat(header(2, 2),
                 longBytes(nan), longBytes(nan),
                 doubleBytes(1.0), doubleBytes(1.0));
-        assertIae(lineString);
+        assertIae("A linestring vertex cannot be an empty point", lineString);
 
         // LineString with a NaN second vertex
         final byte[] lineString2 = concat(header(2, 2),
                 doubleBytes(0.0), doubleBytes(0.0),
                 longBytes(nan), longBytes(nan));
-        assertIae(lineString2);
+        assertIae("A linestring vertex cannot be an empty point", lineString2);
 
         // Polygon ring with a NaN vertex
         final byte[] ring = concat(header(3, 1), intBytes(4),
@@ -676,13 +694,254 @@ public class WkbTest {
                 doubleBytes(1.0), doubleBytes(0.0),
                 doubleBytes(1.0), doubleBytes(1.0),
                 longBytes(nan), longBytes(nan));
-        assertIae(ring);
+        assertIae("A ring vertex cannot be an empty point", ring);
 
         // A MultiPoint, by contrast, reads a NaN point as empty
         final byte[] multiPoint = concat(header(4, 1), new byte[]{0x00}, intBytes(1),
                 longBytes(nan), longBytes(nan));
         final Geometry mp = Geometry.fromWkb(multiPoint, 0);
         assertTrue(((MultiPoint) mp).geometries().get(0).isEmpty());
+    }
+
+    // Reading one geometry from a stream leaves the stream on the byte after it
+    @Test
+    public void shouldReadOneGeometryFromStreamAndLeaveTheRest() throws IOException {
+        final byte[] bytes = concat(Point.of(1, 2).toWKB(), new byte[]{(byte) 0xff});
+        final ByteArrayInputStream in = new ByteArrayInputStream(bytes);
+
+        assertEquals(Point.of(1, 2), Geometry.fromWkb(in, 0));
+        assertEquals(0xff, in.read());
+        assertEquals(-1, in.read());
+    }
+
+    // Geometries written back to back are read in order, one call per geometry
+    @Test
+    public void shouldReadGeometriesFromStreamInOrder() throws IOException {
+        final Geometry first = Point.of(1, 2);
+        final Geometry second = Geometry.fromWkt("LINESTRING(0 0, 1 1)");
+        final Geometry third = Geometry.fromWkt("GEOMETRYCOLLECTION(POINT EMPTY, MULTIPOINT((2 2)))");
+        final ByteArrayInputStream in = new ByteArrayInputStream(
+                concat(first.toWKB(), second.toWKB(), third.toWKB()));
+
+        assertEquals(first, Geometry.fromWkb(in, 0));
+        assertEquals(second, Geometry.fromWkb(in, 0));
+        assertEquals(third, Geometry.fromWkb(in, 0));
+        assertEquals(-1, in.read());
+    }
+
+    // A stream and a byte array of the same bytes read to the same value, for every kind
+    @Test
+    public void shouldReadEveryKindFromStreamAsFromBytes() throws IOException {
+        final String[] values = {
+                "POINT(1.5 -2.5)", "POINT Z (1.5 -2.5 3.5)",
+                "LINESTRING(0 0, 1 1, 2 -2.5)", "LINESTRING Z (0 0 0, 1 1 1)",
+                "POLYGON((0 0, 10 0, 10 10, 0 0), (1 1, 2 1, 2 2, 1 1))",
+                "POLYGON Z ((0 0 0, 1 0 0, 1 1 0, 0 0 0))",
+                "MULTIPOINT((0 0), (1 1))", "MULTIPOINT Z ((0 0 0), (1 1 1))",
+                "MULTILINESTRING((0 0, 1 1), (2 2, 3 3))", "MULTILINESTRING Z ((0 0 0, 1 1 1))",
+                "MULTIPOLYGON(((0 0, 1 0, 1 1, 0 0)), ((2 2, 3 2, 3 3, 2 2)))",
+                "MULTIPOLYGON Z (((0 0 0, 1 0 0, 1 1 0, 0 0 0)))",
+                "GEOMETRYCOLLECTION(POINT(0 0), LINESTRING(0 0, 1 1))",
+                "GEOMETRYCOLLECTION Z (POINT Z (0 0 0), LINESTRING Z (0 0 0, 1 1 1))",
+                "POINT EMPTY", "POINT Z EMPTY", "LINESTRING EMPTY", "POLYGON EMPTY",
+                "MULTIPOINT EMPTY", "MULTILINESTRING EMPTY", "MULTIPOLYGON EMPTY",
+                "GEOMETRYCOLLECTION EMPTY",
+                "MULTIPOINT((0 0), EMPTY)", "MULTIPOINT Z (EMPTY, (1 1 1))",
+                "GEOMETRYCOLLECTION(MULTIPOINT(EMPTY, (1 1)), MULTIPOLYGON(EMPTY), "
+                        + "MULTILINESTRING(EMPTY, EMPTY), GEOMETRYCOLLECTION(POINT EMPTY))"
+        };
+
+        for (final String wkt : values) {
+            for (final int srid : new int[]{0, 4326, 32618}) {
+                final byte[] wkb = Geometry.fromWkt(wkt, srid).toWKB();
+                assertEquals(wkt, Geometry.fromWkb(wkb, srid),
+                        Geometry.fromWkb(new ByteArrayInputStream(wkb), srid));
+            }
+        }
+
+        // A little-endian point, whose bytes are swapped as they are read
+        final byte[] littleEndian = new byte[]{
+                0x01, // NDR
+                0x01, 0x00, 0x00, 0x00, // Point type
+                0x1a, (byte) 0xc0, 0x5b, 0x20, 0x41, (byte) 0x95, 0x5e, (byte) 0xc0, // x = -122.3321
+                (byte) 0xe8, 0x6a, 0x2b, (byte) 0xf6, (byte) 0x97, (byte) 0xcd, 0x47, 0x40 // y = 47.6062
+        };
+        assertEquals(Point.of(-122.3321, 47.6062, Model.GEOGRAPHIC),
+                Geometry.fromWkb(new ByteArrayInputStream(littleEndian), 4326));
+    }
+
+    // A stream that ends inside a geometry is incomplete, which is not the same as malformed
+    @Test
+    public void shouldFailWhenStreamEndsInsideAGeometry() throws IOException {
+        final byte[] point = Point.of(1, 2).toWKB();
+
+        // inside the x of a point
+        assertStreamEof(Arrays.copyOf(point, 10));
+        // inside the y of a point
+        assertStreamEof(Arrays.copyOf(point, point.length - 3));
+        // after the type code, with no coordinate at all
+        assertStreamEof(Arrays.copyOf(point, 5));
+        // inside the second vertex of a line string
+        final byte[] lineString = Geometry.fromWkt("LINESTRING(0 0, 1 1)").toWKB();
+        assertStreamEof(Arrays.copyOf(lineString, lineString.length - 1));
+    }
+
+    // A count is never sized up front, so a hostile count ends the stream as the items are read
+    @Test
+    public void shouldFailWhenStreamEndsAfterAHostileCount() throws IOException {
+        // A line string declaring Integer.MAX_VALUE points, holding one
+        assertStreamEof(concat(header(2, 0x7FFFFFFF), doubleBytes(0.0), doubleBytes(0.0)));
+        // A geometry collection declaring Integer.MAX_VALUE elements, holding one point
+        assertStreamEof(concat(header(7, 0x7FFFFFFF), Point.of(1, 2).toWKB()));
+        // A polygon declaring Integer.MAX_VALUE rings, holding one
+        assertStreamEof(concat(header(3, 0x7FFFFFFF), intBytes(4),
+                doubleBytes(0.0), doubleBytes(0.0),
+                doubleBytes(1.0), doubleBytes(0.0),
+                doubleBytes(1.0), doubleBytes(1.0),
+                doubleBytes(0.0), doubleBytes(0.0)));
+    }
+
+    // EWKB and the unsupported type codes are rejected on a stream as they are on a byte array
+    @Test
+    public void shouldRejectEwkbAndUnsupportedTypeCodesFromStream() throws IOException {
+        assertStreamIae("EWKB", concat(new byte[]{0x00}, intBytes(0x80000001)));
+        assertStreamIae("EWKB", concat(new byte[]{0x00}, intBytes(0x40000001)));
+        assertStreamIae("EWKB", concat(new byte[]{0x00}, intBytes(0x20000001)));
+        assertStreamIae("M dimension", concat(new byte[]{0x00}, intBytes(2001)));
+        assertStreamIae("ZM dimension", concat(new byte[]{0x00}, intBytes(3001)));
+        assertStreamIae("Unknown WKB type code", concat(new byte[]{0x00}, intBytes(8)));
+        assertStreamIae("Invalid WKB byte order", new byte[]{0x02});
+    }
+
+    // A malformed geometry on a stream is rejected with the same checks as on a byte array
+    @Test
+    public void shouldRejectMalformedGeometryFromStream() throws IOException {
+        // A one point line string
+        assertStreamIae("at least 2 points",
+                concat(header(2, 1), doubleBytes(1.0), doubleBytes(2.0)));
+        // A negative point count, which is how a count of 2^31 or more arrives
+        assertStreamIae("Invalid point count", header(2, 0x80000000));
+        // An unclosed polygon ring
+        assertStreamIae("closed", concat(header(3, 1), intBytes(4),
+                doubleBytes(0.0), doubleBytes(0.0),
+                doubleBytes(1.0), doubleBytes(0.0),
+                doubleBytes(1.0), doubleBytes(1.0),
+                doubleBytes(0.0), doubleBytes(1.0)));
+        // A polygon ring declaring 0 points
+        assertStreamIae("Polygon ring must have at least 4 points, got 0",
+                concat(header(3, 1), intBytes(0)));
+        // Nesting deeper than 32 levels
+        assertStreamIae("nesting", nestedCollections(33));
+        // A collection whose element is of the wrong kind
+        assertStreamIae("Expected Point in MultiPoint",
+                concat(header(4, 1), Geometry.fromWkt("LINESTRING(0 0, 1 1)").toWKB()));
+    }
+
+    // A part of the wrong kind is rejected, naming the kind the multi geometry expected
+    @Test
+    public void shouldRejectAPartOfTheWrongKind() {
+        // A MultiPoint holding a LineString
+        assertIae("Expected Point in MultiPoint, got LineString",
+                concat(header(4, 1), Geometry.fromWkt("LINESTRING(0 0, 1 1)").toWKB()));
+        // A MultiLineString holding a Point
+        assertIae("Expected LineString in MultiLineString, got Point",
+                concat(header(5, 1), Point.of(1, 2).toWKB()));
+        // A MultiPolygon holding a LineString
+        assertIae("Expected Polygon in MultiPolygon, got LineString",
+                concat(header(6, 1), Geometry.fromWkt("LINESTRING(0 0, 1 1)").toWKB()));
+    }
+
+    // A null stream is rejected, as a null byte array is
+    @Test
+    public void shouldRejectNullStream() throws IOException {
+        try {
+            Geometry.fromWkb((InputStream) null, 0);
+            fail("Expected IllegalArgumentException");
+        } catch (IllegalArgumentException e) {
+            // expected
+        }
+    }
+
+    // The form PostGIS writes for ST_AsBinary with its default byte order, read back as the same polygon.
+    // See https://postgis.net/docs/ST_AsBinary.html
+    @Test
+    public void shouldReadPostgisAsBinaryOutput() {
+        final Geometry polygon = Geometry.fromWkt("POLYGON((10 20, 30 20, 30 40, 10 40, 10 20))", Model.GEOGRAPHIC);
+
+        // little-endian ISO WKB: byte order, type 3, one ring, five points, then the ring
+        final byte[] asBinary = bytesFromHex(
+                "01" + "03000000" + "01000000" + "05000000"
+                        + "0000000000002440" + "0000000000003440"
+                        + "0000000000003e40" + "0000000000003440"
+                        + "0000000000003e40" + "0000000000004440"
+                        + "0000000000002440" + "0000000000004440"
+                        + "0000000000002440" + "0000000000003440");
+        assertEquals(93, asBinary.length);
+
+        final Geometry read = Geometry.fromWkb(asBinary, 4326);
+        assertEquals(polygon, read);
+        assertEquals(4326, read.srid());
+        assertEquals(Model.GEOGRAPHIC, read.model());
+    }
+
+    // Output matches the form PostGIS writes for ST_AsBinary when asked for XDR byte order
+    @Test
+    public void shouldWriteTheWkbPostgisWritesForXdr() {
+        final Geometry polygon = Geometry.fromWkt("POLYGON((10 20, 30 20, 30 40, 10 40, 10 20))", Model.GEOGRAPHIC);
+
+        // big-endian ISO WKB: byte order, type 3, one ring, five points, then the ring
+        final byte[] xdr = bytesFromHex(
+                "00" + "00000003" + "00000001" + "00000005"
+                        + "4024000000000000" + "4034000000000000"
+                        + "403e000000000000" + "4034000000000000"
+                        + "403e000000000000" + "4044000000000000"
+                        + "4024000000000000" + "4044000000000000"
+                        + "4024000000000000" + "4034000000000000");
+        assertEquals(93, xdr.length);
+
+        assertArrayEquals(xdr, polygon.toWKB());
+        assertEquals(polygon, Geometry.fromWkb(xdr, 4326));
+    }
+
+    // The form PostGIS writes for ST_AsEWKB carries an SRID flag, which is not ISO WKB
+    @Test
+    public void shouldRejectPostgisEwkbOutput() {
+        // little-endian EWKB: byte order, type 3 with the SRID flag, SRID 4326, one ring, five points, then the ring
+        final byte[] ewkb = bytesFromHex(
+                "01" + "03000020" + "e6100000" + "01000000" + "05000000"
+                        + "0000000000002440" + "0000000000003440"
+                        + "0000000000003e40" + "0000000000003440"
+                        + "0000000000003e40" + "0000000000004440"
+                        + "0000000000002440" + "0000000000004440"
+                        + "0000000000002440" + "0000000000003440");
+        assertEquals(97, ewkb.length);
+
+        try {
+            Geometry.fromWkb(ewkb, 4326);
+            fail("Expected IllegalArgumentException for EWKB input");
+        } catch (IllegalArgumentException e) {
+            assertTrue("Message should report EWKB, was: " + e.getMessage(),
+                    e.getMessage().contains("EWKB format detected"));
+        }
+    }
+
+    private static void assertStreamEof(final byte[] wkb) throws IOException {
+        try {
+            Geometry.fromWkb(new ByteArrayInputStream(wkb), 0);
+            fail("Expected EOFException");
+        } catch (EOFException e) {
+            // expected
+        }
+    }
+
+    private static void assertStreamIae(final String expectedInMessage, final byte[] wkb) throws IOException {
+        try {
+            Geometry.fromWkb(new ByteArrayInputStream(wkb), 0);
+            fail("Expected IllegalArgumentException mentioning " + expectedInMessage);
+        } catch (IllegalArgumentException e) {
+            assertTrue("Message should mention " + expectedInMessage + ", was: " + e.getMessage(),
+                    e.getMessage().contains(expectedInMessage));
+        }
     }
 
     private void assertWktWkbAgree(final Geometry g) {
@@ -697,6 +956,16 @@ public class WkbTest {
             fail("Expected IllegalArgumentException");
         } catch (IllegalArgumentException e) {
             // expected
+        }
+    }
+
+    private static void assertIae(final String expectedInMessage, final byte[] wkb) {
+        try {
+            Geometry.fromWkb(wkb, 0);
+            fail("Expected IllegalArgumentException mentioning " + expectedInMessage);
+        } catch (IllegalArgumentException e) {
+            assertTrue("Message should mention " + expectedInMessage + ", was: " + e.getMessage(),
+                    e.getMessage().contains(expectedInMessage));
         }
     }
 
@@ -729,6 +998,17 @@ public class WkbTest {
             bb.put(part);
         }
         return bb.array();
+    }
+
+    /**
+     * Returns the bytes of a hex string, two characters to the byte.
+     */
+    private static byte[] bytesFromHex(final String hex) {
+        final byte[] bytes = new byte[hex.length() / 2];
+        for (int i = 0; i < bytes.length; i++) {
+            bytes[i] = (byte) Integer.parseInt(hex.substring(i * 2, i * 2 + 2), 16);
+        }
+        return bytes;
     }
 
     /**

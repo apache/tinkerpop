@@ -1,0 +1,7 @@
+{
+  "@type" : "g:Geometry",
+  "@value" : {
+    "wkt" : "GEOMETRYCOLLECTION(POINT(1 2), GEOMETRYCOLLECTION(LINESTRING(0 0, 1 1)), POINT EMPTY)",
+    "model" : "CARTESIAN"
+  }
+}

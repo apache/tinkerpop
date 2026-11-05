@@ -30,6 +30,7 @@ import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
+import org.apache.tinkerpop.gremlin.structure.geo.Geometry;
 import org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefined;
 import org.apache.tinkerpop.gremlin.structure.io.pdt.CompositePDT;
 import org.apache.tinkerpop.gremlin.structure.io.pdt.PrimitivePDT;
@@ -41,6 +42,7 @@ import org.apache.tinkerpop.gremlin.structure.io.binary.types.CharSerializer;
 import org.apache.tinkerpop.gremlin.structure.io.binary.types.DurationSerializer;
 import org.apache.tinkerpop.gremlin.structure.io.binary.types.EdgeSerializer;
 import org.apache.tinkerpop.gremlin.structure.io.binary.types.EnumSerializer;
+import org.apache.tinkerpop.gremlin.structure.io.binary.types.GeometrySerializer;
 import org.apache.tinkerpop.gremlin.structure.io.binary.types.GraphSerializer;
 import org.apache.tinkerpop.gremlin.structure.io.binary.types.ListSerializer;
 import org.apache.tinkerpop.gremlin.structure.io.binary.types.MapEntrySerializer;
@@ -122,6 +124,7 @@ public class TypeSerializerRegistry {
             new RegistryEntry<>(Character.class, new CharSerializer()),
             new RegistryEntry<>(Duration.class, new DurationSerializer()),
             new RegistryEntry<>(OffsetDateTime.class, new DateTimeSerializer()),
+            new RegistryEntry<>(Geometry.class, new GeometrySerializer()),
             new RegistryEntry<>(CompositePDT.class, new CompositePDTSerializer()),
             new RegistryEntry<>(PrimitivePDT.class, new PrimitivePDTSerializer())
     };

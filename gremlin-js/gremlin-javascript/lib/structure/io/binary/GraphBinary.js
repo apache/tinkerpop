@@ -53,6 +53,7 @@ import UuidSerializer from './internals/UuidSerializer.js';
 import EdgeSerializer from './internals/EdgeSerializer.js';
 import PathSerializer from './internals/PathSerializer.js';
 import TreeSerializer from './internals/TreeSerializer.js';
+import GeometrySerializer from './internals/GeometrySerializer.js';
 import PropertySerializer from './internals/PropertySerializer.js';
 import VertexSerializer from './internals/VertexSerializer.js';
 import VertexPropertySerializer from './internals/VertexPropertySerializer.js';
@@ -110,6 +111,7 @@ function createIoc(anySerializerOptions) {
   ioc.compositePDTSerializer = new CompositePDTSerializer(ioc);
   ioc.primitivePDTSerializer = new PrimitivePDTSerializer(ioc);
   ioc.treeSerializer = new TreeSerializer(ioc);
+  ioc.geometrySerializer = new GeometrySerializer(ioc);
 
   ioc.pdtRegistry = null;
 
@@ -178,6 +180,7 @@ export const {
   compositePDTSerializer,
   primitivePDTSerializer,
   treeSerializer,
+  geometrySerializer,
   numberSerializationStrategy,
   anySerializer,
   graphBinaryReader,

@@ -72,6 +72,33 @@ describe('StreamReader', () => {
       assert.equal(await reader.readInt32BE(), -2147483648);
     });
 
+    it('readInt32LE reads signed 32-bit', async () => {
+      const buf = Buffer.alloc(8);
+      buf.writeInt32LE(2147483647, 0);
+      buf.writeInt32LE(-2147483648, 4);
+      const reader = StreamReader.fromBuffer(buf);
+      assert.equal(await reader.readInt32LE(), 2147483647);
+      assert.equal(await reader.readInt32LE(), -2147483648);
+    });
+
+    it('readUInt32BE reads unsigned 32-bit', async () => {
+      const buf = Buffer.alloc(8);
+      buf.writeUInt32BE(4294967295, 0);
+      buf.writeUInt32BE(0, 4);
+      const reader = StreamReader.fromBuffer(buf);
+      assert.equal(await reader.readUInt32BE(), 4294967295);
+      assert.equal(await reader.readUInt32BE(), 0);
+    });
+
+    it('readUInt32LE reads unsigned 32-bit', async () => {
+      const buf = Buffer.alloc(8);
+      buf.writeUInt32LE(4294967295, 0);
+      buf.writeUInt32LE(2147483648, 4);
+      const reader = StreamReader.fromBuffer(buf);
+      assert.equal(await reader.readUInt32LE(), 4294967295);
+      assert.equal(await reader.readUInt32LE(), 2147483648);
+    });
+
     it('readBigInt64BE reads signed 64-bit', async () => {
       const buf = Buffer.alloc(8);
       buf.writeBigInt64BE(9223372036854775807n, 0);
@@ -91,6 +118,13 @@ describe('StreamReader', () => {
       buf.writeDoubleBE(3.141592653589793, 0);
       const reader = StreamReader.fromBuffer(buf);
       assert.equal(await reader.readDoubleBE(), 3.141592653589793);
+    });
+
+    it('readDoubleLE reads 64-bit double', async () => {
+      const buf = Buffer.alloc(8);
+      buf.writeDoubleLE(3.141592653589793, 0);
+      const reader = StreamReader.fromBuffer(buf);
+      assert.equal(await reader.readDoubleLE(), 3.141592653589793);
     });
 
     it('readBytes returns exact slice', async () => {
@@ -114,11 +148,11 @@ describe('StreamReader', () => {
 
     it('mixed reads advance offset correctly', async () => {
       const buf = Buffer.alloc(13);
-      buf.writeUInt8(0xAB, 0);
+      buf.writeUInt8(0xab, 0);
       buf.writeInt32BE(42, 1);
       buf.writeDoubleBE(1.5, 5);
       const reader = StreamReader.fromBuffer(buf);
-      assert.equal(await reader.readUInt8(), 0xAB);
+      assert.equal(await reader.readUInt8(), 0xab);
       assert.equal(await reader.readInt32BE(), 42);
       assert.equal(await reader.readDoubleBE(), 1.5);
     });
@@ -155,6 +189,21 @@ describe('StreamReader', () => {
       assert.closeTo(await reader.readDoubleBE(), 2.718281828, 1e-9);
     });
 
+    it('reads a little-endian double across chunk boundaries', async () => {
+      const buf = Buffer.alloc(8);
+      buf.writeDoubleLE(47.6062, 0);
+      const stream = chunkedStream([buf.subarray(0, 3), buf.subarray(3, 8)]);
+      const reader = StreamReader.fromReadableStream(stream);
+      assert.equal(await reader.readDoubleLE(), 47.6062);
+    });
+
+    it('reads a little-endian unsigned 32-bit integer across chunk boundaries', async () => {
+      const stream = chunkedStream([Buffer.from([0x01, 0x02, 0x03]), Buffer.from([0x04, 0x05])]);
+      const reader = StreamReader.fromReadableStream(stream);
+      assert.equal(await reader.readUInt32LE(), 0x04030201);
+      assert.equal(await reader.readUInt8(), 0x05);
+    });
+
     it('handles readBytes spanning chunks', async () => {
       const stream = chunkedStream([Buffer.from([0x01, 0x02]), Buffer.from([0x03, 0x04, 0x05])]);
       const reader = StreamReader.fromReadableStream(stream);
@@ -187,9 +236,9 @@ describe('StreamReader', () => {
 
     it('sequential reads across multiple chunks', async () => {
       const buf = Buffer.alloc(9);
-      buf.writeUInt8(0x84, 0);       // version byte
-      buf.writeInt32BE(200, 1);       // status code
-      buf.writeInt32BE(-1, 5);        // another int
+      buf.writeUInt8(0x84, 0); // version byte
+      buf.writeInt32BE(200, 1); // status code
+      buf.writeInt32BE(-1, 5); // another int
       // Split: [version + 1 byte of int] [3 bytes of int + 2 bytes] [2 bytes]
       const stream = chunkedStream([buf.subarray(0, 2), buf.subarray(2, 7), buf.subarray(7, 9)]);
       const reader = StreamReader.fromReadableStream(stream);
@@ -200,7 +249,7 @@ describe('StreamReader', () => {
 
     it('handles Uint8Array chunks from fetch', async () => {
       // fetch response.body yields Uint8Array, not Buffer
-      const data = new Uint8Array([0x01, 0x00, 0x00, 0x00, 0x2A]);
+      const data = new Uint8Array([0x01, 0x00, 0x00, 0x00, 0x2a]);
       const stream = new ReadableStream({
         start(controller) {
           controller.enqueue(data);

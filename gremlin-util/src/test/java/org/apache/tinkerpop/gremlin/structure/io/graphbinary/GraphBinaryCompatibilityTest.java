@@ -22,6 +22,7 @@ import io.netty.buffer.ByteBufAllocator;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Tree;
+import org.apache.tinkerpop.gremlin.structure.geo.Geometry;
 import org.apache.tinkerpop.gremlin.structure.io.AbstractTypedCompatibilityTest;
 import org.apache.tinkerpop.gremlin.structure.io.Buffer;
 import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryReader;
@@ -209,6 +210,22 @@ public class GraphBinaryCompatibilityTest extends AbstractTypedCompatibilityTest
         assertEquals(fromStatic, recycled);
         assertEquals(resource, fromStatic);
         assertEquals(resource, recycled);
+    }
+
+    /**
+     * GraphBinary carries the SRID of a geometry, so it round trips an SRID that GraphSON cannot write.
+     */
+    @Test
+    public void shouldReadWriteOtherSridGeometry() throws Exception {
+        final String resourceName = "other-srid-geometry";
+
+        final Geometry resource = findModelEntryObject(resourceName);
+        final Geometry fromStatic = read(readFromResource(resourceName), Geometry.class);
+        final Geometry recycled = read(write(fromStatic, Geometry.class, resourceName), Geometry.class);
+        assertEquals(fromStatic, recycled);
+        assertEquals(resource, fromStatic);
+        assertEquals(resource, recycled);
+        assertEquals(3857, recycled.srid());
     }
 
 //    TODO: revisit

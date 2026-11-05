@@ -327,6 +327,18 @@ public class WktTest {
         assertEquals("SRID=0;POINT(1 2)", p.toEWKT());
     }
 
+    // The EWKT PostGIS writes for ST_AsEWKT, read back as the same polygon
+    @Test
+    public void shouldReadPostgisAsEwktOutput() {
+        final Geometry polygon = Geometry.fromWkt("POLYGON((10 20, 30 20, 30 40, 10 40, 10 20))", Model.GEOGRAPHIC);
+
+        // the form PostGIS writes for ST_AsEWKT, with no space after the commas
+        final Geometry read = Geometry.fromWkt("SRID=4326;POLYGON((10 20,30 20,30 40,10 40,10 20))");
+
+        assertEquals(polygon, read);
+        assertEquals(4326, read.srid());
+    }
+
     // Syntax errors
     @Test
     public void testSyntaxErrors() {

@@ -822,6 +822,22 @@ go run basic_gremlin.go
 go run modern_traversals.go
 ----
 
+[[gremlin-go-geometry]]
+=== Geometry Types
+
+Geospatial values are represented by the `gremlingo` types `Point`, `LineString`, `Polygon`, `MultiPoint`,
+`MultiLineString`, `MultiPolygon` and `GeometryCollection`, which are the only implementations of the `Geometry`
+interface, alongside the narrower `Curve`, `Surface`, `MultiCurve` and `MultiSurface` interfaces and the `Model`
+values `Model.Cartesian`, `Model.Geographic` and `Model.Other`. Each kind is built by a constructor that returns an
+error, such as `NewPoint()`, `NewPointZ()` and `NewEmptyPoint()`, and a geometry decoded from GraphBinary arrives as
+one of these types.
+
+Construction validates each value, so a non-finite coordinate, an unclosed polygon ring or a geographic coordinate
+outside its range produces an error. Geometries are immutable, compare exactly through `Equal()`, and write their own
+text and binary forms through `String()`, `EWKT()` and `WKB()`. A geometry holds slices, so it cannot be compared with
+`==` or used as a map key. Geometries define no ordering and perform no spatial computation, which remains the
+responsibility of the server.
+
 [[gremlin-go-pdt]]
 === Provider Defined Types
 
@@ -2832,6 +2848,20 @@ node basic-gremlin.js
 node modern-traversals.js
 ----
 
+[[gremlin-javascript-geometry]]
+=== Geometry Types
+
+Geospatial values are represented by the classes exported from `gremlin.structure`: `Point`, `LineString`, `Polygon`,
+`MultiPoint`, `MultiLineString`, `MultiPolygon` and `GeometryCollection`, under the abstract `Geometry`, `Curve`,
+`Surface`, `MultiCurve` and `MultiSurface` types, together with the `Model` constants `CARTESIAN`, `GEOGRAPHIC` and
+`OTHER`. Each class is built through static factories such as `Point.of()`, `Point.ofZ()` and `Point.empty()`, and a
+geometry decoded from GraphBinary arrives as one of these classes.
+
+Construction validates each value, so a non-finite coordinate, an unclosed polygon ring or a geographic coordinate
+outside its range raises an `Error`. Geometries are frozen, compare exactly through `equals()`, and write their own text
+and binary forms through `toWKT()`, `toEWKT()` and `toWKB()`. They define no ordering and perform no spatial
+computation, which remains the responsibility of the server.
+
 [[gremlin-javascript-pdt]]
 === Provider Defined Types
 
@@ -3522,6 +3552,20 @@ dotnet run --project BasicGremlin
 dotnet run --project Connections  
 dotnet run --project ModernTraversals
 ----
+
+[[gremlin-dotnet-geometry]]
+=== Geometry Types
+
+Geospatial values are represented by the types in the `Gremlin.Net.Structure.Geo` namespace: `Point`, `LineString`,
+`Polygon`, `MultiPoint`, `MultiLineString`, `MultiPolygon` and `GeometryCollection`, under the abstract `Geometry`,
+`Curve`, `Surface`, `MultiCurve` and `MultiSurface` types, together with the `Model` enum of `Cartesian`,
+`Geographic` and `Other`. A geometry decoded from GraphBinary arrives as one of these types.
+
+Construction validates each value, so a non-finite coordinate, an unclosed polygon ring or a geographic coordinate
+outside its range throws an `ArgumentException`. Geometries are immutable, compare exactly through
+`IEquatable<Geometry>` and the `==` and `!=` operators, and write their own text and binary forms through `ToWkt()`,
+`ToEwkt()` and `ToWkb()`. They define no ordering and perform no spatial computation, which remains the responsibility
+of the server.
 
 [[gremlin-dotnet-pdt]]
 === Provider Defined Types
@@ -4344,6 +4388,19 @@ python connections.py
 python basic_gremlin.py
 python modern_traversals.py
 ----
+
+[[gremlin-python-geometry]]
+=== Geometry Types
+
+Geospatial values are represented by the classes in `gremlin_python.structure.geo`: `Point`, `LineString`, `Polygon`,
+`MultiPoint`, `MultiLineString`, `MultiPolygon` and `GeometryCollection`, under the abstract `Geometry`, `Curve`,
+`Surface`, `MultiCurve` and `MultiSurface` types, together with the `Model` enum of `CARTESIAN`, `GEOGRAPHIC` and
+`OTHER`. A geometry decoded from GraphBinary arrives as one of these classes.
+
+Construction validates each value, so a non-finite coordinate, an unclosed polygon ring or a geographic coordinate
+outside its range raises a `ValueError`. Geometries are immutable, compare exactly through `__eq__` and `__hash__`, and
+write their own text and binary forms through `to_wkt()`, `to_ewkt()` and `to_wkb()`. They define no ordering and
+perform no spatial computation, which remains the responsibility of the server.
 
 [[gremlin-python-pdt]]
 === Provider Defined Types

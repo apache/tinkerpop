@@ -28,6 +28,16 @@ import {
   CompositePDT,
   PrimitivePDT
 } from '../../../lib/structure/graph.js';
+import {
+  Model,
+  Point,
+  LineString,
+  Polygon,
+  GeometryCollection,
+  MultiPoint,
+  MultiLineString,
+  MultiPolygon
+} from '../../../lib/structure/geo.js';
 import { Direction, Merge, T } from '../../../lib/process/traversal.js';
 
 /*
@@ -253,6 +263,37 @@ const santaFe = new VertexProperty(9, 'location', 'santa fe', [
 model['traversal-vertex'] = new Vertex(1, 'person', [name, sanDiego, santaCruz, brussels, santaFe]);
 model['multi-label-vertex'] = new Vertex(1, ['person', 'employee']);
 model['empty-label-vertex'] = new Vertex(1, 'vertex', [], []);
+
+// Geometry values
+const geographic = (x, y) => Point.of(x, y, Model.GEOGRAPHIC);
+const cartesian = (x, y) => Point.of(x, y);
+model['point-geometry'] = geographic(-122.3321, 47.6062);
+model['point-z-geometry'] = Point.ofZ(1, 2, 3);
+model['empty-point-geometry'] = Point.empty();
+model['linestring-geometry'] = LineString.of(cartesian(0, 0), cartesian(1, 1), cartesian(2, 0));
+model['polygon-geometry'] = Polygon.of(
+  LineString.of(geographic(0, 0), geographic(10, 0), geographic(10, 10), geographic(0, 10), geographic(0, 0)),
+  LineString.of(geographic(2, 2), geographic(2, 4), geographic(4, 4), geographic(2, 2))
+);
+model['multipoint-geometry'] = MultiPoint.of(cartesian(1, 2), cartesian(3, 4));
+model['multilinestring-geometry'] = MultiLineString.of(
+  LineString.of(cartesian(0, 0), cartesian(1, 1)),
+  LineString.of(cartesian(2, 2), cartesian(3, 3))
+);
+model['multipolygon-geometry'] = MultiPolygon.of(
+  Polygon.of(
+    LineString.of(geographic(0, 0), geographic(1, 0), geographic(1, 1), geographic(0, 1), geographic(0, 0))
+  ),
+  Polygon.of(
+    LineString.of(geographic(2, 2), geographic(3, 2), geographic(3, 3), geographic(2, 3), geographic(2, 2))
+  )
+);
+model['geometrycollection-geometry'] = GeometryCollection.of(
+  cartesian(1, 2),
+  GeometryCollection.of(LineString.of(cartesian(0, 0), cartesian(1, 1))),
+  Point.empty()
+);
+model['other-srid-geometry'] = Point.of(1, 2, 3857);
 
 class CrewGraphFactory {
   static vertexProperty(id, label, value, metaProperties = []) {

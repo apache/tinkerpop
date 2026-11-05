@@ -22,8 +22,10 @@ package gremlingo
 import (
 	"bytes"
 	"encoding/binary"
+	"encoding/hex"
 	"errors"
 	"fmt"
+	"math"
 	"math/big"
 	"reflect"
 	"testing"
@@ -1102,5 +1104,194 @@ func TestPrimitivePDTSerialization(t *testing.T) {
 		_, err := d.ReadFullyQualified()
 		assert.NotNil(t, err)
 		assert.Contains(t, err.Error(), "non-empty")
+	})
+}
+
+func TestGeometrySerialization(t *testing.T) {
+	serializer := newGraphBinarySerializer(newLogHandler(&defaultLogger{}, Error, language.English)).ser
+
+	t.Run("getType returns the geometry type for every kind", func(t *testing.T) {
+		for _, geometry := range []Geometry{
+			seattlePoint(t),
+			cartesianLineString(t),
+			geographicPolygon(t),
+			cartesianMultiPoint(t),
+			cartesianMultiLineString(t),
+			geographicMultiPolygon(t),
+			nestedCollection(t),
+		} {
+			dt, err := serializer.getType(geometry)
+			assert.Nil(t, err)
+			assert.Equal(t, geometryType, dt)
+		}
+		assert.Equal(t, byte(0x31), geometryType.getCodeByte())
+	})
+
+	t.Run("each kind writes its srid followed by its ISO WKB", func(t *testing.T) {
+		for _, testCase := range []struct {
+			name     string
+			geometry Geometry
+			expected string
+		}{
+			{"point", seattlePoint(t),
+				"31" + "00" + "000010e6" + "0000000001c05e9541205bc01a4047cd97f62b6ae8"},
+			{"point with z", mustPointZ(t, 1, 2, 3, Model.Cartesian),
+				"31" + "00" + "00000000" + "00000003e93ff000000000000040000000000000004008000000000000"},
+			{"empty point", mustEmptyPoint(t, Model.Cartesian),
+				"31" + "00" + "00000000" + "00000000017ff80000000000007ff8000000000000"},
+			{"line string", cartesianLineString(t),
+				"31" + "00" + "00000000" + "0000000002" + "00000003" +
+					"00000000000000000000000000000000" +
+					"3ff00000000000003ff0000000000000" +
+					"40000000000000000000000000000000"},
+			{"polygon", geographicPolygon(t),
+				"31" + "00" + "000010e6" + "0000000003" + "00000002" +
+					"00000005" +
+					"00000000000000000000000000000000" +
+					"40240000000000000000000000000000" +
+					"40240000000000004024000000000000" +
+					"00000000000000004024000000000000" +
+					"00000000000000000000000000000000" +
+					"00000004" +
+					"40000000000000004000000000000000" +
+					"40000000000000004010000000000000" +
+					"40100000000000004010000000000000" +
+					"40000000000000004000000000000000"},
+			{"multi-point", cartesianMultiPoint(t),
+				"31" + "00" + "00000000" + "0000000004" + "00000002" +
+					"0000000001" + "3ff00000000000004000000000000000" +
+					"0000000001" + "40080000000000004010000000000000"},
+			{"multi-line string", cartesianMultiLineString(t),
+				"31" + "00" + "00000000" + "0000000005" + "00000002" +
+					"0000000002" + "00000002" +
+					"00000000000000000000000000000000" +
+					"3ff00000000000003ff0000000000000" +
+					"0000000002" + "00000002" +
+					"40000000000000004000000000000000" +
+					"40080000000000004008000000000000"},
+			{"multi-polygon", geographicMultiPolygon(t),
+				"31" + "00" + "000010e6" + "0000000006" + "00000002" +
+					"0000000003" + "00000001" + "00000005" +
+					"00000000000000000000000000000000" +
+					"3ff00000000000000000000000000000" +
+					"3ff00000000000003ff0000000000000" +
+					"00000000000000003ff0000000000000" +
+					"00000000000000000000000000000000" +
+					"0000000003" + "00000001" + "00000005" +
+					"40000000000000004000000000000000" +
+					"40080000000000004000000000000000" +
+					"40080000000000004008000000000000" +
+					"40000000000000004008000000000000" +
+					"40000000000000004000000000000000"},
+			{"geometry collection", nestedCollection(t),
+				"31" + "00" + "00000000" + "0000000007" + "00000003" +
+					"0000000001" + "3ff00000000000004000000000000000" +
+					"0000000007" + "00000001" +
+					"0000000002" + "00000002" +
+					"00000000000000000000000000000000" +
+					"3ff00000000000003ff0000000000000" +
+					"0000000001" + "7ff80000000000007ff8000000000000"},
+			{"point with another srid", mustPointWithSrid(t, 1, 2, 3857),
+				"31" + "00" + "00000f11" + "0000000001" + "3ff00000000000004000000000000000"},
+		} {
+			t.Run(testCase.name, func(t *testing.T) {
+				var buffer bytes.Buffer
+				err := serializer.write(testCase.geometry, &buffer)
+				assert.Nil(t, err)
+				assert.Equal(t, testCase.expected, hex.EncodeToString(buffer.Bytes()))
+			})
+		}
+	})
+
+	t.Run("each kind reads back equal to what was written", func(t *testing.T) {
+		emptyLineString, err := NewEmptyLineString(Model.Cartesian)
+		assert.Nil(t, err)
+		emptyPolygon, err := NewEmptyPolygon(Model.Cartesian)
+		assert.Nil(t, err)
+		emptyMultiPoint, err := NewEmptyMultiPoint(Model.Cartesian)
+		assert.Nil(t, err)
+		emptyMultiLineString, err := NewEmptyMultiLineString(Model.Cartesian)
+		assert.Nil(t, err)
+		emptyMultiPolygon, err := NewEmptyMultiPolygon(Model.Cartesian)
+		assert.Nil(t, err)
+		emptyCollection, err := NewEmptyGeometryCollection(Model.Cartesian)
+		assert.Nil(t, err)
+
+		for _, original := range []Geometry{
+			seattlePoint(t),
+			mustPointZ(t, 1, 2, 3, Model.Cartesian),
+			mustEmptyPoint(t, Model.Cartesian),
+			emptyLineString,
+			emptyPolygon,
+			emptyMultiPoint,
+			emptyMultiLineString,
+			emptyMultiPolygon,
+			emptyCollection,
+			cartesianLineString(t),
+			geographicPolygon(t),
+			cartesianMultiPoint(t),
+			cartesianMultiLineString(t),
+			geographicMultiPolygon(t),
+			nestedCollection(t),
+			mustPointWithSrid(t, 1, 2, 3857),
+		} {
+			var buffer bytes.Buffer
+			err := serializer.write(original, &buffer)
+			assert.Nil(t, err)
+
+			read, err := NewGraphBinaryDeserializer(&buffer).ReadFullyQualified()
+			assert.Nil(t, err)
+			assert.IsType(t, original, read)
+			geometry, ok := read.(Geometry)
+			assert.True(t, ok)
+			assert.True(t, original.Equal(geometry), "%s did not read back equal", original)
+		}
+	})
+
+	t.Run("a nil geometry is rejected", func(t *testing.T) {
+		for _, nilGeometry := range []Geometry{(*Point)(nil), (*GeometryCollection)(nil)} {
+			var buffer bytes.Buffer
+			err := serializer.write(nilGeometry, &buffer)
+			assert.NotNil(t, err)
+			assert.Contains(t, err.Error(), "a nil geometry cannot be written")
+		}
+	})
+
+	t.Run("a negative zero keeps its sign through a round trip", func(t *testing.T) {
+		original := mustPoint(t, math.Copysign(0, -1), 0, Model.Cartesian)
+
+		var buffer bytes.Buffer
+		err := serializer.write(original, &buffer)
+		assert.Nil(t, err)
+		assert.Equal(t, "31"+"00"+"00000000"+"0000000001"+
+			"80000000000000000000000000000000", hex.EncodeToString(buffer.Bytes()))
+
+		read, err := NewGraphBinaryDeserializer(&buffer).ReadFullyQualified()
+		assert.Nil(t, err)
+		x, ok := read.(*Point).X()
+		assert.True(t, ok)
+		assert.True(t, math.Signbit(x))
+		assert.True(t, original.Equal(read.(Geometry)))
+	})
+
+	t.Run("a geometry in a list is read with the values around it", func(t *testing.T) {
+		var buffer bytes.Buffer
+		err := serializer.write([]interface{}{seattlePoint(t), int32(7)}, &buffer)
+		assert.Nil(t, err)
+		err = serializer.write(int32(42), &buffer)
+		assert.Nil(t, err)
+
+		d := NewGraphBinaryDeserializer(&buffer)
+		list, err := d.ReadFullyQualified()
+		assert.Nil(t, err)
+		items, ok := list.([]interface{})
+		assert.True(t, ok)
+		assert.Equal(t, 2, len(items))
+		assert.True(t, seattlePoint(t).Equal(items[0].(Geometry)))
+		assert.Equal(t, int32(7), items[1])
+
+		trailing, err := d.ReadFullyQualified()
+		assert.Nil(t, err)
+		assert.Equal(t, int32(42), trailing)
 	})
 }

@@ -27,6 +27,7 @@ import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
+import org.apache.tinkerpop.gremlin.structure.geo.Geometry;
 import org.apache.tinkerpop.shaded.jackson.core.JsonGenerator;
 import org.apache.tinkerpop.shaded.jackson.core.JsonToken;
 import org.apache.tinkerpop.shaded.jackson.core.type.WritableTypeId;
@@ -129,6 +130,8 @@ public class GraphSONTypeSerializerV4 extends AbstractGraphSONTypeSerializer {
             mapped = Property.class;
         else if (ByteBuffer.class.isAssignableFrom(c))
             mapped = ByteBuffer.class;
+        else if (Geometry.class.isAssignableFrom(c))
+            mapped = Geometry.class;
         else if (Direction.class.isAssignableFrom(c))
             mapped = Direction.class;
         else if (T.class.isAssignableFrom(c))

@@ -1,0 +1,7 @@
+{
+  "@type" : "g:Geometry",
+  "@value" : {
+    "wkt" : "POINT Z (1 2 3)",
+    "model" : "CARTESIAN"
+  }
+}

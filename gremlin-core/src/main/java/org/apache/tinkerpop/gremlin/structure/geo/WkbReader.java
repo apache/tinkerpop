@@ -18,13 +18,25 @@
  */
 package org.apache.tinkerpop.gremlin.structure.geo;
 
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
+import java.io.ByteArrayInputStream;
+import java.io.DataInputStream;
+import java.io.EOFException;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
  * Package-private WKB parser. Accepts ISO WKB only; rejects EWKB.
+ * <p>
+ * Reads exactly one geometry from an {@link InputStream}, leaving the stream on the next byte.
+ * Each geometry declares its own byte order, so a little-endian geometry is swapped as it is
+ * read. A stream that ends early raises an {@link EOFException}, and malformed bytes raise an
+ * {@link IllegalArgumentException}.
+ * <p>
+ * {@link #parse(byte[], int)} uses the same code over a {@link ByteArrayInputStream}, reports an
+ * early end as an {@link IllegalArgumentException}, rejects bytes left after the geometry, and
+ * checks a count read off the input against the bytes left before reading its items.
  * <p>
  * ISO WKB has no length prefix for a point, so an empty point is encoded as a point whose
  * x and y are NaN. A 3D point with NaN x and y therefore reads as {@code POINT Z EMPTY},
@@ -51,13 +63,28 @@ final class WkbReader {
      */
     private static final int MAX_INITIAL_CAPACITY = 1024;
 
-    private final ByteBuffer buffer;
+    /**
+     * Set where the input is a byte array, whose number of bytes left to read is known, and
+     * null where the input is a stream.
+     */
+    private final ByteArrayInputStream source;
+    private final DataInputStream in;
     private final int srid;
     private int depth;
     private Boolean hasZ; // null = not yet determined
 
-    private WkbReader(final byte[] wkb, final int srid) {
-        this.buffer = ByteBuffer.wrap(wkb);
+    private WkbReader(final InputStream in, final int srid) {
+        // never buffered, so the input is left on the byte after the geometry
+        this.in = new DataInputStream(in);
+        this.source = null;
+        this.srid = srid;
+        this.depth = 0;
+    }
+
+    private WkbReader(final ByteArrayInputStream in, final int srid) {
+        // never buffered, so available() on the source is the number of bytes left to read
+        this.in = new DataInputStream(in);
+        this.source = in;
         this.srid = srid;
         this.depth = 0;
     }
@@ -74,30 +101,55 @@ final class WkbReader {
             throw new IllegalArgumentException("WKB input cannot be null or empty");
         }
 
-        final WkbReader reader = new WkbReader(wkb, srid);
-        final Geometry g = reader.readGeometry();
+        final ByteArrayInputStream bytes = new ByteArrayInputStream(wkb);
+        final WkbReader reader = new WkbReader(bytes, srid);
+        final Geometry g;
+        try {
+            g = reader.readGeometry();
+        } catch (EOFException eofe) {
+            throw new IllegalArgumentException("Truncated WKB input: unexpected end of input", eofe);
+        } catch (IOException ioe) {
+            // reading bytes already in memory cannot fail for any other reason
+            throw new IllegalArgumentException("Malformed WKB input: " + ioe.getMessage(), ioe);
+        }
 
         // Check for trailing bytes
-        if (reader.buffer.hasRemaining()) {
+        if (bytes.available() > 0) {
             throw new IllegalArgumentException("Unexpected trailing bytes in WKB input");
         }
 
         return g;
     }
 
-    private Geometry readGeometry() {
-        checkRemaining(1, "byte order");
-        final byte byteOrder = buffer.get();
+    /**
+     * Parses one ISO WKB geometry from a stream, leaving the stream on the byte after it.
+     *
+     * @param in the stream to read from
+     * @param srid the spatial reference ID to use
+     * @return the parsed geometry
+     * @throws EOFException if the stream ends inside the geometry
+     * @throws IOException if the stream cannot be read
+     */
+    static Geometry parse(final InputStream in, final int srid) throws IOException {
+        if (in == null) {
+            throw new IllegalArgumentException("WKB input cannot be null");
+        }
+
+        return new WkbReader(in, srid).readGeometry();
+    }
+
+    private Geometry readGeometry() throws IOException {
+        final byte byteOrder = readByte();
+        final boolean littleEndian;
         if (byteOrder == 0x00) {
-            buffer.order(ByteOrder.BIG_ENDIAN);
+            littleEndian = false;
         } else if (byteOrder == 0x01) {
-            buffer.order(ByteOrder.LITTLE_ENDIAN);
+            littleEndian = true;
         } else {
             throw new IllegalArgumentException("Invalid WKB byte order: " + byteOrder);
         }
 
-        checkRemaining(4, "type code");
-        final int typeCode = buffer.getInt();
+        final int typeCode = readInt(littleEndian);
 
         // Check for EWKB flags
         if ((typeCode & EWKB_Z_FLAG) != 0 || (typeCode & EWKB_M_FLAG) != 0 || (typeCode & EWKB_SRID_FLAG) != 0) {
@@ -135,19 +187,19 @@ final class WkbReader {
 
         switch (baseType) {
             case TYPE_POINT:
-                return readPoint(z);
+                return readPoint(z, littleEndian);
             case TYPE_LINESTRING:
-                return readLineString(z);
+                return readLineString(z, littleEndian);
             case TYPE_POLYGON:
-                return readPolygon(z);
+                return readPolygon(z, littleEndian);
             case TYPE_MULTIPOINT:
-                return readMultiPoint(z);
+                return readMultiPoint(z, littleEndian);
             case TYPE_MULTILINESTRING:
-                return readMultiLineString(z);
+                return readMultiLineString(z, littleEndian);
             case TYPE_MULTIPOLYGON:
-                return readMultiPolygon(z);
+                return readMultiPolygon(z, littleEndian);
             case TYPE_GEOMETRYCOLLECTION:
-                return readGeometryCollection(z);
+                return readGeometryCollection(z, littleEndian);
             default:
                 throw new IllegalArgumentException("Unknown WKB type: " + baseType);
         }
@@ -157,17 +209,14 @@ final class WkbReader {
      * Reads one point. NaN x and y encode an empty point, so such a 3D point reads as an
      * empty point with a Z tag and its z ordinate is read and discarded.
      */
-    private Point readPoint(final boolean z) {
-        final int coordSize = z ? 24 : 16; // 3 or 2 doubles
-        checkRemaining(coordSize, "point coordinates");
-
-        final double x = buffer.getDouble();
-        final double y = buffer.getDouble();
+    private Point readPoint(final boolean z, final boolean littleEndian) throws IOException {
+        final double x = readDouble(littleEndian);
+        final double y = readDouble(littleEndian);
 
         // Check for empty point (NaN coordinates)
         if (Double.isNaN(x) && Double.isNaN(y)) {
             if (z) {
-                buffer.getDouble(); // read and discard z
+                readDouble(littleEndian); // read and discard z
             }
             return Point.emptyWithZ(srid, z);
         }
@@ -177,7 +226,7 @@ final class WkbReader {
         CoordinateValidator.validateY(y, srid);
 
         if (z) {
-            final double zVal = buffer.getDouble();
+            final double zVal = readDouble(littleEndian);
             CoordinateValidator.validateZ(zVal);
             return Point.ofWithSrid(x, y, zVal, srid);
         } else {
@@ -185,9 +234,8 @@ final class WkbReader {
         }
     }
 
-    private LineString readLineString(final boolean z) {
-        checkRemaining(4, "point count");
-        final int numPoints = buffer.getInt();
+    private LineString readLineString(final boolean z, final boolean littleEndian) throws IOException {
+        final int numPoints = readInt(littleEndian);
 
         if (numPoints < 0) {
             throw new IllegalArgumentException("Invalid point count: " + numPoints);
@@ -206,7 +254,7 @@ final class WkbReader {
 
         final List<Point> points = new ArrayList<>(initialCapacity(numPoints));
         for (int i = 0; i < numPoints; i++) {
-            points.add(readCoordinate(z, "linestring vertex"));
+            points.add(readCoordinate(z, littleEndian, "linestring vertex"));
         }
 
         return LineString.ofWithSrid(points, srid, z);
@@ -216,9 +264,9 @@ final class WkbReader {
      * Reads one coordinate as a vertex of a line string or ring. A vertex must be a real
      * coordinate, so NaN, which encodes an empty point, is malformed here.
      */
-    private Point readCoordinate(final boolean z, final String context) {
-        final double x = buffer.getDouble();
-        final double y = buffer.getDouble();
+    private Point readCoordinate(final boolean z, final boolean littleEndian, final String context) throws IOException {
+        final double x = readDouble(littleEndian);
+        final double y = readDouble(littleEndian);
         if (Double.isNaN(x) && Double.isNaN(y)) {
             throw new IllegalArgumentException("A " + context
                     + " cannot be an empty point; a vertex must be a real coordinate");
@@ -227,16 +275,15 @@ final class WkbReader {
         CoordinateValidator.validateY(y, srid);
 
         if (z) {
-            final double zVal = buffer.getDouble();
+            final double zVal = readDouble(littleEndian);
             CoordinateValidator.validateZ(zVal);
             return Point.ofWithSrid(x, y, zVal, srid);
         }
         return Point.ofWithSrid(x, y, srid);
     }
 
-    private Polygon readPolygon(final boolean z) {
-        checkRemaining(4, "ring count");
-        final int numRings = buffer.getInt();
+    private Polygon readPolygon(final boolean z, final boolean littleEndian) throws IOException {
+        final int numRings = readInt(littleEndian);
 
         if (numRings < 0) {
             throw new IllegalArgumentException("Invalid ring count: " + numRings);
@@ -252,8 +299,7 @@ final class WkbReader {
 
         final List<LineString> rings = new ArrayList<>(initialCapacity(numRings));
         for (int i = 0; i < numRings; i++) {
-            checkRemaining(4, "point count for ring");
-            final int numPoints = buffer.getInt();
+            final int numPoints = readInt(littleEndian);
 
             if (numPoints < 0) {
                 throw new IllegalArgumentException("Invalid point count in ring: " + numPoints);
@@ -268,7 +314,7 @@ final class WkbReader {
 
             final List<Point> points = new ArrayList<>(initialCapacity(numPoints));
             for (int j = 0; j < numPoints; j++) {
-                points.add(readCoordinate(z, "ring vertex"));
+                points.add(readCoordinate(z, littleEndian, "ring vertex"));
             }
 
             final LineString ring = LineString.ofWithSrid(points, srid, z);
@@ -282,12 +328,11 @@ final class WkbReader {
         return Polygon.ofWithSrid(shell, holes, srid, z);
     }
 
-    private MultiPoint readMultiPoint(final boolean z) {
+    private MultiPoint readMultiPoint(final boolean z, final boolean littleEndian) throws IOException {
         depth++;
         CoordinateValidator.validateNestingDepth(depth);
 
-        checkRemaining(4, "geometry count");
-        final int numGeoms = buffer.getInt();
+        final int numGeoms = readInt(littleEndian);
 
         if (numGeoms < 0) {
             throw new IllegalArgumentException("Invalid geometry count: " + numGeoms);
@@ -314,12 +359,11 @@ final class WkbReader {
         return MultiPoint.ofWithSrid(points, srid, z);
     }
 
-    private MultiLineString readMultiLineString(final boolean z) {
+    private MultiLineString readMultiLineString(final boolean z, final boolean littleEndian) throws IOException {
         depth++;
         CoordinateValidator.validateNestingDepth(depth);
 
-        checkRemaining(4, "geometry count");
-        final int numGeoms = buffer.getInt();
+        final int numGeoms = readInt(littleEndian);
 
         if (numGeoms < 0) {
             throw new IllegalArgumentException("Invalid geometry count: " + numGeoms);
@@ -345,12 +389,11 @@ final class WkbReader {
         return MultiLineString.ofWithSrid(lineStrings, srid, z);
     }
 
-    private MultiPolygon readMultiPolygon(final boolean z) {
+    private MultiPolygon readMultiPolygon(final boolean z, final boolean littleEndian) throws IOException {
         depth++;
         CoordinateValidator.validateNestingDepth(depth);
 
-        checkRemaining(4, "geometry count");
-        final int numGeoms = buffer.getInt();
+        final int numGeoms = readInt(littleEndian);
 
         if (numGeoms < 0) {
             throw new IllegalArgumentException("Invalid geometry count: " + numGeoms);
@@ -376,12 +419,11 @@ final class WkbReader {
         return MultiPolygon.ofWithSrid(polygons, srid, z);
     }
 
-    private GeometryCollection readGeometryCollection(final boolean z) {
+    private GeometryCollection readGeometryCollection(final boolean z, final boolean littleEndian) throws IOException {
         depth++;
         CoordinateValidator.validateNestingDepth(depth);
 
-        checkRemaining(4, "geometry count");
-        final int numGeoms = buffer.getInt();
+        final int numGeoms = readInt(littleEndian);
 
         if (numGeoms < 0) {
             throw new IllegalArgumentException("Invalid geometry count: " + numGeoms);
@@ -403,23 +445,33 @@ final class WkbReader {
         return GeometryCollection.createWithSrid(geometries, srid, z);
     }
 
-    private void checkRemaining(final int bytes, final String context) {
-        if (buffer.remaining() < bytes) {
-            throw new IllegalArgumentException("Truncated WKB input: need " + bytes + " bytes for " + context +
-                    ", but only " + buffer.remaining() + " remaining");
-        }
+    private byte readByte() throws IOException {
+        return in.readByte();
+    }
+
+    private int readInt(final boolean littleEndian) throws IOException {
+        final int value = in.readInt();
+        return littleEndian ? Integer.reverseBytes(value) : value;
+    }
+
+    private double readDouble(final boolean littleEndian) throws IOException {
+        final long bits = in.readLong();
+        return Double.longBitsToDouble(littleEndian ? Long.reverseBytes(bits) : bits);
     }
 
     private void checkRemainingForCount(final int count, final int bytesPerItem, final String context) {
+        if (source == null) {
+            return;
+        }
         // Check for overflow when computing byte requirement
         if (count < 0 || (bytesPerItem > 0 && count > Integer.MAX_VALUE / bytesPerItem)) {
             throw new IllegalArgumentException("Declared count " + count + " for " + context + " is invalid or would overflow");
         }
         // Check that there's enough data
         final int bytesNeeded = count * bytesPerItem;
-        if (buffer.remaining() < bytesNeeded) {
+        if (source.available() < bytesNeeded) {
             throw new IllegalArgumentException("Declared count " + count + " for " + context +
-                    " exceeds available bytes (" + buffer.remaining() + " remaining)");
+                    " exceeds available bytes (" + source.available() + " remaining)");
         }
     }
 

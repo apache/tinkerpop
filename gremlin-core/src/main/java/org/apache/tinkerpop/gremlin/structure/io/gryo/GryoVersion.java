@@ -110,6 +110,13 @@ import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
+import org.apache.tinkerpop.gremlin.structure.geo.GeometryCollection;
+import org.apache.tinkerpop.gremlin.structure.geo.LineString;
+import org.apache.tinkerpop.gremlin.structure.geo.MultiLineString;
+import org.apache.tinkerpop.gremlin.structure.geo.MultiPoint;
+import org.apache.tinkerpop.gremlin.structure.geo.MultiPolygon;
+import org.apache.tinkerpop.gremlin.structure.geo.Point;
+import org.apache.tinkerpop.gremlin.structure.geo.Polygon;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.SerializerShim;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedEdge;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedPath;
@@ -308,7 +315,17 @@ public enum GryoVersion {
             add(GryoTypeReg.of(StarGraph.StarAdjacentVertex.class, 201));
             add(GryoTypeReg.of(ComputerGraph.class, 202));
             add(GryoTypeReg.of(ComputerGraph.State.class, 203));
-            add(GryoTypeReg.of(ComputerGraph.ComputerAdjacentVertex.class, 204));                    // ***LAST ID***
+            add(GryoTypeReg.of(ComputerGraph.ComputerAdjacentVertex.class, 204));
+
+            // Kryo registers concrete classes, so each geometry kind carries its own id. Geometry itself is
+            // abstract and is not registered.
+            add(GryoTypeReg.of(Point.class, 205, new UtilSerializers.GeometrySerializer<>()));
+            add(GryoTypeReg.of(LineString.class, 206, new UtilSerializers.GeometrySerializer<>()));
+            add(GryoTypeReg.of(Polygon.class, 207, new UtilSerializers.GeometrySerializer<>()));
+            add(GryoTypeReg.of(MultiPoint.class, 208, new UtilSerializers.GeometrySerializer<>()));
+            add(GryoTypeReg.of(MultiLineString.class, 209, new UtilSerializers.GeometrySerializer<>()));
+            add(GryoTypeReg.of(MultiPolygon.class, 210, new UtilSerializers.GeometrySerializer<>()));
+            add(GryoTypeReg.of(GeometryCollection.class, 211, new UtilSerializers.GeometrySerializer<>()));          // ***LAST ID***
 
             add(GryoTypeReg.of(Edge.class, 65, new GryoSerializersV3.EdgeSerializer()));
             add(GryoTypeReg.of(Vertex.class, 66, new GryoSerializersV3.VertexSerializer()));
@@ -519,7 +536,17 @@ public enum GryoVersion {
             add(GryoTypeReg.of(StarGraph.StarAdjacentVertex.class, 201));
             add(GryoTypeReg.of(ComputerGraph.class, 202));
             add(GryoTypeReg.of(ComputerGraph.State.class, 203));
-            add(GryoTypeReg.of(ComputerGraph.ComputerAdjacentVertex.class, 204));                    // ***LAST ID***
+            add(GryoTypeReg.of(ComputerGraph.ComputerAdjacentVertex.class, 204));
+
+            // Kryo registers concrete classes, so each geometry kind carries its own id. Geometry itself is
+            // abstract and is not registered.
+            add(GryoTypeReg.of(Point.class, 205, new UtilSerializers.GeometrySerializer<>()));
+            add(GryoTypeReg.of(LineString.class, 206, new UtilSerializers.GeometrySerializer<>()));
+            add(GryoTypeReg.of(Polygon.class, 207, new UtilSerializers.GeometrySerializer<>()));
+            add(GryoTypeReg.of(MultiPoint.class, 208, new UtilSerializers.GeometrySerializer<>()));
+            add(GryoTypeReg.of(MultiLineString.class, 209, new UtilSerializers.GeometrySerializer<>()));
+            add(GryoTypeReg.of(MultiPolygon.class, 210, new UtilSerializers.GeometrySerializer<>()));
+            add(GryoTypeReg.of(GeometryCollection.class, 211, new UtilSerializers.GeometrySerializer<>()));          // ***LAST ID***
 
             add(GryoTypeReg.of(Edge.class, 65, new GryoSerializersV1.EdgeSerializer()));
             add(GryoTypeReg.of(Vertex.class, 66, new GryoSerializersV1.VertexSerializer()));
