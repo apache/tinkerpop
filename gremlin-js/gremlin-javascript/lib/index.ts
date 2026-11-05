@@ -76,6 +76,7 @@ export const process = {
   t: t.t,
   GraphTraversal: gt.GraphTraversal,
   GraphTraversalSource: gt.GraphTraversalSource,
+  CardinalityValue: gt.CardinalityValue,
   statics: gt.statics,
   GremlinLang,
   GValue,
