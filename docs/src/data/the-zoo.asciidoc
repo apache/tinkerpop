@@ -67,6 +67,40 @@ single entity kind. The `aquatic` label, for instance, applies both to the anima
 the `lagoon` habitat. The `venomous` property is present only on animals for which it is meaningful,
 and `diet` and `specialties` are lists that hold several values per key.
 
+=== Loading the Zoo Graph
+
+The examples that follow assume a traversal source `g` bound to the zoo graph. There are two ways to
+obtain one. The first builds the graph in memory with the `TinkerFactory` helper, which configures a
+graph that supports the zoo's multiple labels and list-valued properties and populates it directly.
+
+[gremlin-groovy]
+----
+graph = TinkerFactory.createTheZoo()
+g = traversal().with(graph)
+----
+
+The second reads the shipped `data/tinkerpop-zoo.json` dataset, which is serialized in GraphSON 4.0.
+The receiving graph has to be configured to match the shape of that data before the read. Each
+animal carries several labels, so the graph must allow more than one label per vertex, which a
+`gremlin.tinkergraph.vertexLabelCardinality` of `ZERO_OR_MORE` provides. Properties such as `diet`
+and `specialties` hold several values under a single key, so the graph must also store vertex
+properties as lists by default, which a `gremlin.tinkergraph.defaultVertexPropertyCardinality` of
+`list` provides.
+
+[gremlin-groovy]
+----
+conf = new BaseConfiguration()
+conf.setProperty("gremlin.tinkergraph.vertexLabelCardinality", "ZERO_OR_MORE")
+conf.setProperty("gremlin.tinkergraph.defaultVertexPropertyCardinality", "list")
+graph = TinkerGraph.open(conf)
+g = traversal().with(graph)
+g.io("data/tinkerpop-zoo.json").read().iterate()
+----
+
+The label cardinality is mandatory. A default `TinkerGraph` fixes a single immutable label per
+vertex under a `LabelCardinality` of `ONE`, so reading the multi-label zoo data into it fails with
+`Label mutation is not supported with cardinality ONE`.
+
 === Examples
 
 Because each animal holds several labels, `labels()` reports the full set a vertex carries rather

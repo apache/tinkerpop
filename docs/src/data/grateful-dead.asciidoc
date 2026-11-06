@@ -53,6 +53,29 @@ an `original` or a `cover` in its `songType` property. Some songs have an empty 
 `sungBy` and `writtenBy` edges form an edge type family in the GQL sense: they share the same
 `song` to `artist` endpoints and carry no properties, differing only in label.
 
+=== Loading the Grateful Dead
+
+The examples that follow assume a traversal source `g` bound to the Grateful Dead graph. There are
+two ways to obtain one. The first builds the graph in memory with the `TinkerFactory` helper, which
+populates it directly.
+
+[gremlin-groovy]
+----
+graph = TinkerFactory.createGratefulDead()
+g = traversal().with(graph)
+----
+
+The second reads the shipped `data/grateful-dead.json` dataset, which is serialized in GraphSON. The
+graph uses a single label and single-valued properties per vertex, so a default `TinkerGraph`
+matches the shape of the data and no additional configuration is required before the read.
+
+[gremlin-groovy]
+----
+graph = TinkerGraph.open()
+g = traversal().with(graph)
+g.io("data/grateful-dead.json").read().iterate()
+----
+
 === Examples
 
 A first look at the data summarizes the songs by type and finds those that were performed most

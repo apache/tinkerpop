@@ -59,6 +59,29 @@ the same property key appears across labels. The `contains` edge reaches an airp
 `continent` and its `country`, so an airport has two incoming `contains` edges. The lone `version`
 vertex is a metadata record for the dataset and participates in no routes.
 
+=== Loading the Air Routes Graph
+
+The examples that follow assume a traversal source `g` bound to the air routes graph. There are two
+ways to obtain one. The first builds the graph in memory with the `TinkerFactory` helper, which
+populates it directly.
+
+[gremlin-groovy]
+----
+graph = TinkerFactory.createAirRoutes()
+g = traversal().with(graph)
+----
+
+The second reads the shipped `data/air-routes.json` dataset, which is serialized in GraphSON. The
+graph uses a single label and single-valued properties per vertex, so a default `TinkerGraph`
+matches the shape of the data and no additional configuration is required before the read.
+
+[gremlin-groovy]
+----
+graph = TinkerGraph.open()
+g = traversal().with(graph)
+g.io("data/air-routes.json").read().iterate()
+----
+
 === Examples
 
 A single airport is located by its IATA `code`, and its descriptive properties are read directly
