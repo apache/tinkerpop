@@ -1202,3 +1202,153 @@ Feature: Step - mergeE()
     Then the result should have a count of 1
     And the graph should return 7 for count of "g.E()"
     And the graph should return 1 for count of "g.V().has(\"name\",\"marko\").out(\"knows\").has(\"name\",\"peter\")"
+  # edges accept T.labels like T.label, given as a String or a one-element set
+  Scenario: g_mergeEXlabels_knows_out_marko_in_vadasX
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("person").property("name", "marko").
+        addV("person").property("name", "vadas")
+      """
+    And using the parameter xx1 defined as "m[{\"t[labels]\": \"s[knows]\", \"D[OUT]\":\"v[marko].id\", \"D[IN]\":\"v[vadas].id\"}]"
+    And the traversal of
+      """
+      g.mergeE(xx1)
+      """
+    When iterated to list
+    Then the result should have a count of 1
+    And the graph should return 1 for count of "g.V().has(\"person\",\"name\",\"marko\").out(\"knows\").has(\"person\",\"name\",\"vadas\")"
+
+  Scenario: g_mergeEXlabels_knows_out_marko_in_vadasX_exists
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("person").property("name", "marko").as("a").
+        addV("person").property("name", "vadas").as("b").
+        addE("knows").from("a").to("b")
+      """
+    And using the parameter xx1 defined as "m[{\"t[labels]\": \"knows\", \"D[OUT]\":\"v[marko].id\", \"D[IN]\":\"v[vadas].id\"}]"
+    And the traversal of
+      """
+      g.mergeE(xx1)
+      """
+    When iterated to list
+    Then the result should have a count of 1
+    And the graph should return 1 for count of "g.E()"
+
+  # an empty label set is treated as an omitted label, so it does not constrain the search
+  Scenario: g_mergeEXlabels_empty_out_marko_in_vadasX_exists
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("person").property("name", "marko").as("a").
+        addV("person").property("name", "vadas").as("b").
+        addE("knows").from("a").to("b")
+      """
+    And using the parameter xx1 defined as "m[{\"t[labels]\": \"s[]\", \"D[OUT]\":\"v[marko].id\", \"D[IN]\":\"v[vadas].id\"}]"
+    And the traversal of
+      """
+      g.mergeE(xx1)
+      """
+    When iterated to list
+    Then the result should have a count of 1
+    And the graph should return 1 for count of "g.E()"
+    And the graph should return 1 for count of "g.E().hasLabel(\"knows\")"
+
+  Scenario: g_mergeEXout_marko_in_vadasX_optionXonCreate_labels_knowsX
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("person").property("name", "marko").
+        addV("person").property("name", "vadas")
+      """
+    And using the parameter xx1 defined as "m[{\"D[OUT]\":\"v[marko].id\", \"D[IN]\":\"v[vadas].id\"}]"
+    And using the parameter xx2 defined as "m[{\"t[labels]\": \"s[knows]\"}]"
+    And the traversal of
+      """
+      g.mergeE(xx1).option(Merge.onCreate, xx2)
+      """
+    When iterated to list
+    Then the result should have a count of 1
+    And the graph should return 1 for count of "g.E().hasLabel(\"knows\")"
+
+  Scenario: g_mergeEXlabels_knows_likes_out_marko_in_vadasX
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("person").property("name", "marko").
+        addV("person").property("name", "vadas")
+      """
+    And using the parameter xx1 defined as "m[{\"t[id]\": \"v[marko].id\"}]"
+    And using the parameter xx2 defined as "m[{\"t[id]\": \"v[vadas].id\"}]"
+    And the traversal of
+      """
+      g.mergeE([(T.labels): {"knows", "likes"}, (OUT): Merge.outV, (IN): Merge.inV]).option(Merge.outV, xx1).option(Merge.inV, xx2)
+      """
+    When iterated to list
+    Then the traversal will raise an error with message containing text of "An edge has exactly one label"
+
+  Scenario: g_V_addEXedgeX_propertyXT_labels_knows_likesX
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("person").property("name", "marko")
+      """
+    And the traversal of
+      """
+      g.V().addE("edge").to(__.V()).property(T.labels, {"knows", "likes"})
+      """
+    When iterated to list
+    Then the traversal will raise an error with message containing text of "An edge has exactly one label"
+
+  # the label of an existing edge cannot change, so onMatch may not carry a label
+  Scenario: g_mergeEXlabel_knows_out_marko_in_vadasX_optionXonMatch_label_likesX_exists
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("person").property("name", "marko").as("a").
+        addV("person").property("name", "vadas").as("b").
+        addE("knows").from("a").to("b")
+      """
+    And using the parameter xx1 defined as "m[{\"t[label]\": \"knows\", \"D[OUT]\":\"v[marko].id\", \"D[IN]\":\"v[vadas].id\"}]"
+    And using the parameter xx2 defined as "m[{\"t[label]\": \"likes\"}]"
+    And the traversal of
+      """
+      g.mergeE(xx1).option(Merge.onMatch, xx2)
+      """
+    When iterated to list
+    Then the traversal will raise an error with message containing text of "Label mutation is not supported"
+
+  Scenario: g_mergeEXlabel_knows_out_marko_in_vadasX_optionXonMatch_labels_likesX_exists
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("person").property("name", "marko").as("a").
+        addV("person").property("name", "vadas").as("b").
+        addE("knows").from("a").to("b")
+      """
+    And using the parameter xx1 defined as "m[{\"t[label]\": \"knows\", \"D[OUT]\":\"v[marko].id\", \"D[IN]\":\"v[vadas].id\"}]"
+    And using the parameter xx2 defined as "m[{\"t[labels]\": \"s[likes]\"}]"
+    And the traversal of
+      """
+      g.mergeE(xx1).option(Merge.onMatch, xx2)
+      """
+    When iterated to list
+    Then the traversal will raise an error with message containing text of "Label mutation is not supported"
+
+  # a constant onMatch label is rejected even when the merge would create the edge
+  Scenario: g_mergeEXlabel_knows_out_marko_in_vadasX_optionXonMatch_labels_likesX
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("person").property("name", "marko").
+        addV("person").property("name", "vadas")
+      """
+    And using the parameter xx1 defined as "m[{\"t[label]\": \"knows\", \"D[OUT]\":\"v[marko].id\", \"D[IN]\":\"v[vadas].id\"}]"
+    And using the parameter xx2 defined as "m[{\"t[labels]\": \"s[likes]\"}]"
+    And the traversal of
+      """
+      g.mergeE(xx1).option(Merge.onMatch, xx2)
+      """
+    When iterated to list
+    Then the traversal will raise an error with message containing text of "Label mutation is not supported"

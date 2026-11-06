@@ -3581,6 +3581,9 @@ That is, without the `+__+`-prefix.
 [['ripple', 'lop']]
 ----
 
+NOTE: The bare name `labels` refers to the `labels()` step when statics are loaded, so the `T.labels` token must be
+written in full, as in `by(T.labels)`.
+
 There may be situations where certain graphs may want a more exact data type than what Python will allow as a language.
 To support these situations `gremlin-python` has a few special type classes that can be imported from `statics`. They
 include:

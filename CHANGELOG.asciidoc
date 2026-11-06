@@ -39,6 +39,11 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Fixed `CountStrategy` so that it no longer adds a `limit()` before `count().is(P)` when the capped count can pass the predicate and is then observed downstream, e.g. `out().count().is(gt(2))`.
 * Removed the per-request `userAgent` option from all drivers so the user agent is sent only as the `User-Agent` header controlled by `enableUserAgentOnConnect`.
 * Fixed `gremlin-mcp` to include the server's reason when a query fails rather than only reporting that it failed.
+* Added the `T.labels` token as the token-level analogue of `labels()` and `Element.labels()`, projecting and filtering on the full vertex label set, and accepted by `mergeV()`, `addV()`, `graph.addVertex()`, and, with at most one label, `mergeE()` and `addE()` as a synonym for `T.label`.
+* Changed `elementMap()` and `valueMap()` under `with("multilabel")` to key the label set under `T.labels` instead of `T.label`.
+* Fixed mid-traversal `addV()` to create a vertex with no labels on a `ZERO_OR_MORE` graph when no label is given, as `g.addV()` does.
+* Fixed `mergeV()` to compare an `option(onCreate)` label with the merge argument as a label set, treating an empty label set as no label.
+* Changed `mergeE()` to reject a `T.label` key in `option(onMatch)` with a clear error, raised when the traversal is built for a constant Map, instead of a `ClassCastException` when an edge is matched.
 
 [[release-4-0-0-beta-3]]
 === TinkerPop 4.0.0-beta.3 (July 20, 2026)

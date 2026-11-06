@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -46,7 +47,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequire
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
 import org.apache.tinkerpop.gremlin.structure.Direction;
-import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -253,29 +253,23 @@ public abstract class MergeElementStep<S, E, C> extends FlatMapStep<S, E>
     protected static void validate(final Map map, final boolean ignoreTokens, final Set allowedTokens, final String op) {
         if (null == map) return;
 
+        // T.labels is the multi-label form of T.label wherever the step declares it among its allowed tokens. The two
+        // are interchangeable, so supplying both in one Map is ambiguous.
+        final boolean labelsAllowed = allowedTokens.contains(T.labels);
+        if (labelsAllowed && map.containsKey(T.label) && map.containsKey(T.labels)) {
+            throw new IllegalArgumentException(String.format(
+                    "%s() does not allow both T.label and T.labels in the same Map", op));
+        }
+
         ((Map<?,?>) map).entrySet().forEach(e -> {
             final Object k = e.getKey();
             final Object v = e.getValue();
+            final boolean isLabelKey = k == T.label || (labelsAllowed && k == T.labels);
 
             if (ignoreTokens) {
-                // Allow T.label in onMatch for multi-label replacement support
-                if (k == T.label) {
-                    if (v instanceof String) {
-                        ElementHelper.validateLabel((String) v);
-                    } else if (v instanceof java.util.Collection) {
-                        for (final Object label : (java.util.Collection<?>) v) {
-                            if (!(label instanceof String)) {
-                                throw new IllegalArgumentException(String.format(
-                                        "option(onMatch) expects T.label collection to contain only Strings - found: %s",
-                                        label.getClass().getSimpleName()));
-                            }
-                            ElementHelper.validateLabel((String) label);
-                        }
-                    } else {
-                        throw new IllegalArgumentException(String.format(
-                                "option(onMatch) expects T.label value to be String or Collection<String> - found: %s",
-                                v.getClass().getSimpleName()));
-                    }
+                // onMatch may add labels to a matched vertex; mergeE validates the key here but rejects it later
+                if (isLabelKey) {
+                    ElementHelper.asLabelSet(v);
                 } else if (!(k instanceof String)) {
                     throw new IllegalArgumentException(String.format("option(onMatch) expects keys in Map to be of String - check: %s", k));
                 } else {
@@ -292,23 +286,8 @@ public abstract class MergeElementStep<S, E, C> extends FlatMapStep<S, E>
                             "%s() and option(onCreate) args expect keys in Map to be either String or %s - check: %s",
                             op, allowedTokens, k));
                 }
-                if (k == T.label) {
-                    if (v instanceof String) {
-                        ElementHelper.validateLabel((String) v);
-                    } else if (v instanceof java.util.Collection) {
-                        for (final Object label : (java.util.Collection<?>) v) {
-                            if (!(label instanceof String)) {
-                                throw new IllegalArgumentException(String.format(
-                                        "%s() expects T.label collection to contain only Strings - found: %s",
-                                        op, label.getClass().getSimpleName()));
-                            }
-                            ElementHelper.validateLabel((String) label);
-                        }
-                    } else {
-                        throw new IllegalArgumentException(String.format(
-                                "%s() and option(onCreate) args expect T.label value to be String or Collection<String> - found: %s",
-                                op, v.getClass().getSimpleName()));
-                    }
+                if (isLabelKey) {
+                    ElementHelper.asLabelSet(v);
                 }
                 if (k == Direction.OUT && v instanceof Merge && v != Merge.outV) {
                     throw new IllegalArgumentException(String.format("Only Merge.outV token may be used for Direction.OUT, found: %s", v));
@@ -324,16 +303,69 @@ public abstract class MergeElementStep<S, E, C> extends FlatMapStep<S, E>
     }
 
     /**
-     * Prohibit overrides to the existence criteria (id/label/from/to) in onCreate.
+     * Returns the Map with a {@link T#labels} entry moved to {@link T#label}, its single-token equivalent, so that
+     * the search, create and onMatch paths only need to handle {@link T#label}. An empty label collection means no
+     * label was given, so it is removed: the search then does not filter by label, creation applies the graph's
+     * default, and an {@code onCreate} label is not treated as an override. The supplied Map is never mutated; a copy
+     * is returned only when it changes. Expects a Map that has already passed {@link #validate}, which rejects one
+     * holding both tokens.
+     *
+     * @since 4.0.0
+     */
+    protected static Map normalizeLabelsToken(final Map map) {
+        if (map == null || (!map.containsKey(T.labels) && !isEmptyLabelSet(map.get(T.label))))
+            return map;
+        final Map normalized = new LinkedHashMap(map);
+        if (normalized.containsKey(T.labels))
+            normalized.put(T.label, normalized.remove(T.labels));
+        if (isEmptyLabelSet(normalized.get(T.label)))
+            normalized.remove(T.label);
+        return normalized;
+    }
+
+    private static boolean isEmptyLabelSet(final Object labelValue) {
+        return labelValue instanceof Collection && ((Collection<?>) labelValue).isEmpty();
+    }
+
+    /**
+     * Prohibit overrides to the existence criteria (id/label/from/to) in onCreate. Labels may be given with
+     * {@link T#label} or {@link T#labels} as a {@code String} or a collection, so they are compared as label sets,
+     * and an empty label collection on either side counts as no label.
      */
     public static void validateNoOverrides(final Map<?,?> mergeMap, final Map<?,?> onCreateMap) {
         for (final Map.Entry e : onCreateMap.entrySet()) {
             final Object k = e.getKey();
+            if (k == T.label || k == T.labels)
+                continue;
             final Object v = e.getValue();
             if (mergeMap.containsKey(k) && !Objects.equals(v, mergeMap.get(k))) {
                 throw new IllegalArgumentException(String.format(
                         "option(onCreate) cannot override values from merge() argument: (%s, %s)", k, v));
             }
+        }
+
+        final Object createLabel = labelValue(onCreateMap);
+        final Object mergeLabel = labelValue(mergeMap);
+        if (createLabel != null && mergeLabel != null && !isEmptyLabelSet(createLabel) && !isEmptyLabelSet(mergeLabel)
+                && !sameLabels(mergeLabel, createLabel)) {
+            throw new IllegalArgumentException(String.format(
+                    "option(onCreate) cannot override values from merge() argument: (%s, %s)", T.label, createLabel));
+        }
+    }
+
+    private static Object labelValue(final Map<?,?> map) {
+        return map.containsKey(T.label) ? map.get(T.label) : map.get(T.labels);
+    }
+
+    /**
+     * Compares two label values as label sets. A value that is not a valid label, such as a traversal, is compared
+     * as is.
+     */
+    private static boolean sameLabels(final Object a, final Object b) {
+        try {
+            return ElementHelper.asLabelSet(a).equals(ElementHelper.asLabelSet(b));
+        } catch (IllegalArgumentException ex) {
+            return Objects.equals(a, b);
         }
     }
 
@@ -454,38 +486,21 @@ public abstract class MergeElementStep<S, E, C> extends FlatMapStep<S, E>
     }
 
     public static void validateStaticNoOverrides(final Traversal.Admin search, final Traversal.Admin create) {
-        final boolean searchConstLike = search instanceof ConstantTraversal ||
-                search instanceof GValueConstantTraversal;
-        final boolean createConstLike = create instanceof ConstantTraversal ||
-                create instanceof GValueConstantTraversal;
+        final Object searchObj = constantValue(search);
+        final Object createObj = constantValue(create);
+        if (searchObj instanceof Map && createObj instanceof Map)
+            validateNoOverrides((Map) searchObj, (Map) createObj);
+    }
 
-        if (searchConstLike && createConstLike) {
-            Object searchObj;
-            Object createObj;
-
-            if (search instanceof ConstantTraversal) {
-                searchObj = search.next();
-            } else {
-                final GValueConstantTraversal gSearch = (GValueConstantTraversal) search;
-                if (gSearch.isParameterized()) return;
-                searchObj = gSearch.next();
-            }
-
-            if (create instanceof ConstantTraversal) {
-                createObj = create.next();
-            } else {
-                final GValueConstantTraversal gCreate = (GValueConstantTraversal) create;
-                if (gCreate.isParameterized()) return;
-                createObj = gCreate.next();
-            }
-
-            if (!(searchObj instanceof Map) || !(createObj instanceof Map)) {
-                return;
-            }
-
-            final Map searchMap = (Map) searchObj;
-            final Map createMap = (Map) createObj;
-            validateNoOverrides(searchMap, createMap);
-        }
+    /**
+     * Returns the value of a constant-like option traversal, or {@code null} if it is not constant or is
+     * parameterized, in which case it can only be validated when the step executes.
+     */
+    static Object constantValue(final Traversal.Admin traversal) {
+        if (traversal instanceof ConstantTraversal)
+            return traversal.next();
+        if (traversal instanceof GValueConstantTraversal && !((GValueConstantTraversal) traversal).isParameterized())
+            return traversal.next();
+        return null;
     }
 }

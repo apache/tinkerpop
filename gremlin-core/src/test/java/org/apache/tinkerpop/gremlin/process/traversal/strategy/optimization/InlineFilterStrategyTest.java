@@ -137,6 +137,7 @@ public class InlineFilterStrategyTest {
                     {filter(tail(10).as("a")), filter(tail(10).as("a")), Collections.emptyList()},
                     //
                     {outE().hasLabel("knows").inV(), outE("knows").inV(), Collections.emptyList()},
+                    {outE().has(T.labels, "knows").inV(), outE("knows").inV(), Collections.emptyList()},
                     {outE().hasLabel("knows").hasLabel("created").inV(), outE("knows").hasLabel("created").inV(), Collections.emptyList()},
                     {outE().or(hasLabel("knows"), hasLabel("created")).inV(), outE("knows", "created").inV(), Collections.emptyList()},
                     {outE().or(hasLabel("knows").as("a"), hasLabel("created").as("b")).as("c").inV(), outE("knows", "created").as("a", "b", "c").inV(), Collections.emptyList()},

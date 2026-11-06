@@ -55,6 +55,13 @@ public abstract class AbstractAddVertexStepPlaceholder<S> extends AbstractAddEle
 
     @Override
     public void setLabel(Object label) {
+        // An explicit empty label collection means "no label provided": leave the label unset so vertex
+        // creation applies the graph's LabelCardinality default (no labels under ZERO_OR_MORE), matching the
+        // concrete step and graph.addVertex(). Flipping userProvidedLabel here would instead materialize the
+        // default label.
+        if (label instanceof Collection && ((Collection<?>) label).isEmpty()) {
+            return;
+        }
         super.setLabel(label);
         userProvidedLabel = true;
     }

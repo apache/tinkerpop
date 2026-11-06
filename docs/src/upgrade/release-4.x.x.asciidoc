@@ -167,6 +167,41 @@ still forwarded like any other custom `With()` key, but Gremlin Server ignores i
 
 See: link:https://lists.apache.org/thread/clyxxp8t6mg3y7y8nj1z48l19j7pk2v8[\[DISCUSS\] Only Support User Agent in Request Header]
 
+==== The `T.labels` Token
+
+The `T` enum gains a `labels` token as the token-level analogue of the `labels()` step and
+`Element.labels()`, completing the multi-label API. `T.labels` projects an element's full label set as a
+`Set<String>` and is accepted wherever the existing tokens are, including `by()`, `has()`, `mergeV()`,
+`addV()`, and as a map key. Because an edge always has exactly one label, `mergeE()` and `addE()` accept `T.labels`
+with at most one label, where an empty set is treated as an omitted label. It complements `T.label`, which
+continues to produce a single label through the deprecated `Element.label()`.
+
+[source,groovy]
+----
+gremlin> g.addV('person','employee').property('name','marko')
+==>v[0]
+gremlin> g.V().has('name','marko').project('labels').by(T.labels)
+==>[labels:[person,employee]]
+----
+
+Under `with("multilabel")`, `elementMap()` and `valueMap()` emit the label set under the `T.labels` key as a
+`Set<String>` rather than the `T.label` key. Code that reads the label set from the `T.label` key of a
+`multilabel` map must read it from `T.labels` instead. The default and `singlelabel` output is unchanged,
+emitting a single `String` under `T.label`. Because `T.labels` is a new token, traffic that carries it
+requires matched 4.x peers. An older server or driver does not recognize the token and fails to deserialize it,
+with an error that varies by language.
+
+Gremlin Server now also reserves `labels` as a parameter name for `gremlin-groovy` requests, as it already does for the
+other `T` tokens, because a binding named `labels` would hide the `T.labels` token in the script. A `gremlin-groovy`
+request that passes a parameter named `labels` is rejected with "The message supplies one or more invalid parameters
+key" and must rename that parameter. The accessor forms `~labels` and `~LABELS` are rejected as well, as `~label`
+already is, because they are not valid parameter names.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-3274[TINKERPOP-3274],
+link:https://tinkerpop.apache.org/docs/4.0.0/reference/#t-labels-token[T.labels],
+link:https://tinkerpop.apache.org/docs/4.0.0/reference/#elementmap-step[elementMap()],
+link:https://tinkerpop.apache.org/docs/4.0.0/reference/#valuemap-step[valueMap()]
+
 === Upgrading for Providers
 
 ==== Graph System Providers
@@ -177,6 +212,18 @@ Code that extends `AbstractTinkerGraph` loses the hooks for the retired whole-gr
 Storage" above: the protected `graphLocation` and `graphFormat` fields and the `loadGraph()` and `saveGraph()` methods
 are removed, as is `requiresPersistence()` on the test provider `TinkerMemoryGraphProvider`. Durable storage is now
 the job of a `TinkerStorage` engine on `TinkerStorageGraph`.
+
+===== Recognizing Label Filters
+
+A `has(T.labels, ...)` filter reaches a provider as a `HasContainer` whose key is the `~labels` accessor, alongside
+the existing `~label` key produced by `hasLabel()`, `label()` and `has(T.label, ...)`. Both keys describe the same
+filter - the predicate is tested against the element's full label set - so a provider that recognizes label filters
+by key (for example to apply a label index) must treat `~labels` as a label filter in addition to `~label`, or it
+silently skips the index for that spelling and falls back to a scan. Correctness is unaffected either way.
+
+Rather than compare the key to a token's accessor, call `HasContainer.isLabelKey()`, which is `true` for both
+keys and keeps working if the label tokens change again. The key itself is preserved - not rewritten - so a provider
+that needs to tell `T.label` from `T.labels` still can via `HasContainer.getKey()`.
 
 ===== Class Values Must Be Registered
 

@@ -26,6 +26,7 @@ import io.netty.util.ReferenceCountUtil;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalInterruptedException;
 import org.apache.tinkerpop.gremlin.server.Context;
 import org.apache.tinkerpop.gremlin.server.util.GremlinError;
+import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
 import org.junit.Test;
 
@@ -96,5 +97,15 @@ public class HttpGremlinEndpointHandlerTest {
 
         assertEquals(HttpResponseStatus.INTERNAL_SERVER_ERROR, error.getCode());
         assertEquals("ServerTimeoutExceededException", error.getException());
+    }
+
+    @Test
+    public void shouldReserveEveryTTokenAsParameterKey() {
+        for (final T t : T.values()) {
+            assertTrue(t.name(), HttpGremlinEndpointHandler.INVALID_PARAMETERS_KEYS.contains(t.name()));
+            assertTrue(t.getAccessor(), HttpGremlinEndpointHandler.INVALID_PARAMETERS_KEYS.contains(t.getAccessor()));
+            assertTrue(t.getAccessor().toUpperCase(),
+                    HttpGremlinEndpointHandler.INVALID_PARAMETERS_KEYS.contains(t.getAccessor().toUpperCase()));
+        }
     }
 }

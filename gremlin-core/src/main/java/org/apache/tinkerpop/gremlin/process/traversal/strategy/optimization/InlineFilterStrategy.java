@@ -46,7 +46,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversal
 import org.apache.tinkerpop.gremlin.process.traversal.util.OrP;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.Edge;
-import org.apache.tinkerpop.gremlin.structure.T;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -142,7 +141,7 @@ public final class InlineFilterStrategy extends AbstractTraversalStrategy<Traver
             final VertexStepContract<Edge> previousStep = (VertexStepContract<Edge>) step.getPreviousStep();
             final List<GValue<?>> edgeLabelGValues = new ArrayList<>();
             for (final HasContainer hasContainer : new ArrayList<>(step.getHasContainers())) {
-                if (hasContainer.getKey().equals(T.label.getAccessor())) {
+                if (hasContainer.isLabelKey()) {
                     if (hasContainer.getBiPredicate() == Compare.eq &&
                             hasContainer.getValue() instanceof String &&
                             edgeLabelGValues.isEmpty()) {

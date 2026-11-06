@@ -46,6 +46,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 
 /**
@@ -321,6 +322,20 @@ public class AddEdgeStepTest extends GValueStepTest {
         step.addProperty("prop", "value");
         assertEquals(Map.of("prop", List.of("value")), step.getProperties());
         assertEquals(List.of("option"), step.getParameters().get("key", () -> null));
+    }
+
+    @Test
+    public void shouldTreatLabelsTokenPropertyLikeLabelToken() {
+        // T.labels sets the label exactly like T.label, so it is never stored as an edge property and cannot
+        // override a label given to addE()
+        for (final T token : new T[]{T.label, T.labels}) {
+            try {
+                __.addE("knows").property(token, "likes");
+                fail("Should not allow " + token + " to override the addE() label");
+            } catch (IllegalArgumentException ex) {
+                assertTrue(ex.getMessage().contains("already been set"));
+            }
+        }
     }
 
     private GraphTraversal.Admin<Object, Edge> getAddEdgeGValueTraversal() {

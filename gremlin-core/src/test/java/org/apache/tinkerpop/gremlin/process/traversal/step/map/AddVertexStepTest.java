@@ -46,6 +46,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -467,5 +468,32 @@ public class AddVertexStepTest extends GValueStepTest {
 
     private GraphTraversal.Admin<Object, Vertex> getMultiLabelGValueTraversal() {
         return __.addV(GValue.of("l1", "person"), GValue.of("l2", "employee")).asAdmin();
+    }
+
+    @Test
+    public void shouldRouteLabelsTokenPropertyWithGValueToLabel() {
+        // property(T.labels, <GValue>) must route to the label (not be stored as a property) and
+        // resolve/pin the GValue exactly as the T.label path does, confirming GValue symmetry.
+        final GraphTraversal.Admin<Object, Vertex> traversal =
+                __.addV().property(T.labels, GValue.of("l1", Set.of("person", "employee"))).asAdmin();
+        final AddVertexStepPlaceholder<?> step = (AddVertexStepPlaceholder<?>) traversal.getSteps().get(0);
+        final Object resolved = step.getLabel();
+        assertTrue(resolved instanceof Set);
+        assertEquals(Set.of("person", "employee"), resolved);
+        assertFalse(step.getProperties().containsKey(T.labels));
+        assertFalse(step.getProperties().containsKey(T.label));
+        verifyVariables(traversal, Set.of("l1"), Set.of());
+    }
+
+    @Test
+    public void shouldRejectNonStringLabelValue() {
+        for (final Object bad : Arrays.asList(5, Set.of(1), Arrays.asList("ok", 3), GValue.of("x", 1))) {
+            try {
+                __.addV().property(T.labels, bad);
+                fail("Should have rejected label value " + bad);
+            } catch (IllegalArgumentException ex) {
+                assertTrue(ex.getMessage(), ex.getMessage().startsWith("A label"));
+            }
+        }
     }
 }

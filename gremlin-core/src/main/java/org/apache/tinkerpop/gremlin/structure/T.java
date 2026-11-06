@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.structure;
 
+import java.util.Set;
 import java.util.function.Function;
 
 /**
@@ -91,9 +92,27 @@ public enum T implements Function<Element, Object> {
         public Object apply(final Element element) {
             return ((VertexProperty) element).value();
         }
+    },
+    /**
+     * Labels (representing Element.labels()). Declared last so that the ordinals of the pre-existing tokens are
+     * unchanged, as ordinal-based serializers such as Gryo depend on them.
+     *
+     * @since 4.0.0
+     */
+    labels {
+        @Override
+        public String getAccessor() {
+            return LABELS;
+        }
+
+        @Override
+        public Set<String> apply(final Element element) {
+            return element.labels();
+        }
     };
 
     private static final String LABEL = Graph.Hidden.hide("label");
+    private static final String LABELS = Graph.Hidden.hide("labels");
     private static final String ID = Graph.Hidden.hide("id");
     private static final String KEY = Graph.Hidden.hide("key");
     private static final String VALUE = Graph.Hidden.hide("value");
@@ -106,6 +125,8 @@ public enum T implements Function<Element, Object> {
     public static T fromString(final String accessor) {
         if (accessor.equals(LABEL))
             return label;
+        else if (accessor.equals(LABELS))
+            return labels;
         else if (accessor.equals(ID))
             return id;
         else if (accessor.equals(KEY))

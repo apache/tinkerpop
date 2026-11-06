@@ -775,3 +775,14 @@ Feature: Step - addV()
       """
     When iterated to list
     Then the traversal will raise an error with message containing text of "must produce a scalar String when multiple traversals are provided"
+
+  @MultiLabel
+  Scenario: g_addV_propertyXT_labels_a_bX
+    Given the empty graph
+    And the traversal of
+      """
+      g.addV().property(T.labels, ["a", "b"])
+      """
+    When iterated to list
+    Then the result should have a count of 1
+    And the graph should return 1 for count of "g.V().hasLabel(\"a\").hasLabel(\"b\")"
