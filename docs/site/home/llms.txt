@@ -2,6 +2,25 @@
 
 > Apache TinkerPop is a graph computing framework and the home of Gremlin, the graph traversal language implemented by many graph databases and graph processors. This file indexes the project site and points to the documentation index for each supported release.
 
+<!--
+Licensed to the Apache Software Foundation (ASF) under one
+or more contributor license agreements.  See the NOTICE file
+distributed with this work for additional information
+regarding copyright ownership.  The ASF licenses this file
+to you under the Apache License, Version 2.0 (the
+"License"); you may not use this file except in compliance
+with the License.  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on an
+"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied.  See the License for the
+specific language governing permissions and limitations
+under the License.
+-->
+
 Documentation is published per release under `https://tinkerpop.apache.org/docs/<version>/`, and each release carries its own page-level index at `https://tinkerpop.apache.org/docs/<version>/llms.txt`. The path `https://tinkerpop.apache.org/docs/current/` resolves to the most recent official release and therefore changes as releases are made. Versions 3.7.7 and 3.8.2 are the first to publish an index of this form. Later releases of both lines do the same, while earlier releases are not backfilled, so a version at or above one of those two is required.
 
 Every version's index covers the same body of documentation, pinned to that version by its URL: the reference documentation describing the Gremlin language and every step, the upgrade documentation recording what changed in each release, recipes offering reusable traversal patterns, tutorials introducing the property graph structure and the Gremlin Console, the provider documentation defining the semantics a graph system must implement and the semantics of Gremlin itself, and the IO documentation specifying the GraphBinary, GraphSON, GraphML, and Gryo serialization formats. Selecting a version and reading its index leads to any of them.

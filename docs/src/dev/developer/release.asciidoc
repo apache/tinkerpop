@@ -291,8 +291,11 @@ the help of a PMC member for those steps.
 ... Consider direct deploy with `npm publish --otp <otp>` from `gremlin-js/gremlin-javascript/` - if using this method, ensure the `npm` version aligns with the one expected by the branch.
 .. `mvn deploy -pl :gremlint -DskipTests -Dnpm`
 ... Consider direct deploy with `npm publish --otp <otp>` from `gremlin-js/gremlint/` - if using this method, ensure the `npm` version aligns with the one expected by the branch.
+.. `bin/process-docs.sh` to build the documentation for the tag, since the `clean` above removed it. `gremlin-mcp`
+bundles the reference and Gremlin Semantics pages of this build into its package, and its deploy fails if they are
+missing or were built for another version.
 .. `mvn deploy -pl :gremlin-mcp -DskipTests -Dnpm`
-... Consider direct deploy with `npm publish --otp <otp>` from `gremlin-js/gremlin-mcp/` - if using this method, ensure the `npm` version aligns with the one expected by the branch. Note: `gremlin-javascript` must be published before `gremlin-mcp` as it is a dependency.
+... Consider direct deploy with `npm publish --otp <otp>` from `gremlin-js/gremlin-mcp/` - if using this method, ensure the `npm` version aligns with the one expected by the branch. Note: `gremlin-javascript` must be published before `gremlin-mcp` as it is a dependency. A direct `npm publish` only warns when the docs are missing, so confirm its output reports the docs pages it bundled.
 .. `git tag gremlin-go/vxx.yy.zz`
 .. `git push origin gremlin-go/vxx.yy.zz`
 .. `GOPROXY=proxy.golang.org go list -m github.com/apache/tinkerpop/gremlin-go/v3@vxx.yy.xx`
