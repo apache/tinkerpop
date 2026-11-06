@@ -46,6 +46,11 @@ The primitive types are:
 * `UUID`
 * `BINARY`
 * `DATETIME`, `DURATION`
+* `GEOMETRY` (spatial values, supertype of the geometry kinds):
+  ** `POINT`, `LINESTRING`, `POLYGON`, `MULTIPOINT`, `MULTILINESTRING`, `MULTIPOLYGON`, `GEOMETRYCOLLECTION`, of which
+the three multi-part kinds are also kinds of `GEOMETRYCOLLECTION`
+  ** `CARTESIAN` (planar) and `GEOGRAPHIC` (WGS84 longitude and latitude) match a geometry of any kind by its
+coordinate model, and a geometry in any other coordinate reference system matches neither
 * `NULL` (has only one value, the "undefined" value `null`)
 
 The collection types are `LIST`, `MAP`, and `SET`.
@@ -279,6 +284,52 @@ Dates are evaluated based on the numerical comparison of Unix Epoch time.
 Durations are evaluated based on the numerical comparison of their total length. `A == B` if `A` and `B` represent the
 same total length.
 
+===== GEOMETRY
+
+Geometries are compared by exact value. `A == B` if `A` and `B` have the same SRID, kind, structure and coordinates,
+including whether z is present. Coordinates are compared numerically, so `-0.0` equals `0.0`. The comparison is
+structural, not spatial: `LINESTRING(0 0, 1 1)` is not equal to `LINESTRING(1 1, 0 0)`, `POINT(1 2)` is not equal to
+`MULTIPOINT((1 2))`, and `POINT EMPTY`, `LINESTRING EMPTY` and `POINT Z EMPTY` are all unequal.
+
+Any two geometries are <<Comparability,Comparable>>. A geometry is neither <<Equality,Equal>> nor
+<<Comparability,Comparable>> to a value of another type, including the `STRING` holding its Well-Known Text.
+
+Geometries are totally ordered, and `compare(A, B) == 0` exactly when `A == B`. The order compares the following
+keys, each used only when every earlier key ties:
+
+1. The SRID, as a signed 32-bit integer.
+2. Emptiness, empty first. Emptiness is deep, so `GEOMETRYCOLLECTION(POINT EMPTY)` is empty.
+3. The Hilbert key, as an unsigned 32-bit integer.
+4. The coordinates in Well-Known Binary order, including z, compared numerically. The shorter sequence sorts first.
+5. The kind, by Well-Known Binary type code: `POINT` 1, `LINESTRING` 2, `POLYGON` 3, `MULTIPOINT` 4,
+`MULTILINESTRING` 5, `MULTIPOLYGON` 6, `GEOMETRYCOLLECTION` 7.
+6. The structure: for each nested geometry, recursively, its kind, its number of parts (a line string's points, a
+polygon's rings, a collection's elements) and whether it has none, none first. Then whether the whole value has z,
+without z first.
+
+The Hilbert key places nearby geometries near each other. It is the level-16 Hilbert index of the cell holding the
+bounding box center, `cx = (minX + maxX) / 2` and `cy = (minY + maxY) / 2`, computed in 64-bit floating point exactly
+as written, with `-0.0` taken as `0.0`. For a `GEOGRAPHIC` geometry the cell is `ix = floor((cx + 180) / 360 * 65536)`
+and `iy = floor((cy + 90) / 180 * 65536)`, clamped to 0..65535. For any other geometry each index is the top 16 bits
+of the coordinate's order-preserving 64-bit form, which is its bit pattern with every bit flipped when negative and
+only the sign bit flipped otherwise. The curve starts at cell `(0, 0)`, visits `(1, 0)` second and ends at
+`(65535, 0)`.
+
+For example:
+
+|===
+|`A`|`B`|`compare(A,B)`|`P`|Reason
+
+|`POINT(-0 0)`|`POINT(0 0)`|`0`|`P.eq`|coordinates are compared numerically
+|`SRID=0;POINT(1 2)`|`SRID=4326;POINT(1 2)`|`-1`|`P.lt`|key 1, the SRID
+|`POINT EMPTY`|`POINT(0 0)`|`-1`|`P.lt`|key 2, empty first
+|`POINT(0 0)`|`POINT(1 1)`|`-1`|`P.lt`|key 3, the Hilbert key
+|`LINESTRING(0 0, 1 1)`|`LINESTRING(1 1, 0 0)`|`-1`|`P.lt`|key 4, the coordinates
+|`POINT(0 0)`|`MULTIPOINT((0 0))`|`-1`|`P.lt`|key 5, the kind
+|`POINT EMPTY`|`POINT Z EMPTY`|`-1`|`P.lt`|key 6, without z first
+|`POINT(0 0)`|`"POINT(0 0)"`|`ERROR`|`P.neq`|cross-type comparison
+|===
+
 ===== Graph Elements (VERTEX / EDGE / VPROPERTY)
 
 If they are the same type of Element, these are compared by the value of their `T.id` according to the semantics for
@@ -401,15 +452,16 @@ We define the type space, and the global order across the type space as follows:
 4.  DATETIME
 5.  STRING
 6.  UUID
-7.  Vertex
-8.  Edge
-9.  VertexProperty
-10. Property
-11. Path
-12. Set
-13. List
-14. Map
-15. Unknown
+7.  GEOMETRY
+8.  Vertex
+9.  Edge
+10. VertexProperty
+11. Property
+12. Path
+13. Set
+14. List
+15. Map
+16. Unknown
 ----
 
 Values in different type spaces will be ordered according to their priority (e.g. all Numbers < all Strings).

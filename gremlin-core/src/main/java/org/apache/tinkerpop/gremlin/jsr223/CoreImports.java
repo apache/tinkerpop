@@ -119,6 +119,19 @@ import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
+import org.apache.tinkerpop.gremlin.structure.geo.Curve;
+import org.apache.tinkerpop.gremlin.structure.geo.Geometry;
+import org.apache.tinkerpop.gremlin.structure.geo.GeometryCollection;
+import org.apache.tinkerpop.gremlin.structure.geo.LineString;
+import org.apache.tinkerpop.gremlin.structure.geo.Model;
+import org.apache.tinkerpop.gremlin.structure.geo.MultiCurve;
+import org.apache.tinkerpop.gremlin.structure.geo.MultiLineString;
+import org.apache.tinkerpop.gremlin.structure.geo.MultiPoint;
+import org.apache.tinkerpop.gremlin.structure.geo.MultiPolygon;
+import org.apache.tinkerpop.gremlin.structure.geo.MultiSurface;
+import org.apache.tinkerpop.gremlin.structure.geo.Point;
+import org.apache.tinkerpop.gremlin.structure.geo.Polygon;
+import org.apache.tinkerpop.gremlin.structure.geo.Surface;
 import org.apache.tinkerpop.gremlin.structure.io.GraphReader;
 import org.apache.tinkerpop.gremlin.structure.io.GraphWriter;
 import org.apache.tinkerpop.gremlin.structure.io.Io;
@@ -194,7 +207,22 @@ public final class CoreImports {
         CLASS_IMPORTS.add(ReferenceProperty.class);
         CLASS_IMPORTS.add(ReferenceVertex.class);
         CLASS_IMPORTS.add(ReferenceVertexProperty.class);
-        
+
+        // geometry
+        CLASS_IMPORTS.add(Geometry.class);
+        CLASS_IMPORTS.add(Model.class);
+        CLASS_IMPORTS.add(Point.class);
+        CLASS_IMPORTS.add(LineString.class);
+        CLASS_IMPORTS.add(Polygon.class);
+        CLASS_IMPORTS.add(MultiPoint.class);
+        CLASS_IMPORTS.add(MultiLineString.class);
+        CLASS_IMPORTS.add(MultiPolygon.class);
+        CLASS_IMPORTS.add(GeometryCollection.class);
+        CLASS_IMPORTS.add(Curve.class);
+        CLASS_IMPORTS.add(Surface.class);
+        CLASS_IMPORTS.add(MultiCurve.class);
+        CLASS_IMPORTS.add(MultiSurface.class);
+
         // tokens
         CLASS_IMPORTS.add(SackFunctions.class);
         CLASS_IMPORTS.add(SackFunctions.Barrier.class);
