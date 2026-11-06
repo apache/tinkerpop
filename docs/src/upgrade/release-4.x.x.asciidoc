@@ -167,6 +167,57 @@ still forwarded like any other custom `With()` key, but Gremlin Server ignores i
 
 See: link:https://lists.apache.org/thread/clyxxp8t6mg3y7y8nj1z48l19j7pk2v8[\[DISCUSS\] Only Support User Agent in Request Header]
 
+==== JavaScript Gremlin Naming
+
+Gremlin written in JavaScript now uses the same names as Gremlin itself and the other language variants. Every public
+symbol is a named export of the `gremlin` package, enumerations are PascalCase objects such as `T`, `Order` and
+`Cardinality`, and anonymous traversals are spawned from `+__+`. Translated Gremlin, such as the output of Gremlator,
+now runs with nothing more than an import line, where it previously required a block of hand-written aliases. The
+enumeration objects are also typed with exactly their members, so a misspelled token such as `Order.dsc` is a
+TypeScript compile error.
+
+[source,javascript]
+----
+// previously
+const gremlin = require('gremlin');
+const traversal = gremlin.process.AnonymousTraversalSource.traversal;
+const __ = gremlin.process.statics;
+const { P: p, t, order } = gremlin.process;
+g.V().has(t.id, p.within(1, 2)).order().by('name', order.desc).toList()
+
+// now
+import { traversal, __, P, T, Order } from 'gremlin';
+g.V().has(T.id, P.within(1, 2)).order().by('name', Order.desc).toList()
+----
+
+The previous lowercase names are removed rather than deprecated, and existing code must be updated to the following
+replacements, which apply equally under the `gremlin.process` namespace:
+
+[width="60%",cols="2",options="header"]
+|=========================================================
+|Removed |Replacement
+|`statics` |`+__+`
+|`barrier` |`Barrier`
+|`cardinality` |`Cardinality`
+|`column` |`Column`
+|`direction` |`Direction`, with members `OUT`, `IN` and `BOTH` in place of `out`, `in` and `both`
+|`dt` |`DT`
+|`merge` |`Merge`
+|`operator` |`Operator`
+|`order` |`Order`
+|`pick` |`Pick`
+|`pop` |`Pop`
+|`scope` |`Scope`
+|`t` |`T`
+|`withOptions` |`WithOptions`
+|=========================================================
+
+`GType`, `N`, `IO` and the individual strategy classes, such as `SubgraphStrategy` and `PartitionStrategy`, were
+previously not exported from the package and are now available.
+
+See: link:https://tinkerpop.apache.org/docs/4.0.0/reference/#gremlin-javascript-imports[Common Imports],
+link:https://issues.apache.org/jira/browse/TINKERPOP-2492[TINKERPOP-2492]
+
 === Upgrading for Providers
 
 ==== Graph System Providers
@@ -944,7 +995,7 @@ For example, in the Java driver:
 final Map<String, Object> params = new HashMap<>();
 params.put("x", 1);
 
-// 3.x
+// previously
 RequestMessage.build("g.V(x)").addBindings(params).create();
 
 // 4.x
@@ -1038,7 +1089,7 @@ The following shows an example of `Tree` access from versions prior to 4.0:
 ----
 Tree tree = g.V().out().out().tree().by("name").next();
 
-// 3.x
+// previously
 Tree<String> marko = tree.get("marko");                     // {josh={ripple={}, lop={}}}
 Tree<String> josh  = tree.get("marko").get("josh");         // {ripple={}, lop={}}
 
@@ -1046,7 +1097,7 @@ Tree<String> josh  = tree.get("marko").get("josh");         // {ripple={}, lop={
 Tree<String> marko = tree.childAt("marko");                 // {josh={ripple={}, lop={}}}
 Tree<String> josh  = tree.childAt("marko").childAt("josh"); // {ripple={}, lop={}}
 
-// 3.x
+// previously
 List<String> depth  = tree.getObjectsAtDepth(3);            // [ripple, lop] (1-based depth)
 List<String> leaves = tree.getLeafObjects();                // [ripple, lop]
 

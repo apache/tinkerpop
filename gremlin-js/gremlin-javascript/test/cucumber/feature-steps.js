@@ -30,12 +30,11 @@ use(chaiString);
 import { inspect, format, inherits } from 'util';
 import { gremlin } from './gremlin.js';
 import { Path, Vertex, Edge, Property, Graph, Tree } from '../../lib/structure/graph.js';
-import { statics } from '../../lib/process/graph-traversal.js';
-import { t, P, direction, merge, barrier, cardinality, column, order, TextP, IO, pick, pop, scope, operator, withOptions } from '../../lib/process/traversal.js';
+import { __ } from '../../lib/process/graph-traversal.js';
+import { T, P, Direction, Merge, Barrier, Cardinality, Column, Order, TextP, IO, Pick, Pop, Scope, Operator, WithOptions } from '../../lib/process/traversal.js';
 import { toLong } from '../../lib/utils.js';
 import { GValue } from '../../lib/process/gvalue.js';
 import anon from '../../lib/process/anonymous-traversal.js';
-const __ = statics;
 const parameterize = process.env.PARAMETERIZE === 'true';
 import { deepMembersById } from './element-comparison.js';
 import { Buffer } from 'buffer';
@@ -423,27 +422,27 @@ function getSandbox(g, parameters) {
   const sandbox = {
     g: g,
     __: __,
-    Barrier: barrier,
-    Cardinality: cardinality,
-    Column: column,
+    Barrier: Barrier,
+    Cardinality: Cardinality,
+    Column: Column,
     Direction: {
-      BOTH: direction.both,
-      IN: direction.in,
-      OUT: direction.out,
-      from_: direction.in,
-      to: direction.out,
+      BOTH: Direction.BOTH,
+      IN: Direction.IN,
+      OUT: Direction.OUT,
+      from_: Direction.IN,
+      to: Direction.OUT,
     },
-    Order: order,
+    Order: Order,
     P: P,
     TextP: TextP,
     IO: IO,
-    Pick: pick,
-    Pop: pop,
-    Scope: scope,
-    Operator: operator,
-    T: t,
+    Pick: Pick,
+    Pop: Pop,
+    Scope: Scope,
+    Operator: Operator,
+    T: T,
     toLong: toLong,
-    WithOptions: withOptions
+    WithOptions: WithOptions
   };
   // Pass the parameter to the sandbox
   Object.keys(parameters).forEach(paramName => sandbox[paramName] = parameters[paramName]);
@@ -547,15 +546,15 @@ function toPath(value) {
 }
 
 function toT(value) {
-  return t[value];
+  return T[value];
 }
 
 function toDirection(value) {
   // swap Direction.from alias
   if (value === 'from')
-    return direction["from_"];
+    return Direction["from_"];
   else
-    return direction[value.toLowerCase()];
+    return Direction[value];
 }
 
 function toDateTime(value) {
@@ -567,7 +566,7 @@ function toUuid(value) {
 }
 
 function toMerge(value) {
-  return merge[value];
+  return Merge[value];
 }
 
 function toBinary(value) {

@@ -138,15 +138,15 @@ describe('Async deserialization round-trip', () => {
 
   describe('Enum', () => {
     it('Direction.OUT', async () => {
-      const { direction } = await import('../../../lib/process/traversal.js');
-      const result = await roundTrip(ioc.enumSerializer, direction.out);
+      const { Direction } = await import('../../../lib/process/traversal.js');
+      const result = await roundTrip(ioc.enumSerializer, Direction.OUT);
       assert.equal(result.typeName, 'Direction');
       assert.equal(result.elementName, 'OUT');
     });
 
     it('T.id', async () => {
-      const { t } = await import('../../../lib/process/traversal.js');
-      const result = await roundTrip(ioc.enumSerializer, t.id);
+      const { T } = await import('../../../lib/process/traversal.js');
+      const result = await roundTrip(ioc.enumSerializer, T.id);
       assert.equal(result.typeName, 'T');
       assert.equal(result.elementName, 'id');
     });

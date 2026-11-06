@@ -17,12 +17,7 @@ specific language governing permissions and limitations
 under the License.
 */
 
-const gremlin = require('gremlin');
-const traversal = gremlin.process.AnonymousTraversalSource.traversal;
-const __ = gremlin.process.statics;
-const DriverRemoteConnection = gremlin.driver.DriverRemoteConnection;
-const p = gremlin.process.P;
-const t = gremlin.process.t;
+const { traversal, __, P, T, DriverRemoteConnection } = require('gremlin');
 
 const serverUrl = process.env.GREMLIN_SERVER_URL || 'http://localhost:8182/gremlin';
 
@@ -44,7 +39,7 @@ async function main() {
     const v2 = await g.V(2).next();
     const e3 = await g.V(v1.value).bothE().where(__.otherV().id().is(v2.value)).toList(); // (3)
     const e4 = await g.V(v1.value).outE().where(__.inV().id().is(v2.value)).toList(); // (4)
-    const e5 = await g.V(1).outE().where(__.inV().has(t.id, p.within(2,3))).toList(); // (5)
+    const e5 = await g.V(1).outE().where(__.inV().has(T.id, P.within(2,3))).toList(); // (5)
     const e6 = await g.V(1).out().where(__.in_().hasId(6)).toList(); // (6)
 
     console.log("1: " + e1.toString());

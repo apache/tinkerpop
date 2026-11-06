@@ -22,14 +22,14 @@
  */
 
 import { Buffer } from 'buffer';
-import { direction, t as _t, merge as _merge, EnumValue } from '../../../../process/traversal.js';
+import { Direction, T, Merge, EnumValue } from '../../../../process/traversal.js';
 
 export default class EnumSerializer {
   constructor(ioc) {
     this.ioc = ioc;
 
-    // process/traversal.js:toEnum() lowercases element names (e.g. OUT => out) for end users' convenience
-    // but we need original mapping as is for wire format lookup
+    // Direction maps the from_/to aliases onto the OUT/IN values, so key the wire lookup by element name
+    // rather than by JS property name
     const to_orig_enum = (obj) => {
       const r = {};
       Object.values(obj).forEach((e) => (r[e.elementName] = e));
@@ -37,9 +37,9 @@ export default class EnumSerializer {
     };
 
     this.types = {
-      Direction: { code: ioc.DataType.DIRECTION, enum: to_orig_enum(direction) },
-      Merge: { code: ioc.DataType.MERGE, enum: to_orig_enum(_merge) },
-      T: { code: ioc.DataType.T, enum: to_orig_enum(_t) },
+      Direction: { code: ioc.DataType.DIRECTION, enum: to_orig_enum(Direction) },
+      Merge: { code: ioc.DataType.MERGE, enum: to_orig_enum(Merge) },
+      T: { code: ioc.DataType.T, enum: to_orig_enum(T) },
     };
 
     this.ioc.serializers[ioc.DataType.DIRECTION] = this;

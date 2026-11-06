@@ -545,7 +545,7 @@ export class Traverser<T = any> {
 
 export class TraversalSideEffects {}
 
-export const withOptions = {
+export const WithOptions = {
   tokens: '~tinkerpop.valueMap.tokens',
   none: 0,
   ids: 1,
@@ -558,35 +558,28 @@ export const withOptions = {
   map: 1,
 };
 
-function toEnum(typeName: string, keys: string) {
-  const result: Record<string, EnumValue> = {};
-  keys.split(' ').forEach((k) => {
-    let jsKey = k;
-    if (jsKey === jsKey.toUpperCase()) {
-      jsKey = jsKey.toLowerCase();
-    }
-    result[jsKey] = new EnumValue(typeName, k);
+/**
+ * An enum-like object whose properties are exactly the given keys, each holding an {@link EnumValue}.
+ */
+export type EnumOf<K extends string> = { readonly [P in K]: EnumValue };
+
+function toEnum<const K extends string>(typeName: string, keys: readonly K[]): EnumOf<K> {
+  const result = {} as Record<K, EnumValue>;
+  keys.forEach((k) => {
+    result[k] = new EnumValue(typeName, k);
   });
   return result;
 }
 
-const directionAlias = {
-  from_: 'out',
-  to: 'in',
-} as const;
-
-// for direction enums, maps the same EnumValue object to the enum aliases after creating them
-function toDirectionEnum(typeName: string, keys: string) {
-  const result = toEnum(typeName, keys);
-  Object.keys(directionAlias).forEach((k) => {
-    result[k] = result[directionAlias[k as keyof typeof directionAlias]];
-  });
-  return result;
+// maps the Direction aliases onto the same EnumValue objects as the values they stand for
+function toDirectionEnum(typeName: string): EnumOf<'BOTH' | 'IN' | 'OUT' | 'from_' | 'to'> {
+  const result = toEnum(typeName, ['BOTH', 'IN', 'OUT']);
+  return { ...result, from_: result.OUT, to: result.IN };
 }
 
-function toGTypeEnum(typeName: string, keys: string) {
-  const result: { [key: string]: any } = {};
-  keys.split(' ').forEach((k) => {
+function toGTypeEnum<const K extends string>(typeName: string, keys: readonly K[]): EnumOf<K> {
+  const result = {} as Record<K, EnumValue>;
+  keys.forEach((k) => {
     result[k] = new EnumValue(typeName, k.toUpperCase());
   });
   return result;
@@ -603,18 +596,18 @@ export class EnumValue {
   }
 }
 
-export const barrier = toEnum('Barrier', 'normSack');
-export const cardinality = toEnum('Cardinality', 'list set single');
-export const column = toEnum('Column', 'keys values');
-export const direction = toDirectionEnum('Direction', 'BOTH IN OUT from_ to');
-export const dt = toEnum('DT', 'second minute hour day');
-export const gType = toGTypeEnum('GType', 'bigDecimal bigInt binary boolean byte char datetime double duration edge float graph int list long map null number path property set short string tree uuid vertex vproperty');
-export const gryoVersion = toEnum('GryoVersion', 'V1_0 V3_0');
-export const merge = toEnum('Merge', 'onCreate onMatch outV inV');
-export const operator = toEnum('Operator', 'addAll and assign div max min minus mult or sum sumLong');
-export const order = toEnum('Order', 'asc desc shuffle');
-export const pick = toEnum('Pick', 'any none unproductive');
-export const pop = toEnum('Pop', 'all first last mixed');
-export const scope = toEnum('Scope', 'global local');
-export const t = toEnum('T', 'id key label value');
-export const n = toEnum('N', 'byte_ short_ int_ long_ float_ double_ bigInt bigDecimal');
+export const Barrier = toEnum('Barrier', ['normSack']);
+export const Cardinality = toEnum('Cardinality', ['list', 'set', 'single']);
+export const Column = toEnum('Column', ['keys', 'values']);
+export const Direction = toDirectionEnum('Direction');
+export const DT = toEnum('DT', ['second', 'minute', 'hour', 'day']);
+export const GType = toGTypeEnum('GType', ['bigDecimal', 'bigInt', 'binary', 'boolean', 'byte', 'char', 'datetime', 'double', 'duration', 'edge', 'float', 'graph', 'int', 'list', 'long', 'map', 'null', 'number', 'path', 'property', 'set', 'short', 'string', 'tree', 'uuid', 'vertex', 'vproperty']);
+export const GryoVersion = toEnum('GryoVersion', ['V1_0', 'V3_0']);
+export const Merge = toEnum('Merge', ['onCreate', 'onMatch', 'outV', 'inV']);
+export const Operator = toEnum('Operator', ['addAll', 'and', 'assign', 'div', 'max', 'min', 'minus', 'mult', 'or', 'sum', 'sumLong']);
+export const Order = toEnum('Order', ['asc', 'desc', 'shuffle']);
+export const Pick = toEnum('Pick', ['any', 'none', 'unproductive']);
+export const Pop = toEnum('Pop', ['all', 'first', 'last', 'mixed']);
+export const Scope = toEnum('Scope', ['global', 'local']);
+export const T = toEnum('T', ['id', 'key', 'label', 'value']);
+export const N = toEnum('N', ['byte_', 'short_', 'int_', 'long_', 'float_', 'double_', 'bigInt', 'bigDecimal']);

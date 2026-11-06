@@ -25,11 +25,11 @@
  */
 
 import { Effect } from 'effect';
-import { process } from 'gremlin';
+import { __ } from 'gremlin';
 import { Errors, type GremlinQueryError } from '../errors.js';
 import type { GraphTraversalSource } from './types.js';
 
-const { label } = process.statics;
+const { label } = __;
 
 type CountResult = { value?: unknown };
 
