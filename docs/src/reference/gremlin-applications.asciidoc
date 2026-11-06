@@ -388,11 +388,25 @@ plugin activated: tinkerpop.tinkergraph
 gremlin>
 ----
 
-The Docker image offers the same options as the standalone Console. It can be used for example to execute scripts:
+The Docker image offers the same options as the standalone Console, including the <<execution-mode, execution mode>>
+used to run a script. Because the Console runs inside the container, the script must be made available to the container
+through a mounted volume. Consider the `gremlin.groovy` script from the <<execution-mode, Execution Mode Section>>:
+
+[source,groovy]
+----
+graph = TinkerFactory.createModern()
+g = traversal().with(graph)
+g.V().each { println it }
+----
+
+The `-e` option runs the script without printing the result of each statement, so the script is responsible for
+printing whatever should appear in the output, here by way of `println it`. The following command mounts that script
+into the container and executes it. The container's working directory is `/opt/gremlin-console`, so a script mounted
+there is referenced to `-e` by name:
 
 [source,bash]
 ----
-$ docker run -it tinkerpop/gremlin-console:x.y.z -e gremlin.groovy
+$ docker run --rm -v "$PWD/gremlin.groovy:/opt/gremlin-console/gremlin.groovy" tinkerpop/gremlin-console:x.y.z -e gremlin.groovy
 v[1]
 v[2]
 v[3]
@@ -400,6 +414,11 @@ v[4]
 v[5]
 v[6]
 ----
+
+The path passed to `-e` is resolved inside the container rather than on the host. Mounting a directory works equally
+well, in which case the path given to `-e` points at the file within that directory, for example
+`-v "$PWD:/scripts" ... -e /scripts/gremlin.groovy`. In every case the `x.y.z` tag must be replaced with a published
+version of the image, such as an official release available on Docker Hub.
 
 [[gremlin-server]]
 [llms-summary="Gremlin Server exposes graphs to remote clients over WebSocket/HTTP: how to run it, its request lifecycle, serializers, and connecting from drivers."]
