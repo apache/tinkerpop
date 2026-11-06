@@ -22,6 +22,11 @@ Feature: Step - loops()
   Scenario: g_VX1X_repeatXboth_simplePathX_untilXhasXname_peterX_or_loops_isX3XX_hasXname_peterX_path_byXnameX
     Given the modern graph
     And using the parameter vid1 defined as "v[marko].id"
+    And the intent
+      """
+      Find every route from vertex <vid1> to peter of at most three steps, following edges in either direction and never
+      visiting a vertex twice. Return each route as the names along it.
+      """
     And the traversal of
       """
       g.V(vid1).repeat(__.both().simplePath()).until(__.has("name", "peter").or().loops().is(3)).has("name", "peter").path().by("name")

@@ -42,9 +42,15 @@ export default class PythonTranslateVisitor extends TranslateVisitor {
     }
 
     protected override handleStringLiteralText(text: string): void {
-        this.sb.push("'");
-        this.sb.push(text);
-        this.sb.push("'");
+        if (text.includes("'")) {
+            this.sb.push('"');
+            this.sb.push(text);
+            this.sb.push('"');
+        } else {
+            this.sb.push("'");
+            this.sb.push(text);
+            this.sb.push("'");
+        }
     }
 
     visitBooleanLiteral(ctx: any): void {
@@ -219,7 +225,7 @@ export default class PythonTranslateVisitor extends TranslateVisitor {
         const withoutSuffix = text.substring(0, text.length - 1);
         const inner = TranslateVisitor.removeFirstAndLastCharacters(withoutSuffix);
         this.sb.push("SingleChar('");
-        this.sb.push(inner);
+        this.sb.push(inner === "'" ? "\\'" : inner);
         this.sb.push("')");
     }
 

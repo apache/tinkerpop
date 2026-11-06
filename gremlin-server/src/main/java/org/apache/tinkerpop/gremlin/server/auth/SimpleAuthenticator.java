@@ -21,14 +21,17 @@ package org.apache.tinkerpop.gremlin.server.auth;
 import org.apache.tinkerpop.gremlin.groovy.jsr223.dsl.credential.CredentialTraversal;
 import org.apache.tinkerpop.gremlin.groovy.jsr223.dsl.credential.CredentialTraversalDsl;
 import org.apache.tinkerpop.gremlin.groovy.jsr223.dsl.credential.CredentialTraversalSource;
+import org.apache.commons.configuration2.Configuration;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.io.IoCore;
 import org.apache.tinkerpop.gremlin.structure.util.GraphFactory;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.mindrot.jbcrypt.BCrypt;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import java.net.InetAddress;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
@@ -80,10 +83,61 @@ public class SimpleAuthenticator implements Authenticator {
             // have to create the indices because they are not stored in gryo
             final TinkerGraph tinkerGraph = (TinkerGraph) graph;
             tinkerGraph.createIndex(PROPERTY_USERNAME, Vertex.class);
+
+            // TinkerGraph no longer auto-loads from graphLocation on open, so read the credential store here from
+            // the configured location/format. TinkerStorageGraph (which persists via its own storage engine) manages
+            // its own data and is left untouched.
+            loadCredentialStore(tinkerGraph);
         }
 
         credentialStore = graph.traversal(CredentialTraversalSource.class);
         logger.info("CredentialGraph initialized at {}", credentialStore);
+    }
+
+    /**
+     * Reads the credential store into the supplied in-memory {@link TinkerGraph} from the
+     * {@code gremlin.tinkergraph.graphLocation} and {@code gremlin.tinkergraph.graphFormat} entries of its
+     * configuration, if present. Earlier versions of TinkerGraph read those keys themselves on open, so the
+     * credential store loaded as a side effect of {@code GraphFactory.open}; that automatic behaviour was removed
+     * and this method preserves it for the credential store alone.
+     * <p/>
+     * No TinkerGraph reads either key any more, which is why they are named here as literals rather than through
+     * constants. Despite the {@code gremlin.tinkergraph} prefix they are in effect settings of this authenticator,
+     * and belong in its own {@code config} block beside {@code credentialsDb} rather than in the graph's properties
+     * file. They are left in place here only to keep existing credential configurations working. A graph with a
+     * storage engine manages its own data and is skipped.
+     */
+    private static void loadCredentialStore(final TinkerGraph graph) {
+        final Configuration conf = graph.configuration();
+        final String location = conf.getString("gremlin.tinkergraph.graphLocation", null);
+        // a storage engine manages its own persistence and is not an interchange-format load
+        final String storage = conf.getString(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE, null);
+        if (null == location || storage != null)
+            return;
+
+        final File f = new File(location);
+        if (!f.exists() || !f.isFile())
+            return;
+
+        final String format = conf.getString("gremlin.tinkergraph.graphFormat", "gryo");
+        try {
+            switch (format) {
+                case "graphml":
+                    graph.io(IoCore.graphml()).readGraph(location);
+                    break;
+                case "graphson":
+                    graph.io(IoCore.graphson()).readGraph(location);
+                    break;
+                case "gryo":
+                    graph.io(IoCore.gryo()).readGraph(location);
+                    break;
+                default:
+                    graph.io(IoCore.createIoBuilder(format)).readGraph(location);
+                    break;
+            }
+        } catch (Exception ex) {
+            throw new IllegalStateException(String.format("Could not load credential store at %s with format %s", location, format), ex);
+        }
     }
 
     @Override

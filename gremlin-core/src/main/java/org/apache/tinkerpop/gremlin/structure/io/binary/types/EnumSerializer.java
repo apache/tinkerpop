@@ -26,7 +26,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.Pick;
 import org.apache.tinkerpop.gremlin.process.traversal.Pop;
 import org.apache.tinkerpop.gremlin.process.traversal.SackFunctions;
 import org.apache.tinkerpop.gremlin.process.traversal.Scope;
-import org.apache.tinkerpop.gremlin.process.traversal.GType;
 import org.apache.tinkerpop.gremlin.structure.io.binary.DataType;
 import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryReader;
 import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryWriter;
@@ -49,7 +48,6 @@ public class EnumSerializer<E extends Enum> extends SimpleTypeSerializer<E> {
     public static final EnumSerializer<Direction> DirectionSerializer = new EnumSerializer<>(DataType.DIRECTION, Direction::valueOf);
     public static final EnumSerializer<T> TSerializer = new EnumSerializer<>(DataType.T, T::valueOf);
     public static final EnumSerializer<Merge> MergeSerializer = new EnumSerializer<>(DataType.MERGE, Merge::valueOf);
-    public static final EnumSerializer<GType> GTypeSerializer = new EnumSerializer<>(DataType.GTYPE, GType::valueOf);
 
     private final Function<String, E> readFunc;
 

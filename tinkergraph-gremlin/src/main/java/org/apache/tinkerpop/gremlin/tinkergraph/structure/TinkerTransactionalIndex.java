@@ -19,12 +19,15 @@
 package org.apache.tinkerpop.gremlin.tinkergraph.structure;
 
 import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
@@ -38,7 +41,7 @@ final class TinkerTransactionalIndex<T extends TinkerElement> extends AbstractTi
     protected ThreadLocal<Map<String, Map<Object, Set<T>>>> txIndex =
             ThreadLocal.withInitial(() -> new ConcurrentHashMap<>());
 
-    public TinkerTransactionalIndex(final TinkerTransactionGraph graph, final Class<T> indexClass) {
+    public TinkerTransactionalIndex(final TinkerStorageGraph graph, final Class<T> indexClass) {
         super(graph, indexClass);
     }
 
@@ -72,9 +75,22 @@ final class TinkerTransactionalIndex<T extends TinkerElement> extends AbstractTi
         if (null == set)
             return new ArrayList<>();
 
+        // hand out the transaction's own copy, as vertices(id) does, never the committed element, so a write
+        // through an indexed lookup stays inside the transaction
+        final TinkerTransaction tx = (TinkerTransaction) graph.tx();
         return set.stream().
-                filter(e -> !e.isChanged() && e.get() != null).
-                map(e -> e.get()).collect(Collectors.toList());
+                filter(e -> e.get() != null && (!e.isChanged() || hasValue(e.get(), key, value))).
+                map(e -> e.getWithClone(tx)).collect(Collectors.toList());
+    }
+
+    private boolean hasValue(final T element, final String key, final Object value) {
+        final Object indexableValue = indexable(value);
+        final Iterator<? extends Property<Object>> properties = element.properties(key);
+        while (properties.hasNext()) {
+            if (Objects.equals(indexableValue, indexable(properties.next().value())))
+                return true;
+        }
+        return false;
     }
 
     private Set<T> getModifiedElements(final String key, final Object value) {
@@ -183,8 +199,8 @@ final class TinkerTransactionalIndex<T extends TinkerElement> extends AbstractTi
 
         final Map elements =
                 Vertex.class.isAssignableFrom(indexClass) ?
-                        ((TinkerTransactionGraph) graph).getVertices() :
-                        ((TinkerTransactionGraph) graph).getEdges();
+                        ((TinkerStorageGraph) graph).getVertices() :
+                        ((TinkerStorageGraph) graph).getEdges();
 
         for (Object element : elements.values()) {
             addContainer((TinkerElementContainer<T>) element);

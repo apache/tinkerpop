@@ -205,7 +205,7 @@ export default class JavaTranslateVisitor extends TranslateVisitor {
         const withoutSuffix = text.substring(0, text.length - 1);
         const inner = TranslateVisitor.removeFirstAndLastCharacters(withoutSuffix);
         this.sb.push("'");
-        this.sb.push(inner);
+        this.sb.push(inner === "'" ? "\\'" : inner);
         this.sb.push("'");
     }
 

@@ -23,9 +23,12 @@
 
 using System;
 using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Numerics;
+using System.Reflection;
 using System.Text;
 using Gremlin.Net.Process.Traversal.Strategy;
 using Gremlin.Net.Process.Traversal.Strategy.Decoration;
@@ -40,10 +43,16 @@ namespace Gremlin.Net.Process.Traversal
     public class GremlinLang : ICloneable, IEquatable<GremlinLang>
     {
         private static readonly object[] EmptyArray = Array.Empty<object>();
+        private static readonly ConcurrentDictionary<Type, (string name, PropertyInfo[] props)?> _pdtCache = new();
 
         private StringBuilder _gremlin = new();
         private Dictionary<string, object> _parameters = new();
         private List<OptionsStrategy> _optionsStrategies = new();
+
+        /// <summary>
+        ///     Gets or sets the <see cref="PDTRegistry"/> for registry-based dehydration.
+        /// </summary>
+        public PDTRegistry? PdtRegistry { get; set; }
 
         /// <summary>
         ///     Initializes a new instance of the <see cref="GremlinLang" /> class.
@@ -83,12 +92,11 @@ namespace Gremlin.Net.Process.Traversal
         }
 
         /// <summary>
-        ///     Sets the alias for the traversal source.
+        ///     Appends raw text to the gremlin string. Used for temporary options rendering.
         /// </summary>
-        /// <param name="g">The alias to set.</param>
-        public void AddG(string g)
+        internal void Append(string text)
         {
-            _parameters["g"] = g;
+            _gremlin.Append(text);
         }
 
         /// <summary>
@@ -302,11 +310,6 @@ namespace Gremlin.Net.Process.Traversal
             {
                 var key = gValue.Name;
 
-                if (key == null)
-                {
-                    return ArgAsString(gValue.ObjectValue);
-                }
-
                 if (!IsValidIdentifier(key))
                 {
                     throw new ArgumentException($"Invalid parameter name [{key}].");
@@ -314,7 +317,7 @@ namespace Gremlin.Net.Process.Traversal
 
                 if (_parameters.ContainsKey(key))
                 {
-                    if (!Equals(_parameters[key], gValue.ObjectValue))
+                    if (!ValuesEqual(_parameters[key], gValue.ObjectValue))
                     {
                         throw new ArgumentException($"Parameter with name [{key}] already defined.");
                     }
@@ -329,6 +332,30 @@ namespace Gremlin.Net.Process.Traversal
             if (arg is CardinalityValue cv)
                 return $"Cardinality.{cv.Cardinality!.EnumValue}({ArgAsString(cv.Value)})";
 
+            if (arg is CompositePDT pdt)
+            {
+                var sb2 = new StringBuilder("[");
+                var count = pdt.Fields.Count;
+                if (count == 0)
+                {
+                    sb2.Append(':');
+                }
+                else
+                {
+                    foreach (var kvp in pdt.Fields)
+                    {
+                        sb2.Append(ArgAsString(kvp.Key)).Append(':').Append(ArgAsString(kvp.Value));
+                        if (--count > 0) sb2.Append(',');
+                    }
+                }
+                sb2.Append(']');
+                return $"PDT(\"{EscapeJava(pdt.Name)}\",{sb2})";
+            }
+
+            if (arg is PrimitivePDT primitivePdt)
+            {
+                return $"PDT(\"{EscapeJava(primitivePdt.Name)}\",\"{EscapeJava(primitivePdt.Value)}\")";
+            }
             if (arg is IDictionary dict)
                 return AsString(dict);
 
@@ -347,6 +374,42 @@ namespace Gremlin.Net.Process.Traversal
 
             if (arg is Type type)
                 return type.Name;
+
+            // Precedence: a registered adapter intentionally takes priority over the [ProviderDefined]
+            // attribute so that explicit adapters can override attribute-derived dehydration behavior.
+            // Check primitive adapter first, then composite.
+            if (PdtRegistry != null)
+            {
+                var primitiveInfo = PdtRegistry.GetPrimitiveAdapterByType(arg.GetType());
+                if (primitiveInfo != null)
+                {
+                    var (adapterTypeName, toStr) = primitiveInfo.Value;
+                    return ArgAsString(new PrimitivePDT(adapterTypeName, toStr(arg)));
+                }
+
+                var adapterInfo = PdtRegistry.GetCompositeAdapterByType(arg.GetType());
+                if (adapterInfo != null)
+                {
+                    var (adapterTypeName, toFields) = adapterInfo.Value;
+                    var fields = toFields(arg);
+                    return ArgAsString(new CompositePDT(adapterTypeName,
+                        new Dictionary<string, object?>(fields)));
+                }
+            }
+
+            // Auto-dehydrate objects annotated with [ProviderDefined]
+            var cached = GetPdtInfo(arg.GetType());
+            if (cached != null)
+            {
+                var (typeName, properties) = cached.Value;
+                ProviderDefinedAttribute.RegisteredTypes.TryAdd(typeName, arg.GetType());
+                var fields = new Dictionary<string, object?>();
+                foreach (var property in properties)
+                {
+                    fields[property.Name] = property.GetValue(arg);
+                }
+                return ArgAsString(new CompositePDT(typeName, fields));
+            }
 
             throw new ArgumentException(
                 $"GremlinLang contains at least one type [{arg.GetType().Name}] that cannot be represented as text.");
@@ -396,7 +459,7 @@ namespace Gremlin.Net.Process.Traversal
                 // For predicates like between/inside, the value is an object[] with 2 elements
                 if (p.Value is object[] valArr)
                 {
-                    if (valArr.Length > 1 && p.OperatorName != "between" && p.OperatorName != "inside")
+                    if (valArr.Length > 1 && p.OperatorName != "between" && p.OperatorName != "inside" && p.OperatorName != "outside")
                     {
                         sb.Append('[');
                         for (int i = 0; i < valArr.Length; i++)
@@ -417,10 +480,20 @@ namespace Gremlin.Net.Process.Traversal
                 }
                 else if (p.Value is IList listVal && (p.OperatorName == "within" || p.OperatorName == "without"))
                 {
-                    // within/without with a list value - render as [e1,e2,...]
+                    // within/without with a list value
                     if (listVal.Count == 0)
                     {
                         // empty within() - no brackets
+                    }
+                    else if (listVal.Cast<object>().All(v => v is ITraversal))
+                    {
+                        // All elements are traversals - serialize as comma-separated args (no brackets)
+                        // This matches the server grammar: within(trav1, trav2) via genericArgumentVarargs
+                        for (int i = 0; i < listVal.Count; i++)
+                        {
+                            if (i > 0) sb.Append(',');
+                            sb.Append(ArgAsString(listVal[i]));
+                        }
                     }
                     else
                     {
@@ -526,6 +599,15 @@ namespace Gremlin.Net.Process.Traversal
                 if (arg is OptionsStrategy optionsStrategy)
                 {
                     _optionsStrategies.Add(optionsStrategy);
+                    // Render multilabel/singlelabel in gremlin text (temporary until these options are removed)
+                    if (optionsStrategy.Configuration.ContainsKey("multilabel"))
+                    {
+                        _gremlin.Append(".with(\"multilabel\")");
+                    }
+                    if (optionsStrategy.Configuration.ContainsKey("singlelabel"))
+                    {
+                        _gremlin.Append(".with(\"singlelabel\")");
+                    }
                     continue;
                 }
 
@@ -718,14 +800,88 @@ namespace Gremlin.Net.Process.Traversal
         {
             if (string.IsNullOrEmpty(name))
                 return false;
-            if (!char.IsLetter(name[0]))
+            if (!char.IsLetter(name[0]) && name[0] != '_' && name[0] != '$')
                 return false;
             for (int i = 1; i < name.Length; i++)
             {
-                if (!char.IsLetterOrDigit(name[i]))
+                if (!char.IsLetterOrDigit(name[i]) && name[i] != '_' && name[i] != '$')
                     return false;
             }
             return true;
+        }
+
+        private static (string name, PropertyInfo[] props)? GetPdtInfo(Type type)
+        {
+            return _pdtCache.GetOrAdd(type, t =>
+            {
+                var attrs = t.GetCustomAttributes(typeof(ProviderDefinedAttribute), false);
+                if (attrs.Length == 0) return null;
+
+                var attr = (ProviderDefinedAttribute)attrs[0];
+                var typeName = string.IsNullOrEmpty(attr.Name) ? t.Name : attr.Name;
+
+                var included = attr.IncludedFields;
+                var excluded = attr.ExcludedFields;
+                if (included is { Length: > 0 } && excluded is { Length: > 0 })
+                {
+                    throw new ArgumentException(
+                        "[ProviderDefined] cannot specify both IncludedFields and ExcludedFields");
+                }
+
+                var includedSet = included is { Length: > 0 } ? new HashSet<string>(included) : null;
+                var excludedSet = excluded is { Length: > 0 } ? new HashSet<string>(excluded) : null;
+
+                var allProps = t.GetProperties(BindingFlags.Public | BindingFlags.Instance);
+                var filtered = new List<PropertyInfo>();
+                foreach (var p in allProps)
+                {
+                    if (includedSet != null && !includedSet.Contains(p.Name)) continue;
+                    if (excludedSet != null && excludedSet.Contains(p.Name)) continue;
+                    filtered.Add(p);
+                }
+                return (typeName, filtered.ToArray());
+            });
+        }
+
+        private static bool ValuesEqual(object? a, object? b)
+        {
+            if (Equals(a, b)) return true;
+            if (a == null || b == null) return false;
+
+            if (a is IDictionary dictA && b is IDictionary dictB)
+            {
+                if (dictA.Count != dictB.Count) return false;
+                foreach (DictionaryEntry entry in dictA)
+                {
+                    if (!dictB.Contains(entry.Key)) return false;
+                    if (!ValuesEqual(entry.Value, dictB[entry.Key])) return false;
+                }
+                return true;
+            }
+
+            if (a is string || b is string) return false;
+
+            if (a is IEnumerable enumA && b is IEnumerable enumB)
+            {
+                var enumeratorA = enumA.GetEnumerator();
+                var enumeratorB = enumB.GetEnumerator();
+                try
+                {
+                    while (enumeratorA.MoveNext())
+                    {
+                        if (!enumeratorB.MoveNext()) return false;
+                        if (!ValuesEqual(enumeratorA.Current, enumeratorB.Current)) return false;
+                    }
+                    return !enumeratorB.MoveNext();
+                }
+                finally
+                {
+                    if (enumeratorA is IDisposable dA) dA.Dispose();
+                    if (enumeratorB is IDisposable dB) dB.Dispose();
+                }
+            }
+
+            return false;
         }
 
         /// <summary>
@@ -738,7 +894,8 @@ namespace Gremlin.Net.Process.Traversal
             {
                 _gremlin = new StringBuilder(_gremlin.ToString()),
                 _parameters = new Dictionary<string, object>(_parameters),
-                _optionsStrategies = new List<OptionsStrategy>(_optionsStrategies)
+                _optionsStrategies = new List<OptionsStrategy>(_optionsStrategies),
+                PdtRegistry = PdtRegistry
             };
             return clone;
         }

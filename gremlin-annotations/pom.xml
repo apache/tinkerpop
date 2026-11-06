@@ -95,9 +95,9 @@ limitations under the License.
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
-                    <release>8</release>
-                    <source>8</source>
-                    <target>8</target>
+                    <release>17</release>
+                    <source>17</source>
+                    <target>17</target>
                     <compilerArgs>
                         <arg>-parameters</arg>
                         <arg>-proc:none</arg>

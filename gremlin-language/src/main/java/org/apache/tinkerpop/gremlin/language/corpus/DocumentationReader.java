@@ -106,6 +106,7 @@ public class DocumentationReader {
                 replace("weightFilter.clone()", "{it}").
                 replace("weightFilter", "{it}").
                 replace("vBob", "\"bob\"").
+                replace("vMarko.value('age')", "11").
                 replace("vMarko", "\"marko\"").
                 replace("vPeter", "\"peter\"").
                 replace("vStephen", "\"stephen\"").
@@ -117,7 +118,6 @@ public class DocumentationReader {
                 replace("input.tail()", "\"tail\"").
                 replace("System.out.&println", "{it}").
                 replace("persons", "\"persons\"").
-                replace("marko.value('age')", "11").
                 replace("seedStrategy", "new SeedStrategy(seed: 99999)").
                 replace(".getClass()", "").
                 replace("result.toArray()", "4").

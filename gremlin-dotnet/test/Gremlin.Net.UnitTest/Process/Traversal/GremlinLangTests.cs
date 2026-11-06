@@ -368,6 +368,27 @@ namespace Gremlin.Net.UnitTest.Process.Traversal
         }
 
         [Fact]
+        public void g_V_Has_age_Outside_28_33()
+        {
+            Assert.Equal("g.V().has(\"age\",outside(28,33))",
+                _g.V().Has("age", P.Outside(28, 33)).GremlinLang.GetGremlin());
+        }
+
+        [Fact]
+        public void g_V_Has_age_Between_28_33()
+        {
+            Assert.Equal("g.V().has(\"age\",between(28,33))",
+                _g.V().Has("age", P.Between(28, 33)).GremlinLang.GetGremlin());
+        }
+
+        [Fact]
+        public void g_V_Has_age_Inside_28_33()
+        {
+            Assert.Equal("g.V().has(\"age\",inside(28,33))",
+                _g.V().Has("age", P.Inside(28, 33)).GremlinLang.GetGremlin());
+        }
+
+        [Fact]
         public void g_V_And_Has_runways_Gt_5_Has_region_USTX()
         {
             Assert.Equal("g.V().and(__.has(\"runways\",gt(5)),__.has(\"region\",\"US-TX\"))",
@@ -731,7 +752,7 @@ namespace Gremlin.Net.UnitTest.Process.Traversal
         {
             // OptionsStrategy is extracted, not rendered in the script
             Assert.Equal("g.V().count()",
-                _g.WithStrategies(new OptionsStrategy(new Dictionary<string, object> { { "evaluationTimeout", 500 } })).V().Count().GremlinLang.GetGremlin());
+                _g.WithStrategies(new OptionsStrategy(new Dictionary<string, object> { { "timeoutMillis", 500 } })).V().Count().GremlinLang.GetGremlin());
         }
 
         [Fact]
@@ -953,27 +974,36 @@ namespace Gremlin.Net.UnitTest.Process.Traversal
         }
 
         [Fact]
-        public void GValue_special_char_name_throws_ArgumentException()
+        public void GValue_special_char_name_accepted()
         {
-            Assert.Throws<ArgumentException>(() => new GValue<int>("\"", 1));
+            var gval = new GValue<int>("\"", 1);
+            Assert.Equal("\"", gval.Name);
         }
 
         [Fact]
-        public void GValue_numeric_name_throws_ArgumentException()
+        public void GValue_numeric_name_accepted()
         {
-            Assert.Throws<ArgumentException>(() => new GValue<int>("1", 1));
+            var gval = new GValue<int>("1", 1);
+            Assert.Equal("1", gval.Name);
         }
 
         [Fact]
-        public void GValue_invalid_identifier_name_throws_ArgumentException()
+        public void GValue_digit_start_name_accepted()
         {
-            Assert.Throws<ArgumentException>(() => new GValue<int>("1a", 1));
+            var gval = new GValue<int>("1a", 1);
+            Assert.Equal("1a", gval.Name);
         }
 
         [Fact]
-        public void GValue_underscore_name_throws_ArgumentException()
+        public void GValue_underscore_name_accepted()
         {
-            Assert.Throws<ArgumentException>(() => new GValue<int>("_1", 1));
+            Assert.Equal("_1", new GValue<int>("_1", 1).Name);
+        }
+
+        [Fact]
+        public void GValue_nested_throws_ArgumentException()
+        {
+            Assert.Throws<ArgumentException>(() => new GValue<object>("x", new GValue<int>("y", 1)));
         }
 
         [Fact]
@@ -991,6 +1021,83 @@ namespace Gremlin.Net.UnitTest.Process.Traversal
             var result = _g.Inject((object)gval).V(gval).GremlinLang;
             Assert.Equal("g.inject(ids).V(ids)", result.GetGremlin());
             Assert.True(result.Parameters.ContainsKey("ids"));
+        }
+
+        [Fact]
+        public void GValue_mid_underscore_name_accepted()
+        {
+            var gval = new GValue<int>("a_b", 42);
+            var result = _g.Inject((object)gval).GremlinLang;
+            Assert.Equal("g.inject(a_b)", result.GetGremlin());
+        }
+
+        [Fact]
+        public void GValue_empty_name_accepted()
+        {
+            var gval = new GValue<int>("", 1);
+            Assert.Equal("", gval.Name);
+        }
+
+        [Fact]
+        public void GValue_mid_dollar_name_accepted()
+        {
+            var gval = new GValue<int>("a$b", 1);
+            Assert.Equal("a$b", gval.Name);
+        }
+
+        [Fact]
+        public void GValue_unicode_letter_name_accepted()
+        {
+            var gval = new GValue<int>("caf\u00e9", 7);
+            var result = _g.Inject((object)gval).GremlinLang;
+            Assert.Equal("g.inject(caf\u00e9)", result.GetGremlin());
+        }
+
+        [Fact]
+        public void GValue_construction_and_accessors()
+        {
+            var gval = new GValue<string>("myName", "hello");
+            Assert.Equal("myName", gval.Name);
+            Assert.Equal("hello", gval.Value);
+            Assert.Equal("hello", gval.ObjectValue);
+        }
+
+        [Fact]
+        public void GValue_IsNull_true_when_null_value()
+        {
+            var gval = new GValue<string?>("x", null);
+            Assert.True(gval.IsNull);
+        }
+
+        [Fact]
+        public void GValue_IsNull_false_when_non_null_value()
+        {
+            var gval = new GValue<int>("x", 5);
+            Assert.False(gval.IsNull);
+        }
+
+        [Fact]
+        public void GValue_ToString_format()
+        {
+            var gval = new GValue<int>("myVar", 42);
+            Assert.Equal("myVar=42", gval.ToString());
+        }
+
+        [Fact]
+        public void GValue_duplicate_name_equal_list_values_allowed()
+        {
+            var gval1 = new GValue<List<int>>("ids", new List<int> { 1, 2, 3 });
+            var gval2 = new GValue<List<int>>("ids", new List<int> { 1, 2, 3 });
+            var result = _g.Inject((object)gval1).V(gval2).GremlinLang;
+            Assert.Equal("g.inject(ids).V(ids)", result.GetGremlin());
+        }
+
+        [Fact]
+        public void GValue_duplicate_name_different_list_values_throws()
+        {
+            var gval1 = new GValue<List<int>>("ids", new List<int> { 1, 2, 3 });
+            var gval2 = new GValue<List<int>>("ids", new List<int> { 4, 5, 6 });
+            Assert.Throws<ArgumentException>(() => _g.Inject((object)gval1).V(gval2));
         }
 
         // --- Cardinality with Map Tests ---
@@ -1087,6 +1194,266 @@ namespace Gremlin.Net.UnitTest.Process.Traversal
             var parameters = new Dictionary<string, object> { { "name", "it's a \"test\"" } };
             var result = GremlinLang.ConvertParametersToString(parameters);
             Assert.Contains("\"name\":", result);
+        }
+
+        [Fact]
+        public void g_Inject_PDT_basic()
+        {
+            var pdt = new CompositePDT("Point", new Dictionary<string, object?> { { "x", 1 }, { "y", 2 } });
+            var result = _g.Inject((object)pdt).GremlinLang.GetGremlin();
+            Assert.Equal("g.inject(PDT(\"Point\",[\"x\":1,\"y\":2]))", result);
+        }
+
+        [Fact]
+        public void g_Inject_PDT_special_chars_in_name()
+        {
+            var pdt = new CompositePDT("my\"type", new Dictionary<string, object?> { { "a", 1 } });
+            var result = _g.Inject((object)pdt).GremlinLang.GetGremlin();
+            Assert.Equal("g.inject(PDT(\"my\\\"type\",[\"a\":1]))", result);
+        }
+
+        [Fact]
+        public void g_Inject_PDT_nested()
+        {
+            var inner = new CompositePDT("Inner", new Dictionary<string, object?> { { "v", 42 } });
+            var outer = new CompositePDT("Outer", new Dictionary<string, object?> { { "child", inner } });
+            var result = _g.Inject((object)outer).GremlinLang.GetGremlin();
+            Assert.Equal("g.inject(PDT(\"Outer\",[\"child\":PDT(\"Inner\",[\"v\":42])]))", result);
+        }
+
+        [Fact]
+        public void g_Inject_PDT_auto_dehydration_via_attribute()
+        {
+            var point = new TestPoint { X = 10, Y = 20 };
+            var result = _g.Inject((object)point).GremlinLang.GetGremlin();
+            Assert.Equal("g.inject(PDT(\"geo.Point\",[\"X\":10,\"Y\":20]))", result);
+        }
+
+        [Fact]
+        public void g_Inject_PDT_auto_dehydration_IncludedFields()
+        {
+            var point = new IncludedFieldsPoint { X = 1, Y = 2, Z = 3 };
+            var result = _g.Inject((object)point).GremlinLang.GetGremlin();
+            Assert.Equal("g.inject(PDT(\"IncludedFieldsPoint\",[\"X\":1]))", result);
+        }
+
+        [Fact]
+        public void g_Inject_PDT_auto_dehydration_ExcludedFields()
+        {
+            var point = new ExcludedFieldsPoint { X = 1, Y = 2, Z = 3 };
+            var result = _g.Inject((object)point).GremlinLang.GetGremlin();
+            Assert.Equal("g.inject(PDT(\"ExcludedFieldsPoint\",[\"X\":1,\"Y\":2]))", result);
+        }
+
+        [Fact]
+        public void g_Inject_PDT_auto_dehydration_both_fields_throws()
+        {
+            var point = new BothFieldsPoint { X = 1, Y = 2 };
+            Assert.Throws<ArgumentException>(() => _g.Inject((object)point).GremlinLang.GetGremlin());
+        }
+
+        [ProviderDefined(Name = "geo.Point")]
+        private class TestPoint
+        {
+            public int X { get; set; }
+            public int Y { get; set; }
+        }
+
+        [ProviderDefined(IncludedFields = new[] { "X" })]
+        private class IncludedFieldsPoint
+        {
+            public int X { get; set; }
+            public int Y { get; set; }
+            public int Z { get; set; }
+        }
+
+        [ProviderDefined(ExcludedFields = new[] { "Z" })]
+        private class ExcludedFieldsPoint
+        {
+            public int X { get; set; }
+            public int Y { get; set; }
+            public int Z { get; set; }
+        }
+
+        [ProviderDefined(IncludedFields = new[] { "X" }, ExcludedFields = new[] { "Y" })]
+        private class BothFieldsPoint
+        {
+            public int X { get; set; }
+            public int Y { get; set; }
+        }
+
+        [Fact]
+        public void g_Inject_PDT_adapter_takes_precedence_over_attribute()
+        {
+            var registry = new PDTRegistry();
+            registry.Register(new AdapterForAnnotatedPoint());
+
+            var g = new GraphTraversalSource();
+            g.GremlinLang.PdtRegistry = registry;
+
+            var point = new AnnotatedPointWithAdapter { X = 5, Y = 10 };
+            var result = g.Inject((object)point).GremlinLang.GetGremlin();
+
+            // The adapter uses type name "adapter.Point" and only exposes "a"/"b" fields,
+            // overriding the attribute which would produce "attr.Point" with "X"/"Y".
+            Assert.Equal("g.inject(PDT(\"adapter.Point\",[\"a\":5,\"b\":10]))", result);
+        }
+
+        [ProviderDefined(Name = "attr.Point")]
+        private class AnnotatedPointWithAdapter
+        {
+            public int X { get; set; }
+            public int Y { get; set; }
+        }
+
+        private class AdapterForAnnotatedPoint : IProviderDefinedTypeAdapter<AnnotatedPointWithAdapter>
+        {
+            public string TypeName => "adapter.Point";
+
+            public AnnotatedPointWithAdapter FromFields(IReadOnlyDictionary<string, object?> fields) =>
+                new() { X = (int)fields["a"]!, Y = (int)fields["b"]! };
+
+            public IReadOnlyDictionary<string, object?> ToFields(AnnotatedPointWithAdapter obj) =>
+                new Dictionary<string, object?> { { "a", obj.X }, { "b", obj.Y } };
+        }
+
+        [Fact]
+        public void g_Inject_PDT_dehydrates_annotated_inner_nested_in_unregistered_outer()
+        {
+            // An unregistered outer PDT contains an annotated inner object as a field value.
+            // The inner should be dehydrated to its PDT form when the outer is serialized.
+            var inner = new NestedAnnotatedWidget { Tag = "abc" };
+            var outer = new CompositePDT("unregistered:Container",
+                new Dictionary<string, object?> { { "widget", inner }, { "count", 7 } });
+
+            var result = _g.Inject((object)outer).GremlinLang.GetGremlin();
+
+            Assert.Equal(
+                "g.inject(PDT(\"unregistered:Container\",[\"widget\":PDT(\"nested.Widget\",[\"Tag\":\"abc\"]),\"count\":7]))",
+                result);
+        }
+
+        [ProviderDefined(Name = "nested.Widget")]
+        private class NestedAnnotatedWidget
+        {
+            public string Tag { get; set; } = "";
+        }
+
+        [Fact]
+        public void GValue_duplicate_name_equal_dictionary_values_allowed()
+        {
+            var gval1 = new GValue<Dictionary<string, int>>("m", new Dictionary<string, int> { { "a", 1 }, { "b", 2 } });
+            var gval2 = new GValue<Dictionary<string, int>>("m", new Dictionary<string, int> { { "a", 1 }, { "b", 2 } });
+            var result = _g.Inject((object)gval1).V(gval2).GremlinLang;
+            Assert.Equal("g.inject(m).V(m)", result.GetGremlin());
+        }
+
+        [Fact]
+        public void GValue_duplicate_name_equal_nested_collection_values_allowed()
+        {
+            var gval1 = new GValue<List<List<int>>>("n", new List<List<int>> { new List<int> { 1, 2 }, new List<int> { 3, 4 } });
+            var gval2 = new GValue<List<List<int>>>("n", new List<List<int>> { new List<int> { 1, 2 }, new List<int> { 3, 4 } });
+            var result = _g.Inject((object)gval1).V(gval2).GremlinLang;
+            Assert.Equal("g.inject(n).V(n)", result.GetGremlin());
+        }
+
+        [Fact]
+        public void GValue_underscore_start_name_accepted_in_traversal()
+        {
+            var gval = new GValue<int[]>("_1", new[] { 1, 2, 3 });
+            var result = _g.V(gval).GremlinLang;
+            Assert.Equal("g.V(_1)", result.GetGremlin());
+            Assert.True(result.Parameters.ContainsKey("_1"));
+        }
+
+        [Fact]
+        public void GValue_dollar_sign_name_accepted_in_traversal()
+        {
+            var gval = new GValue<int>("a$b", 42);
+            var result = _g.Inject((object)gval).GremlinLang;
+            Assert.Equal("g.inject(a$b)", result.GetGremlin());
+            Assert.True(result.Parameters.ContainsKey("a$b"));
+        }
+
+        [Fact]
+        public void GValue_invalid_identifier_throws_in_traversal()
+        {
+            var gval = new GValue<int>("1a", 1);
+            var ex = Assert.Throws<ArgumentException>(() => _g.V(gval).GremlinLang.GetGremlin());
+            Assert.Contains("Invalid parameter name", ex.Message);
+        }
+
+        [Fact]
+        public void g_Inject_PrimitivePDT_basic()
+        {
+            var pdt = new PrimitivePDT("Uint32", "42");
+            var result = _g.Inject((object)pdt).GremlinLang.GetGremlin();
+            Assert.Equal("g.inject(PDT(\"Uint32\",\"42\"))", result);
+        }
+
+        [Fact]
+        public void g_Inject_PrimitivePDT_special_chars_in_value()
+        {
+            var pdt = new PrimitivePDT("Token", "hello\"world");
+            var result = _g.Inject((object)pdt).GremlinLang.GetGremlin();
+            Assert.Equal("g.inject(PDT(\"Token\",\"hello\\\"world\"))", result);
+        }
+
+        [Fact]
+        public void g_Inject_PrimitivePDT_leading_zeros()
+        {
+            var pdt = new PrimitivePDT("Padded", "007");
+            var result = _g.Inject((object)pdt).GremlinLang.GetGremlin();
+            Assert.Equal("g.inject(PDT(\"Padded\",\"007\"))", result);
+        }
+
+        [Fact]
+        public void g_Inject_PrimitivePDT_auto_dehydration_via_primitive_adapter()
+        {
+            var registry = new PDTRegistry();
+            registry.RegisterPrimitive(new TestUint32Adapter());
+
+            var g = new GraphTraversalSource();
+            g.GremlinLang.PdtRegistry = registry;
+
+            var result = g.Inject((object)99u).GremlinLang.GetGremlin();
+            Assert.Equal("g.inject(PDT(\"test:Uint32\",\"99\"))", result);
+        }
+
+        [Fact]
+        public void g_Inject_PrimitivePDT_adapter_takes_precedence_over_attribute()
+        {
+            var registry = new PDTRegistry();
+            registry.RegisterPrimitive(new PrimitiveAdapterForAnnotatedType());
+
+            var g = new GraphTraversalSource();
+            g.GremlinLang.PdtRegistry = registry;
+
+            var obj = new AnnotatedButPrimitiveAdapted { Data = "hello" };
+            var result = g.Inject((object)obj).GremlinLang.GetGremlin();
+
+            // The primitive adapter should win over [ProviderDefined] attribute
+            Assert.Equal("g.inject(PDT(\"prim:Adapted\",\"hello\"))", result);
+        }
+
+        [ProviderDefined(Name = "attr.Annotated")]
+        private class AnnotatedButPrimitiveAdapted
+        {
+            public string Data { get; set; } = "";
+        }
+
+        private class PrimitiveAdapterForAnnotatedType : IPrimitivePdtAdapter<AnnotatedButPrimitiveAdapted>
+        {
+            public string TypeName => "prim:Adapted";
+            public AnnotatedButPrimitiveAdapted FromString(string value) => new() { Data = value };
+            public string ToString(AnnotatedButPrimitiveAdapted obj) => obj.Data;
+        }
+
+        private class TestUint32Adapter : IPrimitivePdtAdapter<uint>
+        {
+            public string TypeName => "test:Uint32";
+            public uint FromString(string value) => uint.Parse(value);
+            public string ToString(uint obj) => obj.ToString();
         }
     }
 }

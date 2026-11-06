@@ -94,11 +94,10 @@ public class GremlinServerAuthIntegrateTest extends AbstractGremlinServerIntegra
 
         final AtomicReference<HttpRequest> httpRequest = new AtomicReference<>();
         final Cluster cluster = TestClientFactory.build()
-                .auth(sigv4("us-west2", credentialsProvider, "service-name"))
-                .addInterceptor("header-checker", r -> {
-                    httpRequest.set(r);
-                    return r;
-                })
+                .interceptors(
+                    sigv4("us-west2", credentialsProvider, "service-name"),
+                    r -> httpRequest.set(r)
+                )
                 .create();
         final Client client = cluster.connect();
         client.submit("g.inject(2)").all().get();

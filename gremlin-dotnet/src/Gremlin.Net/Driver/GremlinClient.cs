@@ -22,10 +22,13 @@
 #endregion
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Gremlin.Net.Driver.Messages;
+using Gremlin.Net.Structure;
 using Gremlin.Net.Structure.IO.GraphBinary4;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -38,6 +41,7 @@ namespace Gremlin.Net.Driver
     public class GremlinClient : IGremlinClient
     {
         private readonly Connection _connection;
+        private readonly ConcurrentDictionary<RemoteTransaction, byte> _trackedTransactions = new();
 
         internal ILoggerFactory LoggerFactory { get; }
 
@@ -45,68 +49,62 @@ namespace Gremlin.Net.Driver
         ///     Initializes a new instance of the <see cref="GremlinClient" /> class for the specified Gremlin Server.
         /// </summary>
         /// <param name="gremlinServer">The <see cref="GremlinServer" /> the requests should be sent to.</param>
-        /// <param name="requestSerializer">
-        ///     A <see cref="IMessageSerializer" /> instance to serialize outgoing request messages.
-        ///     When <c>null</c>, the request body is passed as a <see cref="RequestMessage"/> to
-        ///     interceptors, and an interceptor must serialize it to <c>byte[]</c> and set the
-        ///     <c>Content-Type</c> header. This follows the Python driver's
-        ///     <c>request_serializer=None</c> pattern.
-        /// </param>
         /// <param name="responseSerializer">
         ///     A <see cref="IMessageSerializer" /> instance to deserialize incoming response messages.
-        ///     Always required.
+        ///     Defaults to <see cref="GraphBinary4MessageSerializer"/>.
         /// </param>
         /// <param name="connectionSettings">The <see cref="ConnectionSettings" /> for the HTTP connection.</param>
         /// <param name="loggerFactory">A factory to create loggers. If not provided, then nothing will be logged.</param>
         /// <param name="interceptors">
         ///     An optional list of request interceptors. Each interceptor receives a mutable
         ///     <see cref="HttpRequestContext" /> and can modify headers, body, URI, and method
-        ///     before the request is sent.
+        ///     before the request is sent. Interceptors that need the serialized bytes (e.g.
+        ///     for payload signing) should call <see cref="HttpRequestContext.SerializeBody"/>.
         /// </param>
-        public GremlinClient(GremlinServer gremlinServer, IMessageSerializer? requestSerializer,
-            IMessageSerializer responseSerializer,
+        /// <param name="auth">
+        ///     An optional auth interceptor. As a convenience, this is appended to the end of the
+        ///     interceptor list so it runs last (after any user interceptors have modified the request).
+        ///     This is equivalent to including the auth interceptor as the last element of <paramref name="interceptors"/>.
+        /// </param>
+        /// <param name="pdtRegistry">
+        ///     An optional <see cref="PDTRegistry"/> for automatic hydration of
+        ///     provider-defined types.
+        /// </param>
+        public GremlinClient(GremlinServer gremlinServer,
+            IMessageSerializer? responseSerializer = null,
             ConnectionSettings? connectionSettings = null,
             ILoggerFactory? loggerFactory = null,
-            IReadOnlyList<Func<HttpRequestContext, Task>>? interceptors = null)
+            IReadOnlyList<Func<HttpRequestContext, Task>>? interceptors = null,
+            Func<HttpRequestContext, Task>? auth = null,
+            PDTRegistry? pdtRegistry = null)
         {
             connectionSettings ??= new ConnectionSettings();
             LoggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
 
+            var actualResponseSerializer = responseSerializer ?? new GraphBinary4MessageSerializer();
+
+            if (pdtRegistry != null)
+            {
+                actualResponseSerializer.SetPdtRegistry(pdtRegistry);
+            }
+
+            // Append auth interceptor to the end of the list so it runs last.
+            IReadOnlyList<Func<HttpRequestContext, Task>>? allInterceptors = interceptors;
+            if (auth != null)
+            {
+                var list = interceptors?.ToList() ?? new List<Func<HttpRequestContext, Task>>();
+                list.Add(auth);
+                allInterceptors = list;
+            }
+
             _connection = new Connection(
                 gremlinServer.Uri,
-                requestSerializer,
-                responseSerializer,
+                actualResponseSerializer,
                 connectionSettings,
-                interceptors);
+                allInterceptors);
 
             var logger = LoggerFactory.CreateLogger<GremlinClient>();
             logger.InitializedHttpConnection(gremlinServer.Uri);
-        }
-
-        /// <summary>
-        ///     Initializes a new instance of the <see cref="GremlinClient" /> class with a single
-        ///     serializer used for both request serialization and response deserialization.
-        ///     This is the backward-compatible convenience constructor.
-        /// </summary>
-        /// <param name="gremlinServer">The <see cref="GremlinServer" /> the requests should be sent to.</param>
-        /// <param name="messageSerializer">
-        ///     A <see cref="IMessageSerializer" /> instance used for both request serialization and
-        ///     response deserialization. Defaults to <see cref="GraphBinary4MessageSerializer"/>.
-        /// </param>
-        /// <param name="connectionSettings">The <see cref="ConnectionSettings" /> for the HTTP connection.</param>
-        /// <param name="loggerFactory">A factory to create loggers. If not provided, then nothing will be logged.</param>
-        /// <param name="interceptors">
-        ///     An optional list of request interceptors.
-        /// </param>
-        public GremlinClient(GremlinServer gremlinServer, IMessageSerializer? messageSerializer = null,
-            ConnectionSettings? connectionSettings = null,
-            ILoggerFactory? loggerFactory = null,
-            IReadOnlyList<Func<HttpRequestContext, Task>>? interceptors = null)
-            : this(gremlinServer,
-                  messageSerializer ?? new GraphBinary4MessageSerializer(),
-                  messageSerializer ?? new GraphBinary4MessageSerializer(),
-                  connectionSettings, loggerFactory, interceptors)
-        {
         }
 
         /// <inheritdoc />
@@ -115,6 +113,18 @@ namespace Gremlin.Net.Driver
         {
             return await _connection.SubmitAsync<T>(requestMessage, cancellationToken)
                 .ConfigureAwait(false);
+        }
+
+        /// <summary>
+        ///     Creates a new <see cref="RemoteTransaction"/> for executing operations within an explicit
+        ///     server-side transaction. Transactions are short-lived and single-use: after commit
+        ///     or rollback, create a new RemoteTransaction for the next unit of work.
+        /// </summary>
+        /// <param name="traversalSource">The traversal source alias (e.g. "g" or "gtx").</param>
+        /// <returns>A new <see cref="RemoteTransaction"/>.</returns>
+        public RemoteTransaction Transact(string traversalSource)
+        {
+            return new RemoteTransaction(this, traversalSource);
         }
 
         #region IDisposable Support
@@ -137,11 +147,38 @@ namespace Gremlin.Net.Driver
             if (!_disposed)
             {
                 if (disposing)
+                {
+                    // Best-effort rollback of any open transactions before closing connections
+                    foreach (var kvp in _trackedTransactions)
+                    {
+                        try
+                        {
+                            if (kvp.Key.IsOpen)
+                            {
+                                kvp.Key.RollbackAsync().GetAwaiter().GetResult();
+                            }
+                        }
+                        catch { }
+                    }
+                    _trackedTransactions.Clear();
                     _connection?.Dispose();
+                }
                 _disposed = true;
             }
         }
 
+        internal void TrackTransaction(RemoteTransaction tx)
+        {
+            _trackedTransactions.TryAdd(tx, 0);
+        }
+
+        internal void UntrackTransaction(RemoteTransaction tx)
+        {
+            _trackedTransactions.TryRemove(tx, out _);
+        }
+
         #endregion
+
+        internal Connection Connection => _connection;
     }
 }

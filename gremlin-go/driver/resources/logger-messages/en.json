@@ -22,5 +22,6 @@
   "FAILED_TO_RECEIVE_RESPONSE": "Failed to receive response: %s",
   "FAILED_TO_SEND_REQUEST": "Failed to send request: %s",
   "FAILED_TO_CLOSE_RESPONSE_BODY": "Error closing response body: %s",
-  "FAILED_TO_CLOSE_DECOMPRESSION_READER": "Error closing decompression reader: %s"
+  "FAILED_TO_CLOSE_DECOMPRESSION_READER": "Error closing decompression reader: %s",
+  "ROLLBACK_FAILED_DURING_CLEANUP": "Rollback failed during transaction cleanup; the primary error still propagates: %s"
 }

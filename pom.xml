@@ -125,6 +125,7 @@ limitations under the License.
         <module>gremlin-language</module>
         <module>gremlin-shaded</module>
         <module>gremlin-core</module>
+        <module>gql-gremlin</module>
         <module>gremlin-annotations</module>
         <module>gremlin-test</module>
         <module>gremlin-util</module>
@@ -151,42 +152,41 @@ limitations under the License.
         <caffeine.version>3.2.3</caffeine.version>
         <commons.codec.version>1.20.0</commons.codec.version>
         <commons.collections.version>4.5.0</commons.collections.version>
-        <commons.configuration.version>2.13.0</commons.configuration.version>
+        <commons.configuration.version>2.15.1</commons.configuration.version>
         <commons.lang.version>2.6</commons.lang.version>
-        <commons.io.version>2.8.0</commons.io.version>
+        <commons.io.version>2.22.0</commons.io.version>
         <commons.lang3.version>3.20.0</commons.lang3.version>
         <commons.text.version>1.15.0</commons.text.version>
         <cucumber.version>7.21.1</cucumber.version>
         <exp4j.version>0.4.8</exp4j.version>
-        <groovy.version>4.0.25</groovy.version>
+        <groovy.version>4.0.32</groovy.version>
         <!--
           don't really use guava directly, but there are a lot of jar conflicts around it,
           so centralizing that dependency version here
         -->
-        <guava.version>31.0.1-jre</guava.version>
+        <guava.version>33.7.1-jre</guava.version>
         <!--
           don't think we need guice 7 at the moment - the only difference with 6 is that
           it supports the jakarta.inject namespace which tinkerpop doesn't fuss with
         -->
         <guice.version>6.0.0</guice.version>
-        <hadoop.version>3.4.2</hadoop.version>
+        <hadoop.version>3.4.3</hadoop.version>
         <hamcrest.version>3.0</hamcrest.version>
         <java.tuples.version>1.2</java.tuples.version>
         <javadoc-plugin.version>3.3.1</javadoc-plugin.version>
         <javapoet.version>1.13.0</javapoet.version>
         <jbcrypt.version>0.4</jbcrypt.version>
         <junit.version>4.13.1</junit.version>
-        <kerby.version>2.0.3</kerby.version>
         <logback.version>1.3.15</logback.version>
         <metrics.version>3.0.2</metrics.version>
         <mockito.version>5.19.0</mockito.version>
-        <netty.version>4.1.125.Final</netty.version>
+        <netty.version>4.2.7.Final</netty.version>
         <slf4j.version>2.0.16</slf4j.version>
         <snakeyaml.version>2.0</snakeyaml.version>
-        <spark.version>3.5.4</spark.version>
+        <spark.version>4.1.2</spark.version>
         <awssdk.version>2.29.3</awssdk.version>
         <!-- Version aligned with Netty's optional bcpkix dependency used for SelfSignedCertificate -->
-        <bouncycastle.version>1.69</bouncycastle.version>
+        <bouncycastle.version>1.70</bouncycastle.version>
         <ayza.version>10.0.0</ayza.version>
 
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -259,10 +259,10 @@ limitations under the License.
                             <rules>
                                 <DependencyConvergence/>
                                 <requireJavaVersion>
-                                    <version>[11,18)</version>
+                                    <version>[17,26)</version>
                                 </requireJavaVersion>
                                 <requireMavenVersion>
-                                    <version>[3.5.3,)</version>
+                                    <version>[3.6.3,)</version>
                                 </requireMavenVersion>
                             </rules>
                         </configuration>
@@ -490,6 +490,11 @@ limitations under the License.
                          <exclude>**/.cursor/**</exclude>
                          <exclude>**/.kiro/**</exclude>
                          <exclude>**/.junie/**</exclude>
+                         <exclude>**/.runtime/**</exclude>
+                         <exclude>**/.agents/**</exclude>
+                        <!-- Beads planning data: PRIME.md and config.yaml are tracked, and a
+                             committer's local Dolt database sits alongside them untracked -->
+                        <exclude>.beads/**</exclude>
                         <exclude>.repository/**</exclude>
                         <exclude>**/target/**</exclude>
                         <exclude>data/*.txt</exclude>
@@ -498,6 +503,7 @@ limitations under the License.
                         <exclude>docs/original/**</exclude>
                         <exclude>docs/site/home/css/**</exclude>
                         <exclude>docs/site/home/js/**</exclude>
+                        <exclude>docs/site/home/llms.txt</exclude>
                         <exclude>docs/site/home/robots.txt</exclude>
                         <exclude>docs/site/home/sitemap.xml</exclude>
                         <exclude>docs/gremlint/build/**</exclude>
@@ -569,8 +575,9 @@ limitations under the License.
                         <exclude>**/pubspec.lock</exclude>
                         <exclude>**/coverage.out</exclude>
                         <exclude>**/gremlinconsoletest.egg-info/**</exclude>
-                        <!-- SKILL.md requires frontmatter at very start of file so that precludes use of the license header -->
-                        <exclude>**/.skills/**/SKILL.md</exclude>
+                        <!-- Agent skill markdown is guidance for AI agents, kept header-free to maximize signal;
+                             SKILL.md additionally requires frontmatter at the very start of the file -->
+                        <exclude>**/.skills/**/*.md</exclude>
                     </excludes>
                     <licenses>
                         <license implementation="org.apache.rat.analysis.license.ApacheSoftwareLicense20"/>
@@ -623,9 +630,9 @@ limitations under the License.
                     <artifactId>maven-compiler-plugin</artifactId>
                     <version>3.14.0</version>
                     <configuration>
-                        <release>11</release>
-                        <source>11</source>
-                        <target>11</target>
+                        <release>17</release>
+                        <source>17</source>
+                        <target>17</target>
                         <compilerArgs>
                             <arg>-parameters</arg>
                         </compilerArgs>
@@ -673,7 +680,7 @@ limitations under the License.
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-failsafe-plugin</artifactId>
-                    <version>2.22.2</version>
+                    <version>3.6.0</version>
                     <executions>
                         <execution>
                             <id>integration-test</id>
@@ -716,7 +723,7 @@ limitations under the License.
                 <plugin>
                     <groupId>org.asciidoctor</groupId>
                     <artifactId>asciidoctor-maven-plugin</artifactId>
-                    <version>2.2.4</version>
+                    <version>3.2.0</version>
                 </plugin>
                 <plugin>
                     <artifactId>maven-resources-plugin</artifactId>
@@ -732,7 +739,7 @@ limitations under the License.
                     <artifactId>maven-javadoc-plugin</artifactId>
                     <version>${javadoc-plugin.version}</version>
                     <configuration>
-                        <source>11</source>
+                        <source>17</source>
                     </configuration>
                 </plugin>
                 <plugin>
@@ -740,13 +747,13 @@ limitations under the License.
                     <artifactId>gmavenplus-plugin</artifactId>
                     <version>4.1.1</version>
                     <configuration>
-                        <targetBytecode>11</targetBytecode>
+                        <targetBytecode>17</targetBytecode>
                     </configuration>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-shade-plugin</artifactId>
-                    <version>3.6.0</version>
+                    <version>3.6.2</version>
                     <configuration>
                         <createDependencyReducedPom>false</createDependencyReducedPom>
                     </configuration>
@@ -824,6 +831,11 @@ limitations under the License.
                 <groupId>com.google.errorprone</groupId>
                 <artifactId>error_prone_annotations</artifactId>
                 <version>2.43.0</version>
+            </dependency>
+            <dependency>
+                <groupId>org.jspecify</groupId>
+                <artifactId>jspecify</artifactId>
+                <version>1.0.1</version>
             </dependency>
             <!-- end - resolve self-conflict within compile-testing -->
             <dependency>
@@ -1016,7 +1028,20 @@ limitations under the License.
 
                 <!-- the output directory for the asciidoctor plugin - finalized documents can be found here -->
                 <htmlsingle.output.dir>${project.basedir}/target/docs/htmlsingle</htmlsingle.output.dir>
+
+                <!-- the output directory for the agent-friendly Markdown mirror (agentdocsspec.com),
+                     rendered by the tpmarkdown backend from the same executed neutral tree -->
+                <markdown.output.dir>${project.basedir}/target/docs/markdown</markdown.output.dir>
                 <asciidoctor.style.dir>${asciidoc.input.dir}/stylesheets</asciidoctor.style.dir>
+
+                <!-- GremlinTreeprocessor attributes - set via CLI in bin/process-docs.sh -->
+                <gremlin.docs.console.home/>
+                <gremlin.docs.hadoop.libs/>
+                <gremlin.docs.dryrun>false</gremlin.docs.dryrun>
+
+                <!-- Keep the asciidoctor-maven-plugin's JRuby gem extraction under target/ instead
+                     of creating a 'gems/' directory at the repo root. -->
+                <asciidoctor.gemPath>${project.basedir}/target/asciidoctor-gems</asciidoctor.gemPath>
             </properties>
 
             <build>
@@ -1083,6 +1108,13 @@ limitations under the License.
                         <groupId>org.asciidoctor</groupId>
                         <artifactId>asciidoctor-maven-plugin</artifactId>
                         <inherited>false</inherited>
+                        <dependencies>
+                            <dependency>
+                                <groupId>org.apache.tinkerpop</groupId>
+                                <artifactId>tinkeradoc-extension</artifactId>
+                                <version>${project.version}</version>
+                            </dependency>
+                        </dependencies>
                         <executions>
                             <execution>
                                 <id>home</id>
@@ -1117,6 +1149,10 @@ limitations under the License.
                                         <basedir>${project.basedir}</basedir>
                                         <docinfo>shared</docinfo>
                                         <docinfodir>${project.basedir}/docs/src</docinfodir>
+                                        <gremlin-docs-console-home>${gremlin.docs.console.home}</gremlin-docs-console-home>
+                                        <gremlin-docs-hadoop-libs>${gremlin.docs.hadoop.libs}</gremlin-docs-hadoop-libs>
+                                        <gremlin-docs-dryrun>${gremlin.docs.dryrun}</gremlin-docs-dryrun>
+                                        <tinkerpop-version>${project.version}</tinkerpop-version>
                                     </attributes>
                                 </configuration>
                             </execution>
@@ -1144,6 +1180,10 @@ limitations under the License.
                                         <basedir>${project.basedir}</basedir>
                                         <docinfo>shared</docinfo>
                                         <docinfodir>${project.basedir}/docs/src</docinfodir>
+                                        <gremlin-docs-console-home>${gremlin.docs.console.home}</gremlin-docs-console-home>
+                                        <gremlin-docs-hadoop-libs>${gremlin.docs.hadoop.libs}</gremlin-docs-hadoop-libs>
+                                        <gremlin-docs-dryrun>${gremlin.docs.dryrun}</gremlin-docs-dryrun>
+                                        <tinkerpop-version>${project.version}</tinkerpop-version>
                                     </attributes>
                                 </configuration>
                             </execution>
@@ -1171,6 +1211,10 @@ limitations under the License.
                                         <basedir>${project.basedir}</basedir>
                                         <docinfo>shared</docinfo>
                                         <docinfodir>${project.basedir}/docs/src</docinfodir>
+                                        <gremlin-docs-console-home>${gremlin.docs.console.home}</gremlin-docs-console-home>
+                                        <gremlin-docs-hadoop-libs>${gremlin.docs.hadoop.libs}</gremlin-docs-hadoop-libs>
+                                        <gremlin-docs-dryrun>${gremlin.docs.dryrun}</gremlin-docs-dryrun>
+                                        <tinkerpop-version>${project.version}</tinkerpop-version>
                                     </attributes>
                                 </configuration>
                             </execution>
@@ -1198,6 +1242,10 @@ limitations under the License.
                                         <basedir>${project.basedir}</basedir>
                                         <docinfo>shared</docinfo>
                                         <docinfodir>${project.basedir}/docs/src</docinfodir>
+                                        <gremlin-docs-console-home>${gremlin.docs.console.home}</gremlin-docs-console-home>
+                                        <gremlin-docs-hadoop-libs>${gremlin.docs.hadoop.libs}</gremlin-docs-hadoop-libs>
+                                        <gremlin-docs-dryrun>${gremlin.docs.dryrun}</gremlin-docs-dryrun>
+                                        <tinkerpop-version>${project.version}</tinkerpop-version>
                                     </attributes>
                                 </configuration>
                             </execution>
@@ -1225,6 +1273,10 @@ limitations under the License.
                                         <basedir>${project.basedir}</basedir>
                                         <docinfo>shared</docinfo>
                                         <docinfodir>${project.basedir}/docs/src</docinfodir>
+                                        <gremlin-docs-console-home>${gremlin.docs.console.home}</gremlin-docs-console-home>
+                                        <gremlin-docs-hadoop-libs>${gremlin.docs.hadoop.libs}</gremlin-docs-hadoop-libs>
+                                        <gremlin-docs-dryrun>${gremlin.docs.dryrun}</gremlin-docs-dryrun>
+                                        <tinkerpop-version>${project.version}</tinkerpop-version>
                                     </attributes>
                                 </configuration>
                             </execution>
@@ -1252,6 +1304,38 @@ limitations under the License.
                                         <basedir>${project.basedir}</basedir>
                                         <docinfo>shared</docinfo>
                                         <docinfodir>${project.basedir}/docs/src</docinfodir>
+                                        <gremlin-docs-console-home>${gremlin.docs.console.home}</gremlin-docs-console-home>
+                                        <gremlin-docs-hadoop-libs>${gremlin.docs.hadoop.libs}</gremlin-docs-hadoop-libs>
+                                        <gremlin-docs-dryrun>${gremlin.docs.dryrun}</gremlin-docs-dryrun>
+                                        <tinkerpop-version>${project.version}</tinkerpop-version>
+                                    </attributes>
+                                </configuration>
+                            </execution>
+                            <!-- Agent-friendly Markdown mirror of the io-book (agentdocsspec.com pilot).
+                                 Renders through the custom tpmarkdown backend from the SAME executed
+                                 neutral tree as the html5 execution above, so live Gremlin runs once
+                                 (see GremlinExecutionCache) and the executed output matches the HTML. -->
+                            <execution>
+                                <id>io-book-markdown</id>
+                                <phase>generate-resources</phase>
+                                <goals>
+                                    <goal>process-asciidoc</goal>
+                                </goals>
+                                <configuration>
+                                    <sourceDirectory>${asciidoc.input.dir}/dev/io</sourceDirectory>
+                                    <sourceDocumentName>index.asciidoc</sourceDocumentName>
+                                    <outputDirectory>${markdown.output.dir}/dev/io</outputDirectory>
+                                    <backend>tpmarkdown</backend>
+                                    <doctype>book</doctype>
+                                    <attributes>
+                                        <imagesdir>../../images</imagesdir>
+                                        <encoding>UTF-8</encoding>
+                                        <outfilesuffix>.md</outfilesuffix>
+                                        <basedir>${project.basedir}</basedir>
+                                        <gremlin-docs-console-home>${gremlin.docs.console.home}</gremlin-docs-console-home>
+                                        <gremlin-docs-hadoop-libs>${gremlin.docs.hadoop.libs}</gremlin-docs-hadoop-libs>
+                                        <gremlin-docs-dryrun>${gremlin.docs.dryrun}</gremlin-docs-dryrun>
+                                        <tinkerpop-version>${project.version}</tinkerpop-version>
                                     </attributes>
                                 </configuration>
                             </execution>
@@ -1279,6 +1363,10 @@ limitations under the License.
                                         <basedir>${project.basedir}</basedir>
                                         <docinfo>shared</docinfo>
                                         <docinfodir>${project.basedir}/docs/src</docinfodir>
+                                        <gremlin-docs-console-home>${gremlin.docs.console.home}</gremlin-docs-console-home>
+                                        <gremlin-docs-hadoop-libs>${gremlin.docs.hadoop.libs}</gremlin-docs-hadoop-libs>
+                                        <gremlin-docs-dryrun>${gremlin.docs.dryrun}</gremlin-docs-dryrun>
+                                        <tinkerpop-version>${project.version}</tinkerpop-version>
                                     </attributes>
                                 </configuration>
                             </execution>
@@ -1306,6 +1394,41 @@ limitations under the License.
                                         <basedir>${project.basedir}</basedir>
                                         <docinfo>shared</docinfo>
                                         <docinfodir>${project.basedir}/docs/src</docinfodir>
+                                        <gremlin-docs-console-home>${gremlin.docs.console.home}</gremlin-docs-console-home>
+                                        <gremlin-docs-hadoop-libs>${gremlin.docs.hadoop.libs}</gremlin-docs-hadoop-libs>
+                                        <gremlin-docs-dryrun>${gremlin.docs.dryrun}</gremlin-docs-dryrun>
+                                        <tinkerpop-version>${project.version}</tinkerpop-version>
+                                    </attributes>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>data-book</id>
+                                <phase>generate-resources</phase>
+                                <goals>
+                                    <goal>process-asciidoc</goal>
+                                </goals>
+                                <configuration>
+                                    <sourceDirectory>${asciidoc.input.dir}/data</sourceDirectory>
+                                    <sourceDocumentName>index.asciidoc</sourceDocumentName>
+                                    <outputDirectory>${htmlsingle.output.dir}/data</outputDirectory>
+                                    <backend>html5</backend>
+                                    <doctype>book</doctype>
+                                    <attributes>
+                                        <imagesdir>../images</imagesdir>
+                                        <encoding>UTF-8</encoding>
+                                        <toc>true</toc>
+                                        <toclevels>2</toclevels>
+                                        <toc-position>left</toc-position>
+                                        <stylesdir>${asciidoctor.style.dir}</stylesdir>
+                                        <stylesheet>tinkerpop.css</stylesheet>
+                                        <source-highlighter>coderay</source-highlighter>
+                                        <basedir>${project.basedir}</basedir>
+                                        <docinfo>shared</docinfo>
+                                        <docinfodir>${project.basedir}/docs/src</docinfodir>
+                                        <gremlin-docs-console-home>${gremlin.docs.console.home}</gremlin-docs-console-home>
+                                        <gremlin-docs-hadoop-libs>${gremlin.docs.hadoop.libs}</gremlin-docs-hadoop-libs>
+                                        <gremlin-docs-dryrun>${gremlin.docs.dryrun}</gremlin-docs-dryrun>
+                                        <tinkerpop-version>${project.version}</tinkerpop-version>
                                     </attributes>
                                 </configuration>
                             </execution>
@@ -1331,6 +1454,10 @@ limitations under the License.
                                         <basedir>${project.basedir}</basedir>
                                         <docinfo>shared</docinfo>
                                         <docinfodir>${project.basedir}/docs/src</docinfodir>
+                                        <gremlin-docs-console-home>${gremlin.docs.console.home}</gremlin-docs-console-home>
+                                        <gremlin-docs-hadoop-libs>${gremlin.docs.hadoop.libs}</gremlin-docs-hadoop-libs>
+                                        <gremlin-docs-dryrun>${gremlin.docs.dryrun}</gremlin-docs-dryrun>
+                                        <tinkerpop-version>${project.version}</tinkerpop-version>
                                     </attributes>
                                 </configuration>
                             </execution>
@@ -1357,6 +1484,10 @@ limitations under the License.
                                         <basedir>${project.basedir}</basedir>
                                         <docinfo>shared</docinfo>
                                         <docinfodir>${project.basedir}/docs/src</docinfodir>
+                                        <gremlin-docs-console-home>${gremlin.docs.console.home}</gremlin-docs-console-home>
+                                        <gremlin-docs-hadoop-libs>${gremlin.docs.hadoop.libs}</gremlin-docs-hadoop-libs>
+                                        <gremlin-docs-dryrun>${gremlin.docs.dryrun}</gremlin-docs-dryrun>
+                                        <tinkerpop-version>${project.version}</tinkerpop-version>
                                     </attributes>
                                 </configuration>
                             </execution>
@@ -1383,6 +1514,10 @@ limitations under the License.
                                         <basedir>${project.basedir}</basedir>
                                         <docinfo>shared</docinfo>
                                         <docinfodir>${project.basedir}/docs/src</docinfodir>
+                                        <gremlin-docs-console-home>${gremlin.docs.console.home}</gremlin-docs-console-home>
+                                        <gremlin-docs-hadoop-libs>${gremlin.docs.hadoop.libs}</gremlin-docs-hadoop-libs>
+                                        <gremlin-docs-dryrun>${gremlin.docs.dryrun}</gremlin-docs-dryrun>
+                                        <tinkerpop-version>${project.version}</tinkerpop-version>
                                     </attributes>
                                 </configuration>
                             </execution>
@@ -1408,6 +1543,277 @@ limitations under the License.
                                         <basedir>${project.basedir}</basedir>
                                         <docinfo>shared</docinfo>
                                         <docinfodir>${project.basedir}/docs/src</docinfodir>
+                                        <gremlin-docs-console-home>${gremlin.docs.console.home}</gremlin-docs-console-home>
+                                        <gremlin-docs-hadoop-libs>${gremlin.docs.hadoop.libs}</gremlin-docs-hadoop-libs>
+                                        <gremlin-docs-dryrun>${gremlin.docs.dryrun}</gremlin-docs-dryrun>
+                                        <tinkerpop-version>${project.version}</tinkerpop-version>
+                                    </attributes>
+                                </configuration>
+                            </execution>
+                            <!-- Agent-friendly Markdown mirrors (agentdocsspec.com) for the remaining
+                                 books/tutorials; each renders via tpmarkdown from the same executed neutral tree
+                                 as its html5 counterpart above. -->
+                            <execution>
+                                <id>reference-book-markdown</id>
+                                <phase>generate-resources</phase>
+                                <goals>
+                                    <goal>process-asciidoc</goal>
+                                </goals>
+                                <configuration>
+                                    <sourceDirectory>${asciidoc.input.dir}/reference</sourceDirectory>
+                                    <sourceDocumentName>index.asciidoc</sourceDocumentName>
+                                    <outputDirectory>${markdown.output.dir}/reference</outputDirectory>
+                                    <backend>tpmarkdown</backend>
+                                    <doctype>book</doctype>
+                                    <attributes>
+                                        <imagesdir>../images</imagesdir>
+                                        <encoding>UTF-8</encoding>
+                                        <outfilesuffix>.md</outfilesuffix>
+                                        <basedir>${project.basedir}</basedir>
+                                        <gremlin-docs-console-home>${gremlin.docs.console.home}</gremlin-docs-console-home>
+                                        <gremlin-docs-hadoop-libs>${gremlin.docs.hadoop.libs}</gremlin-docs-hadoop-libs>
+                                        <gremlin-docs-dryrun>${gremlin.docs.dryrun}</gremlin-docs-dryrun>
+                                        <tinkerpop-version>${project.version}</tinkerpop-version>
+                                    </attributes>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>upgrade-book-markdown</id>
+                                <phase>generate-resources</phase>
+                                <goals>
+                                    <goal>process-asciidoc</goal>
+                                </goals>
+                                <configuration>
+                                    <sourceDirectory>${asciidoc.input.dir}/upgrade</sourceDirectory>
+                                    <sourceDocumentName>index.asciidoc</sourceDocumentName>
+                                    <outputDirectory>${markdown.output.dir}/upgrade</outputDirectory>
+                                    <backend>tpmarkdown</backend>
+                                    <doctype>book</doctype>
+                                    <attributes>
+                                        <imagesdir>../images</imagesdir>
+                                        <encoding>UTF-8</encoding>
+                                        <outfilesuffix>.md</outfilesuffix>
+                                        <basedir>${project.basedir}</basedir>
+                                        <gremlin-docs-console-home>${gremlin.docs.console.home}</gremlin-docs-console-home>
+                                        <gremlin-docs-hadoop-libs>${gremlin.docs.hadoop.libs}</gremlin-docs-hadoop-libs>
+                                        <gremlin-docs-dryrun>${gremlin.docs.dryrun}</gremlin-docs-dryrun>
+                                        <tinkerpop-version>${project.version}</tinkerpop-version>
+                                    </attributes>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>developer-book-markdown</id>
+                                <phase>generate-resources</phase>
+                                <goals>
+                                    <goal>process-asciidoc</goal>
+                                </goals>
+                                <configuration>
+                                    <sourceDirectory>${asciidoc.input.dir}/dev/developer</sourceDirectory>
+                                    <sourceDocumentName>index.asciidoc</sourceDocumentName>
+                                    <outputDirectory>${markdown.output.dir}/dev/developer</outputDirectory>
+                                    <backend>tpmarkdown</backend>
+                                    <doctype>book</doctype>
+                                    <attributes>
+                                        <imagesdir>../../images</imagesdir>
+                                        <encoding>UTF-8</encoding>
+                                        <outfilesuffix>.md</outfilesuffix>
+                                        <basedir>${project.basedir}</basedir>
+                                        <gremlin-docs-console-home>${gremlin.docs.console.home}</gremlin-docs-console-home>
+                                        <gremlin-docs-hadoop-libs>${gremlin.docs.hadoop.libs}</gremlin-docs-hadoop-libs>
+                                        <gremlin-docs-dryrun>${gremlin.docs.dryrun}</gremlin-docs-dryrun>
+                                        <tinkerpop-version>${project.version}</tinkerpop-version>
+                                    </attributes>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>future-book-markdown</id>
+                                <phase>generate-resources</phase>
+                                <goals>
+                                    <goal>process-asciidoc</goal>
+                                </goals>
+                                <configuration>
+                                    <sourceDirectory>${asciidoc.input.dir}/dev/future</sourceDirectory>
+                                    <sourceDocumentName>index.asciidoc</sourceDocumentName>
+                                    <outputDirectory>${markdown.output.dir}/dev/future</outputDirectory>
+                                    <backend>tpmarkdown</backend>
+                                    <doctype>book</doctype>
+                                    <attributes>
+                                        <imagesdir>../../images</imagesdir>
+                                        <encoding>UTF-8</encoding>
+                                        <outfilesuffix>.md</outfilesuffix>
+                                        <basedir>${project.basedir}</basedir>
+                                        <gremlin-docs-console-home>${gremlin.docs.console.home}</gremlin-docs-console-home>
+                                        <gremlin-docs-hadoop-libs>${gremlin.docs.hadoop.libs}</gremlin-docs-hadoop-libs>
+                                        <gremlin-docs-dryrun>${gremlin.docs.dryrun}</gremlin-docs-dryrun>
+                                        <tinkerpop-version>${project.version}</tinkerpop-version>
+                                    </attributes>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>provider-book-markdown</id>
+                                <phase>generate-resources</phase>
+                                <goals>
+                                    <goal>process-asciidoc</goal>
+                                </goals>
+                                <configuration>
+                                    <sourceDirectory>${asciidoc.input.dir}/dev/provider</sourceDirectory>
+                                    <sourceDocumentName>index.asciidoc</sourceDocumentName>
+                                    <outputDirectory>${markdown.output.dir}/dev/provider</outputDirectory>
+                                    <backend>tpmarkdown</backend>
+                                    <doctype>book</doctype>
+                                    <attributes>
+                                        <imagesdir>../../images</imagesdir>
+                                        <encoding>UTF-8</encoding>
+                                        <outfilesuffix>.md</outfilesuffix>
+                                        <basedir>${project.basedir}</basedir>
+                                        <gremlin-docs-console-home>${gremlin.docs.console.home}</gremlin-docs-console-home>
+                                        <gremlin-docs-hadoop-libs>${gremlin.docs.hadoop.libs}</gremlin-docs-hadoop-libs>
+                                        <gremlin-docs-dryrun>${gremlin.docs.dryrun}</gremlin-docs-dryrun>
+                                        <tinkerpop-version>${project.version}</tinkerpop-version>
+                                    </attributes>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>recipe-book-markdown</id>
+                                <phase>generate-resources</phase>
+                                <goals>
+                                    <goal>process-asciidoc</goal>
+                                </goals>
+                                <configuration>
+                                    <sourceDirectory>${asciidoc.input.dir}/recipes</sourceDirectory>
+                                    <sourceDocumentName>index.asciidoc</sourceDocumentName>
+                                    <outputDirectory>${markdown.output.dir}/recipes</outputDirectory>
+                                    <backend>tpmarkdown</backend>
+                                    <doctype>book</doctype>
+                                    <attributes>
+                                        <imagesdir>../images</imagesdir>
+                                        <encoding>UTF-8</encoding>
+                                        <outfilesuffix>.md</outfilesuffix>
+                                        <basedir>${project.basedir}</basedir>
+                                        <gremlin-docs-console-home>${gremlin.docs.console.home}</gremlin-docs-console-home>
+                                        <gremlin-docs-hadoop-libs>${gremlin.docs.hadoop.libs}</gremlin-docs-hadoop-libs>
+                                        <gremlin-docs-dryrun>${gremlin.docs.dryrun}</gremlin-docs-dryrun>
+                                        <tinkerpop-version>${project.version}</tinkerpop-version>
+                                    </attributes>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>data-book-markdown</id>
+                                <phase>generate-resources</phase>
+                                <goals>
+                                    <goal>process-asciidoc</goal>
+                                </goals>
+                                <configuration>
+                                    <sourceDirectory>${asciidoc.input.dir}/data</sourceDirectory>
+                                    <sourceDocumentName>index.asciidoc</sourceDocumentName>
+                                    <outputDirectory>${markdown.output.dir}/data</outputDirectory>
+                                    <backend>tpmarkdown</backend>
+                                    <doctype>book</doctype>
+                                    <attributes>
+                                        <imagesdir>../images</imagesdir>
+                                        <encoding>UTF-8</encoding>
+                                        <outfilesuffix>.md</outfilesuffix>
+                                        <basedir>${project.basedir}</basedir>
+                                        <gremlin-docs-console-home>${gremlin.docs.console.home}</gremlin-docs-console-home>
+                                        <gremlin-docs-hadoop-libs>${gremlin.docs.hadoop.libs}</gremlin-docs-hadoop-libs>
+                                        <gremlin-docs-dryrun>${gremlin.docs.dryrun}</gremlin-docs-dryrun>
+                                        <tinkerpop-version>${project.version}</tinkerpop-version>
+                                    </attributes>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>tutorial-getting-started-markdown</id>
+                                <phase>generate-resources</phase>
+                                <goals>
+                                    <goal>process-asciidoc</goal>
+                                </goals>
+                                <configuration>
+                                    <sourceDirectory>${asciidoc.input.dir}/tutorials/getting-started</sourceDirectory>
+                                    <sourceDocumentName>index.asciidoc</sourceDocumentName>
+                                    <outputDirectory>${markdown.output.dir}/tutorials/getting-started</outputDirectory>
+                                    <backend>tpmarkdown</backend>
+                                    <doctype>article</doctype>
+                                    <attributes>
+                                        <imagesdir>../../images</imagesdir>
+                                        <encoding>UTF-8</encoding>
+                                        <outfilesuffix>.md</outfilesuffix>
+                                        <basedir>${project.basedir}</basedir>
+                                        <gremlin-docs-console-home>${gremlin.docs.console.home}</gremlin-docs-console-home>
+                                        <gremlin-docs-hadoop-libs>${gremlin.docs.hadoop.libs}</gremlin-docs-hadoop-libs>
+                                        <gremlin-docs-dryrun>${gremlin.docs.dryrun}</gremlin-docs-dryrun>
+                                        <tinkerpop-version>${project.version}</tinkerpop-version>
+                                    </attributes>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>tutorial-the-gremlin-console-markdown</id>
+                                <phase>generate-resources</phase>
+                                <goals>
+                                    <goal>process-asciidoc</goal>
+                                </goals>
+                                <configuration>
+                                    <sourceDirectory>${asciidoc.input.dir}/tutorials/the-gremlin-console</sourceDirectory>
+                                    <sourceDocumentName>index.asciidoc</sourceDocumentName>
+                                    <outputDirectory>${markdown.output.dir}/tutorials/the-gremlin-console</outputDirectory>
+                                    <backend>tpmarkdown</backend>
+                                    <doctype>article</doctype>
+                                    <attributes>
+                                        <imagesdir>../../images</imagesdir>
+                                        <encoding>UTF-8</encoding>
+                                        <outfilesuffix>.md</outfilesuffix>
+                                        <basedir>${project.basedir}</basedir>
+                                        <gremlin-docs-console-home>${gremlin.docs.console.home}</gremlin-docs-console-home>
+                                        <gremlin-docs-hadoop-libs>${gremlin.docs.hadoop.libs}</gremlin-docs-hadoop-libs>
+                                        <gremlin-docs-dryrun>${gremlin.docs.dryrun}</gremlin-docs-dryrun>
+                                        <tinkerpop-version>${project.version}</tinkerpop-version>
+                                    </attributes>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>tutorial-gremlin-language-variants-markdown</id>
+                                <phase>generate-resources</phase>
+                                <goals>
+                                    <goal>process-asciidoc</goal>
+                                </goals>
+                                <configuration>
+                                    <sourceDirectory>${asciidoc.input.dir}/tutorials/gremlin-language-variants</sourceDirectory>
+                                    <sourceDocumentName>index.asciidoc</sourceDocumentName>
+                                    <outputDirectory>${markdown.output.dir}/tutorials/gremlin-language-variants</outputDirectory>
+                                    <backend>tpmarkdown</backend>
+                                    <doctype>article</doctype>
+                                    <attributes>
+                                        <imagesdir>../../images</imagesdir>
+                                        <encoding>UTF-8</encoding>
+                                        <outfilesuffix>.md</outfilesuffix>
+                                        <basedir>${project.basedir}</basedir>
+                                        <gremlin-docs-console-home>${gremlin.docs.console.home}</gremlin-docs-console-home>
+                                        <gremlin-docs-hadoop-libs>${gremlin.docs.hadoop.libs}</gremlin-docs-hadoop-libs>
+                                        <gremlin-docs-dryrun>${gremlin.docs.dryrun}</gremlin-docs-dryrun>
+                                        <tinkerpop-version>${project.version}</tinkerpop-version>
+                                    </attributes>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>tutorial-gremlins-anatomy-markdown</id>
+                                <phase>generate-resources</phase>
+                                <goals>
+                                    <goal>process-asciidoc</goal>
+                                </goals>
+                                <configuration>
+                                    <sourceDirectory>${asciidoc.input.dir}/tutorials/gremlins-anatomy</sourceDirectory>
+                                    <sourceDocumentName>index.asciidoc</sourceDocumentName>
+                                    <outputDirectory>${markdown.output.dir}/tutorials/gremlins-anatomy</outputDirectory>
+                                    <backend>tpmarkdown</backend>
+                                    <doctype>article</doctype>
+                                    <attributes>
+                                        <imagesdir>../../images</imagesdir>
+                                        <encoding>UTF-8</encoding>
+                                        <outfilesuffix>.md</outfilesuffix>
+                                        <basedir>${project.basedir}</basedir>
+                                        <gremlin-docs-console-home>${gremlin.docs.console.home}</gremlin-docs-console-home>
+                                        <gremlin-docs-hadoop-libs>${gremlin.docs.hadoop.libs}</gremlin-docs-hadoop-libs>
+                                        <gremlin-docs-dryrun>${gremlin.docs.dryrun}</gremlin-docs-dryrun>
+                                        <tinkerpop-version>${project.version}</tinkerpop-version>
                                     </attributes>
                                 </configuration>
                             </execution>
@@ -1466,7 +1872,7 @@ limitations under the License.
                                     <overview>${basedir}/docs/javadoc/overview.html</overview>
                                     <quiet>true</quiet>
                                     <sourcepath>
-                                        gremlin-annotations/src/main/java:gremlin-language/target/generated-sources/antlr4:gremlin-core/src/main/java:gremlin-driver/src/main/java:gremlin-groovy/src/main/java:gremlin-groovy/target/generated-sources/annotations:gremlin-groovy/target/generated-sources/groovy-stubs/main:gremlin-server/src/main/java:gremlin-test/src/main/java:tinkergraph-gremlin/src/main/java:gremlin-util/src/main/java
+                                        gremlin-annotations/src/main/java:gremlin-language/target/generated-sources/antlr4:gremlin-core/src/main/java:gql-gremlin/src/main/java:gql-gremlin/target/generated-sources/antlr4:gremlin-driver/src/main/java:gremlin-groovy/src/main/java:gremlin-groovy/target/generated-sources/annotations:gremlin-groovy/target/generated-sources/groovy-stubs/main:gremlin-server/src/main/java:gremlin-test/src/main/java:tinkergraph-gremlin/src/main/java:gremlin-util/src/main/java
                                     </sourcepath>
                                     <dependencySourceIncludes>
                                         <dependencySourceInclude>org.apache.tinkerpop:*</dependencySourceInclude>
@@ -1489,6 +1895,11 @@ limitations under the License.
                                         </additionalDependency>
                                         <additionalDependency>
                                             <groupId>io.netty</groupId>
+                                            <artifactId>netty-codec-base</artifactId>
+                                            <version>${netty.version}</version>
+                                        </additionalDependency>
+                                        <additionalDependency>
+                                            <groupId>io.netty</groupId>
                                             <artifactId>netty-codec-http</artifactId>
                                             <version>${netty.version}</version>
                                         </additionalDependency>
@@ -1505,6 +1916,11 @@ limitations under the License.
                                         <additionalDependency>
                                             <groupId>io.netty</groupId>
                                             <artifactId>netty-handler</artifactId>
+                                            <version>${netty.version}</version>
+                                        </additionalDependency>
+                                        <additionalDependency>
+                                            <groupId>io.netty</groupId>
+                                            <artifactId>netty-handler-proxy</artifactId>
                                             <version>${netty.version}</version>
                                         </additionalDependency>
                                         <additionalDependency>
@@ -1607,31 +2023,6 @@ limitations under the License.
                                             <groupId>junit</groupId>
                                             <artifactId>junit</artifactId>
                                             <version>${junit.version}</version>
-                                        </additionalDependency>
-                                        <additionalDependency>
-                                            <groupId>org.apache.kerby</groupId>
-                                            <artifactId>kerb-simplekdc</artifactId>
-                                            <version>${kerby.version}</version>
-                                        </additionalDependency>
-                                        <additionalDependency>
-                                            <groupId>org.apache.kerby</groupId>
-                                            <artifactId>kerb-server</artifactId>
-                                            <version>${kerby.version}</version>
-                                        </additionalDependency>
-                                        <additionalDependency>
-                                            <groupId>org.apache.kerby</groupId>
-                                            <artifactId>kerb-client</artifactId>
-                                            <version>${kerby.version}</version>
-                                        </additionalDependency>
-                                        <additionalDependency>
-                                            <groupId>org.apache.kerby</groupId>
-                                            <artifactId>kerb-common</artifactId>
-                                            <version>${kerby.version}</version>
-                                        </additionalDependency>
-                                        <additionalDependency>
-                                            <groupId>org.apache.kerby</groupId>
-                                            <artifactId>kerb-core</artifactId>
-                                            <version>${kerby.version}</version>
                                         </additionalDependency>
                                         <additionalDependency>
                                             <groupId>org.javatuples</groupId>
@@ -1857,6 +2248,11 @@ limitations under the License.
                                         </additionalDependency>
                                         <additionalDependency>
                                             <groupId>io.netty</groupId>
+                                            <artifactId>netty-codec-base</artifactId>
+                                            <version>${netty.version}</version>
+                                        </additionalDependency>
+                                        <additionalDependency>
+                                            <groupId>io.netty</groupId>
                                             <artifactId>netty-codec-http</artifactId>
                                             <version>${netty.version}</version>
                                         </additionalDependency>
@@ -1868,6 +2264,11 @@ limitations under the License.
                                         <additionalDependency>
                                             <groupId>io.netty</groupId>
                                             <artifactId>netty-handler</artifactId>
+                                            <version>${netty.version}</version>
+                                        </additionalDependency>
+                                        <additionalDependency>
+                                            <groupId>io.netty</groupId>
+                                            <artifactId>netty-handler-proxy</artifactId>
                                             <version>${netty.version}</version>
                                         </additionalDependency>
                                         <additionalDependency>
@@ -2163,7 +2564,7 @@ limitations under the License.
                                 -Dlog4j.configuration=${log4j-test.properties}
                                 -Dslf4j.provider=ch.qos.logback.classic.spi.LogbackServiceProvider
                                 -Dbuild.dir=${project.build.directory} -Dis.testing=true ${suresafeArgs}
-                                -Djava.net.preferIPv4Stack=true
+                                -Djava.net.preferIPv4Stack=true ${jdk17JvmArgs}
                             </argLine>
                         </configuration>
                     </plugin>
@@ -2175,7 +2576,7 @@ limitations under the License.
                                 -Dlog4j.configuration=${log4j-test.properties} -Dhost=localhost -Dport=8182
                                 -Dslf4j.provider=ch.qos.logback.classic.spi.LogbackServiceProvider
                                 -Dbuild.dir=${project.build.directory} -Dis.testing=true ${suresafeArgs}
-                                -Djava.net.preferIPv4Stack=true
+                                -Djava.net.preferIPv4Stack=true ${jdk17JvmArgs}
                             </argLine>
                         </configuration>
                     </plugin>

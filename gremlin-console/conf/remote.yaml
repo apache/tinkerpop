@@ -28,4 +28,4 @@
 
 hosts: [localhost]
 port: 8182
-serializer: { className: org.apache.tinkerpop.gremlin.util.ser.GraphBinaryMessageSerializerV4}
+responseSerializer: { className: org.apache.tinkerpop.gremlin.util.ser.GraphBinaryMessageSerializerV4}

@@ -24,6 +24,9 @@ image::apache-tinkerpop-logo.png[width=500,link="https://tinkerpop.apache.org"]
 
 *x.y.z*
 
+[llms-summary="A stub tutorial that redirects to the reference documentation on Gremlin drivers and language variants."]
+= Gremlin Language Variants
+
 image::gremlin-house-of-mirrors.png[width=1024]
 
 Please see the link:https://tinkerpop.apache.org/docs/x.y.z/reference/#gremlin-drivers-variants[Reference Documentation]

@@ -223,6 +223,10 @@ Feature: Step - has()
   Scenario: g_VX1X_outE_hasXweight_inside_0_06X_inV
     Given the modern graph
     And using the parameter vid1 defined as "v[marko].id"
+    And the intent
+      """
+      Which vertices can vertex <vid1> reach over an outgoing edge whose weight is greater than 0.0 and less than 0.6?
+      """
     And the traversal of
     """
     g.V(vid1).outE().has("weight", P.inside(0.0, 0.6)).inV()
@@ -376,6 +380,10 @@ Feature: Step - has()
 
   Scenario: g_V_hasXname_endingWithXasXX
     Given the modern graph
+    And the intent
+      """
+      Which vertices have a name that ends with "as"?
+      """
     And the traversal of
       """
       g.V().has("name", TextP.endingWith("as"))
@@ -424,6 +432,10 @@ Feature: Step - has()
 
   Scenario: g_V_hasXname_not_startingWithXmarXX
     Given the modern graph
+    And the intent
+      """
+      Which vertices have a name that does not start with "mar"?
+      """
     And the traversal of
       """
       g.V().has("name", TextP.notStartingWith("mar"))
@@ -439,6 +451,10 @@ Feature: Step - has()
 
   Scenario: g_V_hasXname_not_endingWithXasXX
     Given the modern graph
+    And the intent
+      """
+      Which vertices have a name that does not end with "as"?
+      """
     And the traversal of
       """
       g.V().has("name", TextP.notEndingWith("as"))
@@ -454,6 +470,10 @@ Feature: Step - has()
 
  Scenario: g_V_hasXname_regexXrMarXX
     Given the modern graph
+    And the intent
+      """
+      Which vertices have a name matching the regular expression "^mar"?
+      """
     And the traversal of
       """
       g.V().has("name", TextP.regex("^mar"))
@@ -465,6 +485,10 @@ Feature: Step - has()
 
  Scenario: g_V_hasXname_notRegexXrMarXX
     Given the modern graph
+    And the intent
+      """
+      Which vertices have a name that does not match the regular expression "^mar"?
+      """
     And the traversal of
       """
       g.V().has("name", TextP.notRegex("^mar"))
@@ -519,6 +543,10 @@ Feature: Step - has()
 
   Scenario: g_V_hasXage_gtX18X_andXltX30XXorXgtx35XXX
     Given the modern graph
+    And the intent
+      """
+      Which vertices have an age over 18 and under 30, or over 35?
+      """
     And the traversal of
       """
       g.V().has("age", P.gt(18).and(P.lt(30)).or(P.gt(35)))
@@ -621,3 +649,485 @@ Feature: Step - has()
     """
     When iterated to list
     Then the result should be empty
+
+  Scenario: g_V_hasXname_constantXmarkoXX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().has("name", __.constant("marko"))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | v[marko] |
+
+  @GraphComputerVerificationMidVNotSupported
+  # has(key, traversal) with multi-result child traversal - takes first result (order-dependent)
+
+  Scenario: g_V_hasXname_VXvid1X_outXknowsX_valuesXnameXX
+    Given the modern graph
+    And using the parameter vid1 defined as "v[marko].id"
+    And the traversal of
+      """
+      g.V().has("name", __.V(vid1).out("knows").values("name").order())
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | v[josh] |
+
+  Scenario: g_V_hasXname_valuesXnonexistentXX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().has("name", __.values("nonexistent"))
+      """
+    When iterated to list
+    Then the result should be empty
+
+  Scenario: g_V_hasXname_notXidentityXX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().has("name", __.not(__.identity()))
+      """
+    When iterated to list
+    Then the result should be empty
+
+  Scenario: g_V_hasXage_gtXconstantX29XXX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().has("age", P.gt(__.constant(29)))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | v[josh] |
+      | v[peter] |
+
+  Scenario: g_V_hasXage_lteXconstantX27XXX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().has("age", P.lte(__.constant(27)))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | v[vadas] |
+
+  Scenario: g_V_hasXage_neqXconstantX32XXX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().has("age", P.neq(__.constant(32)))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | v[marko] |
+      | v[vadas] |
+      | v[peter] |
+
+  Scenario: g_V_hasXname_eqXconstantXmarkoXXX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().has("name", P.eq(__.constant("marko")))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | v[marko] |
+
+  Scenario: g_V_hasXage_ltXconstantX29XXX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().has("age", P.lt(__.constant(29)))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | v[vadas] |
+
+  Scenario: g_V_hasXage_gteXconstantX32XXX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().has("age", P.gte(__.constant(32)))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | v[josh] |
+      | v[peter] |
+
+  Scenario: g_V_hasXage_eqXvaluesXnonexistentXXX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().has("age", P.eq(__.values("nonexistent")))
+      """
+    When iterated to list
+    Then the result should be empty
+
+  Scenario: g_V_hasXlabel_constantXpersonXX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().has(T.label, __.constant("person"))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | v[marko] |
+      | v[vadas] |
+      | v[josh] |
+      | v[peter] |
+
+  Scenario: g_V_hasXperson_name_constantXmarkoXX_age
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().has("person", "name", __.constant("marko")).values("age")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[29].i |
+
+  # within() over a union of relationship results collected with fold() - one traversal, one collection
+
+  @GraphComputerVerificationMidVNotSupported
+  Scenario: g_V_hasXname_withinXunionXVXvid1X_outXknowsX_valuesXnameX_constantXpeterXX_foldXX
+    Given the modern graph
+    And using the parameter vid1 defined as "v[marko].id"
+    And the traversal of
+      """
+      g.V().has("name", P.within(__.union(__.V(vid1).out("knows").values("name"), __.constant("peter")).fold()))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | v[vadas] |
+      | v[josh] |
+      | v[peter] |
+
+  # Multi-traversal within() where one traversal produces no results - still matches on the other
+
+  Scenario: g_V_hasXname_withinXvaluesXnonexistentX_constantXmarkoXXX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().has("name", P.within(__.values("nonexistent"), __.constant("marko")))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | v[marko] |
+
+  # Multi-traversal within() where all traversals produce no results - filters everything
+
+  Scenario: g_V_hasXname_withinXvaluesXnonexistentX_valuesXnonexistent2XXX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().has("name", P.within(__.values("nonexistent"), __.values("nonexistent2")))
+      """
+    When iterated to list
+    Then the result should be empty
+
+  # Multi-traversal without() with three constant traversals
+
+  Scenario: g_V_hasXname_withoutXconstantXmarkoX_constantXvadasX_constantXpeterXXX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().has("name", P.without(__.constant("marko"), __.constant("vadas"), __.constant("peter")))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | v[josh] |
+      | v[lop] |
+      | v[ripple] |
+
+  # within() over a union of relationship traversals from different sources, collected with fold()
+
+  @GraphComputerVerificationMidVNotSupported
+  Scenario: g_V_hasXname_withinXunionXVXvid1X_outXknowsX_valuesXnameX_VXvid3X_outXcreatedX_valuesXnameXX_foldXX
+    Given the modern graph
+    And using the parameter vid1 defined as "v[marko].id"
+    And using the parameter vid3 defined as "v[josh].id"
+    And the traversal of
+      """
+      g.V().has("name", P.within(__.union(__.V(vid1).out("knows").values("name"),
+                                          __.V(vid3).out("created").values("name")).fold()))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | v[vadas] |
+      | v[josh] |
+      | v[ripple] |
+      | v[lop] |
+
+  # without() over a union of relationship sources collected with fold()
+
+  @GraphComputerVerificationMidVNotSupported
+  Scenario: g_V_hasLabelXsoftwareX_hasXname_withoutXunionXVXvid1X_outXcreatedX_valuesXnameX_VXvid4X_outXcreatedX_valuesXnameXX_foldXX
+    Given the modern graph
+    And using the parameter vid1 defined as "v[marko].id"
+    And using the parameter vid4 defined as "v[josh].id"
+    And the traversal of
+      """
+      g.V().hasLabel("software").
+        has("name", P.without(__.union(__.V(vid1).out("created").values("name"),
+                                       __.V(vid4).out("created").values("name")).fold()))
+      """
+    When iterated to list
+    Then the result should be empty
+
+  # within() with is() - cross-label dynamic filtering using a union collected with fold()
+
+  @GraphComputerVerificationMidVNotSupported
+  Scenario: g_V_hasLabelXpersonX_valuesXageX_isXwithinXunionXVXvid1X_valuesXageX_V_hasXname_lopX_inXcreatedX_valuesXageXX_foldXX
+    Given the modern graph
+    And using the parameter vid1 defined as "v[marko].id"
+    And the traversal of
+      """
+      g.V().hasLabel("person").values("age").
+        is(P.within(__.union(__.V(vid1).values("age"),
+                             __.V().has("name","lop").in("created").values("age")).fold()))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[29].i |
+      | d[32].i |
+      | d[35].i |
+
+  # within() - dynamic edge filtering via inV property check using a union collected with fold()
+
+  @GraphComputerVerificationMidVNotSupported
+  Scenario: g_VXvid1X_outEXknowsX_filterXinV_hasXname_withinXunionXV_hasXname_lopX_inXcreatedX_valuesXnameX_V_hasXname_rippleX_inXcreatedX_valuesXnameXX_foldXXXX
+    Given the modern graph
+    And using the parameter vid1 defined as "v[marko].id"
+    And the traversal of
+      """
+      g.V(vid1).outE("knows").
+        filter(__.inV().has("name", P.within(__.union(__.V().has("name","lop").in("created").values("name"),
+                                                      __.V().has("name","ripple").in("created").values("name")).fold())))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | e[marko-knows->josh] |
+
+  # hasLabel with a child traversal
+
+  Scenario: g_V_hasLabelXconstantXpersonXX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().hasLabel(__.constant("person"))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | v[marko] |
+      | v[vadas] |
+      | v[josh] |
+      | v[peter] |
+
+  # hasId with P.eq(traversal)
+
+  @GraphComputerVerificationMidVNotSupported
+  Scenario: g_V_hasIdXeqXVXvid1X_idXX
+    Given the modern graph
+    And using the parameter vid1 defined as "v[marko].id"
+    And the traversal of
+      """
+      g.V().hasId(P.eq(__.V(vid1).id()))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | v[marko] |
+
+  # hasId with traversal passed directly
+
+  @GraphComputerVerificationMidVNotSupported
+  Scenario: g_V_hasIdXVXvid1X_idXX
+    Given the modern graph
+    And using the parameter vid1 defined as "v[marko].id"
+    And the traversal of
+      """
+      g.V().hasId(__.V(vid1).id())
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | v[marko] |
+
+  # hasKey with a child traversal
+
+  Scenario: g_V_propertiesXageX_hasKeyXconstantXageXX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().properties("age").hasKey(__.constant("age"))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | vp[marko-age->d[29].i] |
+      | vp[vadas-age->d[27].i] |
+      | vp[josh-age->d[32].i] |
+      | vp[peter-age->d[35].i] |
+
+  # hasKey with P.eq(traversal)
+
+  Scenario: g_V_propertiesXageX_hasKeyXeqXconstantXageXXX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().properties("age").hasKey(P.eq(__.constant("age")))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | vp[marko-age->d[29].i] |
+      | vp[vadas-age->d[27].i] |
+      | vp[josh-age->d[32].i] |
+      | vp[peter-age->d[35].i] |
+
+  # hasValue with a child traversal
+
+  Scenario: g_V_propertiesXageX_hasValueXconstantX29XX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().properties("age").hasValue(__.constant(29))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | vp[marko-age->d[29].i] |
+
+  # hasValue with P.eq(traversal)
+
+  Scenario: g_V_propertiesXageX_hasValueXeqXconstantX29XXX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().properties("age").hasValue(P.eq(__.constant(29)))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | vp[marko-age->d[29].i] |
+
+  # Child traversal using select() to reference a labeled step value
+
+  @GraphComputerVerificationMidVNotSupported
+  Scenario: g_VXvid1X_asXaX_V_hasXage_gtXselectXaX_valuesXageXXX_valuesXnameX
+    Given the modern graph
+    And using the parameter vid1 defined as "v[marko].id"
+    And the traversal of
+      """
+      g.V(vid1).as("a").V().has("age", P.gt(__.select("a").values("age"))).values("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | josh |
+      | peter |
+
+  # Child traversal using sack() to filter against the traverser's sack value
+
+  Scenario: g_withSackX29X_V_hasXage_gtXsackXX_valuesXnameX
+    Given the modern graph
+    And the traversal of
+      """
+      g.withSack(29).V().has("age", P.gt(__.sack())).values("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | josh |
+      | peter |
+
+  # Child traversal using constant() to filter edge properties
+
+  Scenario: g_V_hasXname_markoX_outEXknowsX_hasXweight_gteXconstantX05XXX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().has("name","marko").outE("knows").has("weight", P.gte(__.constant(0.5)))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | e[marko-knows->vadas] |
+      | e[marko-knows->josh] |
+
+  @MultiLabel
+  Scenario: g_V_hasXlabel_aquaticX_name_multilabel
+    Given the zoo graph
+    And the traversal of
+      """
+      g.V().has(T.label, "aquatic").values("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | tux |
+      | atlas |
+      | ripple |
+      | splash |
+      | lagoon |
+
+  @MultiLabel
+  Scenario: g_V_hasXlabel_withinXreptile_birdXX_name_multilabel
+    Given the zoo graph
+    And the traversal of
+      """
+      g.V().has(T.label, P.within("reptile", "bird")).values("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | tux |
+      | atlas |
+      | monty |
+
+  # Because label predicates match if ANY label satisfies them, has(T.label, without("animal")) matches
+  # every vertex that carries some label other than "animal" - which is all of them. To exclude vertices
+  # labeled "animal", use not(hasLabel("animal")) instead (see the Not step).
+
+  @MultiLabel
+  Scenario: g_V_hasXlabel_withoutXanimalXX_name_multilabel
+    Given the zoo graph
+    And the traversal of
+      """
+      g.V().has(T.label, P.without("animal")).values("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | tux |
+      | atlas |
+      | ripple |
+      | monty |
+      | echo |
+      | blaze |
+      | titan |
+      | bitsy |
+      | splash |
+      | tinker |
+      | lagoon |
+      | canopy |
+      | dr_gremlin |

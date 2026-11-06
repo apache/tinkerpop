@@ -19,12 +19,13 @@
 
 import copy
 import math
+import re
 import threading
 import uuid
 import warnings
 
 from aenum import Enum
-from gremlin_python.structure.graph import Vertex, Edge, Path, Property
+from gremlin_python.structure.graph import Vertex, Edge, Path, Property, CompositePDT, PrimitivePDT
 
 from .. import statics
 from ..statics import long, SingleByte, SingleChar, short, bigint, BigDecimal
@@ -359,6 +360,8 @@ class P(object):
             return P("within", args[0])
         elif len(args) == 1 and type(args[0]) == set:
             return P("within", list(args[0]))
+        elif len(args) == 1 and isinstance(args[0], Traversal):
+            return P("within", args[0])
         else:
             return P("within", list(args))
 
@@ -368,6 +371,8 @@ class P(object):
             return P("without", args[0])
         elif len(args) == 1 and type(args[0]) == set:
             return P("without", list(args[0]))
+        elif len(args) == 1 and isinstance(args[0], Traversal):
+            return P("without", args[0])
         else:
             return P("without", list(args))
 
@@ -701,7 +706,7 @@ class PeerPressure(object):
 
     propertyName = "~tinkerpop.peerPressure.propertyName"
 
-    property_name = "~tinkerpop.pageRank.propertyName"
+    property_name = "~tinkerpop.peerPressure.propertyName"
 
     times = "~tinkerpop.peerPressure.times"
 
@@ -814,11 +819,13 @@ class GremlinLang(object):
         self.gremlin = []
         self.parameters = {}
         self.options_strategies = []
+        self.pdt_registry = None
 
         if gremlin_lang is not None:
             self.gremlin = list(gremlin_lang.gremlin)
             self.parameters = dict(gremlin_lang.parameters)
             self.options_strategies = list(gremlin_lang.options_strategies)
+            self.pdt_registry = gremlin_lang.pdt_registry
 
     def _add_to_gremlin(self, string_name, *args):
 
@@ -904,6 +911,12 @@ class GremlinLang(object):
             else:
                 return tmp
 
+        if isinstance(arg, CompositePDT):
+            return f'PDT({self._arg_as_string(arg.name)},{self._process_dict(arg.fields)})'
+
+        if isinstance(arg, PrimitivePDT):
+            return f'PDT({self._arg_as_string(arg.name)},{self._arg_as_string(arg.value)})'
+
         if isinstance(arg, Vertex):
             return f'{self._arg_as_string(arg.id)}'
 
@@ -917,9 +930,8 @@ class GremlinLang(object):
 
         if isinstance(arg, GValue):
             key = arg.get_name()
-
-            if not key.isidentifier():
-                raise Exception(f'invalid parameter name {key}.')
+            if not re.fullmatch(r'(?:[^\W\d]|\$)(?:\w|\$)*', key):
+                raise Exception(f'Invalid parameter name [{key}].')
 
             if key in self.parameters:
                 if self.parameters[key] != arg.value:
@@ -947,6 +959,31 @@ class GremlinLang(object):
         if isinstance(arg, type):
             return arg.__name__
 
+        # Registry-based dehydration — a registered adapter intentionally takes
+        # precedence over the @provider_defined decorator fallback below, allowing
+        # explicit adapters to override decorator-derived behavior.
+        if self.pdt_registry is not None:
+            primitive_adapter = self.pdt_registry.get_primitive_adapter_by_class(type(arg))
+            if primitive_adapter is not None and primitive_adapter['to_value'] is not None:
+                value = primitive_adapter['to_value'](arg)
+                return self._arg_as_string(PrimitivePDT(primitive_adapter['type_name'], value))
+            adapter = self.pdt_registry.get_composite_adapter_by_class(type(arg))
+            if adapter is not None and adapter['serialize'] is not None:
+                fields = adapter['serialize'](arg)
+                return self._arg_as_string(CompositePDT(adapter['type_name'], fields))
+
+        # Auto-dehydrate @provider_defined decorated objects
+        if hasattr(arg, '_pdt_name'):
+            included = getattr(arg, '_pdt_included_fields', None)
+            excluded = getattr(arg, '_pdt_excluded_fields', None)
+            fields = [f for f in vars(arg) if not f.startswith('_')]
+            if included:
+                fields = [f for f in fields if f in included]
+            elif excluded:
+                fields = [f for f in fields if f not in excluded]
+            pdt = CompositePDT(arg._pdt_name, {f: getattr(arg, f) for f in fields})
+            return self._arg_as_string(pdt)
+
         raise TypeError(f'GremlinLang contains at least one type [{type(arg).__name__}] that cannot be represented as text.')
 
     # Do special processing needed to format predicates that come in
@@ -964,13 +1001,22 @@ class GremlinLang(object):
         c = 0
         res = [str(p).split('(')[0] + '(']
         if isinstance(p.value, list):
-            res.append('[')
-            for v in p.value:
-                if c > 0:
-                    res.append(',')
-                res.append(self._arg_as_string(v))
-                c += 1
-            res.append(']')
+            # If all elements are Traversals, serialize as comma-separated args (no brackets)
+            # This matches the server grammar: within(trav1, trav2) via genericArgumentVarargs
+            if len(p.value) > 0 and all(isinstance(v, Traversal) for v in p.value):
+                for v in p.value:
+                    if c > 0:
+                        res.append(',')
+                    res.append(self._arg_as_string(v))
+                    c += 1
+            else:
+                res.append('[')
+                for v in p.value:
+                    if c > 0:
+                        res.append(',')
+                    res.append(self._arg_as_string(v))
+                    c += 1
+                res.append(']')
         else:
             res.append(self._arg_as_string(p.value))
             if p.other is not None:
@@ -1044,9 +1090,6 @@ class GremlinLang(object):
             parts.append(f'{helper._arg_as_string(k)}:{helper._arg_as_string(v)}')
         return '[' + ','.join(parts) + ']'
 
-    def add_g(self, g):
-        self.parameters['g'] = g
-
     def add_source(self, source_name, *args):
 
         if source_name == 'withStrategies' and len(args) != 0:
@@ -1092,7 +1135,7 @@ class GremlinLang(object):
 
     def __eq__(self, other):
         if isinstance(other, self.__class__):
-            return ''.join(self.gremlin) == ''.join(self.gremlin) and self.parameters == other.parameters
+            return ''.join(self.gremlin) == ''.join(other.gremlin) and self.parameters == other.parameters
         else:
             return False
 
@@ -1141,30 +1184,14 @@ class GremlinLang(object):
         return (''.join(self.gremlin) if len(self.gremlin) > 0 else "") + \
             (str(self.parameters) if len(self.parameters) > 0 else "")
 
-    # TODO to be removed or updated once HTTP transaction is implemented
-    # @staticmethod
-    # def _create_graph_op(name, *values):
-    #     bc = Bytecode()
-    #     bc.add_source(name, *values)
-    #     return bc
-    #
-    # @staticmethod
-    # class GraphOp:
-    #     @staticmethod
-    #     def commit():
-    #         return Bytecode._create_graph_op("tx", "commit")
-    #
-    #     @staticmethod
-    #     def rollback():
-    #         return Bytecode._create_graph_op("tx", "rollback")
 
 
 class GValue:
     def __init__(self, name, value):
+        if isinstance(value, GValue):
+            raise Exception('GValues cannot be nested')
         if name is None:
-            raise Exception("The parameter name cannot be None.")
-        if name.startswith('_'):
-            raise Exception(f'invalid GValue name {name}. Should not start with _.')
+            raise Exception('GValue name cannot be null.')
         self.name = name
         self.value = value
 
@@ -1176,6 +1203,12 @@ class GValue:
 
     def get(self):
         return self.value
+
+    def __repr__(self):
+        return f'{self.name}={self.value}'
+
+    def __str__(self):
+        return f'{self.name}={self.value}'
 
 
 class CardinalityValue(GremlinLang):

@@ -22,7 +22,6 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.CompositeByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToMessageDecoder;
-import io.netty.handler.codec.TooLongFrameException;
 import io.netty.handler.codec.http.HttpObject;
 import io.netty.handler.codec.http.HttpContent;
 import io.netty.handler.codec.http.HttpHeaderNames;
@@ -63,10 +62,16 @@ public class HttpStreamingResponseHandler extends MessageToMessageDecoder<HttpOb
     private static final Logger logger = LoggerFactory.getLogger(HttpStreamingResponseHandler.class);
     private static final ObjectMapper mapper = new ObjectMapper();
 
+    /**
+     * Grace period added to {@code readTimeout} when arming the reader thread's backstop timeout, so the pipeline
+     * {@link ReadTimeoutHandler} always fires first on a stalled connection.
+     */
+    private static final long BACKSTOP_GRACE_MILLIS = 5000L;
+
     private final GraphBinaryReader graphBinaryReader;
     private final AtomicReference<ResultSet> pendingResultSet;
     private final ExecutorService readerPool;
-    private final long maxResponseContentLength;
+    private final long backstopTimeoutMillis;
 
     // Mutable state below is accessed exclusively from the channel's event loop thread.
     private HttpResponseStatus responseStatus;
@@ -77,12 +82,29 @@ public class HttpStreamingResponseHandler extends MessageToMessageDecoder<HttpOb
 
     public HttpStreamingResponseHandler(final GraphBinaryReader graphBinaryReader,
                                         final AtomicReference<ResultSet> pendingResultSet,
+                                        final ExecutorService readerPool) {
+        this(graphBinaryReader, pendingResultSet, readerPool, 0L);
+    }
+
+    /**
+     * @param readTimeoutMillis the connection's {@code readTimeout}. When positive, the reader thread's own timeout is
+     *                          armed as a backstop {@value #BACKSTOP_GRACE_MILLIS}ms longer, so the pipeline
+     *                          {@link ReadTimeoutHandler} fires first on a stalled connection and terminates the
+     *                          response with a properly typed exception. A value {@code <= 0} (the default, meaning
+     *                          "no timeout") leaves the reader blocking indefinitely.
+     *                          <p>
+     *                          The translation to the backstop bound lives here rather than in
+     *                          {@link ByteBufQueueInputStream}'s constructor so that the stream can be constructed with
+     *                          the effective bound directly (small values in tests, without paying the full grace).
+     */
+    public HttpStreamingResponseHandler(final GraphBinaryReader graphBinaryReader,
+                                        final AtomicReference<ResultSet> pendingResultSet,
                                         final ExecutorService readerPool,
-                                        final long maxResponseContentLength) {
+                                        final long readTimeoutMillis) {
         this.graphBinaryReader = graphBinaryReader;
         this.pendingResultSet = pendingResultSet;
         this.readerPool = readerPool;
-        this.maxResponseContentLength = maxResponseContentLength;
+        this.backstopTimeoutMillis = readTimeoutMillis > 0 ? readTimeoutMillis + BACKSTOP_GRACE_MILLIS : 0L;
     }
 
     @Override
@@ -97,7 +119,17 @@ public class HttpStreamingResponseHandler extends MessageToMessageDecoder<HttpOb
 
             responseStatus = resp.status();
             contentType = resp.headers().get(HttpHeaderNames.CONTENT_TYPE);
-            queueInputStream = new ByteBufQueueInputStream();
+            queueInputStream = new ByteBufQueueInputStream(backstopTimeoutMillis);
+
+            // Signal that the server's response headers have arrived, before any body chunk is processed. The full
+            // round trip to the server has completed, so a caller blocked on headersReceivedAsync() (e.g. a remote
+            // transaction's submit) can now proceed knowing the server has ordered this request ahead of any later one
+            // on the same transaction, without waiting for the body to stream back. An error response still trips this
+            // via markComplete()/markError() downstream.
+            {
+                final ResultSet rsForHeaders = pendingResultSet.get();
+                if (rsForHeaders != null) rsForHeaders.markHeadersReceived();
+            }
 
             // Spawn reader thread for GraphBinary responses
             if (isGraphBinaryResponse()) {
@@ -109,6 +141,9 @@ public class HttpStreamingResponseHandler extends MessageToMessageDecoder<HttpOb
                     try {
                         readerPool.submit(streamReader::run);
                     } catch (RejectedExecutionException e) {
+                        logger.warn("Failed to schedule streaming response reader for channel {} with status {} " +
+                                        "and content type {}",
+                                ctx.channel().id().asShortText(), responseStatus, contentType, e);
                         queueInputStream.signalEndOfStream();
                         rs.markError(e);
                         pendingResultSet.compareAndSet(rs, null);
@@ -129,10 +164,6 @@ public class HttpStreamingResponseHandler extends MessageToMessageDecoder<HttpOb
 
             if (bytesRead > 0 && ctx.channel().attr(InactiveChannelHandler.BYTES_READ).get() == null) {
                 ctx.channel().attr(InactiveChannelHandler.BYTES_READ).set(0);
-            }
-
-            if (maxResponseContentLength > 0 && bytesRead > maxResponseContentLength) {
-                throw new TooLongFrameException("Response entity too large");
             }
 
             if (!isGraphBinaryResponse()) {
@@ -170,11 +201,15 @@ public class HttpStreamingResponseHandler extends MessageToMessageDecoder<HttpOb
 
     @Override
     public void channelInactive(final ChannelHandlerContext ctx) throws Exception {
+        // Signal end-of-stream only AFTER super.channelInactive so the pending request is marked errored (by the
+        // downstream GremlinResponseHandler) before the reader thread is unblocked. Otherwise the reader can win the
+        // race with an EOFException from the closed stream. This change matches how errors are handled in
+        // exceptionCaught() which is to mark the ResultSet before signaling the stream.
+        releaseErrorBody();
+        super.channelInactive(ctx);
         if (queueInputStream != null) {
             queueInputStream.signalEndOfStream();
         }
-        releaseErrorBody();
-        super.channelInactive(ctx);
     }
 
     @Override

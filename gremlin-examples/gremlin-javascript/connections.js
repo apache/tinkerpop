@@ -20,7 +20,6 @@ under the License.
 const gremlin = require('gremlin');
 const traversal = gremlin.process.AnonymousTraversalSource.traversal;
 const DriverRemoteConnection = gremlin.driver.DriverRemoteConnection;
-const serializer = gremlin.structure.io.graphserializer;
 
 const serverUrl = 'ws://localhost:8182/gremlin';
 const vertexLabel = 'connection';
@@ -47,11 +46,13 @@ async function withRemote() {
 async function withConfigs() {
     // Connecting and customizing configurations
     const dc = new DriverRemoteConnection(serverUrl, {
-        mimeType: 'application/vnd.gremlin-v3.0+json',
-        reader: serializer,
-        writer: serializer,
-        rejectUnauthorized: false,
         traversalSource: 'g',
+        // Optionally tune the underlying connection pool and timeouts.
+        maxConnections: 64,
+        readTimeout: 30000,
+        // TLS is configured through the Node/undici runtime, not via driver
+        // options: e.g. set NODE_EXTRA_CA_CERTS to trust a custom CA, or
+        // NODE_TLS_REJECT_UNAUTHORIZED=0 to relax certificate verification.
     });
     const g = traversal().withRemote(dc);
 

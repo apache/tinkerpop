@@ -27,6 +27,8 @@ import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
 import org.apache.tinkerpop.gremlin.jsr223.CachedGremlinScriptEngineManager;
 import org.apache.tinkerpop.gremlin.jsr223.GremlinScriptEngineManager;
+import org.apache.tinkerpop.gremlin.hadoop.structure.io.util.OlapClassLoadingPolicy;
+import org.apache.tinkerpop.gremlin.hadoop.structure.util.ConfUtil;
 
 import javax.script.Bindings;
 import javax.script.ScriptEngine;
@@ -62,6 +64,17 @@ public final class ScriptRecordWriter extends RecordWriter<NullWritable, VertexW
     public ScriptRecordWriter(final DataOutputStream out, final TaskAttemptContext context) throws IOException {
         this.out = out;
         final Configuration configuration = context.getConfiguration();
+        // ScriptOutputFormat compiles and runs a script, so it is restricted regardless of how it was selected. It is
+        // permitted when the deployment is trusted, or when the operator has explicitly approved ScriptOutputFormat
+        // via gremlin.io.approvedClasses in the graph configuration -- a narrower opt-in than trusting the whole
+        // deployment. Note this honors only the explicit approved-class list, not the configured graphWriter (which
+        // would be circular here). Mirrors the ScriptRecordReader guard and backstops the HadoopIoStep boundary.
+        final org.apache.commons.configuration2.Configuration graphConfiguration = ConfUtil.makeApacheConfiguration(configuration);
+        if (!OlapClassLoadingPolicy.isTrusted(graphConfiguration) &&
+                !OlapClassLoadingPolicy.build().approveFrom(graphConfiguration).create().isApproved(ScriptOutputFormat.class.getName()))
+            throw new IllegalStateException(String.format(
+                    "ScriptOutputFormat compiles and runs a script and is only permitted for trusted IO; set '%s' to true, or add '%s' to '%s', in trusted graph configuration to enable it.",
+                    OlapClassLoadingPolicy.TRUSTED, ScriptOutputFormat.class.getName(), OlapClassLoadingPolicy.APPROVED_CLASSES));
         this.engine = manager.getEngineByName(configuration.get(SCRIPT_ENGINE, "gremlin-groovy"));
         final FileSystem fs = FileSystem.get(configuration);
         try {

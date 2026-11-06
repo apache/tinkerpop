@@ -27,7 +27,7 @@ import java.util.Set;
 
 /**
  * Reference implementation for asString() step, a mid-traversal step which returns the incoming traverser value
- * as a string. Null values are returned unchanged.
+ * as a string. A null traverser raises an {@link IllegalArgumentException}.
  *
  * @author David Bechberger (http://bechberger.com)
  * @author Yang Xia (http://github.com/xiazcy)

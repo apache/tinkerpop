@@ -68,7 +68,14 @@ radishGremlinFile.withWriter('UTF-8') { Writer writer ->
                     'from gremlin_python.process.traversal import Barrier, Cardinality, CardinalityValue, P, TextP, Pop, Scope, Column, Order, Direction, DT, GType, Merge, T, Pick, Operator, IO, WithOptions\n')
 
     // some traversals may require a static translation if the translator can't handle them for some reason
-    def staticTranslate = [:]
+    def staticTranslate = [
+            g_mergeVXxx1X_optionXonCreate_xx2X_optionXonCreate_xx2X_repeated: "    'g_mergeVXxx1X_optionXonCreate_xx2X_optionXonCreate_xx2X_repeated': [(lambda g, xx1=None,xx2=None:g.merge_v(xx1).option(Merge.on_create,xx2).option(Merge.on_create,xx2))], ",
+            g_mergeVXxx1X_optionXonMatch_xx2X_optionXonMatch_xx2X_repeated: "    'g_mergeVXxx1X_optionXonMatch_xx2X_optionXonMatch_xx2X_repeated': [(lambda g, xx1=None,xx2=None:g.merge_v(xx1).option(Merge.on_match,xx2).option(Merge.on_match,xx2))], ",
+            g_mergeEXxx1X_optionXonCreate_xx2X_optionXonCreate_xx2X_repeated: "    'g_mergeEXxx1X_optionXonCreate_xx2X_optionXonCreate_xx2X_repeated': [(lambda g, xx1=None,xx2=None:g.merge_e(xx1).option(Merge.on_create,xx2).option(Merge.on_create,xx2))], ",
+            g_mergeEXxx1X_optionXonMatch_xx2X_optionXonMatch_xx2X_repeated: "    'g_mergeEXxx1X_optionXonMatch_xx2X_optionXonMatch_xx2X_repeated': [(lambda g, xx1=None,xx2=None:g.merge_e(xx1).option(Merge.on_match,xx2).option(Merge.on_match,xx2))], ",
+            g_mergeEXxx1X_optionXoutV_selectXvXX_optionXoutV_selectXvXX_repeated: "    'g_mergeEXxx1X_optionXoutV_selectXvXX_optionXoutV_selectXvXX_repeated': [(lambda g, xx1=None:g.merge_e(xx1).option(Merge.out_v,__.select('v')).option(Merge.out_v,__.select('v')))], ",
+            g_mergeEXxx1X_optionXinV_selectXvXX_optionXinV_selectXvXX_repeated: "    'g_mergeEXxx1X_optionXinV_selectXvXX_optionXinV_selectXvXX_repeated': [(lambda g, xx1=None:g.merge_e(xx1).option(Merge.in_v,__.select('v')).option(Merge.in_v,__.select('v')))], "
+    ]
     // SAMPLE: g_injectXnull_nullX: "    'g_injectXnull_nullX': [(lambda g: g.inject(None,None))], ",
 
     writer.writeLine('world.gremlins = {')

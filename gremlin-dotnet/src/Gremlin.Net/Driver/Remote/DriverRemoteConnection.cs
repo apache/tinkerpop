@@ -29,6 +29,7 @@ using Gremlin.Net.Driver.Messages;
 using Gremlin.Net.Process.Remote;
 using Gremlin.Net.Process.Traversal;
 using Gremlin.Net.Process.Traversal.Strategy.Decoration;
+using Gremlin.Net.Structure;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -43,12 +44,14 @@ namespace Gremlin.Net.Driver.Remote
         private readonly string _traversalSource;
         private readonly ILogger<DriverRemoteConnection> _logger;
 
+        /// <summary>
+        ///     Gets or sets the <see cref="PDTRegistry"/> for registry-based dehydration.
+        /// </summary>
+        public PDTRegistry? PdtRegistry { get; set; }
+
         // All OptionsStrategy keys are passed through to the request fields.
         // The server filters out options that don't apply, and this allows
         // providers to use custom request fields via the Client directly or DRC.
-
-        /// <inheritdoc />
-        public bool IsSessionBound => false;
 
         /// <summary>
         ///     Initializes a new <see cref="IRemoteConnection" />.
@@ -61,14 +64,17 @@ namespace Gremlin.Net.Driver.Remote
         ///     An optional list of request interceptors forwarded to the underlying
         ///     <see cref="GremlinClient" />.
         /// </param>
+        /// <param name="pdtRegistry">An optional registry for PDT hydration.</param>
         /// <exception cref="ArgumentNullException">Thrown when client is null.</exception>
         public DriverRemoteConnection(string host, int port, string traversalSource = "g",
             ILoggerFactory? loggerFactory = null,
-            IReadOnlyList<Func<HttpRequestContext, Task>>? interceptors = null) : this(
-            new GremlinClient(new GremlinServer(host, port), loggerFactory: loggerFactory, interceptors: interceptors),
+            IReadOnlyList<Func<HttpRequestContext, Task>>? interceptors = null,
+            PDTRegistry? pdtRegistry = null) : this(
+            new GremlinClient(new GremlinServer(host, port), loggerFactory: loggerFactory, interceptors: interceptors, pdtRegistry: pdtRegistry),
             traversalSource,
             logger: loggerFactory?.CreateLogger<DriverRemoteConnection>() ?? NullLogger<DriverRemoteConnection>.Instance)
         {
+            PdtRegistry = pdtRegistry;
         }
 
         /// <summary>
@@ -76,10 +82,13 @@ namespace Gremlin.Net.Driver.Remote
         /// </summary>
         /// <param name="client">The <see cref="IGremlinClient" /> that will be used for the connection.</param>
         /// <param name="traversalSource">The name of the traversal source on the server to bind to.</param>
+        /// <param name="pdtRegistry">An optional registry for PDT hydration.</param>
         /// <exception cref="ArgumentNullException">Thrown when client or the traversalSource is null.</exception>
-        public DriverRemoteConnection(IGremlinClient client, string traversalSource = "g")
+        public DriverRemoteConnection(IGremlinClient client, string traversalSource = "g",
+            PDTRegistry? pdtRegistry = null)
             : this(client, traversalSource, logger: null)
         {
+            PdtRegistry = pdtRegistry;
         }
 
         private DriverRemoteConnection(IGremlinClient client, string traversalSource,
@@ -109,15 +118,13 @@ namespace Gremlin.Net.Driver.Remote
             CancellationToken cancellationToken = default)
         {
             _logger.SubmittingGremlinLang(gremlinLang);
-            gremlinLang.AddG(_traversalSource);
-
             var requestMsg = RequestMessage.Build(gremlinLang.GetGremlin())
                 .AddG(_traversalSource);
 
             var parametersString = gremlinLang.GetParametersAsString();
             if (parametersString != "[:]")
             {
-                requestMsg.AddBindingsString(parametersString);
+                requestMsg.AddParametersString(parametersString);
             }
 
             foreach (var optionsStrategy in gremlinLang.OptionsStrategies)
@@ -128,25 +135,24 @@ namespace Gremlin.Net.Driver.Remote
                 }
             }
 
-            // Default bulkResults to "true" if not set per-request
+            // Default bulkResults to true if not set per-request
             // (consistent with Java RequestOptions.fromGremlinLang and Python extract_request_options)
             if (!requestMsg.HasField(Tokens.ArgsBulkResults))
             {
-                requestMsg.AddField(Tokens.ArgsBulkResults, "true");
+                requestMsg.AddField(Tokens.ArgsBulkResults, true);
             }
 
-            var resultSet = await _client.SubmitAsync<Traverser>(requestMsg.Create(), cancellationToken)
+            var resultSet = await _client.SubmitAsync<object>(requestMsg.Create(), cancellationToken)
                 .ConfigureAwait(false);
             return new DriverRemoteTraversal<TStart, TEnd>(resultSet);
         }
 
         /// <inheritdoc />
-        /// <remarks>
-        ///     Transaction support over HTTP is not yet implemented. This will be addressed in a future release.
-        /// </remarks>
         public RemoteTransaction Tx(GraphTraversalSource g)
         {
-            throw new NotSupportedException("Transaction support over HTTP is not yet implemented.");
+            // The g parameter satisfies the IRemoteConnection interface but is unused.
+            // The traversal source is taken from this connection's configuration.
+            return new RemoteTransaction(_client, _traversalSource);
         }
 
         /// <inheritdoc />

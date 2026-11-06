@@ -47,11 +47,9 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
             new Dictionary<string, IgnoreReason>
             {
                 // Add here the name of scenarios to ignore and the reason, e.g.:
-                {"g_VX1X_outEXknowsX_subgraphXsgX_name_capXsgX", IgnoreReason.SubgraphStepNotSupported},
-                {"g_V_repeatXbothEXcreatedX_subgraphXsgX_outVX_timesX5X_name_dedup_capXsgX", IgnoreReason.SubgraphStepNotSupported},
                 {"g_withStrategiesXProductiveByStrategyX_V_group_byXageX", IgnoreReason.NullKeysInMapNotSupported},
                 {"g_withStrategiesXProductiveByStrategyX_V_groupCount_byXageX", IgnoreReason.NullKeysInMapNotSupported},
-                {"g_withStrategiesXProductiveByStrategyX_V_group_byXageX_byXnameX", IgnoreReason.NullKeysInMapNotSupported},
+                {"g_withStrategiesXProductiveByStrategyX_V_group_byXageX_byXnameX", IgnoreReason.NullKeysInMapNotSupported}
             };
 
         private static class Keywords
@@ -90,6 +88,10 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
         {
             WriteOutput($"Starting Gherkin-based tests with serializer: {messageSerializer.GetType().Name}");
             Gremlin.InstantiateTranslationsForTestRun();
+            if (Environment.GetEnvironmentVariable("PARAMETERIZE") == "true")
+            {
+                Gremlin.InstantiateParameterizedTranslationsForTestRun();
+            }
             var stepDefinitionTypes = GetStepDefinitionTypes();
             var results = new List<ResultFeature>();
             using var scenarioData = new ScenarioData(messageSerializer);
@@ -115,21 +117,14 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
                         continue;
                     }
 
-                    if (scenario.Tags.Concat(feature.Tags).Any(t => t.Name == "@StepTree"))
+                    if (scenario.Tags.Any(t => t.Name == "@MultiLabelDefault"))
                     {
-                        failedSteps.Add(scenario.Steps.First(), new IgnoreException(IgnoreReason.TreeStepNotSupported));
+                        failedSteps.Add(scenario.Steps.First(), new IgnoreException(IgnoreReason.MultiLabelDefaultNotSupportedOnTestGraph));
                         continue;
                     }
-
                     if (scenario.Tags.Concat(feature.Tags).Any(t => t.Name == "@StepWrite"))
                     {
                         failedSteps.Add(scenario.Steps.First(), new IgnoreException(IgnoreReason.WriteStepTestingNotSupported));
-                        continue;
-                    }
-
-                    if (scenario.Tags.Concat(feature.Tags).Any(t => t.Name == "@StepSubgraph"))
-                    {
-                        failedSteps.Add(scenario.Steps.First(), new IgnoreException(IgnoreReason.SubgraphStepNotSupported));
                         continue;
                     }
 

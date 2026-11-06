@@ -32,6 +32,8 @@ import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerEdge;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerElement;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
+import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerMemoryGraph;
+import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerStorageGraph;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraphVariables;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerHelper;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerIoRegistryV1;
@@ -53,6 +55,8 @@ public final class TinkerGraphGremlinPlugin extends AbstractGremlinPlugin {
                     TinkerElement.class,
                     TinkerFactory.class,
                     TinkerGraph.class,
+                    TinkerMemoryGraph.class,
+                    TinkerStorageGraph.class,
                     TinkerGraphVariables.class,
                     TinkerHelper.class,
                     TinkerIoRegistryV1.class,

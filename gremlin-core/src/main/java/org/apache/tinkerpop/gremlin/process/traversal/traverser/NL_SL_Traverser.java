@@ -74,14 +74,14 @@ public interface NL_SL_Traverser<T> extends Traverser.Admin<T> {
      *
      * @return the single loop count.
      */
-    default short getSingleLoopCount() {
+    default int getSingleLoopCount() {
         throw new UnsupportedOperationException();
     }
 
     /**
      * Override this method to support single loop. Sets the single loop count.
      */
-    default void setSingleLoopCount(short loops) {
+    default void setSingleLoopCount(final int loops) {
         throw new UnsupportedOperationException();
     }
 
@@ -122,7 +122,10 @@ public interface NL_SL_Traverser<T> extends Traverser.Admin<T> {
         if (NESTED_LOOP.equals(getValidLoopRequirement())) {
             getNestedLoops().peek().increment();
         } else {
-            setSingleLoopCount((short) (getSingleLoopCount() + 1));
+            final int loops = getSingleLoopCount();
+            if (loops == Integer.MAX_VALUE)
+                throw new IllegalStateException("Loop counter has exceeded the maximum supported value of " + Integer.MAX_VALUE);
+            setSingleLoopCount(loops + 1);
         }
     }
 
@@ -176,7 +179,7 @@ public interface NL_SL_Traverser<T> extends Traverser.Admin<T> {
         if (NESTED_LOOP.equals(getValidLoopRequirement())) {
             getNestedLoops().pop();
         } else {
-            setSingleLoopCount((short) 0);
+            setSingleLoopCount(0);
         }
     }
 
@@ -206,7 +209,7 @@ public interface NL_SL_Traverser<T> extends Traverser.Admin<T> {
         final Stack<LabelledCounter> nestedLoops = getNestedLoops();
         final ReferenceMap<String, Object> loopNames = getNestedLoopNames();
         if (nestedLoops.empty() || !nestedLoops.peek().hasLabel(stepLabel)) {
-            final LabelledCounter lc = new LabelledCounter(stepLabel, (short) 0);
+            final LabelledCounter lc = new LabelledCounter(stepLabel, 0);
             nestedLoops.push(lc);
             loopNames.put(stepLabel, lc);
             if (loopName != null && !loopName.equals(stepLabel)) {

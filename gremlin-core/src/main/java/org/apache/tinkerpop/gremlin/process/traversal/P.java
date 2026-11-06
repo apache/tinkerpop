@@ -19,10 +19,14 @@
 package org.apache.tinkerpop.gremlin.process.traversal;
 
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
 import org.apache.tinkerpop.gremlin.process.traversal.util.AndP;
+import org.apache.tinkerpop.gremlin.process.traversal.util.ReadOnlyChildValidator;
+import org.apache.tinkerpop.gremlin.process.traversal.util.ConnectiveP;
 import org.apache.tinkerpop.gremlin.process.traversal.util.OrP;
+import org.apache.tinkerpop.gremlin.structure.util.CloseableIterator;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -31,11 +35,11 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
-import java.util.Optional;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 /**
  * Predefined {@code Predicate} values that can be used to define filters to {@code has()} and {@code where()}.
@@ -49,10 +53,12 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
     protected Map<String, V> variables = new HashMap<>();
     protected Collection<V> literals = Collections.EMPTY_LIST;
     private boolean isCollection = false;
+    private boolean resolvedEmpty = false;
+    private List<Traversal.Admin<?, ?>> childTraversals;
 
     public P(final PBiPredicate<V, V> biPredicate, final V value) {
-        setValue(value);
         this.biPredicate = biPredicate;
+        setValue(value);
     }
 
     public P(final PBiPredicate<V, V> biPredicate, final GValue<V> value) {
@@ -79,6 +85,31 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
             this.literals = new ArrayList<>(literals);
         }
         this.isCollection = isCollection;
+    }
+
+    /**
+     * Constructs a {@code P} with a child traversal whose result is resolved at runtime against the current
+     * traverser. The literals and variables are left at their defaults and will be populated when
+     * {@link #resolve(Traverser.Admin)} is called.
+     */
+    @SuppressWarnings("unchecked")
+    public P(final PBiPredicate<V, V> biPredicate, final Traversal.Admin<?, ?> traversalValue) {
+        this.biPredicate = biPredicate;
+        setValue((V) traversalValue);
+    }
+
+    /**
+     * Constructs a {@code P} with multiple child traversals resolved at runtime against the current traverser.
+     * Only valid for collection predicates ({@link Contains#within}, {@link Contains#without}). Each traversal
+     * contributes its first result only. The literals and variables are left at their defaults and will be
+     * populated when {@link #resolve(Traverser.Admin)} is called.
+     *
+     * @since 4.0.0
+     */
+    @SuppressWarnings("unchecked")
+    public P(final PBiPredicate<V, V> biPredicate, final List<Traversal.Admin<?, ?>> traversalValues) {
+        this.biPredicate = biPredicate;
+        setValue((V) traversalValues);
     }
 
     public PBiPredicate<V, V> getBiPredicate() {
@@ -116,21 +147,50 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
     }
 
     public void setValue(final V value) {
-        variables.clear();
-        literals = Collections.EMPTY_LIST;
+        // Full reset — completely replace the predicate's value state.
+        this.childTraversals = null;
+        this.variables.clear();
+        this.literals = Collections.EMPTY_LIST;
+        this.isCollection = false;
+        this.resolvedEmpty = false;
+        applyValue(value);
+    }
 
-        if (value == null) {
-            isCollection = false;
+    /**
+     * Core value-processing logic. Interprets the given value and populates the appropriate internal
+     * fields ({@code childTraversals}, {@code literals}, {@code variables}, {@code isCollection}).
+     * Does NOT reset state first — the caller is responsible for ensuring a clean slate if needed.
+     */
+    @SuppressWarnings("unchecked")
+    private void applyValue(final V value) {
+        if (value instanceof GraphTraversal) {
+            final Traversal.Admin<?, ?> admin = ((Traversal<?, ?>) value).asAdmin();
+            ReadOnlyChildValidator.validate(admin);
+            this.childTraversals = Collections.singletonList(admin);
+        } else if (value == null) {
             this.literals = Collections.singleton(null);
         } else if (value instanceof GValue) {
             variables.put(((GValue<V>) value).getName(), ((GValue<V>) value).get());
-            isCollection = false;
         } else if (value instanceof Collection) {
-            isCollection = true;
-            if (((Collection<?>) value).stream().anyMatch(v -> v instanceof GValue)) {
+            final Collection<?> coll = (Collection<?>) value;
+            if (!coll.isEmpty() && coll.stream().anyMatch(v -> v instanceof GraphTraversal)) {
+                if (!coll.stream().allMatch(v -> v instanceof GraphTraversal)) {
+                    throw new IllegalArgumentException(
+                            "Cannot mix traversals and literal values. " +
+                            "Use __.constant(val) to wrap each value as a traversal.");
+                }
+                final List<Traversal.Admin<?, ?>> admins = new ArrayList<>(coll.size());
+                for (final Object t : coll) {
+                    final Traversal.Admin<?, ?> admin = ((Traversal<?, ?>) t).asAdmin();
+                    ReadOnlyChildValidator.validate(admin);
+                    admins.add(admin);
+                }
+                this.childTraversals = admins;
+                this.isCollection = true;
+            } else if (coll.stream().anyMatch(v -> v instanceof GValue)) {
+                isCollection = true;
                 this.literals = (value instanceof BulkSet) ? new BulkSet<>() : new ArrayList<>();
-                for (Object v : ((Collection<?>) value)) {
-                    // Separate variables and literals
+                for (final Object v : coll) {
                     if (v instanceof GValue) {
                         if (((GValue<V>) v).isVariable()) {
                             variables.put(((GValue<V>) v).getName(), ((GValue<V>) v).get());
@@ -142,16 +202,17 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
                     }
                 }
             } else {
-                literals = (Collection<V>) value; // Retain original collection when possible
+                isCollection = true;
+                literals = (Collection<V>) value;
             }
         } else {
-            isCollection = false;
             this.literals = Collections.singleton(value);
         }
     }
 
     @Override
     public boolean test(final V testValue) {
+        if (this.resolvedEmpty) return false;
         return this.biPredicate.test(testValue, this.getValue());
     }
 
@@ -162,6 +223,8 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
             result ^= this.variables.hashCode();
         if (null != this.literals)
             result ^= this.literals.hashCode();
+        if (null != this.childTraversals)
+            result ^= this.childTraversals.hashCode();
         return result;
     }
 
@@ -171,7 +234,8 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
                 ((P) other).getClass().equals(this.getClass()) &&
                 ((P) other).getBiPredicate().equals(this.biPredicate) &&
                 ((((P) other).variables == null && this.variables == null) || (((P) other).variables != null && ((P) other).variables.equals(this.variables))) &&
-                ((((P) other).literals == null && this.literals == null) || (((P) other).literals != null && CollectionUtils.isEqualCollection(((P) other).literals, this.literals)));
+                ((((P) other).literals == null && this.literals == null) || (((P) other).literals != null && CollectionUtils.isEqualCollection(((P) other).literals, this.literals))) &&
+                Objects.equals(((P) other).childTraversals, this.childTraversals);
     }
 
     @Override
@@ -200,7 +264,14 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
 
     public P<V> clone() {
         try {
-            return (P<V>) super.clone();
+            final P<V> clone = (P<V>) super.clone();
+            if (this.childTraversals != null) {
+                clone.childTraversals = new ArrayList<>(this.childTraversals.size());
+                for (final Traversal.Admin<?, ?> tv : this.childTraversals) {
+                    clone.childTraversals.add(tv.clone());
+                }
+            }
+            return clone;
         } catch (final CloneNotSupportedException e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
@@ -224,6 +295,118 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
         return results;
     }
 
+    /**
+     * Determines if this predicate holds a child traversal whose result is resolved at runtime.
+     */
+    public boolean hasTraversal() {
+        return this.childTraversals != null && !this.childTraversals.isEmpty();
+    }
+
+    /**
+     * Returns {@code true} if the most recent call to {@link #resolve(Traverser.Admin)} produced no results
+     * for a scalar predicate, meaning there is no meaningful comparison value.
+     */
+    public boolean isResolvedEmpty() {
+        return this.resolvedEmpty;
+    }
+
+    /**
+     * Gets the child traversals held by this predicate. Returns {@code null} when this predicate uses
+     * literal values or variables.
+     *
+     * @since 4.0.0
+     */
+    public List<Traversal.Admin<?, ?>> getChildTraversals() {
+        return this.childTraversals;
+    }
+
+    /**
+     * Resolves the child traversal(s) against the given traverser, replacing the traversal value with the
+     * resolved literal(s) for this test cycle. If no traversal is present, this method returns immediately.
+     */
+    @SuppressWarnings("unchecked")
+    public void resolve(final Traverser.Admin<?> traverser) {
+        if (this.childTraversals == null || this.childTraversals.isEmpty()) return;
+
+        // Evaluate each child traversal, taking the first result from each.
+        final List<Object> results = new ArrayList<>();
+        for (final Traversal.Admin<?, ?> tv : this.childTraversals) {
+            prepareChildTraversal(traverser, (Traversal.Admin<Object, Object>) tv);
+            try {
+                if (tv.hasNext()) {
+                    results.add(tv.next());
+                }
+            } finally {
+                CloseableIterator.closeIterator(tv);
+            }
+        }
+
+        // Empty result: for collection predicates resolve to empty set; for scalar predicates short-circuit.
+        if (results.isEmpty()) {
+            if (this.isCollection) {
+                this.resolvedEmpty = false;
+                this.variables.clear();
+                this.literals = Collections.emptyList();
+            } else {
+                this.resolvedEmpty = true;
+            }
+            return;
+        }
+
+        this.resolvedEmpty = false;
+        this.variables.clear();
+        this.literals = Collections.EMPTY_LIST;
+
+        if (this.isCollection) {
+            // Collection predicate (within, without). Unfold if there is only a single
+            // child traversal which yields a list.
+            if (this.childTraversals.size() == 1) {
+                final Object r = results.get(0);
+                if (r instanceof Collection) {
+                    applyValue((V) new ArrayList<>((Collection<?>) r));
+                } else {
+                    applyValue((V) Collections.singletonList(r));
+                }
+            } else {
+                // Multiple child traversals — each contributes its first result as one element, as-is.
+                applyValue((V) new ArrayList<>(results));
+            }
+        } else {
+            // Scalar predicate (eq, gt, etc.) — pass single result directly.
+            applyValue((V) results.get(0));
+        }
+    }
+
+    /**
+     * Prepares a child traversal for evaluation by splitting the current traverser and seeding it.
+     */
+    @SuppressWarnings("unchecked")
+    private static void prepareChildTraversal(final Traverser.Admin<?> traverser, final Traversal.Admin<Object, Object> trav) {
+        final Traverser.Admin<Object> split = (Traverser.Admin<Object>) traverser.split();
+        split.setSideEffects(trav.getSideEffects());
+        split.setBulk(1L);
+        trav.reset();
+        trav.addStart(split);
+    }
+
+    //////////////// predicate traversal utilities
+
+    /**
+     * Recursively collects all child traversals from a predicate tree.
+     * Handles {@link ConnectiveP} (recurses into children) and {@link NotP} (recurses into wrapped predicate).
+     */
+    public static void collectTraversals(final P<?> p, final List<Traversal.Admin<?, ?>> traversals) {
+        if (p instanceof ConnectiveP) {
+            for (final P<?> child : ((ConnectiveP<?>) p).getPredicates()) {
+                collectTraversals(child, traversals);
+            }
+        } else if (p instanceof NotP) {
+            collectTraversals(((NotP<?>) p).getWrapped(), traversals);
+        } else if (p.getChildTraversals() != null) {
+            traversals.addAll(p.getChildTraversals());
+        }
+    }
+
     //////////////// statics
 
     /**
@@ -241,6 +424,15 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
      */
     public static <V> P<V> eq(final GValue<V> value) {
         return new P(Compare.eq, value);
+    }
+
+    /**
+     * Determines if values are equal using a child traversal resolved at runtime.
+     *
+     * @since 4.0.0
+     */
+    public static <V> P<V> eq(final Traversal<?, ?> traversalValue) {
+        return new P(Compare.eq, traversalValue.asAdmin());
     }
 
     /**
@@ -262,6 +454,15 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
     }
 
     /**
+     * Determines if values are not equal using a child traversal resolved at runtime.
+     *
+     * @since 4.0.0
+     */
+    public static <V> P<V> neq(final Traversal<?, ?> traversalValue) {
+        return new P(Compare.neq, traversalValue.asAdmin());
+    }
+
+    /**
      * Determines if a value is less than another.
      *
      * @since 3.0.0-incubating
@@ -277,6 +478,15 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
      */
     public static <V> P<V> lt(final GValue<V> value) {
         return new P(Compare.lt, value);
+    }
+
+    /**
+     * Determines if a value is less than another using a child traversal resolved at runtime.
+     *
+     * @since 4.0.0
+     */
+    public static <V> P<V> lt(final Traversal<?, ?> traversalValue) {
+        return new P(Compare.lt, traversalValue.asAdmin());
     }
 
     /**
@@ -298,6 +508,15 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
     }
 
     /**
+     * Determines if a value is less than or equal to another using a child traversal resolved at runtime.
+     *
+     * @since 4.0.0
+     */
+    public static <V> P<V> lte(final Traversal<?, ?> traversalValue) {
+        return new P(Compare.lte, traversalValue.asAdmin());
+    }
+
+    /**
      * Determines if a value is greater than another.
      *
      * @since 3.0.0-incubating
@@ -316,6 +535,15 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
     }
 
     /**
+     * Determines if a value is greater than another using a child traversal resolved at runtime.
+     *
+     * @since 4.0.0
+     */
+    public static <V> P<V> gt(final Traversal<?, ?> traversalValue) {
+        return new P(Compare.gt, traversalValue.asAdmin());
+    }
+
+    /**
      * Determines if a value is greater than or equal to another.
      *
      * @since 3.0.0-incubating
@@ -331,6 +559,15 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
      */
     public static <V> P<V> gte(final GValue<V> value) {
         return new P(Compare.gte, value);
+    }
+
+    /**
+     * Determines if a value is greater than or equal to another using a child traversal resolved at runtime.
+     *
+     * @since 4.0.0
+     */
+    public static <V> P<V> gte(final Traversal<?, ?> traversalValue) {
+        return new P(Compare.gte, traversalValue.asAdmin());
     }
 
     /**
@@ -421,6 +658,30 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
     }
 
     /**
+     * Determines if a value is within the results of a child traversal resolved at runtime.
+     *
+     * @since 4.0.0
+     */
+    public static <V> P<V> within(final Traversal<?, ?> traversalValue) {
+        return new P(Contains.within, Collections.singletonList(traversalValue.asAdmin()));
+    }
+
+    /**
+     * Determines if a value is within the results of child traversals resolved at runtime.
+     * Each traversal is evaluated independently and results are combined into a single collection.
+     *
+     * @since 4.0.0
+     */
+    public static <V> P<V> within(final Traversal<?, ?> first, final Traversal<?, ?>... more) {
+        final List<Traversal.Admin<?, ?>> admins = new ArrayList<>(1 + more.length);
+        admins.add(first.asAdmin());
+        for (final Traversal<?, ?> tv : more) {
+            admins.add(tv.asAdmin());
+        }
+        return new P(Contains.within, admins);
+    }
+
+    /**
      * Determines if a value is not within the specified list of values. If the array of arguments itself is {@code null}
      * then the argument is treated as {@code Object[1]} where that single value is {@code null}.
      *
@@ -451,6 +712,30 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
     public static <V> P<V> without(final Collection<V> value) {
         if (null == value) return P.without((V) null);
         return new P(Contains.without, value);
+    }
+
+    /**
+     * Determines if a value is not within the results of a child traversal resolved at runtime.
+     *
+     * @since 4.0.0
+     */
+    public static <V> P<V> without(final Traversal<?, ?> traversalValue) {
+        return new P(Contains.without, Collections.singletonList(traversalValue.asAdmin()));
+    }
+
+    /**
+     * Determines if a value is not within the results of child traversals resolved at runtime.
+     * Each traversal is evaluated independently and results are combined into a single collection.
+     *
+     * @since 4.0.0
+     */
+    public static <V> P<V> without(final Traversal<?, ?> first, final Traversal<?, ?>... more) {
+        final List<Traversal.Admin<?, ?>> admins = new ArrayList<>(1 + more.length);
+        admins.add(first.asAdmin());
+        for (final Traversal<?, ?> tv : more) {
+            admins.add(tv.asAdmin());
+        }
+        return new P(Contains.without, admins);
     }
 
     /**

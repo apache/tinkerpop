@@ -16,6 +16,7 @@ KIND, either express or implied.  See the License for the
 specific language governing permissions and limitations
 under the License.
 ////
+[llms-summary="Recipe: It is quite common to have a situation where there are two particular vertices of a graph and a need to execute some traversal on the paths found between them."]
 [[between-vertices]]
 == Between Vertices
 

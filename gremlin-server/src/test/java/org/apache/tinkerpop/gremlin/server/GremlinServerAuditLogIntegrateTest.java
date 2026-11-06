@@ -33,7 +33,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.server.auth.AllowAllAuthenticator;
 import org.apache.tinkerpop.gremlin.server.auth.AuthenticatedUser;
-import org.apache.tinkerpop.gremlin.server.auth.Krb5Authenticator;
 import org.apache.tinkerpop.gremlin.server.auth.SimpleAuthenticator;
 import org.apache.tinkerpop.gremlin.server.channel.HttpChannelizer;
 import org.apache.tinkerpop.gremlin.server.handler.HttpBasicAuthenticationHandler;
@@ -45,7 +44,6 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.slf4j.LoggerFactory;
 
 import java.util.Base64;
 import java.util.HashMap;
@@ -59,12 +57,11 @@ import static org.junit.Assert.assertTrue;
 
 /**
  * Test audit logs. Like other descendants of AbstractGremlinServerIntegrationTest this test suite assumes that
- * tests are run sequentially and thus the server and kdcServer variables can be reused.
+ * tests are run sequentially and thus the server variable can be reused.
  *
  * @author Marc de Lignie
  */
 public class GremlinServerAuditLogIntegrateTest extends AbstractGremlinServerIntegrationTest {
-    private static final org.slf4j.Logger logger = LoggerFactory.getLogger(GremlinServerAuditLogIntegrateTest.class);
 
     private static LogCaptor logCaptor;
 
@@ -74,8 +71,6 @@ public class GremlinServerAuditLogIntegrateTest extends AbstractGremlinServerInt
     private static final boolean AUDIT_LOG_ENABLED = true;
     private static final boolean AUDIT_LOG_DISABLED = false;
     private static final String TESTCONSOLE2 = "GremlinConsole2";
-
-    private KdcFixture kdcServer;
 
     @BeforeClass
     public static void setupLogCaptor() {
@@ -92,66 +87,35 @@ public class GremlinServerAuditLogIntegrateTest extends AbstractGremlinServerInt
         logCaptor.clearLogs();
     }
 
-    @Override
-    public void setUp() throws Exception {
-        try {
-            final String moduleBaseDir = System.getProperty("basedir", ".");
-            final String authConfigName = moduleBaseDir + "/src/test/resources/org/apache/tinkerpop/gremlin/server/gremlin-console-jaas.conf";
-            System.setProperty("java.security.auth.login.config", authConfigName);
-            kdcServer = new KdcFixture(moduleBaseDir);
-            kdcServer.setUp();
-        } catch(Exception ex)  {
-            logger.warn(String.format("Could not start Kerberos Server for %s", name.getMethodName()), ex);
-        }
-        super.setUp();
-    }
-
-    @Override
-    public void tearDown() throws Exception {
-        kdcServer.close();
-        System.clearProperty("java.security.auth.login.config");
-        super.tearDown();
-    }
-
     /**
      * Configure specific Gremlin Server settings for specific tests.
      */
     @Override
     public Settings overrideSettings(final Settings settings) {
-        settings.host = kdcServer.gremlinHostname;
+        settings.host = "localhost";
         final Settings.SslSettings sslConfig = new Settings.SslSettings();
         sslConfig.enabled = false;
         settings.ssl = sslConfig;
         final Settings.AuthenticationSettings authSettings = new Settings.AuthenticationSettings();
         settings.authentication = authSettings;
         settings.enableAuditLog = AUDIT_LOG_ENABLED;
-        authSettings.authenticator = Krb5Authenticator.class.getName();
+        authSettings.authenticator = SimpleAuthenticator.class.getName();
         final Map<String,Object> authConfig = new HashMap<>();
         authSettings.config = authConfig;
+        authConfig.put(SimpleAuthenticator.CONFIG_CREDENTIALS_DB, "conf/tinkergraph-credentials.properties");
 
         final String nameOfTest = name.getMethodName();
         switch (nameOfTest) {
             case "shouldAuditLogWithAllowAllAuthenticator":
                 authSettings.authenticator = AllowAllAuthenticator.class.getName();
-                break;
-            case "shouldAuditLogWithTraversalOp":
-            case "shouldAuditLogWithSimpleAuthenticator":
-                authSettings.authenticator = SimpleAuthenticator.class.getName();
-                authConfig.put(SimpleAuthenticator.CONFIG_CREDENTIALS_DB, "conf/tinkergraph-credentials.properties");
+                authConfig.remove(SimpleAuthenticator.CONFIG_CREDENTIALS_DB);
                 break;
             case "shouldNotAuditLogWhenDisabled":
                 settings.enableAuditLog = AUDIT_LOG_DISABLED;
-            case "shouldAuditLogWithKrb5Authenticator":
-            case "shouldAuditLogTwoClientsWithKrb5Authenticator":
-                authConfig.put("keytab", kdcServer.serviceKeytabFile.getAbsolutePath());
-                authConfig.put("principal", kdcServer.serverPrincipal);
                 break;
             case "shouldAuditLogWithHttpTransport":
-                settings.host = "localhost";
                 settings.channelizer = HttpChannelizer.class.getName();
-                authSettings.authenticator = SimpleAuthenticator.class.getName();
                 authSettings.authenticationHandler = HttpBasicAuthenticationHandler.class.getName();
-                authConfig.put(SimpleAuthenticator.CONFIG_CREDENTIALS_DB, "conf/tinkergraph-credentials.properties");
                 break;
         }
         return settings;
@@ -160,7 +124,7 @@ public class GremlinServerAuditLogIntegrateTest extends AbstractGremlinServerInt
     @Test
     public void shouldAuditLogWithAllowAllAuthenticator() throws Exception {
 
-        final Cluster cluster = TestClientFactory.build(kdcServer.gremlinHostname).create();
+        final Cluster cluster = TestClientFactory.build().create();
         final Client client = cluster.connect();
 
         try {
@@ -190,7 +154,7 @@ public class GremlinServerAuditLogIntegrateTest extends AbstractGremlinServerInt
         final String username = "stephen";
         final String password = "password";
 
-        final Cluster cluster = TestClientFactory.build(kdcServer.gremlinHostname).auth(basic(username, password)).create();
+        final Cluster cluster = TestClientFactory.build().auth(basic(username, password)).create();
         final Client client = cluster.connect();
 
         try {
@@ -222,7 +186,7 @@ public class GremlinServerAuditLogIntegrateTest extends AbstractGremlinServerInt
         final String username = "stephen";
         final String password = "password";
 
-        final Cluster cluster = TestClientFactory.build(kdcServer.gremlinHostname).auth(basic(username, password)).create();
+        final Cluster cluster = TestClientFactory.build().auth(basic(username, password)).create();
         final Client client = cluster.connect();
         try {
             assertEquals(2, client.submit("g.inject(2)").all().get().get(0).getInt());
@@ -278,7 +242,7 @@ public class GremlinServerAuditLogIntegrateTest extends AbstractGremlinServerInt
         final String username = "stephen";
         final String password = "password";
 
-        final Cluster cluster = TestClientFactory.build(kdcServer.gremlinHostname).auth(basic(username, password)).create();
+        final Cluster cluster = TestClientFactory.build().auth(basic(username, password)).create();
         final GraphTraversalSource g = AnonymousTraversalSource.traversal().
                 withRemote(DriverRemoteConnection.using(cluster, "gmodern"));
 

@@ -19,20 +19,20 @@
 import asyncio
 import os
 import threading
-import uuid
 
 import pytest
 from gremlin_python.driver.client import Client
 from gremlin_python.driver.connection import GremlinServerError
+from gremlin_python.driver.exceptions import ReadTimeoutError
 from gremlin_python.driver.request import RequestMessage
 from gremlin_python.driver.serializer import GraphBinarySerializersV4
+from gremlin_python.structure.graph import CompositePDT, PrimitivePDT
 from gremlin_python.process.graph_traversal import __, GraphTraversalSource
 from gremlin_python.process.traversal import TraversalStrategies, GValue
 from gremlin_python.process.strategies import OptionsStrategy
 from gremlin_python.structure.graph import Graph, Vertex
 from gremlin_python.driver.aiohttp.transport import AiohttpHTTPTransport
 from gremlin_python.statics import *
-from asyncio import TimeoutError
 
 __author__ = 'David M. Brown (davebshow@gmail.com)'
 
@@ -69,7 +69,34 @@ def test_client_simple_eval(client):
     assert client.submit('g.inject(2)').all().result()[0] == 2
 
 
-def test_client_simple_eval_bindings(client):
+def test_client_deflate_compression_round_trip():
+    # With compression enabled the driver must (1) advertise Accept-Encoding: deflate
+    # on the request and (2) transparently decompress the server's deflate-compressed
+    # response. The interceptor captures a reference to the outgoing headers dict, which
+    # the transport mutates in place to add Accept-Encoding before sending. Use a large,
+    # repetitive payload so the response is actually compressed and spans multiple buffer fills.
+    captured_headers = {}
+
+    def capture(http_request):
+        # keep a reference; the transport adds Accept-Encoding to this same dict at send time
+        captured_headers['ref'] = http_request.headers
+
+    client = Client(test_no_auth_url, 'g', compression='deflate', interceptors=capture)
+    try:
+        result = client.submit('[" ".repeat(200000), " ".repeat(100000)]',
+                               request_options={'language': 'gremlin-groovy'}).all().result()
+        # (2) decompression succeeded end to end
+        assert len(result[0]) == 200000
+        assert len(result[1]) == 100000
+        # (1) the request advertised deflate
+        sent = captured_headers.get('ref', {})
+        assert sent.get('accept-encoding') == 'deflate', \
+            "expected Accept-Encoding: deflate on the request, got %r" % sent.get('accept-encoding')
+    finally:
+        client.close()
+
+
+def test_client_simple_eval_parameters(client):
     assert client.submit('g.V(x).values("age")', {'x': 1}).all().result()[0] == 29
 
 
@@ -77,18 +104,18 @@ def test_client_eval_traversal(client):
     assert len(client.submit('g.V()').all().result()) == 6
 
 
-def test_client_eval_traversal_bindings(client):
-    assert client.submit('g.V(x).values("name")', bindings={'x': 1}).all().result()[0] == 'marko'
+def test_client_eval_traversal_parameters(client):
+    assert client.submit('g.V(x).values("name")', parameters={'x': 1}).all().result()[0] == 'marko'
 
 
-def test_client_eval_traversal_request_options_bindings(client):
-    assert client.submit('g.V(x).values("name")', request_options={'bindings': {'x': 1}}).all().result()[0] == 'marko'
+def test_client_eval_traversal_request_options_parameters(client):
+    assert client.submit('g.V(x).values("name")', request_options={'parameters': {'x': 1}}).all().result()[0] == 'marko'
 
 
-def test_client_eval_traversal_bindings_request_options_bindings(client):
-    # Note that parameters from request_options[bindings] is applied later and will replace bindings if key is the same
-    assert client.submit('g.V(x).values("name")', bindings={'x': 1},
-                         request_options={'bindings': {'x': 2}}).all().result()[0] == 'vadas'
+def test_client_eval_traversal_parameters_request_options_parameters(client):
+    # Note that parameters from request_options[parameters] is applied later and will replace parameters if key is the same
+    assert client.submit('g.V(x).values("name")', parameters={'x': 1},
+                         request_options={'parameters': {'x': 2}}).all().result()[0] == 'vadas'
 
 
 def test_client_error(client):
@@ -120,8 +147,8 @@ def test_bad_serialization(client):
 
 
 def test_client_connection_pool_after_error(client):
-    # Overwrite fixture with pool_size=1 client
-    client = Client(test_no_auth_url, 'gmodern', pool_size=1)
+    # Overwrite fixture with max_connections=1 client
+    client = Client(test_no_auth_url, 'gmodern', max_connections=1)
 
     try:
         # should fire an exception
@@ -148,7 +175,7 @@ def test_client_no_hang_if_submit_on_closed(client):
 
 
 def test_client_close_all_connection_in_pool(client):
-    client = Client(test_no_auth_url, 'g', pool_size=1)
+    client = Client(test_no_auth_url, 'g', max_connections=1)
     assert client.available_pool_size == 1
     client.submit('g.inject(4)').all().result()
     client.close()
@@ -157,15 +184,18 @@ def test_client_close_all_connection_in_pool(client):
 
 def test_client_side_timeout_set_for_aiohttp(client):
     client = Client(test_no_auth_url, 'gmodern',
-                    read_timeout=1, write_timeout=1)
+                    read_timeout_millis=1000, write_timeout=1)
 
     try:
         # should fire an exception
         client.submit('Thread.sleep(2000);1', request_options={'language': 'gremlin-groovy'}).all().result()
         assert False
-    except TimeoutError as err:
-        # asyncio TimeoutError has no message.
-        assert str(err) == ""
+    except ReadTimeoutError as err:
+        # The driver normalizes a read timeout to a single ReadTimeoutError (a builtin
+        # TimeoutError subclass) with a deterministic message, so we assert on both the
+        # type (still catchable via `except TimeoutError`) and the message.
+        assert isinstance(err, TimeoutError)
+        assert str(err) == "Read timed out after 1.0s waiting for response data."
 
     # still can submit after failure
     assert client.submit('g.V(x).values("age")', {'x': 1}).all().result()[0] == 29
@@ -241,22 +271,22 @@ def test_client_gremlin_lang_options(client):
     assert len(result_set.all().result()) == 6
 
 
-def test_client_gremlin_lang_request_options_with_binding(client):
+def test_client_gremlin_lang_request_options_with_parameter(client):
     g = GraphTraversalSource(Graph(), TraversalStrategies())
-    # Note that bindings for constructed traversals is done via Parameter only
+    # Note that parameters for constructed traversals is done via Parameter only
     t = g.with_('language', 'gremlin-lang').V(GValue('x', [1, 2, 3])).count()
-    request_opts = {'language': 'gremlin-lang', 'bindings': {'x': [1, 2, 3]}}
+    request_opts = {'language': 'gremlin-lang', 'parameters': {'x': [1, 2, 3]}}
     message = create_basic_request_message(t)
     result_set = client.submit(message, request_options=request_opts)
     assert result_set.all().result()[0] == 3
     # We can re-use the extracted request options in script submission
     result_set = client.submit('g.V(x).values("name")', request_options=request_opts)
     assert result_set.all().result()[0] == 'marko'
-    # For script submission only, we can also add bindings to request options and they will be applied
-    request_opts2 = {'language': 'gremlin-lang', 'bindings': {'y': 4}}
+    # For script submission only, we can also add parameters to request options and they will be applied
+    request_opts2 = {'language': 'gremlin-lang', 'parameters': {'y': 4}}
     result_set = client.submit('g.V(y).values("name")', request_options=request_opts2)
     assert result_set.all().result()[0] == 'josh'
-    result_set = client.submit('g.V(z).values("name")', bindings={'z': 5})
+    result_set = client.submit('g.V(z).values("name")', parameters={'z': 5})
     assert result_set.all().result()[0] == 'ripple'
 
 
@@ -281,8 +311,8 @@ def test_client_async(client):
 
 
 def test_connection_share(client):
-    # Overwrite fixture with pool_size=1 client
-    client = Client(test_no_auth_url, 'gmodern', pool_size=1)
+    # Overwrite fixture with max_connections=1 client
+    client = Client(test_no_auth_url, 'gmodern', max_connections=1)
     g = GraphTraversalSource(Graph(), TraversalStrategies())
     t = g.V()
     message = create_basic_request_message(t)
@@ -293,7 +323,7 @@ def test_connection_share(client):
     result_set2 = future2.result()
     assert len(result_set2.all().result()) == 6
 
-    # This future has to finish for the second to yield result - pool_size=1
+    # This future has to finish for the second to yield result - max_connections=1
     assert future.done()
     result_set = future.result()
     assert len(result_set.all().result()) == 6
@@ -304,7 +334,7 @@ def test_multi_conn_pool(client):
     t = g.V()
     message = create_basic_request_message(t)
     message2 = create_basic_request_message(t)
-    client = Client(test_no_auth_url, 'g', pool_size=1)
+    client = Client(test_no_auth_url, 'g', max_connections=1)
     future = client.submit_async(message)
     future2 = client.submit_async(message2)
 
@@ -490,61 +520,6 @@ def test_asyncio(client):
         assert False
 
 
-# TODO: tests pass because requestID is now generated on HTTP server and this option gets ignored, tests to be removed
-#  or updated depending on if we still want to use requestID or not
-@pytest.mark.skip(reason="requestID is generated on server side only, disable for now")
-def test_client_custom_invalid_request_id_graphson_script(client):
-    client = Client(test_no_auth_url, 'gmodern')
-    try:
-        client.submit('g.V()', request_options={"requestId": "malformed"}).all().result()
-    except Exception as ex:
-        assert "badly formed hexadecimal UUID string" in str(ex)
-
-
-@pytest.mark.skip(reason="requestID is generated on server side only, disable for now")
-def test_client_custom_invalid_request_id_graphbinary_script(client):
-    client = Client(test_no_auth_url, 'gmodern')
-    try:
-        client.submit('g.V()', request_options={"requestId": "malformed"}).all().result()
-    except Exception as ex:
-        assert "badly formed hexadecimal UUID string" in str(ex)
-
-
-@pytest.mark.skip(reason="requestID is generated on server side only, disable for now")
-def test_client_custom_valid_request_id_script_uuid(client):
-    assert len(client.submit('g.V()', request_options={"requestId": uuid.uuid4()}).all().result()) == 6
-
-
-@pytest.mark.skip(reason="requestID is generated on server side only, disable for now")
-def test_client_custom_valid_request_id_script_string(client):
-    assert len(client.submit('g.V()', request_options={"requestId": str(uuid.uuid4())}).all().result()) == 6
-
-
-@pytest.mark.skip(reason="requestID is generated on server side only, disable for now")
-def test_client_custom_invalid_request_id_graphson_bytecode(client):
-    client = Client(test_no_auth_url, 'gmodern')
-    query = GraphTraversalSource(Graph(), TraversalStrategies()).V().bytecode
-    try:
-        client.submit(query, request_options={"requestId": "malformed"}).all().result()
-    except Exception as ex:
-        assert "badly formed hexadecimal UUID string" in str(ex)
-
-
-@pytest.mark.skip(reason="requestID is generated on server side only, disable for now")
-def test_client_custom_invalid_request_id_graphbinary_bytecode(client):
-    client = Client(test_no_auth_url, 'gmodern')
-    query = GraphTraversalSource(Graph(), TraversalStrategies()).V().bytecode
-    try:
-        client.submit(query, request_options={"requestId": "malformed"}).all().result()
-    except Exception as ex:
-        assert "badly formed hexadecimal UUID string" in str(ex)
-
-
-@pytest.mark.skip(reason="requestID is generated on server side only, disable for now")
-def test_client_custom_valid_request_id_bytecode(client):
-    query = GraphTraversalSource(Graph(), TraversalStrategies()).V().bytecode
-    assert len(client.submit(query).all().result()) == 6
-
 def test_response_serializer_never_None():
     client = Client('url', 'g', response_serializer=None)
     resp_ser = client.response_serializer()
@@ -554,3 +529,155 @@ def test_response_serializer_never_None():
 def test_serializer_and_interceptor_forwarded(client_with_interceptor):
     result = client_with_interceptor.submit("g.inject(1)").next()
     assert 2 == result # interceptor changes request to g.inject(2)
+
+def test_simple_pdt_round_trip(client):
+    """Inject and retrieve a simple Point PDT."""
+    results = client.submit(
+        "g.inject(PDT(\"Point\", [\"x\":1, \"y\":2]))"
+    ).all().result()
+
+    assert len(results) == 1
+    pdt = results[0]
+    assert isinstance(pdt, CompositePDT)
+    assert pdt.name == 'Point'
+    assert pdt.fields['x'] == 1
+    assert pdt.fields['y'] == 2
+
+
+def test_nested_pdt(client):
+    """Inject and retrieve a nested PDT (Person containing Address)."""
+    results = client.submit(
+        "g.inject(PDT(\"Person\", [\"name\":\"Alice\", \"age\":30, "
+        "\"address\":PDT(\"Address\", [\"street\":\"123 Main St\", \"city\":\"Springfield\", \"zip\":\"12345\"])]))"
+    ).all().result()
+
+    assert len(results) == 1
+    pdt = results[0]
+    assert isinstance(pdt, CompositePDT)
+    assert pdt.name == 'Person'
+    assert pdt.fields['name'] == 'Alice'
+    assert pdt.fields['age'] == 30
+
+    address = pdt.fields['address']
+    assert isinstance(address, CompositePDT)
+    assert address.name == 'Address'
+    assert address.fields['street'] == '123 Main St'
+    assert address.fields['city'] == 'Springfield'
+    assert address.fields['zip'] == '12345'
+
+
+def test_pdt_in_collection(client):
+    """Retrieve multiple PDTs as a list."""
+    results = client.submit(
+        "g.inject([PDT(\"Point\", [\"x\":1, \"y\":2]), PDT(\"Point\", [\"x\":3, \"y\":4])])"
+    ).all().result()
+
+    assert len(results) == 1
+    pdt_list = results[0]
+    assert isinstance(pdt_list, list)
+    assert len(pdt_list) == 2
+
+    assert isinstance(pdt_list[0], CompositePDT)
+    assert pdt_list[0].name == 'Point'
+    assert pdt_list[0].fields['x'] == 1
+    assert pdt_list[0].fields['y'] == 2
+
+    assert isinstance(pdt_list[1], CompositePDT)
+    assert pdt_list[1].name == 'Point'
+    assert pdt_list[1].fields['x'] == 3
+    assert pdt_list[1].fields['y'] == 4
+
+
+def test_auto_serializes_request_message_with_interceptor_mutation():
+    """Verifies the driver auto-serializes when an interceptor modifies the RequestMessage body."""
+    from gremlin_python.driver.request import RequestMessage
+
+    def swap_query(http_request):
+        if isinstance(http_request.body, RequestMessage):
+            http_request.body = RequestMessage(fields={"g": "gmodern"}, gremlin="g.inject(99)")
+
+    client = Client(test_no_auth_url, 'gmodern',
+                    max_connections=1, interceptors=swap_query)
+    try:
+        result = client.submit("g.inject(1)").next()
+        assert 99 == result
+    finally:
+        client.close()
+
+
+def test_interceptor_errors_propagate():
+    """Verifies that an interceptor error propagates to the caller, the request is not sent,
+    and the client remains usable for subsequent requests."""
+    call_count = [0]
+
+    def failing_interceptor(http_request):
+        call_count[0] += 1
+        if call_count[0] == 1:
+            raise RuntimeError("interceptor broke")
+
+    client = Client(test_no_auth_url, 'gmodern',
+                    max_connections=1, interceptors=failing_interceptor)
+    try:
+        # First request should fail with interceptor error
+        try:
+            client.submit("g.inject(1)").next()
+            assert False, "Should have thrown an exception"
+        except RuntimeError as e:
+            assert "interceptor broke" in str(e)
+
+        # Subsequent request should succeed, proving the client is still usable
+        result = client.submit("g.inject(2)").next()
+        assert 2 == result
+    finally:
+        client.close()
+
+
+def test_primitive_pdt_round_trip(client):
+    """Inject and retrieve a primitive Uint32 PDT (opaque string value)."""
+    results = client.submit(
+        "g.inject(PDT(\"Uint32\", \"4294967295\"))"
+    ).all().result()
+
+    assert len(results) == 1
+    pdt = results[0]
+    assert isinstance(pdt, PrimitivePDT)
+    assert pdt.name == 'Uint32'
+    assert pdt.value == '4294967295'
+
+
+def test_primitive_pdt_in_collection(client):
+    """Retrieve multiple primitive PDTs of different kinds as a list."""
+    results = client.submit(
+        "g.inject([PDT(\"Uint32\", \"42\"), PDT(\"TinkerId\", \"abc-123\")])"
+    ).all().result()
+
+    assert len(results) == 1
+    pdt_list = results[0]
+    assert isinstance(pdt_list, list)
+    assert len(pdt_list) == 2
+
+    assert isinstance(pdt_list[0], PrimitivePDT)
+    assert pdt_list[0].name == 'Uint32'
+    assert pdt_list[0].value == '42'
+
+    assert isinstance(pdt_list[1], PrimitivePDT)
+    assert pdt_list[1].name == 'TinkerId'
+    assert pdt_list[1].value == 'abc-123'
+
+
+def test_primitive_pdt_nested_in_composite(client):
+    """Inject and retrieve a composite PDT containing a nested primitive PDT."""
+    results = client.submit(
+        "g.inject(PDT(\"Measurement\", [\"unit\":\"meters\", \"quantity\":PDT(\"Uint32\", \"100\")]))"
+    ).all().result()
+
+    assert len(results) == 1
+    pdt = results[0]
+    assert isinstance(pdt, CompositePDT)
+    assert pdt.name == 'Measurement'
+    assert pdt.fields['unit'] == 'meters'
+
+    quantity = pdt.fields['quantity']
+    assert isinstance(quantity, PrimitivePDT)
+    assert quantity.name == 'Uint32'
+    assert quantity.value == '100'

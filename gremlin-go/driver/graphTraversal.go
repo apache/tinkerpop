@@ -21,7 +21,6 @@ package gremlingo
 
 import (
 	"math"
-	"sync"
 )
 
 type Lambda struct {
@@ -36,7 +35,7 @@ type GraphTraversal struct {
 
 // NewGraphTraversal make a new GraphTraversal.
 // why is this taking a non exported field as an exported function - remove or replace?
-func NewGraphTraversal(graph *Graph, gremlinLang *GremlinLang, remote *DriverRemoteConnection) *GraphTraversal {
+func NewGraphTraversal(graph *Graph, gremlinLang *GremlinLang, remote remoteConnection) *GraphTraversal {
 	if gremlinLang == nil {
 		gremlinLang = NewGremlinLang(nil)
 	}
@@ -75,6 +74,12 @@ func (g *GraphTraversal) E(args ...interface{}) *GraphTraversal {
 // AddE adds the addE step to the GraphTraversal.
 func (g *GraphTraversal) AddE(args ...interface{}) *GraphTraversal {
 	g.GremlinLang.AddStep("addE", args...)
+	return g
+}
+
+// AddLabel adds the addLabel step to the GraphTraversal.
+func (g *GraphTraversal) AddLabel(args ...interface{}) *GraphTraversal {
+	g.GremlinLang.AddStep("addLabel", args...)
 	return g
 }
 
@@ -290,6 +295,18 @@ func (g *GraphTraversal) Drop(args ...interface{}) *GraphTraversal {
 	return g
 }
 
+// DropLabel adds the dropLabel step to the GraphTraversal.
+func (g *GraphTraversal) DropLabel(args ...interface{}) *GraphTraversal {
+	g.GremlinLang.AddStep("dropLabel", args...)
+	return g
+}
+
+// DropLabels adds the dropLabels step to the GraphTraversal.
+func (g *GraphTraversal) DropLabels(args ...interface{}) *GraphTraversal {
+	g.GremlinLang.AddStep("dropLabels", args...)
+	return g
+}
+
 // Element adds the element step to the GraphTraversal.
 func (g *GraphTraversal) Element(args ...interface{}) *GraphTraversal {
 	g.GremlinLang.AddStep("element", args...)
@@ -465,6 +482,12 @@ func (g *GraphTraversal) Label(args ...interface{}) *GraphTraversal {
 	return g
 }
 
+// Labels adds the labels step to the GraphTraversal.
+func (g *GraphTraversal) Labels(args ...interface{}) *GraphTraversal {
+	g.GremlinLang.AddStep("labels", args...)
+	return g
+}
+
 // Length adds the length step to the GraphTraversal.
 func (g *GraphTraversal) Length(args ...interface{}) *GraphTraversal {
 	g.GremlinLang.AddStep("length", args...)
@@ -501,7 +524,8 @@ func (g *GraphTraversal) Map(args ...interface{}) *GraphTraversal {
 	return g
 }
 
-// Match adds the match step to the GraphTraversal.
+// Match adds the match step to the GraphTraversal. Accepts either the traditional traversal form
+// Match(traversal, ...) or the declarative string form Match(queryString) / Match(queryString, params).
 func (g *GraphTraversal) Match(args ...interface{}) *GraphTraversal {
 	g.GremlinLang.AddStep("match", args...)
 	return g
@@ -929,76 +953,4 @@ func int32Args(args []interface{}) []interface{} {
 		}
 	}
 	return args
-}
-
-type Transaction struct {
-	g                *GraphTraversalSource
-	remoteConnection *DriverRemoteConnection
-	isOpen           bool
-	mutex            sync.Mutex
-}
-
-func (t *Transaction) Begin() (*GraphTraversalSource, error) {
-	t.mutex.Lock()
-	defer t.mutex.Unlock()
-
-	if err := t.verifyTransactionState(false, newError(err1101TransactionRepeatedOpenError)); err != nil {
-		return nil, err
-	}
-
-	gts := &GraphTraversalSource{
-		graph:       t.g.graph,
-		gremlinLang: t.g.gremlinLang}
-	return gts, nil
-}
-
-func (t *Transaction) Rollback() error {
-	t.mutex.Lock()
-	defer t.mutex.Unlock()
-
-	if err := t.verifyTransactionState(true, newError(err1102TransactionRollbackNotOpenedError)); err != nil {
-		return err
-	}
-
-	t.close()
-	return nil
-}
-
-func (t *Transaction) Commit() error {
-	t.mutex.Lock()
-	defer t.mutex.Unlock()
-
-	if err := t.verifyTransactionState(true, newError(err1103TransactionCommitNotOpenedError)); err != nil {
-		return err
-	}
-
-	t.close()
-	return nil
-}
-
-func (t *Transaction) Close() error {
-	t.mutex.Lock()
-	defer t.mutex.Unlock()
-
-	if err := t.verifyTransactionState(true, newError(err1104TransactionRepeatedCloseError)); err != nil {
-		return err
-	}
-
-	t.close()
-	return nil
-}
-
-func (t *Transaction) IsOpen() bool {
-	return t.isOpen
-}
-
-func (t *Transaction) verifyTransactionState(state bool, err error) error {
-	if t.IsOpen() != state {
-		return err
-	}
-	return nil
-}
-
-func (t *Transaction) close() {
-	t.isOpen = false
 }

@@ -1,0 +1,106 @@
+////
+Licensed to the Apache Software Foundation (ASF) under one
+or more contributor license agreements.  See the NOTICE file
+distributed with this work for additional information
+regarding copyright ownership.  The ASF licenses this file
+to you under the Apache License, Version 2.0 (the
+"License"); you may not use this file except in compliance
+with the License.  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on an
+"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied.  See the License for the
+specific language governing permissions and limitations
+under the License.
+////
+[[modern]]
+[llms-summary="The modern graph: TinkerPop's canonical example graph of people and the software they created, used throughout the documentation. Includes its GQL Graph Types schema and runnable Gremlin examples."]
+== The Modern Graph
+
+The modern graph is the canonical example graph of Apache TinkerPop and the one used for the
+majority of the examples throughout the documentation. It models a small community of people and
+the software they created: `marko`, `vadas`, `josh`, and `peter` are people, while `lop` and
+`ripple` are software projects written in Java. People are connected to one another by `knows`
+edges and to software by `created` edges, and both kinds of edge carry a `weight` that indicates
+the strength of the relationship.
+
+The graph originates in the "classic" toy graph that shipped with TinkerPop 2.x. It preserves that
+same six-vertex, six-edge structure but adopts the 3.x feature of vertex labels, distinguishing
+`person` vertices from `software` vertices rather than leaving every vertex unlabeled. Its small
+size and mix of two vertex labels and two edge labels make it well suited to demonstrating the
+fundamentals of Gremlin: navigating between adjacent vertices, filtering on labels and properties,
+and working with edge properties. It is created with `TinkerFactory.createModern()` and ships as
+`data/tinkerpop-modern.*`.
+
+.The Modern Graph
+image::tinkerpop-modern.png[width=500]
+
+=== Schema
+
+[source,gql]
+----
+-- node types
+(:person => { name :: STRING NOT NULL, age :: INT }),
+(:software => { name :: STRING NOT NULL, lang :: STRING }),
+
+-- edge types
+(:person)-[:knows { weight :: DOUBLE }]->(:person),
+(:person)-[:created { weight :: DOUBLE }]->(:software)
+----
+
+The `weight` property on both edge labels is a double-precision floating point value. This is one
+of the few differences from the older classic graph, where the same `weight` is a single-precision
+float.
+
+=== Examples
+
+The examples below introduce the people, then follow the two edge labels to explore who knows whom
+and who created what.
+
+[gremlin-groovy,modern]
+----
+g.V().hasLabel('person').valueMap('name','age') <1>
+g.V().hasLabel('software').values('name') <2>
+g.V().has('person','name','marko').out('knows').values('name') <3>
+g.V().has('person','name','marko').out('created').values('name') <4>
+----
+
+<1> The four people in the graph, each with a `name` and an `age`.
+<2> The two software projects. Software vertices carry a `lang` property rather than an `age`.
+<3> The people that `marko` knows, reached by following outgoing `knows` edges.
+<4> The software that `marko` created, reached by following outgoing `created` edges.
+
+Because `created` edges point from people to software, the incoming direction of that same label
+identifies the authors of each project. Grouping by the software name summarizes who contributed
+to what.
+
+[gremlin-groovy,modern]
+----
+g.V().hasLabel('software').
+      group().
+        by('name').
+        by(__.in('created').values('name').fold()) <1>
+----
+
+<1> For each software project, collect the names of the people who created it. Both `lop` and
+`ripple` are reached through `created` edges, and `lop` has more than one author.
+
+The `weight` on a `created` edge records how much of a project a person contributed. Traversing the
+edge itself, rather than stepping straight to the adjacent vertex, makes that value available.
+
+[gremlin-groovy,modern]
+----
+g.V().has('software','name','lop').
+      inE('created').as('contribution'). <1>
+      outV().as('contributor').
+      select('contributor','contribution').
+        by('name').
+        by('weight') <2>
+----
+
+<1> Step onto the incoming `created` edges of `lop` and label them so the edge property can be
+selected later.
+<2> Pair each contributor's `name` with the `weight` of their contribution to `lop`.

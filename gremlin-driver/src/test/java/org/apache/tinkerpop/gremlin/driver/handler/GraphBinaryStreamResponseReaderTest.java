@@ -223,4 +223,27 @@ public class GraphBinaryStreamResponseReaderTest {
         assertTrue(results.isEmpty());
         assertNull(pending.get());
     }
+
+    @Test
+    public void shouldProduceClearErrorOnEmptyBody() {
+        final ResultSet rs = new ResultSet(executor, RequestMessage.build("g.V()").create(), null);
+        final AtomicReference<ResultSet> pending = new AtomicReference<>(rs);
+
+        // Simulate an empty HTTP response body — no bytes offered before end-of-stream
+        final ByteBufQueueInputStream stream = new ByteBufQueueInputStream();
+        stream.signalEndOfStream();
+
+        final InputStreamBuffer buffer = new InputStreamBuffer(stream);
+        new GraphBinaryStreamResponseReader(buffer, reader, rs, pending).run();
+
+        assertTrue(rs.allItemsAvailable());
+        try {
+            rs.all().get();
+            fail("Expected exception");
+        } catch (Exception e) {
+            assertTrue(e.getCause() instanceof RuntimeException);
+            assertEquals("Server returned an empty response body", e.getCause().getMessage());
+        }
+        assertNull(pending.get());
+    }
 }

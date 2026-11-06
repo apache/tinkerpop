@@ -18,7 +18,7 @@ under the License.
 ////
 image::apache-tinkerpop-logo.png[width=500,link="https://tinkerpop.apache.org"]
 
-*x.y.z - Proposal 5*
+*Proposal 5*
 
 == Lazy vs. Eager Evaluation in TP4 ==
 

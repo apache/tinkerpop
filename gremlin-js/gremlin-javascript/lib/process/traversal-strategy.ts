@@ -166,6 +166,10 @@ export class SubgraphStrategy extends TraversalStrategy {
   }
 }
 
+/**
+ * @deprecated As of release 3.7.7, not replaced. This strategy was added as a temporary way to mimic pre-3.5.0
+ * null processing behavior.
+ */
 export class ProductiveByStrategy extends TraversalStrategy {
   /**
    * @param options

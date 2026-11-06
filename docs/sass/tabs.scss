@@ -114,6 +114,13 @@ $maxTabs: 7;
   }
 }
 
+// At the tightest tab counts the columns get narrow, so trim horizontal padding to keep a long
+// single-word label (e.g. "javascript") from overflowing its tab.
+.tabs-6 label,
+.tabs-7 label {
+  padding: 0 8px;
+}
+
 .tabs label:first-of-type {
   z-index: 4;
 }
@@ -173,6 +180,50 @@ $maxTabs: 7;
     height: auto;
     width: 100%;
     height: auto;
-    padding-top: 30px;
+    // Uniform gray frame: equal gutter on all four sides around the code panel. The base
+    // stylesheet's side (pre margins) and bottom (listingblock margin) gutters are zeroed under
+    // .tabs below so this padding is the sole gutter, and the caption is overlaid in it.
+    padding: 30px;
+  }
+}
+
+// Zero the base-stylesheet code-block gutters inside tabs so the uniform 30px panel padding is the
+// only gray frame (otherwise the sides would be 30px + 2em and the bottom 30px + 1.25em).
+.tabs .tabcontent .listingblock {
+  margin-bottom: 0;
+}
+.tabs .tabcontent .listingblock > .content > pre {
+  margin-left: 0;
+  margin-right: 0;
+}
+
+// Graph-dataset caption for Gremlin examples: an italic line naming the toy graph the example runs
+// against, with a link to its Sample Data book section. Absolutely positioned in the bottom gray
+// gutter of the .tabcontent box: right-aligned to the code panel's right edge and vertically
+// centered in the 30px gutter. Being out of flow, it never adds to the box height, so the gray
+// frame stays uniform on all four sides. The position/top/left/width/height/opacity declarations
+// override the `.tabcontent > div` rule that collapses and hides inactive panels.
+.tabs .graph-dataset-note {
+  position: absolute;
+  top: auto;
+  left: auto;
+  right: 30px;
+  bottom: 0;
+  width: auto;
+  height: 30px;
+  line-height: 30px;
+  opacity: 1;
+  z-index: 101;
+  padding: 0;
+  font-size: 13px;
+  font-style: italic;
+  color: #555;
+  text-align: right;
+
+  a {
+    // Intentionally darker than the tab accent $active (#609060) for legible contrast on the
+    // light-gray caption. This is caption-specific; do not replace it with $active.
+    color: #4a704a;
+    text-decoration: underline;
   }
 }

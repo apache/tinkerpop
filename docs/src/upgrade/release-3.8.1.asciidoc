@@ -16,6 +16,7 @@ KIND, either express or implied.  See the License for the
 specific language governing permissions and limitations
 under the License.
 ////
+[llms-summary="Upgrade notes for the TinkerPop 3.8.1 release: Gremlint formatting through the Gremlin MCP server and other changes for users and providers."]
 == TinkerPop 3.8.1
 
 *Release Date: April 1, 2026*

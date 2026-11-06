@@ -36,21 +36,16 @@ namespace Gremlin.Net.Driver
         public static string GremlinVersion = "4.0.0-SNAPSHOT"; // DO NOT MODIFY - Configured automatically by Maven Replacer Plugin
 
         /// <summary>
-        ///     The key for the unique identifier of the request.
-        /// </summary>
-        public const string RequestId = "requestId";
-
-        /// <summary>
         ///     Argument name that allows the definition of the number of items each ResponseMessage should
         ///     contain from a particular result - overrides the resultIterationBatchSize server setting.
         /// </summary>
         public const string ArgsBatchSize = "batchSize";
 
         /// <summary>
-        ///     Argument name that allows definition of a map of key/value pairs to apply as variables in the
+        ///     Argument name that allows definition of a map of key/value pairs to apply as query parameters in the
         ///     context of the Gremlin request sent to the server.
         /// </summary>
-        public const string ArgsBindings = "bindings";
+        public const string ArgsParameters = "parameters";
 
         /// <summary>
         ///     Argument name that corresponds to the Gremlin to evaluate.
@@ -58,21 +53,15 @@ namespace Gremlin.Net.Driver
         public const string ArgsGremlin = "gremlin";
 
         /// <summary>
-        ///     Argument name that allows a value that is a custom string that the user can pass to a server that
-        ///     might accept it for purpose of identifying the kind of client it came from.
-        /// </summary>
-        public const string ArgsUserAgent = "userAgent";
-
-        /// <summary>
         ///     Argument name that allows definition of the flavor of Gremlin used (e.g. gremlin-groovy) to process the request.
         /// </summary>
         public const string ArgsLanguage = "language";
 
         /// <summary>
-        ///     Argument name that allows the override of the server setting that determines the maximum time to wait for a
-        ///     request to execute on the server.
+        ///     Argument name that allows the override of the server setting that determines the maximum time in
+        ///     milliseconds a request is allowed to execute on the server before it times out.
         /// </summary>
-        public const string ArgsEvalTimeout = "evaluationTimeout";
+        public const string ArgsTimeoutMillis = "timeoutMillis";
 
         /// <summary>
         ///     Argument name that allows the override of handling properties.
@@ -89,5 +78,10 @@ namespace Gremlin.Net.Driver
         ///     Argument name for bulk results mode.
         /// </summary>
         public const string ArgsBulkResults = "bulkResults";
+
+        /// <summary>
+        ///     Argument name for the transaction ID that binds a request to a server-side transaction.
+        /// </summary>
+        public const string ArgsTransactionId = "transactionId";
     }
 }

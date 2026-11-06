@@ -26,27 +26,29 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Gremlin.Net.Driver.Messages;
+using Gremlin.Net.Structure;
 
 namespace Gremlin.Net.Driver
 {
     /// <summary>
-    ///     Serializes data to and from Gremlin Server.
+    ///     Serializes and deserializes data to and from Gremlin Server.
     /// </summary>
     public interface IMessageSerializer
     {
         /// <summary>
         ///     Gets the MIME type produced by this serializer (e.g.
         ///     <c>"application/vnd.graphbinary-v4.0"</c>). Used by the driver to set
-        ///     <c>Content-Type</c> and <c>Accept</c> headers automatically.
+        ///     the <c>Accept</c> header.
         /// </summary>
         string MimeType { get; }
 
         /// <summary>
-        ///     Serializes a <see cref="RequestMessage"/>.
+        ///     Serializes a <see cref="RequestMessage"/> to bytes. This can be called from
+        ///     interceptors to produce a serialized request body.
         /// </summary>
         /// <param name="requestMessage">The <see cref="RequestMessage"/> to serialize.</param>
         /// <param name="cancellationToken">The token to cancel the operation. The default value is None.</param>
-        /// <returns>The serialized message.</returns>
+        /// <returns>The serialized message bytes.</returns>
         Task<byte[]> SerializeMessageAsync(RequestMessage requestMessage,
             CancellationToken cancellationToken = default);
 
@@ -61,5 +63,12 @@ namespace Gremlin.Net.Driver
         /// <returns>An async sequence of deserialized result objects.</returns>
         IAsyncEnumerable<object> DeserializeMessageAsync(Stream stream,
             CancellationToken cancellationToken = default);
+
+        /// <summary>
+        ///     Sets the <see cref="PDTRegistry"/> for automatic hydration
+        ///     of provider-defined types during deserialization. The default implementation
+        ///     is a no-op for serializers that do not support PDT hydration.
+        /// </summary>
+        void SetPdtRegistry(PDTRegistry pdtRegistry) { }
     }
 }

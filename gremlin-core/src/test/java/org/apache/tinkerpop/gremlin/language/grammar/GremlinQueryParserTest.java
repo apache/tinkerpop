@@ -96,7 +96,7 @@ public class GremlinQueryParserTest {
                 VariableResolver.NullVariableResolver.instance());
         final GraphTraversal<?, ?> t = (GraphTraversal<?, ?>) GremlinQueryParser.parse("g.V().has('name',gt(z))", gremlinAntlrToJava);
 
-        assertEquals(g.V().has("name", P.gt(null)).asAdmin().getGremlinLang(),
+        assertEquals(g.V().has("name", P.gt((Object) null)).asAdmin().getGremlinLang(),
                 t.asAdmin().getGremlinLang());
     }
 
@@ -107,7 +107,7 @@ public class GremlinQueryParserTest {
                 VariableResolver.NullVariableResolver.instance());
         final GraphTraversal<?, ?> t = (GraphTraversal<?, ?>) GremlinQueryParser.parse("g.V(a,b,c).has('name',gt(z))", gremlinAntlrToJava);
 
-        assertEquals(g.V(null, null, null).has("name", P.gt(null)).asAdmin().getGremlinLang(),
+        assertEquals(g.V(null, null, null).has("name", P.gt((Object) null)).asAdmin().getGremlinLang(),
                 t.asAdmin().getGremlinLang());
     }
 

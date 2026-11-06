@@ -18,7 +18,7 @@
  */
 
 import assert from 'assert';
-import { Vertex, Edge, VertexProperty } from '../../lib/structure/graph.js';
+import { Vertex, Edge, VertexProperty, CompositePDT, PrimitivePDT } from '../../lib/structure/graph.js';
 import { getClient, serverUrl } from '../helper.js';
 import { cardinality } from '../../lib/process/traversal.js';
 import Client from '../../lib/driver/client.js';
@@ -45,7 +45,7 @@ describe('Client', function () {
           assert.ok(result.first() instanceof Vertex);
         });
     });
-    it('should send and parse a script with bindings', function () {
+    it('should send and parse a script with parameters', function () {
       return client.submit('g.V().has("name", x).values("age")', { x: 'marko' })
         .then(function (result) {
           assert.ok(result);
@@ -209,3 +209,201 @@ function assertVertexProperties(vertex) {
   assert.strictEqual(start.value, 1990);
   assert.strictEqual(end.value, 2000);
 }
+
+describe('CompositePDT - Client', function () {
+  let pdtClient;
+  before(function () {
+    pdtClient = getClient('gmodern');
+    return pdtClient.open();
+  });
+  after(function () {
+    return pdtClient.close();
+  });
+
+  it('should round-trip a simple Point PDT', function () {
+    return pdtClient.submit('g.inject(PDT("Point", ["x":1, "y":2]))')
+      .then(function (result) {
+        assert.strictEqual(result.length, 1);
+        const pdt = result.first();
+        assert.ok(pdt instanceof CompositePDT);
+        assert.strictEqual(pdt.name, 'Point');
+        assert.strictEqual(pdt.fields.x, 1);
+        assert.strictEqual(pdt.fields.y, 2);
+      });
+  });
+
+  it('should round-trip a nested PDT (Person with Address)', function () {
+    return pdtClient.submit(
+      'g.inject(PDT("Person", ["name":"Alice", "age":30, ' +
+      '"address":PDT("Address", ["street":"123 Main St", "city":"Springfield", "zip":"12345"])]))')
+      .then(function (result) {
+        assert.strictEqual(result.length, 1);
+        const pdt = result.first();
+        assert.ok(pdt instanceof CompositePDT);
+        assert.strictEqual(pdt.name, 'Person');
+        assert.strictEqual(pdt.fields.name, 'Alice');
+        assert.strictEqual(pdt.fields.age, 30);
+
+        const address = pdt.fields.address;
+        assert.ok(address instanceof CompositePDT);
+        assert.strictEqual(address.name, 'Address');
+        assert.strictEqual(address.fields.street, '123 Main St');
+        assert.strictEqual(address.fields.city, 'Springfield');
+        assert.strictEqual(address.fields.zip, '12345');
+      });
+  });
+
+  it('should handle PDTs in a collection', function () {
+    return pdtClient.submit(
+      'g.inject([PDT("Point", ["x":1, "y":2]), PDT("Point", ["x":3, "y":4])])')
+      .then(function (result) {
+        assert.strictEqual(result.length, 1);
+        const list = result.first();
+        assert.ok(Array.isArray(list));
+        assert.strictEqual(list.length, 2);
+
+        assert.ok(list[0] instanceof CompositePDT);
+        assert.strictEqual(list[0].name, 'Point');
+        assert.strictEqual(list[0].fields.x, 1);
+        assert.strictEqual(list[0].fields.y, 2);
+
+        assert.ok(list[1] instanceof CompositePDT);
+        assert.strictEqual(list[1].name, 'Point');
+        assert.strictEqual(list[1].fields.x, 3);
+        assert.strictEqual(list[1].fields.y, 4);
+      });
+  });
+});
+
+describe('Client interceptor integration', function () {
+  it('should auto serialize request message with interceptor mutation', async function () {
+    const { RequestMessage } = await import('../../lib/driver/request-message.js');
+    const interceptor = (request) => {
+      if (request.body instanceof RequestMessage) {
+        request.body = RequestMessage.build('g.inject(99)').addG('gmodern').create();
+      }
+    };
+    const interceptorClient = new Client(serverUrl, {
+      traversalSource: 'gmodern',
+      interceptors: [interceptor],
+    });
+    await interceptorClient.open();
+    try {
+      const result = await interceptorClient.submit('g.inject(1)');
+      assert.strictEqual(result.first(), 99);
+    } finally {
+      await interceptorClient.close();
+    }
+  });
+
+  it('should propagate exception thrown during interceptor', async function () {
+    let callCount = 0;
+    const interceptor = () => {
+      callCount++;
+      if (callCount === 1) {
+        throw new Error('interceptor broke');
+      }
+    };
+    const interceptorClient = new Client(serverUrl, {
+      traversalSource: 'gmodern',
+      interceptors: [interceptor],
+    });
+    await interceptorClient.open();
+    try {
+      // First request should fail with interceptor error
+      await assert.rejects(
+        () => interceptorClient.submit('g.inject(1)'),
+        (err) => {
+          assert.ok(err.message.includes('interceptor') || err.message.includes('broke'),
+            `Expected error about interceptor, got: ${err.message}`);
+          return true;
+        }
+      );
+
+      // Subsequent request should succeed, proving connection recovery
+      const result = await interceptorClient.submit('g.inject(2)');
+      assert.strictEqual(result.first(), 2);
+    } finally {
+      await interceptorClient.close();
+    }
+  });
+
+  it('should propagate error when interceptor sets unsupported body type', async function () {
+    let callCount = 0;
+    const interceptor = (request) => {
+      callCount++;
+      if (callCount === 1) {
+        request.body = 42;
+      }
+    };
+    const interceptorClient = new Client(serverUrl, {
+      traversalSource: 'gmodern',
+      interceptors: [interceptor],
+    });
+    await interceptorClient.open();
+    try {
+      // First request should fail with serialization error
+      await assert.rejects(
+        () => interceptorClient.submit('g.inject(1)'),
+        (err) => {
+          assert.ok(err.message.includes('unsupported body type') || err.message.includes('serialize'),
+            `Expected error about unsupported body type, got: ${err.message}`);
+          return true;
+        }
+      );
+
+      // Subsequent request should succeed, proving connection recovery
+      const result = await interceptorClient.submit('g.inject(2)');
+      assert.strictEqual(result.first(), 2);
+    } finally {
+      await interceptorClient.close();
+    }
+  });
+});
+
+describe('PrimitivePDT - Client', function () {
+  let pdtClient;
+  before(function () {
+    pdtClient = getClient('gmodern');
+    return pdtClient.open();
+  });
+  after(function () {
+    return pdtClient.close();
+  });
+
+  it('should round-trip a simple primitive PDT', function () {
+    return pdtClient.submit('g.inject(PDT("Uint32","42"))')
+      .then(function (result) {
+        assert.strictEqual(result.length, 1);
+        const pdt = result.first();
+        assert.ok(pdt instanceof PrimitivePDT);
+        assert.strictEqual(pdt.name, 'Uint32');
+        assert.strictEqual(pdt.value, '42');
+      });
+  });
+
+  it('should round-trip a primitive PDT with leading zeros', function () {
+    return pdtClient.submit('g.inject(PDT("TinkerId","007"))')
+      .then(function (result) {
+        assert.strictEqual(result.length, 1);
+        const pdt = result.first();
+        assert.ok(pdt instanceof PrimitivePDT);
+        assert.strictEqual(pdt.name, 'TinkerId');
+        assert.strictEqual(pdt.value, '007');
+      });
+  });
+
+  it('should handle primitive PDTs in a collection', function () {
+    return pdtClient.submit('g.inject([PDT("Uint32","1"), PDT("Uint32","2")])')
+      .then(function (result) {
+        assert.strictEqual(result.length, 1);
+        const list = result.first();
+        assert.ok(Array.isArray(list));
+        assert.strictEqual(list.length, 2);
+        assert.ok(list[0] instanceof PrimitivePDT);
+        assert.strictEqual(list[0].value, '1');
+        assert.ok(list[1] instanceof PrimitivePDT);
+        assert.strictEqual(list[1].value, '2');
+      });
+  });
+});

@@ -16,11 +16,12 @@ KIND, either express or implied.  See the License for the
 specific language governing permissions and limitations
 under the License.
 ////
-== Proposal 3 - Removing the Need for Closures/Lambda in Gremlin
 
-=== Status
+image::apache-tinkerpop-logo.png[width=500,link="https://tinkerpop.apache.org"]
 
-This proposal has been accepted through a post to the TinkerPop Dev List and is ready to begin implementaion.
+*Proposal 3*
+
+== Removing the Need for Closures/Lambda in Gremlin
 
 === Motivation
 

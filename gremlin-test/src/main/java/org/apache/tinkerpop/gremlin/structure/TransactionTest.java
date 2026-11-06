@@ -23,6 +23,7 @@ import org.apache.tinkerpop.gremlin.ExceptionCoverage;
 import org.apache.tinkerpop.gremlin.FeatureRequirement;
 import org.apache.tinkerpop.gremlin.FeatureRequirementSet;
 import org.apache.commons.configuration2.Configuration;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.structure.util.CloseableIterator;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.junit.Test;
@@ -44,6 +45,7 @@ import static org.apache.tinkerpop.gremlin.structure.Graph.Features.VertexProper
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.fail;
 
@@ -51,7 +53,6 @@ import static org.junit.Assert.fail;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 @ExceptionCoverage(exceptionClass = Transaction.Exceptions.class, methods = {
-        "transactionAlreadyOpen",
         "threadedTransactionsNotSupported",
         "openTransactionsOnClose",
         "transactionMustBeOpenToReadWrite",
@@ -62,16 +63,17 @@ public class TransactionTest extends AbstractGremlinTest {
 
     @Test
     @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = FEATURE_TRANSACTIONS)
-    public void shouldHaveExceptionConsistencyWhenTransactionAlreadyOpen() {
+    public void shouldBeIdempotentWhenTransactionAlreadyOpen() {
+        // begin() is idempotent: calling it when a transaction is already open does not start a new
+        // transaction and does not throw - it returns a traversal source bound to the open transaction.
         if (!g.tx().isOpen())
-            g.tx().open();
+            g.tx().begin();
 
-        try {
-            g.tx().open();
-            fail("An exception should be thrown when a transaction is opened twice");
-        } catch (Exception ex) {
-            validateException(Transaction.Exceptions.transactionAlreadyOpen(), ex);
-        }
+        assertThat(g.tx().isOpen(), is(true));
+        g.tx().begin();
+        assertThat(g.tx().isOpen(), is(true));
+
+        g.tx().rollback();
     }
 
     @Test
@@ -80,7 +82,7 @@ public class TransactionTest extends AbstractGremlinTest {
         g.tx().onClose(Transaction.CLOSE_BEHAVIOR.MANUAL);
 
         if (!g.tx().isOpen())
-            g.tx().open();
+            g.tx().begin();
 
         try {
             graph.tx().close();
@@ -149,6 +151,20 @@ public class TransactionTest extends AbstractGremlinTest {
     public void shouldAllowJustRollbackOnlyWithAutoTransaction() {
         // not expecting any exceptions here
         g.tx().rollback();
+    }
+
+    @Test
+    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = FEATURE_TRANSACTIONS)
+    public void shouldBeIdempotentWhenClosingAnAlreadyClosedTransaction() {
+        // close() is idempotent: closing a transaction that is not open is a safe no-op (no exception).
+        if (g.tx().isOpen())
+            g.tx().rollback();
+
+        assertThat(g.tx().isOpen(), is(false));
+        // not expecting any exceptions here - a double/extra close must be a no-op
+        g.tx().close();
+        g.tx().close();
+        assertThat(g.tx().isOpen(), is(false));
     }
 
     @Test
@@ -762,15 +778,15 @@ public class TransactionTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_TRANSACTIONS)
     public void shouldAllowReferenceOfVertexOutsideOfOriginalTransactionalContextManual() {
         g.tx().onReadWrite(Transaction.READ_WRITE_BEHAVIOR.MANUAL);
-        g.tx().open();
+        g.tx().begin();
         final Vertex v1 = graph.addVertex("name", "stephen");
         g.tx().commit();
 
-        g.tx().open();
+        g.tx().begin();
         assertEquals("stephen", v1.value("name"));
 
         g.tx().rollback();
-        g.tx().open();
+        g.tx().begin();
         assertEquals("stephen", v1.value("name"));
         g.tx().close();
     }
@@ -780,16 +796,16 @@ public class TransactionTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_TRANSACTIONS)
     public void shouldAllowReferenceOfEdgeOutsideOfOriginalTransactionalContextManual() {
         g.tx().onReadWrite(Transaction.READ_WRITE_BEHAVIOR.MANUAL);
-        g.tx().open();
+        g.tx().begin();
         final Vertex v1 = graph.addVertex();
         final Edge e = v1.addEdge("self", v1, "weight", 0.5d);
         g.tx().commit();
 
-        g.tx().open();
+        g.tx().begin();
         assertEquals(0.5d, e.value("weight"), 0.00001d);
 
         g.tx().rollback();
-        g.tx().open();
+        g.tx().begin();
         assertEquals(0.5d, e.value("weight"), 0.00001d);
         g.tx().close();
     }
@@ -827,12 +843,12 @@ public class TransactionTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_TRANSACTIONS)
     public void shouldAllowReferenceOfVertexIdOutsideOfOriginalThreadManual() throws Exception {
         g.tx().onReadWrite(Transaction.READ_WRITE_BEHAVIOR.MANUAL);
-        g.tx().open();
+        g.tx().begin();
         final Vertex v1 = graph.addVertex("name", "stephen");
 
         final AtomicReference<Object> id = new AtomicReference<>();
         final Thread t = new Thread(() -> {
-            g.tx().open();
+            g.tx().begin();
             id.set(v1.id());
         });
 
@@ -849,13 +865,13 @@ public class TransactionTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_TRANSACTIONS)
     public void shouldAllowReferenceOfEdgeIdOutsideOfOriginalThreadManual() throws Exception {
         g.tx().onReadWrite(Transaction.READ_WRITE_BEHAVIOR.MANUAL);
-        g.tx().open();
+        g.tx().begin();
         final Vertex v1 = graph.addVertex();
         final Edge e = v1.addEdge("self", v1, "weight", 0.5d);
 
         final AtomicReference<Object> id = new AtomicReference<>();
         final Thread t = new Thread(() -> {
-            g.tx().open();
+            g.tx().begin();
             id.set(e.id());
         });
 
@@ -979,5 +995,78 @@ public class TransactionTest extends AbstractGremlinTest {
                 0,
                 IteratorUtils.count(graph.vertices())
         );
+    }
+
+    /**
+     * A sentinel exception used by {@link #shouldRollbackAndRethrowOriginalErrorWhenTxClosureBodyThrows()} to verify
+     * that the exact original error thrown by an {@code executeInTx}/{@code evaluateInTx} body propagates to the
+     * caller unchanged.
+     */
+    private static class TxClosureSentinelException extends RuntimeException {
+        TxClosureSentinelException(final String message) {
+            super(message);
+        }
+    }
+
+    @Test
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = FEATURE_TRANSACTIONS)
+    public void shouldCommitWhenTxClosureBodyCompletes() {
+        g.executeInTx(gtx -> gtx.addV("person").iterate());
+
+        // committed data is visible to reads outside the closure
+        assertEquals(1L, g.V().hasLabel("person").count().next().longValue());
+    }
+
+    @Test
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = FEATURE_TRANSACTIONS)
+    public void shouldRollbackAndRethrowOriginalErrorWhenTxClosureBodyThrows() {
+        try {
+            g.executeInTx(gtx -> {
+                gtx.addV("person").iterate();
+                throw new TxClosureSentinelException("boom");
+            });
+            fail("The exact exception thrown by the closure body should propagate to the caller");
+        } catch (Exception ex) {
+            // (i) the exact original error (type + message) propagates to the caller, unchanged
+            assertThat(ex, instanceOf(TxClosureSentinelException.class));
+            assertEquals("boom", ex.getMessage());
+        }
+
+        // (ii) the vertex added before the error was rolled back and is not persisted
+        assertEquals(0L, g.V().hasLabel("person").count().next().longValue());
+    }
+
+    @Test
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = FEATURE_TRANSACTIONS)
+    public void shouldReturnBodyValueFromTxClosureCall() {
+        final long count = g.evaluateInTx(gtx -> {
+            gtx.addV("person").iterate();
+            gtx.addV("person").iterate();
+            return gtx.V().hasLabel("person").count().next();
+        });
+
+        // the value computed in the body is returned to the caller
+        assertEquals(2L, count);
+
+        // the work also committed, so the data is visible afterward
+        assertEquals(2L, g.V().hasLabel("person").count().next().longValue());
+    }
+
+    @Test
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = FEATURE_TRANSACTIONS)
+    public void shouldAllowIdempotentBeginInsideTxClosureBody() {
+        g.executeInTx(gtx -> {
+            // calling begin() again inside the closure is idempotent: the transaction is already open so
+            // begin() returns a source bound to the same underlying transaction.
+            final GraphTraversalSource gtx2 = gtx.tx().begin();
+            assertNotNull(gtx2);
+
+            // both sources reference the same Transaction
+            assertEquals(gtx.tx(), gtx2.tx());
+        });
     }
 }

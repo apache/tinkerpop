@@ -108,6 +108,7 @@ traversalSourceSpawnMethod
     | traversalSourceSpawnMethod_io
     | traversalSourceSpawnMethod_call
     | traversalSourceSpawnMethod_union
+    | traversalSourceSpawnMethod_match
     ;
 
 traversalSourceSpawnMethod_addE
@@ -116,17 +117,19 @@ traversalSourceSpawnMethod_addE
     ;
 
 traversalSourceSpawnMethod_addV
-    : K_ADDV LPAREN RPAREN
-    | K_ADDV LPAREN stringArgument RPAREN
-    | K_ADDV LPAREN nestedTraversal RPAREN
+    : K_ADDV LPAREN RPAREN #traversalSourceSpawnMethod_addV_Empty
+    | K_ADDV LPAREN stringArgumentVarargs RPAREN #traversalSourceSpawnMethod_addV_String
+    | K_ADDV LPAREN nestedTraversal (COMMA nestedTraversal)* RPAREN #traversalSourceSpawnMethod_addV_Traversal
     ;
 
 traversalSourceSpawnMethod_E
     : K_E LPAREN genericArgumentVarargs RPAREN
+    | K_E LPAREN nestedTraversal RPAREN
     ;
 
 traversalSourceSpawnMethod_V
     : K_V LPAREN genericArgumentVarargs RPAREN
+    | K_V LPAREN nestedTraversal RPAREN
     ;
 
 traversalSourceSpawnMethod_inject
@@ -157,6 +160,11 @@ traversalSourceSpawnMethod_call
 
 traversalSourceSpawnMethod_union
     : K_UNION LPAREN nestedTraversalList RPAREN
+    ;
+
+traversalSourceSpawnMethod_match
+    : K_MATCH LPAREN stringLiteral RPAREN #traversalSourceSpawnMethod_match_string
+    | K_MATCH LPAREN stringLiteral COMMA genericMapLiteral RPAREN #traversalSourceSpawnMethod_match_string_map
     ;
 
 chainedTraversal
@@ -309,14 +317,20 @@ traversalMethod
     | traversalMethod_dateAdd
     | traversalMethod_dateDiff
     | traversalMethod_asNumber
+    | traversalMethod_labels
+    | traversalMethod_addLabel
+    | traversalMethod_dropLabels
+    | traversalMethod_dropLabel
     ;
 
 traversalMethod_V
     : K_V LPAREN genericArgumentVarargs RPAREN
+    | K_V LPAREN nestedTraversal RPAREN
     ;
 
 traversalMethod_E
     : K_E LPAREN genericArgumentVarargs RPAREN
+    | K_E LPAREN nestedTraversal RPAREN
     ;
 
 traversalMethod_addE
@@ -326,8 +340,8 @@ traversalMethod_addE
 
 traversalMethod_addV
     : K_ADDV LPAREN RPAREN #traversalMethod_addV_Empty
-    | K_ADDV LPAREN stringArgument RPAREN #traversalMethod_addV_String
-    | K_ADDV LPAREN nestedTraversal RPAREN #traversalMethod_addV_Traversal
+    | K_ADDV LPAREN stringArgumentVarargs RPAREN #traversalMethod_addV_String
+    | K_ADDV LPAREN nestedTraversal (COMMA nestedTraversal)* RPAREN #traversalMethod_addV_Traversal
     ;
 
 traversalMethod_aggregate
@@ -547,10 +561,13 @@ traversalMethod_has
     : K_HAS LPAREN stringNullableLiteral RPAREN #traversalMethod_has_String
     | K_HAS LPAREN stringNullableLiteral COMMA genericArgument RPAREN #traversalMethod_has_String_Object
     | K_HAS LPAREN stringNullableLiteral COMMA traversalPredicate RPAREN #traversalMethod_has_String_P
+    | K_HAS LPAREN stringNullableLiteral COMMA nestedTraversal RPAREN #traversalMethod_has_String_Traversal
     | K_HAS LPAREN stringNullableArgument COMMA stringNullableLiteral COMMA genericArgument RPAREN #traversalMethod_has_String_String_Object
     | K_HAS LPAREN stringNullableArgument COMMA stringNullableLiteral COMMA traversalPredicate RPAREN #traversalMethod_has_String_String_P
+    | K_HAS LPAREN stringNullableArgument COMMA stringNullableLiteral COMMA nestedTraversal RPAREN #traversalMethod_has_String_String_Traversal
     | K_HAS LPAREN traversalT COMMA genericArgument RPAREN #traversalMethod_has_T_Object
     | K_HAS LPAREN traversalT COMMA traversalPredicate RPAREN #traversalMethod_has_T_P
+    | K_HAS LPAREN traversalT COMMA nestedTraversal RPAREN #traversalMethod_has_T_Traversal
     ;
 
 traversalMethod_hasId
@@ -561,11 +578,13 @@ traversalMethod_hasId
 traversalMethod_hasKey
     : K_HASKEY LPAREN traversalPredicate RPAREN #traversalMethod_hasKey_P
     | K_HASKEY LPAREN stringNullableLiteral (COMMA stringNullableLiteralVarargs)? RPAREN #traversalMethod_hasKey_String_String
+    | K_HASKEY LPAREN nestedTraversal RPAREN #traversalMethod_hasKey_Traversal
     ;
 
 traversalMethod_hasLabel
     : K_HASLABEL LPAREN traversalPredicate RPAREN #traversalMethod_hasLabel_P
     | K_HASLABEL LPAREN stringNullableArgument (COMMA stringNullableArgumentVarargs)? RPAREN #traversalMethod_hasLabel_String_String
+    | K_HASLABEL LPAREN nestedTraversal RPAREN #traversalMethod_hasLabel_Traversal
     ;
 
 traversalMethod_hasNot
@@ -575,6 +594,7 @@ traversalMethod_hasNot
 traversalMethod_hasValue
     : K_HASVALUE LPAREN genericArgument (COMMA genericArgumentVarargs)? RPAREN #traversalMethod_hasValue_Object_Object
     | K_HASVALUE LPAREN traversalPredicate RPAREN #traversalMethod_hasValue_P
+    | K_HASVALUE LPAREN nestedTraversal RPAREN #traversalMethod_hasValue_Traversal
     ;
 
 traversalMethod_id
@@ -622,6 +642,24 @@ traversalMethod_label
     : K_LABEL LPAREN RPAREN
     ;
 
+traversalMethod_labels
+    : K_LABELS LPAREN RPAREN
+    ;
+
+traversalMethod_addLabel
+    : K_ADDLABEL LPAREN stringLiteralVarargs RPAREN #traversalMethod_addLabel_String
+    | K_ADDLABEL LPAREN nestedTraversal (COMMA nestedTraversal)* RPAREN #traversalMethod_addLabel_Traversal
+    ;
+
+traversalMethod_dropLabels
+    : K_DROPLABELS LPAREN RPAREN #traversalMethod_dropLabels_Empty
+    ;
+
+traversalMethod_dropLabel
+    : K_DROPLABEL LPAREN stringLiteralVarargs RPAREN #traversalMethod_dropLabel_String
+    | K_DROPLABEL LPAREN nestedTraversal (COMMA nestedTraversal)* RPAREN #traversalMethod_dropLabel_Traversal
+    ;
+
 traversalMethod_length
     : K_LENGTH LPAREN RPAREN #traversalMethod_length_Empty
     | K_LENGTH LPAREN traversalScope RPAREN #traversalMethod_length_Scope
@@ -651,7 +689,9 @@ traversalMethod_map
     ;
 
 traversalMethod_match
-    : K_MATCH LPAREN nestedTraversalList RPAREN
+    : K_MATCH LPAREN nestedTraversalList RPAREN #traversalMethod_match_traversal // deprecated
+    | K_MATCH LPAREN stringLiteral RPAREN #traversalMethod_match_string
+    | K_MATCH LPAREN stringLiteral COMMA genericMapLiteral RPAREN #traversalMethod_match_string_map
     ;
 
 traversalMethod_math
@@ -767,9 +807,12 @@ traversalMethod_properties
 
 traversalMethod_property
     : K_PROPERTY LPAREN traversalCardinality COMMA genericLiteral COMMA genericArgument (COMMA genericArgumentVarargs)? RPAREN #traversalMethod_property_Cardinality_Object_Object_Object
+    | K_PROPERTY LPAREN traversalCardinality COMMA genericLiteral COMMA nestedTraversal RPAREN #traversalMethod_property_Cardinality_Object_Traversal
     | K_PROPERTY LPAREN traversalCardinality COMMA genericMapNullableArgument RPAREN # traversalMethod_property_Cardinality_Object
     | K_PROPERTY LPAREN genericLiteral COMMA genericArgument (COMMA genericArgumentVarargs)? RPAREN #traversalMethod_property_Object_Object_Object
+    | K_PROPERTY LPAREN genericLiteral COMMA nestedTraversal RPAREN #traversalMethod_property_Object_Traversal
     | K_PROPERTY LPAREN genericMapNullableArgument RPAREN # traversalMethod_property_Object
+    | K_PROPERTY LPAREN nestedTraversal RPAREN #traversalMethod_property_Traversal
     ;
 
 traversalMethod_propertyMap
@@ -1187,10 +1230,12 @@ traversalBiFunction
 
 traversalPredicate_eq
     : (K_P DOT K_EQ | K_EQ) LPAREN genericArgument RPAREN
+    | (K_P DOT K_EQ | K_EQ) LPAREN nestedTraversal RPAREN
     ;
 
 traversalPredicate_neq
     : (K_P DOT K_NEQ | K_NEQ) LPAREN genericArgument RPAREN
+    | (K_P DOT K_NEQ | K_NEQ) LPAREN nestedTraversal RPAREN
     ;
 
 traversalPredicate_typeOf
@@ -1200,40 +1245,49 @@ traversalPredicate_typeOf
 
 traversalPredicate_lt
     : (K_P DOT K_LT | K_LT) LPAREN genericArgument RPAREN
+    | (K_P DOT K_LT | K_LT) LPAREN nestedTraversal RPAREN
     ;
 
 traversalPredicate_lte
     : (K_P DOT K_LTE | K_LTE) LPAREN genericArgument RPAREN
+    | (K_P DOT K_LTE | K_LTE) LPAREN nestedTraversal RPAREN
     ;
 
 traversalPredicate_gt
     : (K_P DOT K_GT | K_GT) LPAREN genericArgument RPAREN
+    | (K_P DOT K_GT | K_GT) LPAREN nestedTraversal RPAREN
     ;
 
 traversalPredicate_gte
     : (K_P DOT K_GTE | K_GTE) LPAREN genericArgument RPAREN
+    | (K_P DOT K_GTE | K_GTE) LPAREN nestedTraversal RPAREN
     ;
 
 traversalPredicate_inside
     : (K_P DOT K_INSIDE | K_INSIDE) LPAREN genericArgument COMMA genericArgument RPAREN
+    | (K_P DOT K_INSIDE | K_INSIDE) LPAREN nestedTraversal COMMA nestedTraversal RPAREN
     ;
 
 traversalPredicate_outside
     : (K_P DOT K_OUTSIDE | K_OUTSIDE) LPAREN genericArgument COMMA genericArgument RPAREN
+    | (K_P DOT K_OUTSIDE | K_OUTSIDE) LPAREN nestedTraversal COMMA nestedTraversal RPAREN
     ;
 
 traversalPredicate_between
     : (K_P DOT K_BETWEEN | K_BETWEEN) LPAREN genericArgument COMMA genericArgument RPAREN
+    | (K_P DOT K_BETWEEN | K_BETWEEN) LPAREN nestedTraversal COMMA nestedTraversal RPAREN
     ;
 
 traversalPredicate_within
     : (K_P DOT K_WITHIN | K_WITHIN) LPAREN RPAREN
     | (K_P DOT K_WITHIN | K_WITHIN) LPAREN genericArgumentVarargs RPAREN
+    | (K_P DOT K_WITHIN | K_WITHIN) LPAREN nestedTraversal RPAREN
     ;
 
 traversalPredicate_without
     : (K_P DOT K_WITHOUT | K_WITHOUT) LPAREN RPAREN
     | (K_P DOT K_WITHOUT | K_WITHOUT) LPAREN genericArgumentVarargs RPAREN
+    | (K_P DOT K_WITHOUT | K_WITHOUT) LPAREN nestedTraversal RPAREN
     ;
 
 traversalPredicate_not
@@ -1242,26 +1296,32 @@ traversalPredicate_not
 
 traversalPredicate_containing
     : (K_TEXTP DOT K_CONTAINING | K_CONTAINING) LPAREN stringArgument RPAREN
+    | (K_TEXTP DOT K_CONTAINING | K_CONTAINING) LPAREN nestedTraversal RPAREN
     ;
 
 traversalPredicate_notContaining
     : (K_TEXTP DOT K_NOTCONTAINING | K_NOTCONTAINING) LPAREN stringArgument RPAREN
+    | (K_TEXTP DOT K_NOTCONTAINING | K_NOTCONTAINING) LPAREN nestedTraversal RPAREN
     ;
 
 traversalPredicate_startingWith
     : (K_TEXTP DOT K_STARTINGWITH | K_STARTINGWITH) LPAREN stringArgument RPAREN
+    | (K_TEXTP DOT K_STARTINGWITH | K_STARTINGWITH) LPAREN nestedTraversal RPAREN
     ;
 
 traversalPredicate_notStartingWith
     : (K_TEXTP DOT K_NOTSTARTINGWITH | K_NOTSTARTINGWITH) LPAREN stringArgument RPAREN
+    | (K_TEXTP DOT K_NOTSTARTINGWITH | K_NOTSTARTINGWITH) LPAREN nestedTraversal RPAREN
     ;
 
 traversalPredicate_endingWith
     : (K_TEXTP DOT K_ENDINGWITH | K_ENDINGWITH) LPAREN stringArgument RPAREN
+    | (K_TEXTP DOT K_ENDINGWITH | K_ENDINGWITH) LPAREN nestedTraversal RPAREN
     ;
 
 traversalPredicate_notEndingWith
     : (K_TEXTP DOT K_NOTENDINGWITH | K_NOTENDINGWITH) LPAREN stringArgument RPAREN
+    | (K_TEXTP DOT K_NOTENDINGWITH | K_NOTENDINGWITH) LPAREN nestedTraversal RPAREN
     ;
 
 traversalPredicate_regex
@@ -1521,6 +1581,10 @@ stringArgument
     | variable
     ;
 
+stringArgumentVarargs
+    : stringArgument (COMMA stringArgument)*
+    ;
+
 stringNullableArgument
     : stringNullableLiteral
     | variable
@@ -1601,8 +1665,8 @@ genericMapNullableLiteral
     ;
 
 genericRangeLiteral
-    : integerLiteral DOT DOT integerLiteral
-    | stringLiteral DOT DOT stringLiteral
+    : integerLiteral RANGE integerLiteral
+    | stringLiteral RANGE stringLiteral
     ;
 
 genericSetLiteral
@@ -1611,6 +1675,10 @@ genericSetLiteral
 
 stringNullableLiteralVarargs
     : (stringNullableLiteral (COMMA stringNullableLiteral)*)?
+    ;
+
+stringLiteralVarargs
+    : stringLiteral (COMMA stringLiteral)*
     ;
 
 genericLiteral
@@ -1636,6 +1704,7 @@ genericLiteral
     | characterLiteral
     | durationLiteral
     | binaryLiteral
+    | pdtLiteral
     | genericMapLiteral
     ;
 
@@ -1728,6 +1797,11 @@ binaryLiteral
     : K_BINARYC LPAREN stringLiteral RPAREN
     ;
 
+pdtLiteral
+    : K_PDT LPAREN stringLiteral COMMA genericMapLiteral RPAREN
+    | K_PDT LPAREN stringLiteral COMMA stringLiteral RPAREN
+    ;
+
 
 nakedKey
     : Identifier
@@ -1748,6 +1822,7 @@ keyword
     : TRAVERSAL_ROOT // g - __ is not an allowable key in this context
     | K_ADDALL
     | K_ADDE
+    | K_ADDLABEL
     | K_ADDV
     | K_AGGREGATE
     | K_ALL
@@ -1819,6 +1894,8 @@ keyword
     | K_DOUBLE
     | K_DOUBLEU
     | K_DROP
+    | K_DROPLABEL
+    | K_DROPLABELS
     | K_DT
     | K_DURATION
     | K_DURATIONC
@@ -1951,6 +2028,7 @@ keyword
     | K_PAGERANKU
     | K_PATH
     | K_PATHU
+    | K_PDT
     | K_PEERPRESSURE
     | K_PEERPRESSUREU
     | K_PICK
@@ -2060,6 +2138,7 @@ keyword
 
 K_ADDALL: 'addAll';
 K_ADDE: 'addE';
+K_ADDLABEL: 'addLabel';
 K_ADDV: 'addV';
 K_AGGREGATE: 'aggregate';
 K_ALL: 'all';
@@ -2131,6 +2210,8 @@ K_DIV: 'div';
 K_DOUBLE: 'double';
 K_DOUBLEU: 'DOUBLE';
 K_DROP: 'drop';
+K_DROPLABEL: 'dropLabel';
+K_DROPLABELS: 'dropLabels';
 K_DT: 'DT';
 K_DURATION: 'duration';
 K_DURATIONC: 'Duration';
@@ -2263,6 +2344,7 @@ K_PAGERANKU: 'PageRank';
 K_PAGERANK: 'pageRank';
 K_PATH: 'path';
 K_PATHU: 'PATH';
+K_PDT: 'PDT';
 K_PEERPRESSUREU: 'PeerPressure';
 K_PEERPRESSURE: 'peerPressure';
 K_PICK: 'Pick';
@@ -2485,8 +2567,9 @@ FloatingPointLiteral
 
 fragment
 DecimalFloatingPointLiteral
-    : Digits ('.' Digits ExponentPart? | ExponentPart) FloatTypeSuffix?
-    | Digits FloatTypeSuffix
+    :   Digits ('.' Digits ExponentPart? | ExponentPart) FloatTypeSuffix?
+    |    '.' Digits ExponentPart? FloatTypeSuffix?
+    |    Digits FloatTypeSuffix
     ;
 
 fragment
@@ -2618,6 +2701,7 @@ LBRACK : '[';
 RBRACK : ']';
 SEMI : ';';
 COMMA : ',';
+RANGE : '..';
 DOT : '.';
 COLON : ':';
 

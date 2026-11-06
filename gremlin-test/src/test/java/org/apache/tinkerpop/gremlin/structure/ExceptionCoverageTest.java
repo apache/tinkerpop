@@ -75,6 +75,9 @@ public class ExceptionCoverageTest {
             add("org.apache.tinkerpop.gremlin.structure.Element$Exceptions#elementAlreadyRemoved"); // as of 3.1.0
             add("org.apache.tinkerpop.gremlin.structure.Graph$Exceptions#traversalEngineNotSupported"); // as of 3.2.0
 
+            // this is a general default exception for providers that don't support label mutation:
+            add("org.apache.tinkerpop.gremlin.structure.Element$Exceptions#labelMutationNotSupported");
+
             // need to write consistency tests for the following items still...........
             add("org.apache.tinkerpop.gremlin.process.computer.GraphComputer$Exceptions#supportsDirectObjects");
         }};

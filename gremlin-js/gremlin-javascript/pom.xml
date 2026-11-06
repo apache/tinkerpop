@@ -29,10 +29,6 @@ limitations under the License.
     <properties>
         <maven.test.skip>false</maven.test.skip>
         <skipTests>${maven.test.skip}</skipTests>
-        <!-- Host UID/GID passed to Docker so container writes files as the current user.
-             Override with -Dhost.uid=$(id -u) -Dhost.gid=$(id -g) if your UID != 1000. -->
-        <host.uid>1000</host.uid>
-        <host.gid>1000</host.gid>
     </properties>
     <build>
         <directory>${basedir}/target</directory>
@@ -42,7 +38,7 @@ limitations under the License.
                 <plugin>
                     <groupId>com.github.eirslett</groupId>
                     <artifactId>frontend-maven-plugin</artifactId>
-                    <version>1.15.0</version>
+                    <version>2.0.1</version>
                 </plugin>
             </plugins>
         </pluginManagement>
@@ -100,24 +96,6 @@ limitations under the License.
                             </properties>
                             <scripts>
                                 <script>${project.basedir}/scripts/groovy/generate.groovy</script>
-                            </scripts>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>update-version</id>
-                        <phase>generate-sources</phase>
-                        <goals>
-                            <goal>execute</goal>
-                        </goals>
-                        <configuration>
-                            <scripts>
-                                <script>
-                                    def mavenVersion = "${project.version}"
-                                    def versionForJs = mavenVersion.replace("-SNAPSHOT", "-alpha1")
-                                    def platformAgnosticBaseDirPath = project.basedir.getAbsolutePath().replace("\\", "/")
-                                    def file = new File(platformAgnosticBaseDirPath + "/package.json")
-                                    file.write(file.getText("UTF-8").replaceFirst(/"version": "(.*)",/, "\"version\": \"" + versionForJs + "\","))
-                                </script>
                             </scripts>
                         </configuration>
                     </execution>
@@ -182,7 +160,6 @@ limitations under the License.
                         <configuration>
                             <skip>${skipTests}</skip>
                             <arguments>run lint</arguments>
-                            <failOnError>true</failOnError>
                         </configuration>
                     </execution>
                     <execution>
@@ -277,9 +254,6 @@ limitations under the License.
                                         <!-- setting this env variable is needed to be cross-platform compatible -->
                                         <HOME>${user.home}</HOME>
                                         <NODE_VERSION>${node.test.version}</NODE_VERSION>
-                                        <!-- pass host UID/GID so Docker writes files as the current user -->
-                                        <HOST_UID>${host.uid}</HOST_UID>
-                                        <HOST_GID>${host.gid}</HOST_GID>
                                     </environmentVariables>
                                     <executable>bash</executable>
                                     <!--
@@ -288,7 +262,7 @@ limitations under the License.
                                       compose up             - build images, start the server and test containers,
                                                                and wait for the test container to finish
                                       compose down (second)  - tear down this run's containers and network
-                                      port-wait loop         - wait up to 30 s for ports 45940-45942 and 4588 to be released by
+                                      port-wait loop         - wait up to 30 s for ports 45940 and 45941 to be released by
                                                                the Docker daemon before returning to Maven; all GLV modules share
                                                                these host ports and run sequentially, so the next module would
                                                                fail to bind them if docker-proxy has not fully exited yet
@@ -296,7 +270,7 @@ limitations under the License.
                                     -->
                                     <arguments>
                                         <argument>-c</argument>
-                                        <argument>docker compose down; docker compose up --build --exit-code-from gremlin-js-integration-tests; EXIT=$?; docker compose down; for i in $(seq 1 30); do ss -tlnp | grep -qE ':(45940|45941|45942|4588) ' || break; sleep 1; done; docker image prune --filter label=maintainer=dev@tinkerpop.apache.org -f; exit $EXIT</argument>
+                                        <argument>export HOST_UID=$(id -u) HOST_GID=$(id -g); docker compose down; docker compose up --build --exit-code-from gremlin-js-integration-tests; EXIT=$?; docker compose down; for i in $(seq 1 30); do ss -tlnp | grep -qE ':(45940|45941) ' || break; sleep 1; done; docker image prune --filter label=maintainer=dev@tinkerpop.apache.org -f; exit $EXIT</argument>
                                     </arguments>
                                     <workingDirectory>.</workingDirectory>
                                 </configuration>

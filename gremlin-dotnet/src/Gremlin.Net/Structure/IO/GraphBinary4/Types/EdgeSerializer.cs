@@ -47,12 +47,12 @@ namespace Gremlin.Net.Structure.IO.GraphBinary4.Types
             CancellationToken cancellationToken = default)
         {
             await writer.WriteAsync(value.Id, stream, cancellationToken).ConfigureAwait(false);
-            await writer.WriteNonNullableValueAsync(new List<string> { value.Label }, stream, cancellationToken).ConfigureAwait(false);
+            await writer.WriteNonNullableValueAsync(new List<string>(value.Labels), stream, cancellationToken).ConfigureAwait(false);
 
             await writer.WriteAsync(value.InV.Id, stream, cancellationToken).ConfigureAwait(false);
-            await writer.WriteNonNullableValueAsync(new List<string> { value.InV.Label }, stream, cancellationToken).ConfigureAwait(false);
+            await writer.WriteNonNullableValueAsync(new List<string>(value.InV.Labels), stream, cancellationToken).ConfigureAwait(false);
             await writer.WriteAsync(value.OutV.Id, stream, cancellationToken).ConfigureAwait(false);
-            await writer.WriteNonNullableValueAsync(new List<string> { value.OutV.Label }, stream, cancellationToken).ConfigureAwait(false);
+            await writer.WriteNonNullableValueAsync(new List<string>(value.OutV.Labels), stream, cancellationToken).ConfigureAwait(false);
 
             // Placeholder for the parent vertex
             await writer.WriteAsync(null, stream, cancellationToken).ConfigureAwait(false);
@@ -68,14 +68,31 @@ namespace Gremlin.Net.Structure.IO.GraphBinary4.Types
             var id = await reader.ReadAsync(stream, cancellationToken).ConfigureAwait(false);
             var labelList = (List<string?>)await reader.ReadNonNullableValueAsync<List<string?>>(stream, cancellationToken).ConfigureAwait(false);
             var label = labelList.Count > 0 ? labelList[0] ?? "" : "";
+            var labels = new List<string>();
+            foreach (var l in labelList)
+            {
+                if (l != null) labels.Add(l);
+            }
 
             var inVId = await reader.ReadAsync(stream, cancellationToken).ConfigureAwait(false);
             var inVLabelList = (List<string?>)await reader.ReadNonNullableValueAsync<List<string?>>(stream, cancellationToken).ConfigureAwait(false);
-            var inV = new Vertex(inVId, inVLabelList.Count > 0 ? inVLabelList[0] ?? "" : "");
+            var inVLabel = inVLabelList.Count > 0 ? inVLabelList[0] ?? "" : "";
+            var inVLabels = new List<string>();
+            foreach (var l in inVLabelList)
+            {
+                if (l != null) inVLabels.Add(l);
+            }
+            var inV = new Vertex(inVId, inVLabel, labels: inVLabels);
             
             var outVId = await reader.ReadAsync(stream, cancellationToken).ConfigureAwait(false);
             var outVLabelList = (List<string?>)await reader.ReadNonNullableValueAsync<List<string?>>(stream, cancellationToken).ConfigureAwait(false);
-            var outV = new Vertex(outVId, outVLabelList.Count > 0 ? outVLabelList[0] ?? "" : "");
+            var outVLabel = outVLabelList.Count > 0 ? outVLabelList[0] ?? "" : "";
+            var outVLabels = new List<string>();
+            foreach (var l in outVLabelList)
+            {
+                if (l != null) outVLabels.Add(l);
+            }
+            var outV = new Vertex(outVId, outVLabel, labels: outVLabels);
 
             // discard possible parent vertex
             await reader.ReadAsync(stream, cancellationToken).ConfigureAwait(false);
@@ -83,7 +100,7 @@ namespace Gremlin.Net.Structure.IO.GraphBinary4.Types
             var properties = await reader.ReadAsync(stream, cancellationToken).ConfigureAwait(false);
             var propertiesAsArray = null == properties ? Array.Empty<object>() : (properties as List<object>)?.ToArray();
 
-            return new Edge(id, outV, label, inV, propertiesAsArray);
+            return new Edge(id, outV, label, inV, propertiesAsArray, labels);
         }
     }
 }

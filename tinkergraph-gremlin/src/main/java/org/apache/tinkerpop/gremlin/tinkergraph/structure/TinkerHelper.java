@@ -191,14 +191,14 @@ public final class TinkerHelper {
     /**
      * Allows direct access to a TinkerGraph's storage which can be helpful for advanced use cases.
      */
-    public static Map<Object, Vertex> getVertices(final TinkerGraph graph) {
+    public static Map<Object, Vertex> getVertices(final TinkerMemoryGraph graph) {
         return graph.vertices;
     }
 
     /**
      * Allows direct access to a TinkerGraph's storage which can be helpful for advanced use cases.
      */
-    public static Map<Object, Edge> getEdges(final TinkerGraph graph) {
+    public static Map<Object, Edge> getEdges(final TinkerMemoryGraph graph) {
         return graph.edges;
     }
 
@@ -246,7 +246,7 @@ public final class TinkerHelper {
      * Search for {@link Property}s attached to any {@link Element} using the supplied regex. This
      * is a basic scan+filter operation, not a full text search against an index.
      */
-    public static Iterator<Property> search(final TinkerGraph graph, final String regex) {
+    public static Iterator<Property> search(final AbstractTinkerGraph graph, final String regex) {
         return search(graph, regex, Optional.empty());
     }
 

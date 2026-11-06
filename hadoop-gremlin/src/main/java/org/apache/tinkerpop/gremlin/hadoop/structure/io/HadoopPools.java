@@ -47,6 +47,8 @@ public final class HadoopPools {
                     poolSize(configuration.getInt(GryoPool.CONFIG_IO_GRYO_POOL_SIZE, 256)).
                     version(GryoVersion.valueOf(configuration.getString(GryoPool.CONFIG_IO_GRYO_VERSION, GryoPool.CONFIG_IO_GRYO_POOL_VERSION_DEFAULT.name()))).
                     ioRegistries(configuration.getList(IoRegistry.IO_REGISTRY, Collections.emptyList())).
+                    // intra-job shuffle path (VertexWritable), not untrusted input, so it is left unlocked and keeps the
+                    // JavaSerializer registrations. The Gryo IO formats are the hardened untrusted-file path.
                     initializeMapper(m -> m.registrationRequired(false)).
                     create();
         }

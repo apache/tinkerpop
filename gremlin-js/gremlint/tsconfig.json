@@ -1,11 +1,13 @@
 {
   "compilerOptions": {
-    "target": "es5",
+    "target": "es2021",
     "module": "commonjs",
     "declaration": true,
+    "rootDir": "./src",
     "outDir": "./lib",
     "strict": true,
-    "lib": ["DOM", "ES2021"]
+    "lib": ["DOM", "ES2021"],
+    "types": ["jest", "node"]
   },
   "include": ["src"],
   "exclude": ["node_modules", "**/__tests__/*"]

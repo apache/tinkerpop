@@ -25,9 +25,82 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 [[release-4-0-0]]
 === TinkerPop 4.0.0 (Release Date: NOT OFFICIALLY RELEASED YET)
 
+* Added a `Char` type to `gremlin-go` to represent the Gremlin `Character` type in `GremlinLang`.
+* Restricted GraphSON and Gryo `Class` deserialization to classes registered with `ClassRegistry.register()`, `registerStrategy()` or `registerStrategies()`.
+* Added browser smoke tests for `gremlin-javascript`.
+* Fixed `gremlin-go` to report a malformed or truncated GraphBinary response as a deserialization error rather than a bare decoder message.
+* Added a per-request `language` option to the `gremlin-go` `RequestOptionsBuilder`, and honored `With("language", ...)` on traversals.
+* Changed `gremlin-go` per-request options set via `with()` to accept any numeric type holding an integer value an `int` can hold and to ignore other values rather than panicking.
+* Made `TinkerGraph` an interface and renamed the in-memory implementation to `TinkerMemoryGraph`; `TinkerGraph.open()` and `gremlin.graph=...TinkerGraph` behave as before.
+* Renamed `TinkerTransactionGraph` to `TinkerStorageGraph`.
+* Fixed a `NullPointerException` when rolling back a transaction on a `TinkerStorageGraph` that has a vertex index but no edge index.
+* Added a pluggable storage layer to `TinkerStorageGraph` that durably persists each committed transaction to disk.
+* Removed automatic persistence from `TinkerMemoryGraph`, which is now purely in-memory and ignores `gremlin.tinkergraph.graphLocation`/`graphFormat`. Use `TinkerStorageGraph` for durability or `g.io()` for interchange.
+* Fixed `CountStrategy` so that it no longer adds a `limit()` before `count().is(P)` when the capped count can pass the predicate and is then observed downstream, e.g. `out().count().is(gt(2))`.
+* Removed the per-request `userAgent` option from all drivers so the user agent is sent only as the `User-Agent` header controlled by `enableUserAgentOnConnect`.
+* Fixed `gremlin-mcp` to include the server's reason when a query fails rather than only reporting that it failed.
+
+[[release-4-0-0-beta-3]]
+=== TinkerPop 4.0.0-beta.3 (July 20, 2026)
+
+* Fixed `gremlin-python` `GremlinLang` equality (`__eq__`) which compared a traversal to itself, so traversals with different steps but equal parameters were incorrectly considered equal.
+* Removed the deprecated `gremlin-python` `DriverRemoteConnection.submitAsync` method in favor of `submit_async`.
+* Fixed `gremlin-go` GraphBinary deserialization of negative `BigInteger` and negative-unscaled `BigDecimal` values, which decoded to incorrect values because the two's-complement width was computed one byte too wide.
+* Fixed `gremlin-go` and `gremlin-dotnet` `P.outside()` gremlin-lang generation to emit comma-separated arguments (`outside(a,b)`) like `between`/`inside`, instead of the invalid list-wrapped form (`outside([a,b])`) that the server could not parse.
+* Added GraphBinary `Tree` (`0x2b`) serialization and deserialization with a native tree-shaped API to `gremlin-python`, `gremlin-dotnet`, `gremlin-go`, and `gremlin-javascript`.
+* Added a `gremlin/io` package export in `gremlin-javascript` exposing the GraphBinary type serializers.
+* Raised the minimum Java version to 17 for building and running *(breaking)*.
+* Enabled building and running with Java 21 and Java 25.
+* Bumped Groovy to 4.0.32, Hadoop to 3.4.3, Spark to 4.1.2 (Scala 2.13), and Netty to 4.2.7 to support Java 25.
+* Bumped `Microsoft.Extensions.Logging.Abstractions` and `Microsoft.Extensions.Logging.Console` to 10.0.9 for `gremlin-dotnet`.
+* Bumped TypeScript to 6.0 across the JavaScript modules; `gremlint` now compiles to ES2021 rather than ES5.
+* Standardized connection options across all GLVs (Java, Python, .NET, Go, JavaScript), aligning option names and defaults. *(breaking)*
+* Changed connection defaults across all GLV drivers: compression now defaults on, `connectTimeout` is 5s and applied to transport establishment.
+* Standardized `gremlin-driver` (Java) connection options, aligning the pool/timeout/serializer names, removing `maxResponseContentLength`, and adding `readTimeoutMillis`, `keepAliveTimeMillis`, `maxResponseHeaderBytes`, `proxy`, and `ssl(SslContext)`. *(breaking)*
+* Standardized `gremlin-python` connection options, renaming `pool_size`->`max_connections` and `ssl_options`->`ssl`, removing `headers` and `max_content_length`, and adding `compression`, `batch_size`, `proxy`, `trust_env`, and timeout options. *(breaking)*
+* Standardized `gremlin-dotnet` connection options, aligning the connection and `Auth.*` names, switching `KeepAliveTime` to a real TCP keep-alive socket option, and adding `ReadTimeout`, `MaxResponseHeaderBytes`, `Proxy`, `Ssl`, and `BulkResults`. *(breaking)*
+* Standardized `gremlin-go` connection options, aligning the connection and TLS names, moving auth helpers into an `auth` sub-package, and adding `ReadTimeout`, `MaxResponseHeaderBytes`, `Proxy`, `BatchSize`, and `BulkResults`. *(breaking)*
+* Standardized `gremlin-javascript` connection options, adopting `undici` as the default dispatcher, renaming `reader`->`responseSerializer`, removing `headers` and the Node TLS options (`ca`/`cert`/`pfx`/`rejectUnauthorized`/`agent`), and adding `readTimeoutMillis`, `keepAliveTimeMillis`, `proxy`, `compression`, `batchSize`, `bulkResults`, and `logger`. *(breaking)*
+* Changed all GLV drivers to always serialize requests as JSON (`application/json`). Request serialization is no longer configurable and the serializer options (now `responseSerializer`) control only response deserialization.
+* Fixed remote traversals in Java, Python, .NET, and JavaScript to avoid sending the traversal source alias as a GremlinLang parameter, and removed the unused GremlinLang traversal-source helpers.
+* Fixed `gremlin-javascript` `Client.submit()` so that an explicit `bulkResults: false` request option is forwarded to the server instead of being silently dropped.
+* Fixed `gremlin-dotnet` deflate response decompression, which threw on the server's zlib-framed output because it used `DeflateStream` (raw DEFLATE, RFC 1951) instead of `ZLibStream` (zlib, RFC 1950); the bug was previously masked because compression was off by default.
+* Fixed `gremlin-dotnet` SSL options cloning (used on the skip-certificate-validation path) to copy `ClientCertificateContext` and `AllowTlsResume`, which were previously dropped, breaking mTLS client certificates and silently re-enabling TLS resumption.
+* Fixed `gremlin-python` read timeout to derive from a single source (aiohttp `sock_read`), removing a redundant `async_timeout` read wrapper that could race it; a read timeout now deterministically raises `ReadTimeoutError` (a builtin `TimeoutError` subclass).
+* Removed `Transaction.open()` in favor of `begin()`, which is now the single transaction-start primitive across embedded and remote contexts.
+* Changed `begin()` and `close()` to be idempotent and calling it when a transaction is already in that state no longer throws.
+* Added `maxTransactionLifetimeMillis` setting to Gremlin Server, an absolute cap on the total age of an HTTP transaction that interrupts a running operation and rolls the transaction back when it fires (default 600000ms, set to `0` to disable).
+* Changed the Gremlin Server HTTP transaction idle timer to suspend while an operation is running (so a long-running operation is bounded by `timeoutMillis` rather than the idle timeout) and to honor `0` as "disable idle reclamation"; the `idleTransactionTimeoutMillis` default is now 60000ms.
+* Added configurable CORS `allowedOrigins` setting to Gremlin Server; warns when wildcard origin is used alongside authentication.
+* Fixed `ByteBuf` leak in `GraphBinaryMessageSerializerV4` when serialization throws an `IOException`.
+* Changed `Tree` to no longer extend `HashMap`; it is now a final class with a tree-shaped API (`childAt`, `hasChild`, `contains`, `findSubtree`, `getOrCreateChild`, `getNodesAtDepth`, `getLeafNodes`, `nodeCount`) and is no longer a `Map`.
+* Changed `count(local)` on a `Tree` to return the total node count (`Tree.nodeCount()`) instead of the root-entry count.
+* Changed Tree class in Java to not extend from HashMap and offered a new tree-shaped API for navigation.
+* Added multi-label support for vertices with configurable `LabelCardinality` (`ONE`, `ONE_OR_MORE`, `ZERO_OR_MORE`).
+* Added `labels()` step to emit each vertex label as a separate traverser.
+* Added `addLabel()` and `dropLabel()`/`dropLabels()` steps for vertex label mutation.
+* Added `LabelCardinalityValidator` utility for constraint enforcement separated from the `LabelCardinality` enum.
+* Added `with("multilabel")` source configuration for `elementMap()` and `valueMap()` to return labels as a set.
+* Added `labels().drop()` rejection to `StandardVerificationStrategy` to prevent accidental usage.
+* Added multi-label syntax to `addV()` and `mergeV()` with append-only `onMatch` semantics.
 * Added typed numeric wrappers and `preciseNumbers` connection option to `gremlin-javascript` for explicit control over numeric type serialization and deserialization.
 * Added `NextN(n)` to `Traversal` in `gremlin-go` for batched result iteration, providing API parity with `next(n)` in the Java, Python, and .NET GLVs, and updated the Go translators in `gremlin-core` and `gremlin-javascript` to emit `NextN(n)` for the batched form.
+* Added Provider Defined Types (PDT) support — graph providers can define custom types via `@ProviderDefined` annotation that serialize/deserialize seamlessly across all GLVs without driver-side configuration. Replaces TP3 custom type mechanism.
+* Added Primitive Provider Defined Types (PrimitivePDT) — a single opaque stringified value variant of PDT for types with no native TinkerPop representation (e.g. unsigned integers). Supported across all GLVs via adapter registration.
 * Added Gremlator, a single page web application, that translates Gremlin into various programming languages like Javascript and Python.
+* Added explicit transaction support to all non-Java GLVs (gremlin-python, gremlin-go, gremlin-javascript, gremlin-dotnet).
+* Added transaction closure methods (`executeInTx`/`evaluateInTx`) on `GraphTraversalSource` in all GLVs that wrap the begin/commit/rollback lifecycle, so a lambda receives the transaction-bound `g` and is auto-committed on success or rolled back on error.
+* Changed default transaction close behavior from commit to rollback across all GLVs to align with embedded graph defaults.
+* Refactored Go driver connection to block until response headers arrive, enabling synchronous error returns and proper transaction ordering.
+* Added child traversal support to `has()`, `hasLabel()`, `V()`, `E()`, `property()`, `is()`, `where(P)`, `P.eq/neq/gt/lt/gte/lte/within/without()`, and `TextP` predicates. Child traversals are resolved per-traverser at runtime, enabling dynamic filtering and lookup patterns.
+* Added multi-traversal `P.within(trav1, trav2, ...)` and `P.without(trav1, trav2, ...)` which combine results from multiple child traversals for collection membership testing.
+* Added `V(traversal)` and `E(traversal)` as start steps with synthetic traverser seeding, consistent with `mergeV(traversal)` behavior.
+* Added `ReadOnlyChildVerificationStrategy` that blocks mutating steps (`addV`, `addE`, `drop`, etc.) inside child traversals. All child traversals must be read-only.
+* Added `hasLabel(Traversal)` overload with grammar support for dynamic label filtering.
+* Added traversal-bearing predicate support to `where(P)` - resolves child traversal and tests against current value when `P.hasTraversal()` is true.
+* Added rejection of traversal-bearing predicates in `choose(P)` and `choose().option(P, ...)` - the predicate's child traversal cannot be resolved in the branch-selection context.
+* Added runtime Map validation for `property(traversal)` - rejects results that are not a `Map` of property key/value pairs.
+* Added mixed traversal/literal detection in `P.within()` and `P.without()` - throws `IllegalArgumentException` with guidance to wrap literals in `__.constant()`.
 * Removed `uuid` dependency from `gremlin-javascript` in favor of the built-in `globalThis.crypto.randomUUID()`.
 * Added streaming HTTP response support to `gremlin-driver` for incremental result deserialization over GraphBinary.
 * Connected HTTP streaming response deserialization to the traversal API in `gremlin-javascript`, enabling `next()` to return the first result without waiting for the full response.
@@ -37,7 +110,6 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Added `Character`, `Binary`, `Duration` to the `gremlin-lang` grammar, GLVs, and Translators.
 * Refactored `gremlin-python` receive path to stream results directly from the HTTP response through the configured `response_serializer`.
 * Replaced `read()` with `get_stream()` on `AbstractBaseTransport` in `gremlin-python` for streaming deserialization.
-* Removed `max_content_length` from `gremlin-python` driver (no longer applicable with streaming deserialization).
 * Removed GraphSON parameterized test fixtures from `gremlin-python` integration tests (GraphBinary only).
 * Removed `AbstractBaseTransport`, `AbstractBaseProtocol`, and `GremlinServerHTTPProtocol` from `gremlin-python`, merging protocol logic into `Connection`.
 * Removed `GraphSONSerializersV4` and the `gremlin_python.structure.io.graphsonV4` module from `gremlin-python`. GraphBinary is the only supported wire format.
@@ -49,10 +121,22 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Deprecated Groovy-based `LifeCycleHook` and `TraversalSource` creation via init scripts in favor of YAML configuration.
 * Updated all default Gremlin Server configs to remove Groovy dependency from initialization.
 * Added script engine allowlist to Gremlin Server - the `scriptEngines` YAML configuration now restricts which engines can serve requests; `gremlin-lang` is always available.
+* Modified the request timeout to a single name `timeoutMillis` across the server and GLVs.
+* Renamed the millisecond-valued Gremlin Server settings to carry a `Millis` suffix: `idleConnectionTimeout`, `keepAliveInterval`, `ssl.refreshInterval`, and the metrics reporter `interval` became `idleConnectionTimeoutMillis`, `keepAliveIntervalMillis`, `ssl.refreshIntervalMillis`, and `intervalMillis`.
 * Modified request parameters from `Map<String, Object>` to gremlin-lang compatible `String`.
+* Renamed the request `bindings` field to `parameters` across the HTTP request body, GraphBinary, and GraphSON, standardizing terminology for query parameters.
 * Modified HTTP API to expect gremlin-lang strings for parameters and update all GLVs to send requests in new format.
 * Added string parameter parsing to `GremlinServer` to prevent traversal injection and excessive nesting depths.
+* Modified how the server honors per-request options embedded in a script via `with()`, extending `GremlinScriptChecker` to recognize `language`, `batchSize`, and `bulkResults` (in addition to `timeoutMillis` and `materializeProperties`) with uniform precedence.
 * Modified all GLVs to detect unsupported types in `GremlinLang` and throw consistent error for that case.
+* Extended `GValue` parameterization to all GLVs (`gremlin-python`, `gremlin-go`, `gremlin-javascript`, `gremlin-dotnet`), allowing parameters to be passed directly in traversals as in Java.
+* Relaxed `GValue` name validation by removing the reserved leading underscore restriction.
+* Added GraphBinary 4.0 `Graph` (`0x10`) serializer/deserializer to `gremlin-javascript`, `gremlin-dotnet`, and `gremlin-go` so that `subgraph()` results are returned as a detached `Graph` data container.
+* Added `match(string)` and `match(string, IDictionary)` overloads for declarative pattern matching.
+* Deprecated the traversal-based `match(Traversal[])` in favor of the new string-based API.
+* Added the `gql-gremlin` module containing the TinkerGQL engine, a `MATCH`-pattern executor implementing a deliberate minimal subset of ISO GQL, usable by any graph provider.
+* Added `Graph.countVerticesByLabel(String)`, `Graph.countEdgesByLabel(String)`, and the `Graph.Index` nested interface as performance-hint extension points for the TinkerGQL engine.
+* Added GQL support to TinkerGraph with `gql-gremlin`,
 
 [[release-4-0-0-beta-2]]
 === TinkerPop 4.0.0-beta.2 (April 1, 2026)
@@ -83,7 +167,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Replace `WebSocket` with `HTTP` (non-streaming) in `gremlin-dotnet`.
 * Added `MimeType` to `IMessageSerializer` and split client option to allow separate request and response serialization in `gremlin-dotnet`.
 * Added `RequestInterceptor` to `gremlin-dotnet` with `auth` reference implementations.
-* Added streaming deserialization to `gremlin-dotnet`, results are now deserialized incrementally from the HTTP response stream via `IAsyncEnumerable<T>`. 
+* Added streaming deserialization to `gremlin-dotnet`, results are now deserialized incrementally from the HTTP response stream via `IAsyncEnumerable<T>`.
 * Target framework for `gremlin-dotnet` updated to `net8.0`.
 * Bumped minimum Node.js version for `gremlin-javascript` from 20 to 22.
 * Removed `mimeType` connection option in `gremlin-javascript` in favor of direct use of `reader` and `writer` options.
@@ -154,12 +238,55 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/gremlin-67.png[width=185]
 
-[[release-3-8-2]]
-=== TinkerPop 3.8.2 (Release Date: NOT OFFICIALLY RELEASED YET)
+[[release-3-8-3]]
+=== TinkerPop 3.8.3 (Release Date: NOT OFFICIALLY RELEASED YET)
 
 This release also includes changes from prior 3.7.x releases.
 
+* Fixed `AddPropertyStep` not passing the old property to `EventStrategy` listeners when the cardinality was not specified in `property()`.
+* Fixed integer range literal parsing in Gremlin-Lang where certain ranges bypassed the range size limit.
+
+[[release-3-8-2]]
+=== TinkerPop 3.8.2 (Release Date: September 1, 2026)
+
+This release also includes changes from <<release-3-7-7, 3.7.7>>.
+
+* Enabled building and running with Java 21 and Java 25 (experimental; `spark-gremlin` excluded, as Spark 3.3.x only runs on Java 8 through 17).
+* Bumped to Groovy 4.0.32 which adds support for parsing Java 25 bytecode.
+* Bumped Hadoop to 3.4.3 (and Kerby to 2.0.3) to enable `hadoop-gremlin` to build and run on Java 25.
 * Add missing `Configuring` interface to `GraphStepPlaceholder` and `VertexStepPlaceholder`
+* Fixed bug in `group()` value traversal where keys were retained with stale barrier state instead of being filtered when steps following a `Barrier` in the second `by()` produced no output (e.g. `by(values("age").fold().unfold())` or `by(__.out().fold().count(local).is(P.gt(0)))` for vertices with no out-edges).
+* Corrected numerous inaccuracies in the reference documentation, including wrong default values (connection pool sizes, buffer sizes, ports, timeouts), stale serializer class names, removed options documented as available, and broken code examples across the JVM, Python, `.NET`, Go, and JavaScript drivers.
+* Fixed bug in `gremlin-javascript` GraphBinary and GraphSON deserialization where `OffsetDateTime` values outside the JavaScript `Date` range were silently returned as invalid `Date` objects instead of failing deserialization.
+* Added a `propertyMap()` helper to view an element's properties as a map keyed by property key, on the `Element` structure API in `gremlin-core` (inherited by `Vertex`, `Edge`, and `VertexProperty`) and on `Vertex`, `Edge`, and `VertexProperty` in `gremlin-javascript`, `gremlin-python`, `gremlin-dotnet`, and `gremlin-go`.
+* Fixed a bug in `gremlin-go` where a `VertexProperty` deserialized from GraphBinary did not have its `Key` field populated, causing `Vertex.PropertyMap()` to group properties under an empty key.
+* Removed `final` from `RepeatStep` to allow providers to extend it.
+* Restricted GraphSON 2.0 and 3.0 `TraversalStrategy` deserialization to registered strategies. *(breaking)*
+
+==== Bugs
+
+* TINKERPOP-3185 Ensure consistency of option key constants for with()
+* TINKERPOP-3225 conjoin has incorrect null handling *(breaking)*
+* TINKERPOP-3270 `where(P)` throws `ClassCastException` for non-String predicate values instead of a descriptive validation error
+* TINKERPOP-3271 subgraph() throws ClassCastException instead of a descriptive error for non-Edge input
+* TINKERPOP-3273 V and hasId consistency with collection unrolling
+* TINKERPOP-3275 gremlin-python graphbinary BigInt serializer incorrect for negative boundary values
+* TINKERPOP-3276 gremlin-javascript offsetdatetime silently creates incorrect values
+* TINKERPOP-3277 gremlin-go can't serialize zero in bigdecimal/biginteger
+* TINKERPOP-3278 Gryo IO unsafe Java deserialization
+* TINKERPOP-3279 GraphSON 1.0 embedded types unsafe deserialization *(breaking)*
+* TINKERPOP-3281 GraphBinary deserializer unbounded pre-allocation from length prefixes
+
+==== Improvements
+
+* TINKERPOP-2085 Remove dependency on Mono
+* TINKERPOP-3042 Deprecate ProductiveByStrategy
+* TINKERPOP-3151 Allow floats with no leading digits
+* TINKERPOP-3179 Support withComputer() for go
+* TINKERPOP-3238 fail() improvements for remote applications
+* TINKERPOP-3242 Pull Configuring interface into VertexStepContract and GraphStepContract
+* TINKERPOP-3243 Add next(n) batch iteration to gremlin-javascript
+* TINKERPOP-3244 Add next(n) batch iteration to gremlin-go for GLV parity
 
 [[release-3-8-1]]
 === TinkerPop 3.8.1 (Release Date: April 1, 2026)
@@ -368,12 +495,85 @@ This release also includes changes from <<release-3-7-5, 3.7.5>>.
 
 image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/gremlin-zamfir.png[width=185]
 
-[[release-3-7-7]]
-=== TinkerPop 3.7.7 (Release Date: NOT OFFICIALLY RELEASED YET)
+[[release-3-7-8]]
+=== TinkerPop 3.7.8 (Release Date: NOT OFFICIALLY RELEASED YET)
 
+* Fixed `loops()` silently overflowing its internal counter and wrapping to a negative count; the counter now uses `int` instead of `short` and throws an `IllegalStateException` if Integer.MAX_VALUE iterations is ever exceeded.
+* Fixed `gremlin-python` GraphBinary serialization of `int` values outside the Java `int` range, which raised a `struct.error` rather than writing a `Long`.
+* Fixed bug in `TinkerTransactionGraph` where an indexed lookup missed a vertex or edge that had been modified in the same transaction, such as by adding an edge to a vertex or changing another property.
+* Fixed `TinkerTransactionGraph` rollback, which threw a `NullPointerException` when only a vertex index existed and left rolled-back entries visible to an indexed edge lookup when only an edge index existed.
+* Fixed `TinkerGraph` throwing a `NullPointerException` when an indexed property with a `null` value was changed or removed.
+* Prevented repeated `option(onCreate)`, `option(onMatch)`, `option(outV)` and `option(inV)` calls on `mergeV()` and `mergeE()`, which now throw an `IllegalArgumentException` instead of silently keeping only the last one.
+* Fixed the Gherkin feature test harness to assert errors raised during traversal construction.
+* Fixed bug in `TinkerTransactionGraph` where a write to an element found through an index, or through a reference kept across a commit, changed committed state directly, so it was visible to other transactions before commit and not undone by rollback.
+* Fixed `gremlin-javascript` not exporting `CardinalityValue` from `gremlin.process`.
+
+[[release-3-7-7]]
+=== TinkerPop 3.7.7 (Release Date: September 1, 2026)
+
+This release also includes changes from <<release-3-7-6, 3.7.6>>.
+
+* Fixed GraphBinary deserialization to reject invalid length and count values with an `IOException`.
+* Disabled unsafe Java deserialization on the Gryo IO paths and added `GryoMapper.Builder.javaSerializationAllowed(boolean)` to control it.
+* Added verification to `io()` ensuring a class named by `IO.reader`, `IO.writer` or `IO.registry` implements the expected interface before loading and initializing it.
+* Fixed `io().write()` to resolve its `GraphWriter` before opening the output file, so that a writer which cannot be constructed no longer truncates the target.
+* Fixed `TinkerGraph` GraphSON deserialization to fail fast with `JsonParseException` on malformed `tinker:graph` input.
+* Changed GraphSON 1.0 typed deserialization to resolve a `@class` type id only when the name is in a set of exact class names.
+* Restricted Hadoop/Spark OLAP `io()` from a remotely submitted traversal to operator-approved reader/writer classes and `with()` keys, adding the `gremlin.io.trusted`, `gremlin.io.approvedClasses` and `gremlin.io.approvedGraphConfigKeys` options.
+* Restricted OLAP `GraphComputer.configure()` from a remotely submitted traversal to built-in and operator-approved keys, adding the `gremlin.io.approvedComputerConfigKeys` option.
+* Fixed OLAP `io()` to configure each request against its own copy of the graph configuration, so a request's reader/writer, file location, and `with()` options no longer persist on or leak across the shared graph.
+* Fixed `subgraph()` to throw a descriptive error identifying the required `Edge` input instead of an internal `ClassCastException` when the traversal produces a non-edge value.
+* Fixed `where(P)` to throw a descriptive error identifying the required String scope key (and suggesting `is(P)` for value comparisons) instead of an internal `ClassCastException` when given a non-String predicate value.
+* Fixed `PeerPressure.property_name` in `gremlin-python` incorrectly mapping to the `pageRank` property name token.
+* Added `NextN(n)` to `Traversal` in `gremlin-go` for batched result iteration, providing API parity with `next(n)` in the Java, Python, and .NET GLVs.
+* Added `next(n)` to `Traversal` in `gremlin-javascript` for batched result iteration, providing API parity with `next(n)` in the Java, Python, and .NET GLVs.
+* Added `WithComputer()` to `GraphTraversalSource` in `gremlin-go`, providing OLAP configuration parity with other language variants.
+* Added `FailResponseException` to `gremlin-driver` which is thrown `fail()` step is triggered on the server making it more consistent with embedded behavior.
+* Fixed `hasId()` to only unroll a collection when it is supplied as the single argument, aligning its behavior with `g.V()`/`g.E()`.
+* Allowed float literals without a leading digit (e.g. `.5`, `.5f`, `.5d`) in the Gremlin grammar to better match Groovy.
 * Fixed conjoin has incorrect null handling.
+* Strengthened nested class configuration for `HaltedTraverserStrategy`, `MatchAlgorithmStrategy`, and `VertexProgramStrategy`.
+* Bump Netty to 4.1.137.
+* Bumped `jackson-databind` to 2.18.9. `InetAddress` values in GraphSON must now be literal IP addresses as hostnames are no longer resolved during deserialization. *(breaking)*
+* Removed the Mono dependency from the `gremlin-dotnet` build/release process, using `dotnet pack`/`dotnet nuget push` instead of `mono nuget.exe`.
 * Expanded `gremlin-python` CI matrix to test against Python 3.9, 3.10, 3.11, 3.12, and 3.13.
 * Add Node 26 support for `gremlin-javascript` and `gremlint`.
+* Corrected numerous inaccuracies in the reference documentation, including wrong default values (connection pool sizes, buffer sizes, ports, timeouts), stale serializer class names, removed options documented as available, and broken code examples across the JVM, Python, `.NET`, Go, and JavaScript drivers.
+* Fixed Gremlin Server HTTP requests to release their buffers when request processing fails unexpectedly.
+* Fixed a panic in `gremlin-go` `PartitionStrategy` when `ReadPartitions` was left unset.
+* Fixed `gremlin-python` `ProductiveByStrategy` to pass through the `productiveKeys` argument, which was previously accepted but never serialized to the server.
+* Deprecated `ProductiveByStrategy` which was introduced as a temporary way to mimic pre-3.5.0 null processing behavior.
+* Backported `TraversalStrategy` registration mechanism in `TraversalStrategies` from the 3.8.x line.
+* Restricted `JavaTranslator` reconstruction of `TraversalStrategy` proxies to registered strategies that have not been denied with `denyStrategy()`.
+* Restricted GraphBinary `TraversalStrategy` deserialization to registered strategies that have not been denied with `denyStrategy()`.
+* Restricted GraphBinary, GraphSON and Gryo `Class` deserialization to classes registered with `ClassRegistry.register()`, `registerStrategy()` or `registerStrategies()`.
+* Fixed request isolation in HTTP and WebSocket authorization handlers.
+* Fixed `gremlin-python` GraphBinary serialization of `BigInteger`/`BigDecimal` negative boundary values (e.g. `-129`) that raised `OverflowError`.
+* Fixed `gremlin-go` GraphBinary serialization of zero `BigInteger`/`BigDecimal` values, which were encoded with zero length and rejected by Java servers.
+* Capped by count and by total size the requests `SaslAuthenticationHandler` retains on a channel while its SASL authentication is pending, and closed the channel when that authentication does not complete within 30 seconds, all three tunable with the new `authentication.maxDeferredRequests`, `authentication.maxPreAuthRetainedBytes` and `authentication.preAuthTimeout` settings.
+
+==== Bugs
+
+* TINKERPOP-3225 conjoin has incorrect null handling
+* TINKERPOP-3270 where(P) throws ClassCastException for non-String predicate values instead of a descriptive validation error
+* TINKERPOP-3271 subgraph() throws ClassCastException instead of a descriptive error for non-Edge input
+* TINKERPOP-3273 V and hasId consistency with collection unrolling
+* TINKERPOP-3275 gremlin-python graphbinary BigInt serializer incorrect for negative boundary values
+* TINKERPOP-3277 gremlin-go can't serialize zero in bigdecimal/biginteger
+* TINKERPOP-3278 Gryo IO unsafe Java deserialization
+* TINKERPOP-3279 GraphSON 1.0 embedded types unsafe deserialization *(breaking)*
+* TINKERPOP-3281 GraphBinary deserializer unbounded pre-allocation from length prefixes *(breaking)*
+
+==== Improvements
+
+* TINKERPOP-2085 Remove dependency on Mono
+* TINKERPOP-3042 Deprecate ProductiveByStrategy
+* TINKERPOP-3151 Allow floats with no leading digits
+* TINKERPOP-3179 Support withComputer() for go
+* TINKERPOP-3185 Ensure consistency of option key constants for with()
+* TINKERPOP-3238 fail() improvements for remote applications
+* TINKERPOP-3243 Add next(n) batch iteration to gremlin-javascript
+* TINKERPOP-3244 Add next(n) batch iteration to gremlin-go for GLV parity
 
 [[release-3-7-6]]
 === TinkerPop 3.7.6 (Release Date: April 1, 2026)

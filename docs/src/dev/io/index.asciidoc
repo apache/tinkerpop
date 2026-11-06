@@ -25,6 +25,7 @@ image::apache-tinkerpop-logo.png[width=500,link="https://tinkerpop.apache.org"]
 
 *x.y.z*
 
+[llms-summary="Details of TinkerPop's graph serialization formats — GraphML, GraphSON, Gryo, and GraphBinary — with format samples and implementation notes for producing and consuming graphs."]
 = IO Reference
 
 image:gremlin-io2.png[width=300]

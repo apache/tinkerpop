@@ -161,9 +161,10 @@ public final class GryoWriter implements GraphWriter {
 
     public final static class Builder implements WriterBuilder<GryoWriter> {
         /**
-         * Always creates the most current version available.
+         * Always creates the most current version available. Native Java serialization is disabled here as it is on
+         * the {@link GryoReader} default, so that a document written here can always be read back.
          */
-        private Mapper<Kryo> gryoMapper = GryoMapper.build().create();
+        private Mapper<Kryo> gryoMapper = GryoMapper.build().javaSerializationAllowed(false).create();
 
         private Builder() {
         }

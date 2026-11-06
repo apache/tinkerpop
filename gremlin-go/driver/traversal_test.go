@@ -21,11 +21,13 @@ package gremlingo
 
 import (
 	"crypto/tls"
+	"fmt"
 	"reflect"
 	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestTraversal(t *testing.T) {
@@ -54,320 +56,6 @@ func TestTraversal(t *testing.T) {
 		promise := g.V().Count().Iterate()
 		assert.NotNil(t, <-promise)
 	})
-
-	// TODO enable when transaction is implemented
-	//t.Run("Test Transaction commit", func(t *testing.T) {
-	//	// Start a transaction traversal.
-	//	remote := newConnection(t)
-	//	g := Traversal_().With(remote)
-	//	startCount := getCount(t, g)
-	//	tx := g.Tx()
-	//
-	//	// Except transaction to not be open until begin is called.
-	//	assert.False(t, tx.IsOpen())
-	//	gtx, _ := tx.Begin()
-	//	assert.True(t, tx.IsOpen())
-	//
-	//	addV(t, gtx, "lyndon")
-	//	addV(t, gtx, "valentyn")
-	//	assert.Equal(t, startCount, getCount(t, g))
-	//	assert.Equal(t, startCount+2, getCount(t, gtx))
-	//
-	//	// Commit the transaction, this should close it.
-	//	// Our vertex count outside the transaction should be 2 + the start count.
-	//	err := tx.Commit()
-	//	assert.Nil(t, err)
-	//
-	//	assert.False(t, tx.IsOpen())
-	//	assert.Equal(t, startCount+2, getCount(t, g))
-	//
-	//	dropGraphCheckCount(t, g)
-	//	verifyGtxClosed(t, gtx)
-	//})
-	//
-	//t.Run("Test Transaction rollback", func(t *testing.T) {
-	//	// Start a transaction traversal.
-	//	remote := newConnection(t)
-	//	g := Traversal_().With(remote)
-	//	startCount := getCount(t, g)
-	//	tx := g.Tx()
-	//
-	//	// Except transaction to not be open until begin is called.
-	//	assert.False(t, tx.IsOpen())
-	//	gtx, _ := tx.Begin()
-	//	assert.True(t, tx.IsOpen())
-	//
-	//	addV(t, gtx, "lyndon")
-	//	addV(t, gtx, "valentyn")
-	//	assert.Equal(t, startCount, getCount(t, g))
-	//	assert.Equal(t, startCount+2, getCount(t, gtx))
-	//
-	//	// Rollback the transaction, this should close it.
-	//	// Our vertex count outside the transaction should be the start count.
-	//	err := tx.Rollback()
-	//	assert.Nil(t, err)
-	//
-	//	assert.False(t, tx.IsOpen())
-	//	assert.Equal(t, startCount, getCount(t, g))
-	//
-	//	dropGraphCheckCount(t, g)
-	//	verifyGtxClosed(t, gtx)
-	//})
-	//
-	//t.Run("Test Transaction flows", func(t *testing.T) {
-	//	// Start a transaction traversal.
-	//	remote := newConnection(t)
-	//	g := Traversal_().With(remote)
-	//	tx := g.Tx()
-	//	assert.False(t, tx.IsOpen())
-	//
-	//	// Commit should return error when transaction not started
-	//	err := tx.Commit()
-	//	assert.NotNil(t, err)
-	//
-	//	// Rollback should return error when transaction not started
-	//	err = tx.Rollback()
-	//	assert.NotNil(t, err)
-	//
-	//	// Create transaction and verify it is open.
-	//	gtx, err := tx.Begin()
-	//	assert.Nil(t, err)
-	//	assert.NotNil(t, gtx)
-	//	assert.True(t, tx.IsOpen())
-	//
-	//	// Can't open inner transaction.
-	//	innerTx, err := gtx.Tx().Begin()
-	//	assert.Nil(t, innerTx)
-	//	assert.NotNil(t, err)
-	//
-	//	// Commit this unused transaction and verify it is no longer open.
-	//	err = tx.Commit()
-	//	assert.Nil(t, err)
-	//	assert.False(t, tx.IsOpen())
-	//
-	//	// Create another transaction and verify it is open.
-	//	gtx, err = tx.Begin()
-	//	assert.Nil(t, err)
-	//	assert.NotNil(t, gtx)
-	//	assert.True(t, tx.IsOpen())
-	//
-	//	// Rollback this unused transaction and verify it is no longer open.
-	//	err = tx.Rollback()
-	//	assert.Nil(t, err)
-	//	assert.False(t, tx.IsOpen())
-	//})
-	//
-	//t.Run("Test multi commit Transaction", func(t *testing.T) {
-	//	// Start a transaction traversal.
-	//	remote := newConnection(t)
-	//	g := Traversal_().With(remote)
-	//	startCount := getCount(t, g)
-	//
-	//	// Create two transactions.
-	//	tx1 := g.Tx()
-	//	tx2 := g.Tx()
-	//
-	//	// Generate two GraphTraversalSource's for each transaction with begin.
-	//	gtx1, _ := tx1.Begin()
-	//	gtx2, _ := tx2.Begin()
-	//	verifyTxState(t, true, tx1, tx2)
-	//
-	//	// Add node to gtx1, which should be visible to gtx1, not gtx2.
-	//	addNodeValidateTransactionState(t, g, gtx1, startCount, startCount, tx1, tx2)
-	//
-	//	// Add node to gtx2, which should be visible to gtx2, not gtx1
-	//	addNodeValidateTransactionState(t, g, gtx2, startCount, startCount, tx1, tx2)
-	//
-	//	// Add node to gtx1, which should be visible to gtx1, not gtx2. Note previous node also added.
-	//	addNodeValidateTransactionState(t, g, gtx1, startCount, startCount+1, tx1, tx2)
-	//
-	//	tx1.Commit()
-	//	verifyTxState(t, false, tx1)
-	//	verifyTxState(t, true, tx2)
-	//	assert.Equal(t, startCount+2, getCount(t, g))
-	//
-	//	tx2.Commit()
-	//	verifyTxState(t, false, tx1, tx2)
-	//	assert.Equal(t, startCount+3, getCount(t, g))
-	//})
-	//
-	//t.Run("Test multi rollback Transaction", func(t *testing.T) {
-	//	// Start a transaction traversal.
-	//	remote := newConnection(t)
-	//	g := Traversal_().With(remote)
-	//	startCount := getCount(t, g)
-	//
-	//	// Create two transactions.
-	//	tx1 := g.Tx()
-	//	tx2 := g.Tx()
-	//
-	//	// Generate two GraphTraversalSource's for each transaction with begin.
-	//	gtx1, _ := tx1.Begin()
-	//	gtx2, _ := tx2.Begin()
-	//	verifyTxState(t, true, tx1, tx2)
-	//
-	//	// Add node to gtx1, which should be visible to gtx1, not gtx2.
-	//	addNodeValidateTransactionState(t, g, gtx1, startCount, startCount, tx1, tx2)
-	//
-	//	// Add node to gtx2, which should be visible to gtx2, not gtx1
-	//	addNodeValidateTransactionState(t, g, gtx2, startCount, startCount, tx1, tx2)
-	//
-	//	// Add node to gtx1, which should be visible to gtx1, not gtx2. Note previous node also added.
-	//	addNodeValidateTransactionState(t, g, gtx1, startCount, startCount+1, tx1, tx2)
-	//
-	//	tx1.Rollback()
-	//	verifyTxState(t, false, tx1)
-	//	verifyTxState(t, true, tx2)
-	//	assert.Equal(t, startCount, getCount(t, g))
-	//
-	//	tx2.Rollback()
-	//	verifyTxState(t, false, tx1, tx2)
-	//	assert.Equal(t, startCount, getCount(t, g))
-	//})
-	//
-	//t.Run("Test multi commit and rollback Transaction", func(t *testing.T) {
-	//	// Start a transaction traversal.
-	//	remote := newConnection(t)
-	//	g := Traversal_().With(remote)
-	//	startCount := getCount(t, g)
-	//
-	//	// Create two transactions.
-	//	tx1 := g.Tx()
-	//	tx2 := g.Tx()
-	//
-	//	// Generate two GraphTraversalSource's for each transaction with begin.
-	//	gtx1, _ := tx1.Begin()
-	//	gtx2, _ := tx2.Begin()
-	//	verifyTxState(t, true, tx1, tx2)
-	//
-	//	// Add node to gtx1, which should be visible to gtx1, not gtx2.
-	//	addNodeValidateTransactionState(t, g, gtx1, startCount, startCount, tx1, tx2)
-	//
-	//	// Add node to gtx2, which should be visible to gtx2, not gtx1
-	//	addNodeValidateTransactionState(t, g, gtx2, startCount, startCount, tx1, tx2)
-	//
-	//	// Add node to gtx1, which should be visible to gtx1, not gtx2. Note previous node also added.
-	//	addNodeValidateTransactionState(t, g, gtx1, startCount, startCount+1, tx1, tx2)
-	//
-	//	tx1.Commit()
-	//	verifyTxState(t, false, tx1)
-	//	verifyTxState(t, true, tx2)
-	//	assert.Equal(t, startCount+2, getCount(t, g))
-	//
-	//	tx2.Rollback()
-	//	verifyTxState(t, false, tx1, tx2)
-	//	assert.Equal(t, startCount+2, getCount(t, g))
-	//})
-	//
-	//t.Run("Test Transaction close", func(t *testing.T) {
-	//	// Start a transaction traversal.
-	//	remote := newConnection(t)
-	//	g := Traversal_().With(remote)
-	//	dropGraphCheckCount(t, g)
-	//
-	//	// Create two transactions.
-	//	tx1 := g.Tx()
-	//	tx2 := g.Tx()
-	//
-	//	// Generate two GraphTraversalSource's for each transaction with begin.
-	//	gtx1, _ := tx1.Begin()
-	//	gtx2, _ := tx2.Begin()
-	//	verifyTxState(t, true, tx1, tx2)
-	//
-	//	// Add stuff to both gtx.
-	//	addNodeValidateTransactionState(t, g, gtx1, 0, 0, tx1, tx2)
-	//	addNodeValidateTransactionState(t, g, gtx2, 0, 0, tx1, tx2)
-	//	addNodeValidateTransactionState(t, g, gtx2, 0, 1, tx1, tx2)
-	//	addNodeValidateTransactionState(t, g, gtx2, 0, 2, tx1, tx2)
-	//
-	//	// someone gets lazy and doesn't commit/rollback and just calls close() - the graph
-	//	// will decide how to treat the transaction
-	//	tx1.Close()
-	//	tx2.Close()
-	//
-	//	verifyGtxClosed(t, gtx1)
-	//	verifyGtxClosed(t, gtx2)
-	//
-	//	remote = newConnection(t)
-	//	g = Traversal_().With(remote)
-	//	assert.Equal(t, int32(0), getCount(t, g))
-	//})
-	//
-	//t.Run("Test Transaction close tx from parent", func(t *testing.T) {
-	//	// Start a transaction traversal.
-	//	remote := newConnection(t)
-	//	g := Traversal_().With(remote)
-	//	dropGraphCheckCount(t, g)
-	//
-	//	// Create two transactions.
-	//	tx1 := g.Tx()
-	//	tx2 := g.Tx()
-	//
-	//	// Generate two GraphTraversalSource's for each transaction with begin.
-	//	gtx1, _ := tx1.Begin()
-	//	gtx2, _ := tx2.Begin()
-	//	verifyTxState(t, true, tx1, tx2)
-	//
-	//	// Add stuff to both gtx.
-	//	addNodeValidateTransactionState(t, g, gtx1, 0, 0, tx1, tx2)
-	//	addNodeValidateTransactionState(t, g, gtx2, 0, 0, tx1, tx2)
-	//	addNodeValidateTransactionState(t, g, gtx2, 0, 1, tx1, tx2)
-	//	addNodeValidateTransactionState(t, g, gtx2, 0, 2, tx1, tx2)
-	//
-	//	// someone gets lazy and doesn't commit/rollback and just calls Close() but on the parent
-	//	// DriverRemoteConnection for all the session that were created via Tx() - the graph
-	//	// will decide how to treat the transaction
-	//	remote.Close()
-	//
-	//	assert.False(t, tx1.IsOpen())
-	//	assert.False(t, tx2.IsOpen())
-	//	verifyGtxClosed(t, gtx1)
-	//	verifyGtxClosed(t, gtx2)
-	//
-	//	remote = newConnection(t)
-	//	g = Traversal_().With(remote)
-	//	assert.Equal(t, int32(0), getCount(t, g))
-	//})
-	//
-	//t.Run("Test commit if no transaction started", func(t *testing.T) {
-	//	// Start a traversal.
-	//	g := newWithOptionsConnection(t)
-	//
-	//	// Create transactions
-	//	tx := g.Tx()
-	//
-	//	// try to commit
-	//	err := tx.Commit()
-	//	assert.Equal(t, "E1103: cannot commit a transaction that is not started", err.Error())
-	//})
-	//
-	//t.Run("Test rollback if no transaction started", func(t *testing.T) {
-	//	// Start a traversal.
-	//	g := newWithOptionsConnection(t)
-	//
-	//	// Create transactions
-	//	tx := g.Tx()
-	//
-	//	// try to rollback
-	//	err := tx.Rollback()
-	//	assert.Equal(t, "E1102: cannot rollback a transaction that is not started", err.Error())
-	//})
-	//
-	//t.Run("Test commit if no transaction support for Graph", func(t *testing.T) {
-	//	// Start a traversal.
-	//	g := newWithOptionsConnection(t)
-	//
-	//	// Create transactions
-	//	tx := g.Tx()
-	//
-	//	_, err := tx.Begin()
-	//	assert.Nil(t, err)
-	//
-	//	// try to commit
-	//	err = tx.Commit()
-	//	assert.True(t, strings.HasPrefix(err.Error(),
-	//		"E0502: error in read loop, error message '{code:244 message:Graph does not support transactions"))
-	//})
 
 	t.Run("Test WithOptions.Tokens WithOptions.None", func(t *testing.T) {
 		skipTestsIfNotEnabled(t, integrationTestSuiteName, getEnvOrDefaultBool("RUN_INTEGRATION_WITH_ALIAS_TESTS", true))
@@ -791,7 +479,7 @@ func newWithOptionsConnection(t *testing.T) *GraphTraversalSource {
 
 	remote, err := NewDriverRemoteConnection(testNoAuthWithAliasUrl,
 		func(settings *DriverRemoteConnectionSettings) {
-			settings.TlsConfig = testNoAuthWithAliasTlsConfig
+			settings.Ssl = testNoAuthWithAliasTlsConfig
 			settings.TraversalSource = "gmodern"
 		})
 	assert.Nil(t, err)
@@ -805,45 +493,12 @@ func newTestRemoteConnection(t *testing.T) *DriverRemoteConnection {
 
 	remote, err := NewDriverRemoteConnection(testNoAuthWithAliasUrl,
 		func(settings *DriverRemoteConnectionSettings) {
-			settings.TlsConfig = testNoAuthWithAliasTlsConfig
+			settings.Ssl = testNoAuthWithAliasTlsConfig
 			settings.TraversalSource = "gtx"
 		})
 	assert.Nil(t, err)
 	assert.NotNil(t, remote)
 	return remote
-}
-
-func addNodeValidateTransactionState(t *testing.T, g, gAddTo *GraphTraversalSource,
-	gStartCount, gAddToStartCount int32, txVerifyList ...*Transaction) {
-	// Add a single node to gAddTo, but not g.
-	// Check that vertex count in g is gStartCount and vertex count in gAddTo is gAddToStartCount + 1.
-	addV(t, gAddTo, "lyndon")
-	assert.Equal(t, gAddToStartCount+1, getCount(t, gAddTo))
-	assert.Equal(t, gStartCount, getCount(t, g))
-	verifyTxState(t, true, txVerifyList...)
-}
-
-func verifyTxState(t *testing.T, expected bool, gtxList ...*Transaction) {
-	for _, tx := range gtxList {
-		assert.Equal(t, expected, tx.IsOpen())
-	}
-}
-
-func addV(t *testing.T, g *GraphTraversalSource, name string) {
-	promise := g.AddV("person").Property("name", name).Iterate()
-	assert.Nil(t, <-promise)
-}
-
-func dropGraphCheckCount(t *testing.T, g *GraphTraversalSource) {
-	dropGraph(t, g)
-	assert.Equal(t, int32(0), getCount(t, g))
-}
-
-func verifyGtxClosed(t *testing.T, gtx *GraphTraversalSource) {
-	// Attempt to add an additional vertex to the transaction. This should return an error since it
-	// has been closed.
-	promise := gtx.AddV("failure").Iterate()
-	assert.NotNil(t, <-promise)
 }
 
 func getCount(t *testing.T, g *GraphTraversalSource) int32 {
@@ -854,4 +509,218 @@ func getCount(t *testing.T, g *GraphTraversalSource) int32 {
 	val, err := count[0].GetInt32()
 	assert.Nil(t, err)
 	return val
+}
+
+func TestCompositePDTTraversalAPIIntegration(t *testing.T) {
+	testNoAuthUrl := getEnvOrDefaultString("GREMLIN_SERVER_URL", noAuthUrl)
+	testNoAuthEnable := getEnvOrDefaultBool("RUN_INTEGRATION_TESTS", true)
+
+	t.Run("raw PDT round-trip via Traversal API", func(t *testing.T) {
+		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
+		remote, err := NewDriverRemoteConnection(testNoAuthUrl,
+			func(settings *DriverRemoteConnectionSettings) {
+				settings.Ssl = &tls.Config{}
+				settings.TraversalSource = testServerModernGraphAlias
+			})
+		require.NoError(t, err)
+		defer remote.Close()
+
+		g := Traversal_().With(remote)
+		pdt := &CompositePDT{Name: "TestPoint", Fields: map[string]interface{}{"x": int32(1), "y": int32(2)}}
+
+		results, err := g.Inject(pdt).ToList()
+		require.NoError(t, err)
+		require.Len(t, results, 1)
+
+		result, ok := results[0].GetInterface().(*CompositePDT)
+		require.True(t, ok, "expected *CompositePDT, got %T", results[0].GetInterface())
+		assert.Equal(t, "TestPoint", result.Name)
+		assert.Equal(t, int32(1), result.Fields["x"])
+		assert.Equal(t, int32(2), result.Fields["y"])
+	})
+
+	t.Run("registry-based round-trip via typed struct", func(t *testing.T) {
+		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
+		registry := NewPDTRegistry()
+		registry.RegisterFuncsWithType("RegPoint", reflect.TypeOf(regPoint{}),
+			func(fields map[string]interface{}) (interface{}, error) {
+				return &regPoint{X: fields["x"].(int32), Y: fields["y"].(int32)}, nil
+			},
+			func(obj interface{}) (map[string]interface{}, error) {
+				p := obj.(regPoint)
+				return map[string]interface{}{"x": p.X, "y": p.Y}, nil
+			})
+
+		remote, err := NewDriverRemoteConnection(testNoAuthUrl,
+			func(settings *DriverRemoteConnectionSettings) {
+				settings.Ssl = &tls.Config{}
+				settings.TraversalSource = testServerModernGraphAlias
+				settings.PDTRegistry = registry
+			})
+		require.NoError(t, err)
+		defer remote.Close()
+
+		g := Traversal_().With(remote)
+		point := regPoint{X: 5, Y: 10}
+
+		results, err := g.Inject(point).ToList()
+		require.NoError(t, err)
+		require.Len(t, results, 1)
+
+		result, ok := results[0].GetInterface().(*regPoint)
+		require.True(t, ok, "expected *regPoint, got %T", results[0].GetInterface())
+		assert.Equal(t, int32(5), result.X)
+		assert.Equal(t, int32(10), result.Y)
+	})
+}
+
+// regPoint is a plain struct used for registry-based tests.
+type regPoint struct {
+	X int32
+	Y int32
+}
+
+func TestPrimitivePDTTraversalAPIIntegration(t *testing.T) {
+	testNoAuthUrl := getEnvOrDefaultString("GREMLIN_SERVER_URL", noAuthUrl)
+	testNoAuthEnable := getEnvOrDefaultBool("RUN_INTEGRATION_TESTS", true)
+
+	t.Run("unregistered raw primitive PDT round-trip", func(t *testing.T) {
+		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
+		remote, err := NewDriverRemoteConnection(testNoAuthUrl,
+			func(settings *DriverRemoteConnectionSettings) {
+				settings.Ssl = &tls.Config{}
+				settings.TraversalSource = testServerModernGraphAlias
+			})
+		require.NoError(t, err)
+		defer remote.Close()
+
+		g := Traversal_().With(remote)
+		pdt := &PrimitivePDT{Name: "UnregisteredPrim", Value: "00123"}
+
+		results, err := g.Inject(pdt).ToList()
+		require.NoError(t, err)
+		require.Len(t, results, 1)
+
+		result, ok := results[0].GetInterface().(*PrimitivePDT)
+		require.True(t, ok, "expected *PrimitivePDT, got %T", results[0].GetInterface())
+		assert.Equal(t, "UnregisteredPrim", result.Name)
+		assert.Equal(t, "00123", result.Value)
+	})
+
+	t.Run("registered primitive PDT auto-dehydrate and hydrate", func(t *testing.T) {
+		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
+
+		type tinkerId string
+		registry := NewPDTRegistry()
+		registry.RegisterPrimitiveFuncsWithType("x:TinkerId", reflect.TypeOf(tinkerId("")),
+			func(s string) (interface{}, error) { return tinkerId(s), nil },
+			func(obj interface{}) (string, error) { return string(obj.(tinkerId)), nil })
+
+		remote, err := NewDriverRemoteConnection(testNoAuthUrl,
+			func(settings *DriverRemoteConnectionSettings) {
+				settings.Ssl = &tls.Config{}
+				settings.TraversalSource = testServerModernGraphAlias
+				settings.PDTRegistry = registry
+			})
+		require.NoError(t, err)
+		defer remote.Close()
+
+		g := Traversal_().With(remote)
+		id := tinkerId("abc-123")
+
+		results, err := g.Inject(id).ToList()
+		require.NoError(t, err)
+		require.Len(t, results, 1)
+
+		result, ok := results[0].GetInterface().(tinkerId)
+		require.True(t, ok, "expected tinkerId, got %T", results[0].GetInterface())
+		assert.Equal(t, tinkerId("abc-123"), result)
+	})
+
+	t.Run("registered primitive nested in composite", func(t *testing.T) {
+		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
+
+		// A distinct named type is required to route a value through the PrimitivePDT registry.
+		// Go natively serializes the built-in uint32 (argAsString emits it as a Gremlin Long), and
+		// that native type-switch runs before the PDT registry lookup — so a bare uint32 would never
+		// reach a primitive adapter. Defining myUint32 (a named type based on uint32) opts the type
+		// into PDT handling. This differs from .NET, where System.UInt32 is not natively serialized
+		// and can be registered directly. See tinkerpop-kof for the adapter-vs-native-type precedence follow-up.
+		type myUint32 uint32
+		registry := NewPDTRegistry()
+		registry.RegisterPrimitiveFuncsWithType("x:MyUint32", reflect.TypeOf(myUint32(0)),
+			func(s string) (interface{}, error) {
+				var v uint32
+				fmt.Sscanf(s, "%d", &v)
+				return myUint32(v), nil
+			},
+			func(obj interface{}) (string, error) {
+				return fmt.Sprintf("%d", obj.(myUint32)), nil
+			})
+
+		remote, err := NewDriverRemoteConnection(testNoAuthUrl,
+			func(settings *DriverRemoteConnectionSettings) {
+				settings.Ssl = &tls.Config{}
+				settings.TraversalSource = testServerModernGraphAlias
+				settings.PDTRegistry = registry
+			})
+		require.NoError(t, err)
+		defer remote.Close()
+
+		g := Traversal_().With(remote)
+		// Use a composite PDT with a primitive field
+		pdt := &CompositePDT{
+			Name: "Measurement",
+			Fields: map[string]interface{}{
+				"unit":  "kg",
+				"value": &PrimitivePDT{Name: "x:MyUint32", Value: "100"},
+			},
+		}
+
+		results, err := g.Inject(pdt).ToList()
+		require.NoError(t, err)
+		require.Len(t, results, 1)
+
+		result, ok := results[0].GetInterface().(*CompositePDT)
+		require.True(t, ok, "expected *CompositePDT, got %T", results[0].GetInterface())
+		assert.Equal(t, "Measurement", result.Name)
+		assert.Equal(t, "kg", result.Fields["unit"])
+		// The primitive value should be hydrated to myUint32
+		hydrated, ok := result.Fields["value"].(myUint32)
+		require.True(t, ok, "expected myUint32, got %T", result.Fields["value"])
+		assert.Equal(t, myUint32(100), hydrated)
+	})
+
+	t.Run("primitive PDT in collection", func(t *testing.T) {
+		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
+		remote, err := NewDriverRemoteConnection(testNoAuthUrl,
+			func(settings *DriverRemoteConnectionSettings) {
+				settings.Ssl = &tls.Config{}
+				settings.TraversalSource = testServerModernGraphAlias
+			})
+		require.NoError(t, err)
+		defer remote.Close()
+
+		g := Traversal_().With(remote)
+		list := []interface{}{
+			&PrimitivePDT{Name: "x:Val", Value: "one"},
+			&PrimitivePDT{Name: "x:Val", Value: "two"},
+		}
+
+		results, err := g.Inject(list).ToList()
+		require.NoError(t, err)
+		require.Len(t, results, 1)
+
+		resultList, ok := results[0].GetInterface().([]interface{})
+		require.True(t, ok, "expected []interface{}, got %T", results[0].GetInterface())
+		require.Len(t, resultList, 2)
+
+		p1, ok := resultList[0].(*PrimitivePDT)
+		require.True(t, ok)
+		assert.Equal(t, "one", p1.Value)
+
+		p2, ok := resultList[1].(*PrimitivePDT)
+		require.True(t, ok)
+		assert.Equal(t, "two", p2.Value)
+	})
 }

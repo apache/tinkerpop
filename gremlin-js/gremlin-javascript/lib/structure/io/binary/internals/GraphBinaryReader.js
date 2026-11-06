@@ -40,6 +40,7 @@ const StatusCode = {
 export default class GraphBinaryReader {
   constructor(ioc) {
     this.ioc = ioc;
+    this.pdtRegistry = null;
   }
 
   get mimeType() {
@@ -64,6 +65,7 @@ export default class GraphBinaryReader {
     }
 
     const reader = StreamReader.fromBuffer(buffer);
+    reader.pdtRegistry = this.pdtRegistry;
     return await this.#readFromReader(reader);
   }
 
@@ -81,6 +83,7 @@ export default class GraphBinaryReader {
    * @returns {AsyncGenerator<any>}
    */
   async *readResponseStream(reader) {
+    reader.pdtRegistry = this.pdtRegistry;
     // {version}
     const version = await reader.readUInt8();
     if (version !== 0x84) {

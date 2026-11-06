@@ -22,27 +22,44 @@ package gremlingo
 import (
 	"bytes"
 	"compress/zlib"
+	"context"
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
 	"io"
 	"net"
 	"net/http"
+	"net/url"
 	"strings"
 	"sync"
 	"time"
 )
 
+// Compression identifies the content-encoding negotiated with the Gremlin server.
+type Compression string
+
+const (
+	// CompressionNone disables compression. No Accept-Encoding header is sent.
+	CompressionNone Compression = "none"
+	// CompressionDeflate requests per-chunk deflate compression from the server (default).
+	CompressionDeflate Compression = "deflate"
+)
+
 // connectionSettings holds configuration for the connection.
 type connectionSettings struct {
-	tlsConfig                *tls.Config
-	connectionTimeout        time.Duration
+	ssl                      *tls.Config
+	connectTimeout           time.Duration
+	readTimeout              time.Duration
 	maxConnsPerHost          int
 	maxIdleConnsPerHost      int
-	idleConnTimeout          time.Duration
-	keepAliveInterval        time.Duration
-	enableCompression        bool
+	idleTimeout              time.Duration
+	keepAliveTime            time.Duration
+	compression              Compression
+	maxResponseHeaderBytes   int64
+	batchSize                int
+	proxy                    func(*http.Request) (*url.URL, error)
 	enableUserAgentOnConnect bool
+	pdtRegistry              *PDTRegistry
 }
 
 // connection handles HTTP request/response for Gremlin queries.
@@ -52,7 +69,6 @@ type connection struct {
 	httpClient   *http.Client
 	connSettings *connectionSettings
 	logHandler   *logHandler
-	serializer   *GraphBinarySerializer
 	interceptors []RequestInterceptor
 	wg           sync.WaitGroup
 }
@@ -61,16 +77,31 @@ type connection struct {
 const (
 	defaultMaxConnsPerHost     = 128               // Java: ConnectionPool.MAX_POOL_SIZE
 	defaultMaxIdleConnsPerHost = 8                 // Keep some connections warm
-	defaultIdleConnTimeout     = 180 * time.Second // Java: CONNECTION_IDLE_TIMEOUT_MILLIS
-	defaultConnectionTimeout   = 15 * time.Second  // Java: CONNECTION_SETUP_TIMEOUT_MILLIS
-	defaultKeepAliveInterval   = 30 * time.Second  // TCP keep-alive probe interval
+	defaultIdleTimeout         = 180 * time.Second // Java: CONNECTION_IDLE_TIMEOUT_MILLIS
+	defaultConnectTimeout      = 5 * time.Second   // TCP/transport-establishment timeout
+	defaultKeepAliveTime       = 30 * time.Second  // TCP keep-alive idle-before-probe interval
+	defaultBatchSizeValue      = 64                // Java: resultIterationBatchSize default
 )
+
+// resolveTimeout reconciles a duration option with its millisecond companion. The
+// *Millis form is the canonical/documented option; the time.Duration form is the
+// idiomatic Go companion. Supplying both (each non-zero) is a configuration error.
+// A zero result means "unset", letting the caller apply its default.
+func resolveTimeout(millis int, duration time.Duration, name string) (time.Duration, error) {
+	if millis != 0 && duration != 0 {
+		return 0, fmt.Errorf("set only one of %sMillis or %s, not both", name, name)
+	}
+	if millis != 0 {
+		return time.Duration(millis) * time.Millisecond, nil
+	}
+	return duration, nil
+}
 
 func newConnection(handler *logHandler, url string, connSettings *connectionSettings) *connection {
 	// Apply defaults for zero values
-	connectionTimeout := connSettings.connectionTimeout
-	if connectionTimeout == 0 {
-		connectionTimeout = defaultConnectionTimeout
+	connectTimeout := connSettings.connectTimeout
+	if connectTimeout == 0 {
+		connectTimeout = defaultConnectTimeout
 	}
 
 	maxConnsPerHost := connSettings.maxConnsPerHost
@@ -83,26 +114,57 @@ func newConnection(handler *logHandler, url string, connSettings *connectionSett
 		maxIdleConnsPerHost = defaultMaxIdleConnsPerHost
 	}
 
-	idleConnTimeout := connSettings.idleConnTimeout
-	if idleConnTimeout == 0 {
-		idleConnTimeout = defaultIdleConnTimeout
+	idleTimeout := connSettings.idleTimeout
+	if idleTimeout == 0 {
+		idleTimeout = defaultIdleTimeout
 	}
 
-	keepAliveInterval := connSettings.keepAliveInterval
-	if keepAliveInterval == 0 {
-		keepAliveInterval = defaultKeepAliveInterval
+	keepAliveTime := connSettings.keepAliveTime
+	if keepAliveTime == 0 {
+		keepAliveTime = defaultKeepAliveTime
+	}
+
+	// Default the proxy resolver to the environment (HTTP_PROXY/HTTPS_PROXY/NO_PROXY)
+	// unless an explicit override was provided. A custom http.Transport otherwise
+	// silently drops environment proxy configuration.
+	proxy := connSettings.proxy
+	if proxy == nil {
+		proxy = http.ProxyFromEnvironment
+	}
+
+	dialer := &net.Dialer{
+		Timeout:   connectTimeout,
+		KeepAlive: keepAliveTime,
+	}
+
+	readTimeout := connSettings.readTimeout
+	dialContext := dialer.DialContext
+	if readTimeout > 0 {
+		// Wrap each dialed connection so every Read re-arms the read deadline.
+		// This models an idle-read (per-read) timeout rather than a whole-request
+		// deadline, and resets correctly across pooled-connection reuse because the
+		// deadline is refreshed on every Read regardless of which request reuses it.
+		dialContext = func(ctx context.Context, network, addr string) (net.Conn, error) {
+			conn, err := dialer.DialContext(ctx, network, addr)
+			if err != nil {
+				return nil, err
+			}
+			return &readTimeoutConn{Conn: conn, timeout: readTimeout}, nil
+		}
 	}
 
 	transport := &http.Transport{
-		DialContext: (&net.Dialer{
-			Timeout:   connectionTimeout,
-			KeepAlive: keepAliveInterval,
-		}).DialContext,
-		TLSClientConfig:     connSettings.tlsConfig,
-		MaxConnsPerHost:     maxConnsPerHost,
-		MaxIdleConnsPerHost: maxIdleConnsPerHost,
-		IdleConnTimeout:     idleConnTimeout,
-		DisableCompression:  !connSettings.enableCompression,
+		Proxy:                  proxy,
+		DialContext:            dialContext,
+		TLSClientConfig:        connSettings.ssl,
+		MaxConnsPerHost:        maxConnsPerHost,
+		MaxIdleConnsPerHost:    maxIdleConnsPerHost,
+		IdleConnTimeout:        idleTimeout,
+		MaxResponseHeaderBytes: connSettings.maxResponseHeaderBytes,
+		// The server compresses per-GraphBinary-chunk (deflate) rather than using
+		// generic HTTP compression, so the manual decode path in getReader handles
+		// decompression. Disable net/http's transparent (gzip-only) handling.
+		DisableCompression: true,
 	}
 
 	return &connection{
@@ -110,7 +172,6 @@ func newConnection(handler *logHandler, url string, connSettings *connectionSett
 		httpClient:   &http.Client{Transport: transport}, // No Timeout - allows streaming
 		connSettings: connSettings,
 		logHandler:   handler,
-		serializer:   newGraphBinarySerializer(handler),
 	}
 }
 
@@ -119,28 +180,93 @@ func (c *connection) AddInterceptor(interceptor RequestInterceptor) {
 	c.interceptors = append(c.interceptors, interceptor)
 }
 
-// submit sends request and streams results directly to ResultSet
+// applyDefaultBatchSize fills the request's batchSize field with the connection-level
+// default when the per-request value is unset. This is a client-side default-fill; it
+// adds no wire field unless a batch size is in effect.
+func (c *connection) applyDefaultBatchSize(req *RequestMessage) {
+	if req == nil || c.connSettings == nil {
+		return
+	}
+	batchSize := c.connSettings.batchSize
+	if batchSize == 0 {
+		batchSize = defaultBatchSizeValue
+	}
+	if req.Fields == nil {
+		req.Fields = make(map[string]interface{})
+	}
+	if _, ok := req.Fields["batchSize"]; !ok {
+		req.Fields["batchSize"] = batchSize
+	}
+}
+
+// submit sends request and streams results directly to ResultSet.
+// Blocks until response headers arrive, ensuring the server has acknowledged
+// receipt of the request before returning.
 func (c *connection) submit(req *RequestMessage) (ResultSet, error) {
 	rs := newChannelResultSet()
 
+	// Fill the connection-level default batchSize when the request did not set one.
+	c.applyDefaultBatchSize(req)
+
+	// Send the HTTP request synchronously — blocks until response headers arrive
+	resp, err := c.sendRequest(req)
+	if err != nil {
+		rs.Close()
+		return nil, err
+	}
+
+	// If the HTTP status indicates an error and the response is not GraphBinary,
+	// read the body as a text/JSON error message instead of attempting binary
+	// deserialization which would produce cryptic errors.
+	contentType := resp.Header.Get(HeaderContentType)
+	if resp.StatusCode >= 400 && !strings.Contains(contentType, graphBinaryMimeType) {
+		defer func() {
+			io.Copy(io.Discard, resp.Body)
+			resp.Body.Close()
+		}()
+		bodyBytes, readErr := io.ReadAll(resp.Body)
+		if readErr != nil {
+			rs.Close()
+			return nil, fmt.Errorf("Gremlin Server returned HTTP %d and failed to read body: %w",
+				resp.StatusCode, readErr)
+		}
+		errorBody := string(bodyBytes)
+		errorMsg := tryExtractJSONError(errorBody)
+		if errorMsg == "" {
+			errorMsg = fmt.Sprintf("Gremlin Server returned HTTP %d: %s", resp.StatusCode, errorBody)
+		}
+		c.logHandler.logf(Error, failedToReceiveResponse, errorMsg)
+		rs.Close()
+		return nil, fmt.Errorf("%s", errorMsg)
+	}
+
+	// Stream the response body into the ResultSet asynchronously
 	c.wg.Add(1)
 	go func() {
 		defer c.wg.Done()
-		c.executeAndStream(req, rs)
+		// Drain any unread bytes so the connection can be reused gracefully.
+		// Without this, Go's HTTP client sends a TCP RST instead of FIN,
+		// causing "Connection reset by peer" errors on the server.
+		defer func() {
+			io.Copy(io.Discard, resp.Body)
+			if err := resp.Body.Close(); err != nil {
+				c.logHandler.logf(Debug, failedToCloseResponseBody, err.Error())
+			}
+		}()
+		defer rs.Close()
+		c.streamResponse(resp, rs)
 	}()
 
 	return rs, nil
 }
 
-func (c *connection) executeAndStream(req *RequestMessage, rs ResultSet) {
-	defer rs.Close()
-
+// sendRequest builds and sends the HTTP request, blocking until response headers arrive.
+func (c *connection) sendRequest(req *RequestMessage) (*http.Response, error) {
 	// Create HttpRequest for interceptors
 	httpReq, err := NewHttpRequest(http.MethodPost, c.url)
 	if err != nil {
 		c.logHandler.logf(Error, failedToSendRequest, err.Error())
-		rs.setError(err)
-		return
+		return nil, err
 	}
 
 	// Set default headers before interceptors
@@ -149,31 +275,24 @@ func (c *connection) executeAndStream(req *RequestMessage, rs ResultSet) {
 	// Set Body to the raw *RequestMessage so interceptors can inspect/modify it
 	httpReq.Body = req
 
+	// Promote transactionId to HTTP header before interceptors and serialization
+	c.promoteTransactionIdHeader(httpReq, req)
+
 	// Apply interceptors — they see *RequestMessage in Body (pre-serialization).
 	// Interceptors may replace Body with []byte, io.Reader, or *http.Request.
 	for _, interceptor := range c.interceptors {
 		if err := interceptor(httpReq); err != nil {
 			c.logHandler.logf(Error, failedToSendRequest, err.Error())
-			rs.setError(err)
-			return
+			return nil, err
 		}
 	}
 
-	// After interceptors, serialize if Body is still *RequestMessage
-	if r, ok := httpReq.Body.(*RequestMessage); ok {
-		if c.serializer != nil {
-			data, err := c.serializer.SerializeMessage(r)
-			if err != nil {
-				c.logHandler.logf(Error, failedToSendRequest, err.Error())
-				rs.setError(err)
-				return
-			}
-			httpReq.Body = data
-		} else {
-			errMsg := "request body was not serialized; either provide a serializer or add an interceptor that serializes the request"
-			c.logHandler.logf(Error, failedToSendRequest, errMsg)
-			rs.setError(fmt.Errorf("%s", errMsg))
-			return
+	// After interceptors, auto-serialize the body to JSON if still a *RequestMessage.
+	// SerializeBody is idempotent: if an interceptor already called it, this is a no-op.
+	if _, ok := httpReq.Body.(*RequestMessage); ok {
+		if _, err := httpReq.SerializeBody(); err != nil {
+			c.logHandler.logf(Error, failedToSendRequest, err.Error())
+			return nil, err
 		}
 	}
 
@@ -184,16 +303,14 @@ func (c *connection) executeAndStream(req *RequestMessage, rs ResultSet) {
 		httpGoReq, err = http.NewRequest(httpReq.Method, httpReq.URL.String(), bytes.NewReader(body))
 		if err != nil {
 			c.logHandler.logf(Error, failedToSendRequest, err.Error())
-			rs.setError(err)
-			return
+			return nil, err
 		}
 		httpGoReq.Header = httpReq.Headers
 	case io.Reader:
 		httpGoReq, err = http.NewRequest(httpReq.Method, httpReq.URL.String(), body)
 		if err != nil {
 			c.logHandler.logf(Error, failedToSendRequest, err.Error())
-			rs.setError(err)
-			return
+			return nil, err
 		}
 		httpGoReq.Header = httpReq.Headers
 	case *http.Request:
@@ -201,48 +318,21 @@ func (c *connection) executeAndStream(req *RequestMessage, rs ResultSet) {
 	default:
 		errMsg := fmt.Sprintf("unsupported body type after interceptors: %T", body)
 		c.logHandler.logf(Error, failedToSendRequest, errMsg)
-		rs.setError(fmt.Errorf("%s", errMsg))
-		return
+		return nil, fmt.Errorf("%s", errMsg)
 	}
 
+	// This blocks until response headers arrive
 	resp, err := c.httpClient.Do(httpGoReq)
 	if err != nil {
 		c.logHandler.logf(Error, failedToSendRequest, err.Error())
-		rs.setError(err)
-		return
-	}
-	defer func() {
-		// Drain any unread bytes so the connection can be reused gracefully.
-		// Without this, Go's HTTP client sends a TCP RST instead of FIN,
-		// causing "Connection reset by peer" errors on the server.
-		io.Copy(io.Discard, resp.Body)
-		if err := resp.Body.Close(); err != nil {
-			c.logHandler.logf(Debug, failedToCloseResponseBody, err.Error())
-		}
-	}()
-
-	// If the HTTP status indicates an error and the response is not GraphBinary,
-	// read the body as a text/JSON error message instead of attempting binary
-	// deserialization which would produce cryptic errors.
-	contentType := resp.Header.Get(HeaderContentType)
-	if resp.StatusCode >= 400 && !strings.Contains(contentType, graphBinaryMimeType) {
-		bodyBytes, readErr := io.ReadAll(resp.Body)
-		if readErr != nil {
-			c.logHandler.logf(Error, failedToReceiveResponse, readErr.Error())
-			rs.setError(fmt.Errorf("Gremlin Server returned HTTP %d and failed to read body: %w",
-				resp.StatusCode, readErr))
-			return
-		}
-		errorBody := string(bodyBytes)
-		errorMsg := tryExtractJSONError(errorBody)
-		if errorMsg == "" {
-			errorMsg = fmt.Sprintf("Gremlin Server returned HTTP %d: %s", resp.StatusCode, errorBody)
-		}
-		c.logHandler.logf(Error, failedToReceiveResponse, errorMsg)
-		rs.setError(fmt.Errorf("%s", errorMsg))
-		return
+		return nil, err
 	}
 
+	return resp, nil
+}
+
+// streamResponse reads the response body and pushes results into the ResultSet.
+func (c *connection) streamResponse(resp *http.Response, rs ResultSet) {
 	reader, zlibReader, err := c.getReader(resp)
 	if err != nil {
 		c.logHandler.logf(Error, failedToReceiveResponse, err.Error())
@@ -262,14 +352,27 @@ func (c *connection) executeAndStream(req *RequestMessage, rs ResultSet) {
 
 // setHttpRequestHeaders sets default headers on HttpRequest (for interceptors)
 func (c *connection) setHttpRequestHeaders(req *HttpRequest) {
-	req.Headers.Set(HeaderContentType, graphBinaryMimeType)
 	req.Headers.Set(HeaderAccept, graphBinaryMimeType)
 
 	if c.connSettings.enableUserAgentOnConnect {
 		req.Headers.Set(HeaderUserAgent, userAgent)
 	}
-	if c.connSettings.enableCompression {
+	if c.connSettings.compression == CompressionDeflate {
 		req.Headers.Set(HeaderAcceptEncoding, "deflate")
+	}
+}
+
+// promoteTransactionIdHeader extracts transactionId from the request message
+// fields and sets it as the X-Transaction-Id HTTP header. The field remains in
+// the body for dual transmission per the HTTP transaction protocol spec.
+func (c *connection) promoteTransactionIdHeader(req *HttpRequest, msg *RequestMessage) {
+	if msg == nil {
+		return
+	}
+	if txId, ok := msg.Fields["transactionId"]; ok {
+		if txIdStr, ok := txId.(string); ok && txIdStr != "" {
+			req.Headers.Set("X-Transaction-Id", txIdStr)
+		}
 	}
 }
 
@@ -284,12 +387,29 @@ func (c *connection) getReader(resp *http.Response) (io.Reader, io.Closer, error
 	return resp.Body, nil, nil
 }
 
+// setDeserializationError reports a failure to decode the GraphBinary response stream. The
+// underlying error is wrapped so that callers can tell a malformed or truncated response apart
+// from a transport failure, regardless of which point in the stream the decode gave out at.
+func (c *connection) setDeserializationError(rs ResultSet, err error) {
+	deserErr := fmt.Errorf("failed to deserialize response: %w", err)
+	c.logHandler.logf(Error, failedToReceiveResponse, deserErr.Error())
+	rs.setError(deserErr)
+}
+
 func (c *connection) streamToResultSet(reader io.Reader, rs ResultSet) {
-	d := NewGraphBinaryDeserializer(reader)
+	var d *GraphBinaryDeserializer
+	if c.connSettings.pdtRegistry != nil {
+		d = NewGraphBinaryDeserializerWithRegistry(reader, c.connSettings.pdtRegistry)
+	} else {
+		d = NewGraphBinaryDeserializer(reader)
+	}
 	if err := d.ReadHeader(); err != nil {
-		if err != io.EOF {
-			c.logHandler.logf(Error, failedToReceiveResponse, err.Error())
-			rs.setError(err)
+		if err == io.EOF {
+			emptyBodyErr := fmt.Errorf("server returned an empty response body")
+			c.logHandler.logf(Error, failedToReceiveResponse, emptyBodyErr.Error())
+			rs.setError(emptyBodyErr)
+		} else {
+			c.setDeserializationError(rs, err)
 		}
 		return
 	}
@@ -298,8 +418,7 @@ func (c *connection) streamToResultSet(reader io.Reader, rs ResultSet) {
 		obj, err := d.ReadFullyQualified()
 		if err != nil {
 			if err != io.EOF {
-				c.logHandler.logf(Error, failedToReceiveResponse, err.Error())
-				rs.setError(err)
+				c.setDeserializationError(rs, err)
 			}
 			return
 		}
@@ -307,8 +426,7 @@ func (c *connection) streamToResultSet(reader io.Reader, rs ResultSet) {
 		if marker, ok := obj.(Marker); ok && marker == EndOfStream() {
 			code, msg, _, err := d.ReadStatus()
 			if err != nil {
-				c.logHandler.logf(Error, failedToReceiveResponse, err.Error())
-				rs.setError(err)
+				c.setDeserializationError(rs, err)
 				return
 			}
 			if code != 200 && code != 0 {
@@ -320,14 +438,12 @@ func (c *connection) streamToResultSet(reader io.Reader, rs ResultSet) {
 		if d.IsBulked() {
 			bulkObj, err := d.ReadFullyQualified()
 			if err != nil {
-				c.logHandler.logf(Error, failedToReceiveResponse, err.Error())
-				rs.setError(err)
+				c.setDeserializationError(rs, err)
 				return
 			}
 			bulk, ok := bulkObj.(int64)
 			if !ok {
-				c.logHandler.logf(Error, failedToReceiveResponse, "expected int64 bulk count")
-				rs.setError(fmt.Errorf("expected int64 bulk count, got %T", bulkObj))
+				c.setDeserializationError(rs, fmt.Errorf("expected int64 bulk count, got %T", bulkObj))
 				return
 			}
 			rs.Channel() <- &Result{&Traverser{Bulk: bulk, Value: obj}}
@@ -356,4 +472,21 @@ func tryExtractJSONError(body string) string {
 func (c *connection) close() {
 	c.wg.Wait()
 	c.httpClient.CloseIdleConnections()
+}
+
+// readTimeoutConn wraps a net.Conn to enforce a per-read (idle-read) timeout.
+// Each Read resets the read deadline to now+timeout, so the deadline measures the
+// gap between reads rather than the total request duration. Because the deadline is
+// re-armed on every Read, it resets correctly when a pooled connection is reused for
+// a subsequent request.
+type readTimeoutConn struct {
+	net.Conn
+	timeout time.Duration
+}
+
+func (c *readTimeoutConn) Read(b []byte) (int, error) {
+	if err := c.Conn.SetReadDeadline(time.Now().Add(c.timeout)); err != nil {
+		return 0, err
+	}
+	return c.Conn.Read(b)
 }

@@ -19,17 +19,18 @@
 
 import Connection, { ConnectionOptions } from './connection.js';
 import {RequestMessage} from "./request-message.js";
+import { Transaction } from '../process/transaction.js';
 
 export type RequestOptions = {
-  bindings?: any;
+  parameters?: any;
   language?: string;
   accept?: string;
-  evaluationTimeout?: number;
+  timeoutMillis?: number;
   batchSize?: number;
-  userAgent?: string;
   materializeProperties?: string;
   bulkResults?: boolean;
   params?: Record<string, any>;
+  transactionId?: string;
 };
 
 export type ClientOptions = ConnectionOptions & RequestOptions & { processor?: string };
@@ -45,9 +46,14 @@ export default class Client {
    * @param {String} url The resource uri.
    * @param {ClientOptions} [options] The connection options.
    */
+  // Tracks open transactions for cascade rollback on close. JS Set iteration
+  // is safe during concurrent modification (deleting the current element during
+  // for-of is spec-guaranteed to not affect remaining iterations).
+  private readonly _trackedTransactions = new Set<any>();
+
   constructor(
-    url: string,
-    private readonly options: ClientOptions = {},
+    readonly url: string,
+    readonly options: ClientOptions = {},
   ) {
     this._connection = new Connection(url, options);
   }
@@ -71,12 +77,12 @@ export default class Client {
   /**
    * Send a request to the Gremlin Server and buffer the entire response.
    * @param {string} message The script to send
-   * @param {Object|null} [bindings] The script bindings, if any.
+   * @param {Object|null} [parameters] The query parameters, if any.
    * @param {RequestOptions} [requestOptions] Configuration specific to the current request.
    * @returns {Promise<ResultSet>}
    */
-  submit(message: string, bindings: any | null, requestOptions?: RequestOptions): Promise<any> {
-    return this._connection.submit(this.#buildRequest(message, bindings, requestOptions));
+  submit(message: string, parameters: any | null, requestOptions?: RequestOptions): Promise<any> {
+    return this._connection.submit(this.#buildRequest(message, parameters, requestOptions));
   }
 
   /**
@@ -84,43 +90,55 @@ export default class Client {
    * Returns an AsyncGenerator that yields individual result items as they are
    * deserialized from the response. For bulked responses, yields Traverser objects.
    * @param {string} message The script to send
-   * @param {Object|null} [bindings] The script bindings, if any.
+   * @param {Object|null} [parameters] The query parameters, if any.
    * @param {RequestOptions} [requestOptions] Configuration specific to the current request.
    * @returns {AsyncGenerator<any>}
    */
-  async *stream(message: string, bindings: any | null, requestOptions?: RequestOptions): AsyncGenerator<any> {
-    return yield* this._connection.stream(this.#buildRequest(message, bindings, requestOptions));
+  async *stream(message: string, parameters: any | null, requestOptions?: RequestOptions): AsyncGenerator<any> {
+    return yield* this._connection.stream(this.#buildRequest(message, parameters, requestOptions));
   }
 
-  #buildRequest(message: string, bindings: any | null, requestOptions?: RequestOptions): RequestMessage {
+  #buildRequest(message: string, parameters: any | null, requestOptions?: RequestOptions): RequestMessage {
     const requestBuilder = RequestMessage.build(message)
         .addG(this.options.traversalSource || 'g');
 
     if (requestOptions?.language) {
       requestBuilder.addLanguage(requestOptions.language);
     }
-    if (requestOptions?.bindings) {
-          if (typeof requestOptions.bindings === 'string') {
-              requestBuilder.addBindingsString(requestOptions.bindings);
+    if (requestOptions?.parameters) {
+          if (typeof requestOptions.parameters === 'string') {
+              requestBuilder.addParametersString(requestOptions.parameters);
           } else {
-              requestBuilder.addBindings(requestOptions.bindings);
+              requestBuilder.addParameters(requestOptions.parameters);
           }
     }
-    if (bindings) {
-          if (typeof bindings === 'string') {
-              requestBuilder.addBindingsString(bindings);
+    if (parameters) {
+          if (typeof parameters === 'string') {
+              requestBuilder.addParametersString(parameters);
           } else {
-              requestBuilder.addBindings(bindings);
+              requestBuilder.addParameters(parameters);
           }
     }
     if (requestOptions?.materializeProperties) {
       requestBuilder.addMaterializeProperties(requestOptions.materializeProperties);
     }
-    if (requestOptions?.evaluationTimeout) {
-      requestBuilder.addTimeoutMillis(requestOptions.evaluationTimeout);
+    if (requestOptions?.timeoutMillis) {
+      requestBuilder.addTimeoutMillis(requestOptions.timeoutMillis);
     }
-    if (requestOptions?.bulkResults) {
+    // Per-request value wins (including an explicit `false`); otherwise apply the
+    // connection-level default only when it is true.
+    if (requestOptions?.bulkResults !== undefined) {
       requestBuilder.addBulkResults(requestOptions.bulkResults);
+    } else if (this._connection.bulkResults) {
+      requestBuilder.addBulkResults(true);
+    }
+    // Fill the per-request batchSize from the connection-level default when unset.
+    const batchSize = requestOptions?.batchSize ?? this._connection.batchSize;
+    if (batchSize !== undefined) {
+      requestBuilder.addBatchSize(batchSize);
+    }
+    if (requestOptions?.transactionId) {
+      requestBuilder.addField('transactionId', requestOptions.transactionId);
     }
 
     return requestBuilder.create();
@@ -130,8 +148,32 @@ export default class Client {
    * Closes the underlying connection
    * @returns {Promise}
    */
-  close(): Promise<void> {
+  async close(): Promise<void> {
+    // Best-effort rollback of any open transactions before closing connections
+    for (const tx of this._trackedTransactions) {
+      try { await tx.close(); } catch {}
+    }
+    this._trackedTransactions.clear();
     return this._connection.close();
+  }
+
+  trackTransaction(tx: any): void {
+    this._trackedTransactions.add(tx);
+  }
+
+  untrackTransaction(tx: any): void {
+    this._trackedTransactions.delete(tx);
+  }
+
+  /**
+   * Creates a new Transaction for executing operations within an explicit transaction.
+   * Transactions are short-lived and single-use. After commit or rollback,
+   * create a new Transaction for the next unit of work.
+   * The traversal source (g alias) is inherited from this Client.
+   * @returns {Transaction}
+   */
+  transact(): Transaction {
+    return new Transaction(this);
   }
 
   /**

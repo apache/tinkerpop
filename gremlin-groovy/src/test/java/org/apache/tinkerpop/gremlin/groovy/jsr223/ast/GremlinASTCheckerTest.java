@@ -41,49 +41,49 @@ public class GremlinASTCheckerTest {
 
     @Test(expected = MultipleCompilationErrorsException.class)
     public void shouldNotParse() {
-        GremlinASTChecker.parse("g.with('evaluationTimeout', 1000L).with(true).V().out('knows'))");
+        GremlinASTChecker.parse("g.with('timeoutMillis', 1000L).with(true).V().out('knows'))");
     }
 
     @Test
     public void shouldNotFindTimeoutCozWeCommentedItOut() {
         assertEquals(Optional.empty(), GremlinASTChecker.parse("g.\n" +
-                "                                                  // with('evaluationTimeout', 1000L).\n" +
+                "                                                  // with('timeoutMillis', 1000L).\n" +
                 "                                                  with(true).V().out('knows')").getTimeout());
     }
 
     @Test
     public void shouldIdentifyTimeoutAsStringKey() {
-        assertEquals(1000, GremlinASTChecker.parse("g.with('evaluationTimeout', 1000L).with(true).V().out('knows')").
+        assertEquals(1000, GremlinASTChecker.parse("g.with('timeoutMillis', 1000L).with(true).V().out('knows')").
                 getTimeout().get().longValue());
     }
 
     @Test
     public void shouldIdentifyTimeoutAsTokenKey() {
-        assertEquals(1000, GremlinASTChecker.parse("g.with(Tokens.ARGS_EVAL_TIMEOUT, 1000L).with(true).V().out('knows')").
+        assertEquals(1000, GremlinASTChecker.parse("g.with(Tokens.TIMEOUT_MILLIS, 1000L).with(true).V().out('knows')").
                 getTimeout().get().longValue());
     }
 
     @Test
     public void shouldIdentifyTimeoutAsTokenKeyWithoutClassName() {
-        assertEquals(1000, GremlinASTChecker.parse("g.with(ARGS_EVAL_TIMEOUT, 1000L).with(true).V().out('knows')").
+        assertEquals(1000, GremlinASTChecker.parse("g.with(TIMEOUT_MILLIS, 1000L).with(true).V().out('knows')").
                 getTimeout().get().longValue());
     }
 
     @Test
     public void shouldIdentifyMultipleTimeouts() {
-        assertEquals(6000, GremlinASTChecker.parse("g.with('evaluationTimeout', 1000L).with(true).V().out('knows');" +
-                "g.with('evaluationTimeout', 1000L).with(true).V().out('knows')\n" +
-                "                                                   //g.with('evaluationTimeout', 1000L).with(true).V().out('knows')\n" +
-                "                                                   g.with('evaluationTimeout', 1000L).with(true).V().out('knows')\n" +
-                "                                                   g.with(Tokens.ARGS_SCRIPT_EVAL_TIMEOUT, 1000L).with(true).V().out('knows')\n" +
-                "                                                   g.with(ARGS_EVAL_TIMEOUT, 1000L).with(true).V().out('knows')\n" +
-                "                                                   g.with('scriptEvaluationTimeout', 1000L).with(true).V().out('knows')").
+        assertEquals(6000, GremlinASTChecker.parse("g.with('timeoutMillis', 1000L).with(true).V().out('knows');" +
+                "g.with('timeoutMillis', 1000L).with(true).V().out('knows')\n" +
+                "                                                   //g.with('timeoutMillis', 1000L).with(true).V().out('knows')\n" +
+                "                                                   g.with('timeoutMillis', 1000L).with(true).V().out('knows')\n" +
+                "                                                   g.with(Tokens.TIMEOUT_MILLIS, 1000L).with(true).V().out('knows')\n" +
+                "                                                   g.with(TIMEOUT_MILLIS, 1000L).with(true).V().out('knows')\n" +
+                "                                                   g.with('timeoutMillis', 1000L).with(true).V().out('knows')").
                 getTimeout().get().longValue());
     }
 
     @Test
     public void shouldParseLong() {
-        assertEquals(1000, GremlinASTChecker.parse("g.with('evaluationTimeout', 1000L).addV().property(id, 'blue').as('b').\n" +
+        assertEquals(1000, GremlinASTChecker.parse("g.with('timeoutMillis', 1000L).addV().property(id, 'blue').as('b').\n" +
                 "  addV().property(id, 'orange').as('o').\n" +
                 "  addV().property(id, 'red').as('r').\n" +
                 "  addV().property(id, 'green').as('g').\n" +

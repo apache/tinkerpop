@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.structure.io.graphson;
 
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Tree;
 import org.apache.tinkerpop.gremlin.structure.Element;
+import org.apache.tinkerpop.gremlin.structure.io.pdt.PDTRegistry;
 import org.apache.tinkerpop.shaded.jackson.annotation.JsonTypeInfo;
 import org.apache.tinkerpop.shaded.jackson.core.type.TypeReference;
 import org.apache.tinkerpop.shaded.jackson.databind.DatabindContext;
@@ -41,6 +42,8 @@ public class GraphSONTypeIdResolver implements TypeIdResolver {
     private final Map<String, JavaType> idToType = new HashMap<>();
 
     private final Map<Class, String> typeToId = new HashMap<>();
+
+    private PDTRegistry pdtRegistry;
 
     // Override manually a type definition.
     public GraphSONTypeIdResolver addCustomType(final String name, final Class clasz) {
@@ -65,6 +68,10 @@ public class GraphSONTypeIdResolver implements TypeIdResolver {
         return typeToId;
     }
 
+    public void setPdtRegistry(final PDTRegistry pdtRegistry) {
+        this.pdtRegistry = pdtRegistry;
+    }
+
     @Override
     public void init(final JavaType javaType) {
     }
@@ -77,6 +84,13 @@ public class GraphSONTypeIdResolver implements TypeIdResolver {
     @Override
     public String idFromValueAndType(final Object o, final Class<?> aClass) {
         if (!typeToId.containsKey(aClass)) {
+            // Check if pdtRegistry has an adapter for this class
+            if (pdtRegistry != null && pdtRegistry.getCompositeAdapterByClass(aClass).isPresent()) {
+                return typeToId.get(org.apache.tinkerpop.gremlin.structure.io.pdt.CompositePDT.class);
+            }
+            if (pdtRegistry != null && pdtRegistry.getPrimitiveAdapterByClass(aClass).isPresent()) {
+                return typeToId.get(org.apache.tinkerpop.gremlin.structure.io.pdt.PrimitivePDT.class);
+            }
             // If one wants to serialize an object with a type, but hasn't registered
             // a typeID for that class, fail.
             throw new IllegalArgumentException(String.format("Could not find a type identifier for the class : %s. " +

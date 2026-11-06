@@ -42,6 +42,7 @@ import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.io.IoRegistry;
 import org.apache.tinkerpop.gremlin.structure.io.Storage;
+import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONVersion;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoPool;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoVersion;
 import org.apache.tinkerpop.gremlin.structure.util.star.StarGraph;
@@ -49,8 +50,11 @@ import org.apache.tinkerpop.gremlin.structure.util.star.StarGraph;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.util.Arrays;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static org.junit.Assert.assertEquals;
@@ -95,6 +99,39 @@ public abstract class AbstractIoRegistryCheck extends AbstractGremlinTest {
         graph.configuration().setProperty(IoRegistry.IO_REGISTRY, ToyIoRegistry.class.getCanonicalName());
         final GraphSONRecordWriter writer = new GraphSONRecordWriter(new DataOutputStream(new FileOutputStream(input)), ConfUtil.makeHadoopConfiguration(graph.configuration()));
         validateIoRegistryGraph(graph, graphComputerClass, writer);
+        input.deleteOnExit();
+    }
+
+    /**
+     * Round-trips multi-label vertices through GraphSON v4 file IO and an OLAP ({@link GraphComputer}) traversal.
+     * GraphSON v4 is the multi-label-aware format; the default Hadoop GraphSON version (V3_0) is single-label and
+     * would silently drop the extra labels. Each vertex is visited as its own star center, so its full label set
+     * must survive both the GraphSON v4 read and the distributed serialization performed by the computer.
+     */
+    public void checkMultiLabelGraphSONV4Compliance(final HadoopGraph graph, final Class<? extends GraphComputer> graphComputerClass) throws Exception {
+        final File input = TestHelper.generateTempFile(this.getClass(), "graphson-v4-multilabel", ".json");
+        graph.configuration().setProperty(Constants.GREMLIN_HADOOP_GRAPH_READER, GraphSONInputFormat.class.getCanonicalName());
+        graph.configuration().setProperty(Constants.GREMLIN_HADOOP_GRAPH_WRITER, GraphSONOutputFormat.class.getCanonicalName());
+        graph.configuration().setProperty(Constants.GREMLIN_HADOOP_INPUT_LOCATION, Storage.toPath(input));
+        graph.configuration().setProperty(Constants.GREMLIN_HADOOP_GRAPHSON_VERSION, GraphSONVersion.V4_0.name());
+        final GraphSONRecordWriter writer = new GraphSONRecordWriter(new DataOutputStream(new FileOutputStream(input)), ConfUtil.makeHadoopConfiguration(graph.configuration()));
+
+        final int numberOfVertices = 10;
+        final Set<String> expectedLabels = new LinkedHashSet<>(Arrays.asList("person", "employee"));
+        for (int i = 0; i < numberOfVertices; i++) {
+            final StarGraph starGraph = StarGraph.open();
+            final Vertex vertex = starGraph.addVertex(T.id, i, T.label, "person");
+            ((StarGraph.StarVertex) vertex).setLabels(new LinkedHashSet<>(expectedLabels));
+            vertex.addEdge("connection", starGraph.addVertex(T.id, i > 0 ? i - 1 : numberOfVertices - 1));
+            writer.write(NullWritable.get(), new VertexWritable(starGraph.getStarVertex()));
+        }
+        writer.close(new TaskAttemptContextImpl(ConfUtil.makeHadoopConfiguration(graph.configuration()), new TaskAttemptID()));
+
+        final List<Vertex> vertices = graph.traversal().withComputer(graphComputerClass).V().toList();
+        assertEquals(numberOfVertices, vertices.size());
+        for (final Vertex vertex : vertices) {
+            assertEquals(expectedLabels, vertex.labels());
+        }
         input.deleteOnExit();
     }
 

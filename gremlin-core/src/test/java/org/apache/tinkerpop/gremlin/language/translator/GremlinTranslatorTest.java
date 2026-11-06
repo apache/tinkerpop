@@ -70,6 +70,13 @@ public class GremlinTranslatorTest {
         }
 
         @Test
+        public void shouldExtractVariablesFromDotNetParameterize() {
+            final Translation translation = GremlinTranslator.translate(query, new DotNetTranslateVisitor("g", true));
+            assertEquals(expectedVariables.size(), translation.getParameters().size());
+            assertThat(translation.getParameters().toArray(), arrayContainingInAnyOrder(expectedVariables.toArray()));
+        }
+
+        @Test
         public void shouldExtractVariablesFromGo() {
             final Translation translation = GremlinTranslator.translate(query, Translator.GO);
             assertEquals(expectedVariables.size(), translation.getParameters().size());
@@ -1430,11 +1437,65 @@ public class GremlinTranslatorTest {
                             null,
                             "g.inject(character0)",
                             "g.Inject<object>('a')",
-                            "Character literals are not supported in Go",
+                            "g.Inject(gremlingo.Char('a'))",
                             "g.inject('a' as char)",
                             "g.inject('a')",
                             "Character literals are not supported in JavaScript",
                             "g.inject(SingleChar('a'))"},
+                    {"g.inject(\"\\\"\"c)",
+                            null,
+                            "g.inject(character0)",
+                            "g.Inject<object>('\\\"')",
+                            "g.Inject(gremlingo.Char('\"'))",
+                            "g.inject('\\\"' as char)",
+                            "g.inject('\\\"')",
+                            "Character literals are not supported in JavaScript",
+                            "g.inject(SingleChar('\\\"'))"},
+                    {"g.inject(\"\\\\\"c)",
+                            null,
+                            "g.inject(character0)",
+                            "g.Inject<object>('\\\\')",
+                            "g.Inject(gremlingo.Char('\\\\'))",
+                            "g.inject('\\\\' as char)",
+                            "g.inject('\\\\')",
+                            "Character literals are not supported in JavaScript",
+                            "g.inject(SingleChar('\\\\'))"},
+                    {"g.inject(\"'\"c)",
+                            null,
+                            "g.inject(character0)",
+                            "g.Inject<object>('\\'')",
+                            "g.Inject(gremlingo.Char('\\''))",
+                            "g.inject('\\'' as char)",
+                            "g.inject('\\'')",
+                            "Character literals are not supported in JavaScript",
+                            "g.inject(SingleChar('\\''))"},
+                    {"g.inject('\\''c)",
+                            null,
+                            "g.inject(character0)",
+                            "g.Inject<object>('\\'')",
+                            "g.Inject(gremlingo.Char('\\''))",
+                            "g.inject('\\'' as char)",
+                            "g.inject('\\'')",
+                            "Character literals are not supported in JavaScript",
+                            "g.inject(SingleChar('\\''))"},
+                    {"g.inject(\"\\7\"c)",
+                            null,
+                            "g.inject(character0)",
+                            "g.Inject<object>('\\u0007')",
+                            "g.Inject(gremlingo.Char(0o7))",
+                            "g.inject('\\7' as char)",
+                            "g.inject('\\7')",
+                            "Character literals are not supported in JavaScript",
+                            "g.inject(SingleChar('\\7'))"},
+                    {"g.inject(\"\\07\"c)",
+                            null,
+                            "g.inject(character0)",
+                            "g.Inject<object>('\\u0007')",
+                            "g.Inject(gremlingo.Char(0o7))",
+                            "g.inject('\\07' as char)",
+                            "g.inject('\\07')",
+                            "Character literals are not supported in JavaScript",
+                            "g.inject(SingleChar('\\07'))"},
                     {"g.inject(Duration(9000,0))",
                             null,
                             "g.inject(duration0)",
@@ -1480,6 +1541,42 @@ public class GremlinTranslatorTest {
                             "g.inject(ByteBuffer.wrap(Base64.getDecoder().decode(\"AQID\")))",
                             "g.inject(Buffer.from(\"AQID\",'base64'))",
                             "g.inject(base64.b64decode('AQID'))"},
+                    {"g.inject(PDT(\"Point\",[\"x\":1,\"y\":2]))",
+                            null,
+                            "g.inject(compositepdt0)",
+                            "g.Inject<object>(new CompositePDT(\"Point\", new Dictionary<object, object> {{ \"x\", 1 }, { \"y\", 2 }}))",
+                            "g.Inject(&gremlingo.CompositePDT{Name: \"Point\", Fields: map[interface{}]interface{}{\"x\": 1, \"y\": 2 }})",
+                            "g.inject(new CompositePDT(\"Point\", [\"x\":1, \"y\":2]))",
+                            "g.inject(new CompositePDT(\"Point\", new LinkedHashMap<Object, Object>() {{ put(\"x\", 1); put(\"y\", 2); }}))",
+                            "g.inject(new CompositePDT(\"Point\", new Map([[\"x\", 1], [\"y\", 2]])))",
+                            "g.inject(CompositePDT('Point', { 'x': 1, 'y': 2 }))"},
+                    {"g.match(\"MATCH (a:person)-[:knows]->(b:person)\")",
+                            null,
+                            "g.match(string0)",
+                            "g.Match(\"MATCH (a:person)-[:knows]->(b:person)\")",
+                            "g.Match(\"MATCH (a:person)-[:knows]->(b:person)\")",
+                            null,
+                            null,
+                            null,
+                            "g.match('MATCH (a:person)-[:knows]->(b:person)')"},
+                    {"g.inject(1).match(\"MATCH (a:person)-[:knows]->(b:person)\")",
+                            null,
+                            "g.inject(number0).match(string0)",
+                            "g.Inject<object>(1).Match(\"MATCH (a:person)-[:knows]->(b:person)\")",
+                            "g.Inject(1).Match(\"MATCH (a:person)-[:knows]->(b:person)\")",
+                            null,
+                            null,
+                            null,
+                            "g.inject(1).match('MATCH (a:person)-[:knows]->(b:person)')"},
+                    {"g.inject(PDT(\"Uint32\",\"42\"))",
+                            null,
+                            "g.inject(primitivepdt0)",
+                            "g.Inject<object>(new PrimitivePDT(\"Uint32\", \"42\"))",
+                            "g.Inject(&gremlingo.PrimitivePDT{Name: \"Uint32\", Value: \"42\"})",
+                            "g.inject(new PrimitivePDT(\"Uint32\", \"42\"))",
+                            "g.inject(new PrimitivePDT(\"Uint32\", \"42\"))",
+                            "g.inject(new PrimitivePDT(\"Uint32\", \"42\"))",
+                            "g.inject(PrimitivePDT('Uint32', '42'))"},
             });
         }
 
@@ -1519,6 +1616,23 @@ public class GremlinTranslatorTest {
             try {
                 final String translatedQuery = GremlinTranslator.translate(query, "g", Translator.DOTNET).getTranslated();
                 assertEquals(expectedForDotNet, translatedQuery);
+            } catch (TranslatorException e) {
+                assertThat(e.getMessage(), startsWith(expectedForDotNet));
+            }
+        }
+
+        @Test
+        public void shouldTranslateForDotNetParameterize() {
+            // Run the entire corpus through the parameterize translator to confirm it never throws or diverges
+            // across the grammar. Parameterization only affects variable arguments (the GValue-wrapping branches in
+            // DotNetTranslateVisitor are gated on ctx.variable() != null), so for any query without variables the
+            // output must be identical to the plain DotNet translation. Queries that actually contain variables are
+            // covered with explicit expected output in DotNetParameterizeTranslationTest.
+            try {
+                final Translation translation = GremlinTranslator.translate(query, new DotNetTranslateVisitor("g", true));
+                if (translation.getParameters().isEmpty()) {
+                    assertEquals(expectedForDotNet, translation.getTranslated());
+                }
             } catch (TranslatorException e) {
                 assertThat(e.getMessage(), startsWith(expectedForDotNet));
             }
@@ -1572,6 +1686,46 @@ public class GremlinTranslatorTest {
             } catch (TranslatorException e) {
                 assertThat(e.getMessage(), startsWith(expectedForPython));
             }
+        }
+    }
+
+    /**
+     * Dedicated coverage for the parameterized .NET translation ({@code new DotNetTranslateVisitor(name, true)}), which
+     * is unique in that it wraps variable arguments in strongly-typed {@code GValue<T>} instances rather than emitting
+     * bare parameters. These cases exercise the common argument types as well as the all-or-none behavior of
+     * multi-argument {@code hasLabel}.
+     */
+    @RunWith(Parameterized.class)
+    public static class DotNetParameterizeTranslationTest {
+
+        @Parameterized.Parameter(value = 0)
+        public String query;
+
+        @Parameterized.Parameter(value = 1)
+        public String expected;
+
+        @Parameterized.Parameters(name = "{0}")
+        public static Collection<Object[]> data() {
+            return Arrays.asList(new Object[][]{
+                    // literals are not parameterized
+                    {"g.V().has('name','marko')", "g.V().Has(\"name\", \"marko\")"},
+                    // a variable string value is wrapped in a typed GValue
+                    {"g.V().has('name', x)", "g.V().Has(\"name\", new GValue<object>(\"x\", (object) x))"},
+                    // V()/E() id arguments are not GValue-wrapped by the translator; they pass through as bare variables
+                    {"g.V(x)", "g.V(x)"},
+                    // a variable map value is wrapped in a typed GValue
+                    {"g.mergeV(x)", "g.MergeV(new GValue<IDictionary<object, object>>(\"x\", (IDictionary<object, object>) x))"},
+                    // multi-arg hasLabel with all variables wraps every argument
+                    {"g.V().hasLabel(x, y)", "g.V().HasLabel(new GValue<string>(\"x\", (string) x), new GValue<string>(\"y\", (string) y))"},
+                    // multi-arg hasLabel mixing a literal and a variable uses plain casts for all (none wrapped)
+                    {"g.V().hasLabel('person', y)", "g.V().HasLabel(\"person\", (string) y)"},
+            });
+        }
+
+        @Test
+        public void shouldTranslateForDotNetParameterize() {
+            final String translatedQuery = GremlinTranslator.translate(query, new DotNetTranslateVisitor("g", true)).getTranslated();
+            assertEquals(expected, translatedQuery);
         }
     }
 }

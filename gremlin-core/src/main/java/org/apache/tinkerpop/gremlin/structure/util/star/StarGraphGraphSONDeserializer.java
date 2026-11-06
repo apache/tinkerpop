@@ -25,6 +25,8 @@ import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONTokens;
 import org.apache.tinkerpop.gremlin.structure.util.Attachable;
 
 import java.io.IOException;
+import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -69,7 +71,12 @@ public class StarGraphGraphSONDeserializer {
      */
     public static StarGraph readStarGraphVertex(final Map<String, Object> vertexData) throws IOException {
         final StarGraph starGraph = StarGraph.open();
-        starGraph.addVertex(T.id, vertexData.get(GraphSONTokens.ID), T.label, vertexData.get(GraphSONTokens.LABEL));
+        final Object labelData = vertexData.get(GraphSONTokens.LABEL);
+        final List<String> labels = labelData instanceof List ? (List<String>) labelData : Collections.singletonList((String) labelData);
+        starGraph.addVertex(T.id, vertexData.get(GraphSONTokens.ID), T.label, labels.get(0));
+        if (labels.size() > 1) {
+            starGraph.getStarVertex().setLabels(new LinkedHashSet<>(labels));
+        }
         if (vertexData.containsKey(GraphSONTokens.PROPERTIES)) {
             final Map<String, List<Map<String, Object>>> properties = (Map<String, List<Map<String, Object>>>) vertexData.get(GraphSONTokens.PROPERTIES);
             for (Map.Entry<String, List<Map<String, Object>>> property : properties.entrySet()) {

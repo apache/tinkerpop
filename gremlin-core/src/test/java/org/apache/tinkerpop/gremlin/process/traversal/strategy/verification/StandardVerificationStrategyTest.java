@@ -18,12 +18,15 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.strategy.verification;
 
+import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.RequirementsStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversalStrategies;
+import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 import org.apache.tinkerpop.gremlin.util.TestSupport;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -34,6 +37,7 @@ import java.util.Arrays;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.cap;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.constant;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.inject;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.label;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.out;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.repeat;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.sum;
@@ -63,7 +67,25 @@ public class StandardVerificationStrategyTest {
                 {repeat(out().values("age").inject(10)).times(2), false},
                 {repeat(out().choose(constant(true), inject(1), inject(2))).times(5), false},
                 {__.V().profile(), true},
-                {__.V().profile("metrics").cap("metrics"), true}
+                {__.V().profile("metrics").cap("metrics"), true},
+
+                // labels().drop() patterns should REJECT
+                {__.labels().drop(), false},
+                {__.labels().is("x").drop(), false},
+                {__.labels().where(P.eq("x")).drop(), false},
+                {__.labels().not(__.is("x")).drop(), false},
+
+                // label().drop() patterns should also REJECT (deprecated step, same protection)
+                {label().drop(), false},
+                {label().is("x").drop(), false},
+                {label().where(P.eq("x")).drop(), false},
+                {label().not(__.is("x")).drop(), false},
+
+                // labels() patterns that should ALLOW (no direct labels->drop path)
+                {__.V().drop(), true},
+                {__.properties().drop(), true},
+                {__.labels().map(__.constant("x")).drop(), true},
+                {__.labels().order().drop(), true},
         });
     }
 
@@ -105,5 +127,37 @@ public class StandardVerificationStrategyTest {
 
         copy.asAdmin().setStrategies(strategies);
         return copy;
+    }
+
+    @Test
+    public void shouldRejectBothMultilabelAndSinglelabelOnSameSource() {
+        final GraphTraversalSource g = EmptyGraph.instance().traversal()
+                .withStrategies(StandardVerificationStrategy.instance())
+                .with("multilabel").with("singlelabel");
+
+        try {
+            g.V().iterate();
+            fail("with(\"multilabel\") and with(\"singlelabel\") on the same source should be rejected");
+        } catch (Exception ex) {
+            assertThat(ex, instanceOf(VerificationException.class));
+        }
+    }
+
+    @Test
+    public void shouldAllowMultilabelAloneOnSource() {
+        final GraphTraversalSource g = EmptyGraph.instance().traversal()
+                .withStrategies(StandardVerificationStrategy.instance())
+                .with("multilabel");
+
+        g.V().iterate();
+    }
+
+    @Test
+    public void shouldAllowSinglelabelAloneOnSource() {
+        final GraphTraversalSource g = EmptyGraph.instance().traversal()
+                .withStrategies(StandardVerificationStrategy.instance())
+                .with("singlelabel");
+
+        g.V().iterate();
     }
 }

@@ -30,6 +30,7 @@ import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.tinkergraph.process.traversal.step.map.TinkerCountGlobalStep;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
+import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerMemoryGraph;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -83,14 +84,14 @@ public class TinkerGraphCountStrategyTest {
     public static Iterable<Object[]> generateTestParameters() {
         return Arrays.asList(new Object[][]{
                 {__.V().count(), countStep(Vertex.class), Collections.emptyList()},
-                {__.V().count(), countStep(Vertex.class), TraversalStrategies.GlobalCache.getStrategies(TinkerGraph.class).toList()},
-                {__.V().as("a").count(), countStep(Vertex.class), TraversalStrategies.GlobalCache.getStrategies(TinkerGraph.class).toList()},
-                {__.V().count().as("a"), countStep(Vertex.class), TraversalStrategies.GlobalCache.getStrategies(TinkerGraph.class).toList()},
-                {__.V().map(out()).count().as("a"), null, TraversalStrategies.GlobalCache.getStrategies(TinkerGraph.class).toList()},
-                {__.V().map(out()).identity().count().as("a"), null, TraversalStrategies.GlobalCache.getStrategies(TinkerGraph.class).toList()},
-                {__.V().map(out().groupCount()).identity().count().as("a"), null, TraversalStrategies.GlobalCache.getStrategies(TinkerGraph.class).toList()},
-                {__.V().label().map(s -> s.get().length()).count(), null, TraversalStrategies.GlobalCache.getStrategies(TinkerGraph.class).toList()},
-                {__.V().as("a").map(select("a")).count(), null, TraversalStrategies.GlobalCache.getStrategies(TinkerGraph.class).toList()},
+                {__.V().count(), countStep(Vertex.class), TraversalStrategies.GlobalCache.getStrategies(TinkerMemoryGraph.class).toList()},
+                {__.V().as("a").count(), countStep(Vertex.class), TraversalStrategies.GlobalCache.getStrategies(TinkerMemoryGraph.class).toList()},
+                {__.V().count().as("a"), countStep(Vertex.class), TraversalStrategies.GlobalCache.getStrategies(TinkerMemoryGraph.class).toList()},
+                {__.V().map(out()).count().as("a"), null, TraversalStrategies.GlobalCache.getStrategies(TinkerMemoryGraph.class).toList()},
+                {__.V().map(out()).identity().count().as("a"), null, TraversalStrategies.GlobalCache.getStrategies(TinkerMemoryGraph.class).toList()},
+                {__.V().map(out().groupCount()).identity().count().as("a"), null, TraversalStrategies.GlobalCache.getStrategies(TinkerMemoryGraph.class).toList()},
+                {__.V().label().map(s -> s.get().length()).count(), null, TraversalStrategies.GlobalCache.getStrategies(TinkerMemoryGraph.class).toList()},
+                {__.V().as("a").map(select("a")).count(), null, TraversalStrategies.GlobalCache.getStrategies(TinkerMemoryGraph.class).toList()},
                 //
                 {__.V(), null, Collections.emptyList()},
                 {__.V().out().count(), null, Collections.emptyList()},

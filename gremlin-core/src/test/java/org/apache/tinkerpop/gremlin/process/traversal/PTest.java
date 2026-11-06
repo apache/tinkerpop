@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.process.traversal;
 
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
+import org.apache.tinkerpop.gremlin.process.traversal.traverser.B_O_Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.util.AndP;
 import org.apache.tinkerpop.gremlin.process.traversal.util.OrP;
 import org.junit.Before;
@@ -65,8 +66,8 @@ public class PTest {
                     {P.eq(-0), +0, true},
                     {P.eq(0), 1, false},
                     {P.eq(0), null, false},
-                    {P.eq(null), null, true},
-                    {P.eq(null), 0, false},
+                    {P.eq((Object) null), null, true},
+                    {P.eq((Object) null), 0, false},
                     {P.eq(Double.POSITIVE_INFINITY), Double.NEGATIVE_INFINITY, false},
                     {P.eq(Float.POSITIVE_INFINITY), Float.NEGATIVE_INFINITY, false},
                     {P.eq(Float.POSITIVE_INFINITY), Double.NEGATIVE_INFINITY, false},
@@ -82,8 +83,8 @@ public class PTest {
                     {P.neq(-0), +0, false},
                     {P.neq(0), 1, true},
                     {P.neq(0), null, true},
-                    {P.neq(null), null, false},
-                    {P.neq(null), 0, true},
+                    {P.neq((Object) null), null, false},
+                    {P.neq((Object) null), 0, true},
                     {P.neq(Double.POSITIVE_INFINITY), Double.NEGATIVE_INFINITY, true},
                     {P.neq(Float.POSITIVE_INFINITY), Float.NEGATIVE_INFINITY, true},
                     {P.neq(Float.POSITIVE_INFINITY), Double.NEGATIVE_INFINITY, true},
@@ -320,6 +321,27 @@ public class PTest {
                     {TextP.regex(GValue.ofString("x", "Tinker.*\\u00A9")), "Apache TinkerPop©", true},
                     {TextP.notRegex(GValue.ofString("x", "(?i)[a-b]{3}-[1-9]{3}-[a-z]{3}")), "123-ABC-456", true},
                     {TextP.notRegex(GValue.ofString("x", "Tinker.*\\u00A9")), "Apache TinkerPop©", false},
+                    // Traversal-bearing predicates (resolved per-traverser before testing)
+                    {P.eq(__.constant(0)), 0, true},
+                    {P.eq(__.constant(0)), 1, false},
+                    {P.neq(__.constant(0)), 1, true},
+                    {P.neq(__.constant(0)), 0, false},
+                    {P.gt(__.constant(0)), 1, true},
+                    {P.gt(__.constant(0)), 0, false},
+                    {P.gt(__.constant(0)), -1, false},
+                    {P.lt(__.constant(0)), -1, true},
+                    {P.lt(__.constant(0)), 0, false},
+                    {P.lt(__.constant(0)), 1, false},
+                    {P.gte(__.constant(0)), 0, true},
+                    {P.gte(__.constant(0)), 1, true},
+                    {P.gte(__.constant(0)), -1, false},
+                    {P.lte(__.constant(0)), 0, true},
+                    {P.lte(__.constant(0)), -1, true},
+                    {P.lte(__.constant(0)), 1, false},
+                    {P.within(__.inject(1, 2, 3).fold()), 2, true},
+                    {P.within(__.inject(1, 2, 3).fold()), 5, false},
+                    {P.without(__.inject(1, 2, 3).fold()), 5, true},
+                    {P.without(__.inject(1, 2, 3).fold()), 2, false},
             }));
         }
 
@@ -337,6 +359,8 @@ public class PTest {
             if (expected instanceof Class)
                 exceptionRule.expect((Class) expected);
 
+            if (predicate.hasTraversal()) predicate.resolve(new B_O_Traverser<>("test", 1L));
+
             assertEquals(expected, predicate.test(value));
             assertNotEquals(expected, predicate.clone().negate().test(value));
             assertNotEquals(expected, P.not(predicate.clone()).test(value));
@@ -349,6 +373,14 @@ public class PTest {
 
         @Before
         public void init() {
+            // Skip value manipulation tests for traversal-bearing predicates since their
+            // value is resolved at runtime, not set statically.
+            if (predicate.hasTraversal()) {
+                assertNotNull(predicate.hashCode());
+                assertEquals(predicate, predicate.clone());
+                return;
+            }
+
             final Object pv = predicate.getValue();
             final Random r = new Random();
             assertNotNull(predicate.getBiPredicate());
@@ -468,7 +500,7 @@ public class PTest {
             assertTrue(predicate.test(null));
             assertFalse(predicate.test(INITIAL_VALUE));
             assertEquals("eq", predicate.toString());
-            assertEquals(predicate, P.eq(null));
+            assertEquals(predicate, P.eq((Object) null));
             assertNotEquals(predicate, P.eq(INITIAL_VALUE));
         }
 
@@ -502,6 +534,370 @@ public class PTest {
             assertEquals(String.format("containing(%s)", updated), textPredicate.toString());
             assertEquals(textPredicate, TextP.containing(updated));
             assertNotEquals(textPredicate, TextP.containing(initial));
+        }
+    }
+
+    /**
+     * Tests that traversal detection in predicates is accurate: {@code P.hasTraversal()} returns
+     * true for traversal-bearing predicates and false for literal/GValue predicates.
+     */
+    public static class TraversalDetectionTest {
+
+        @Test
+        public void shouldDetectTraversalInComparisonPredicate() {
+            final P p = P.eq(__.constant(1));
+            assertTrue(p.hasTraversal());
+        }
+
+        @Test
+        public void shouldDetectTraversalInCollectionPredicate() {
+            final P p = P.within(__.constant(1));
+            assertTrue(p.hasTraversal());
+        }
+
+        @Test
+        public void shouldNotDetectTraversalInLiteralPredicate() {
+            final P p = P.eq(1);
+            assertFalse(p.hasTraversal());
+        }
+
+        @Test
+        public void shouldNotDetectTraversalInGValuePredicate() {
+            final P p = P.eq(GValue.of("x", 1));
+            assertFalse(p.hasTraversal());
+        }
+
+        @Test
+        public void shouldReturnNullTraversalValueForLiteral() {
+            final P p = P.eq(42);
+            assertFalse(p.hasTraversal());
+        }
+    }
+
+    /**
+     * Tests that scalar predicates (eq, neq, gt, lt, gte, lte) take the first result from a
+     * multi-result child traversal, and that collection predicates (within, without) accept
+     * multiple results.
+     */
+    public static class TraversalResolutionTest {
+
+        private Traverser.Admin<?> createTraverser(final Object value) {
+            return new B_O_Traverser<>(value, 1L);
+        }
+
+        @Test
+        public void shouldTakeFirstResultForEq() {
+            final P p = P.eq(__.union(__.constant(1), __.constant(2)));
+            p.resolve(createTraverser("start"));
+            assertTrue(p.test(1));
+            assertFalse(p.test(2));
+        }
+
+        @Test
+        public void shouldTakeFirstResultForNeq() {
+            final P p = P.neq(__.union(__.constant(1), __.constant(2)));
+            p.resolve(createTraverser("start"));
+            assertFalse(p.test(1));
+            assertTrue(p.test(2));
+        }
+
+        @Test
+        public void shouldTakeFirstResultForGt() {
+            final P p = P.gt(__.union(__.constant(10), __.constant(20)));
+            p.resolve(createTraverser("start"));
+            assertTrue(p.test(11));
+            assertFalse(p.test(10));
+        }
+
+        @Test
+        public void shouldTakeFirstResultForLt() {
+            final P p = P.lt(__.union(__.constant(10), __.constant(20)));
+            p.resolve(createTraverser("start"));
+            assertTrue(p.test(9));
+            assertFalse(p.test(10));
+        }
+
+        @Test
+        public void shouldTakeFirstResultForGte() {
+            final P p = P.gte(__.union(__.constant(10), __.constant(20)));
+            p.resolve(createTraverser("start"));
+            assertTrue(p.test(10));
+            assertFalse(p.test(9));
+        }
+
+        @Test
+        public void shouldTakeFirstResultForLte() {
+            final P p = P.lte(__.union(__.constant(10), __.constant(20)));
+            p.resolve(createTraverser("start"));
+            assertTrue(p.test(10));
+            assertFalse(p.test(11));
+        }
+
+        @Test
+        public void shouldAcceptMultipleResultsForWithin() {
+            final P p = P.within(__.inject(1, 2, 3).fold());
+            p.resolve(createTraverser("start"));
+            assertTrue(p.test(1));
+            assertTrue(p.test(2));
+            assertTrue(p.test(3));
+            assertFalse(p.test(4));
+        }
+
+        @Test
+        public void shouldAcceptMultipleResultsForWithout() {
+            final P p = P.without(__.inject(1, 2, 3).fold());
+            p.resolve(createTraverser("start"));
+            assertFalse(p.test(1));
+            assertFalse(p.test(2));
+            assertFalse(p.test(3));
+            assertTrue(p.test(4));
+        }
+
+        @Test
+        public void shouldUnfoldSingleTraversalCollectionResultForWithin() {
+            // A single child traversal whose result is a Collection unfolds into the membership set,
+            // mirroring within(Collection).
+            final P p = P.within(__.inject(1, 2, 3).fold());
+            p.resolve(createTraverser("start"));
+            assertTrue(p.test(1));
+            assertTrue(p.test(3));
+            assertFalse(p.test(4));
+        }
+
+        @Test
+        public void shouldNotUnfoldMultiTraversalCollectionResultsForWithin() {
+            // Multiple child traversals mirror within(v1, v2, ...): each first result is a single membership
+            // element with no unfolding. A folded list therefore compares as a list, not its elements.
+            final P p = P.within(__.inject(1, 2).fold(), __.constant(3));
+            p.resolve(createTraverser("start"));
+            assertFalse(p.test(1));            // 1 is inside the list [1,2], but the list is one element (not unfolded)
+            assertFalse(p.test(2));
+            assertTrue(p.test(3));             // 3 was supplied as its own element
+        }
+
+        @Test
+        public void shouldTreatMultiTraversalScalarResultsAsElementsForWithin() {
+            // Multiple traversals producing scalars — each first result is one membership element.
+            final P p = P.within(__.constant(1), __.constant(2), __.constant(3));
+            p.resolve(createTraverser("start"));
+            assertTrue(p.test(1));
+            assertTrue(p.test(2));
+            assertTrue(p.test(3));
+            assertFalse(p.test(4));
+        }
+
+        @Test
+        public void shouldNotUnfoldMultiTraversalResultsForWithout() {
+            final P p = P.without(__.inject(1, 2).fold(), __.constant(3));
+            p.resolve(createTraverser("start"));
+            assertTrue(p.test(1));             // not excluded: the exclusion list element is [1,2], not 1
+            assertTrue(p.test(2));
+            assertFalse(p.test(3));            // excluded
+        }
+
+        @Test
+        public void shouldPassWithoutWhenTraversalResolvesEmpty() {
+            final P p = P.without(__.limit(0));
+            p.resolve(createTraverser("anything"));
+            assertFalse(p.isResolvedEmpty());
+            assertTrue(p.test("anything"));
+        }
+
+        @Test
+        public void shouldFailWithinWhenTraversalResolvesEmpty() {
+            final P p = P.within(__.limit(0));
+            p.resolve(createTraverser("anything"));
+            assertFalse(p.isResolvedEmpty());
+            assertFalse(p.test("anything"));
+        }
+
+        @Test
+        public void shouldRemainResolvedEmptyForScalarPredicateWithEmptyTraversal() {
+            final P p = P.eq(__.limit(0));
+            p.resolve(createTraverser("anything"));
+            assertTrue(p.isResolvedEmpty());
+        }
+    }
+
+    /**
+     * Tests for ConnectiveP (and/or) and NotP with traversal-bearing operands, including
+     * deeply nested combinations and empty-resolution edge cases.
+     */
+    public static class TraversalConnectiveTest {
+
+        private Traverser.Admin<?> createTraverser(final Object value) {
+            return new B_O_Traverser<>(value, 1L);
+        }
+
+        @Test
+        public void shouldResolveAndPWithTraversalOperands() {
+            final P p = P.gt(__.constant(10)).and(P.lt(__.constant(20)));
+            p.resolve(createTraverser("start"));
+            assertTrue(p.test(15));
+            assertFalse(p.test(10));
+            assertFalse(p.test(25));
+        }
+
+        @Test
+        public void shouldShortCircuitAndPResolveWhenScalarChildEmpty() {
+            final P p = P.eq(__.limit(0)).and(P.gt(__.constant(5)));
+            p.resolve(createTraverser("start"));
+            assertTrue(p.isResolvedEmpty());
+        }
+
+        @Test
+        public void shouldResolveOrPWithTraversalOperands() {
+            final P p = P.eq(__.constant(1)).or(P.eq(__.constant(2)));
+            p.resolve(createTraverser("start"));
+            assertTrue(p.test(1));
+            assertTrue(p.test(2));
+            assertFalse(p.test(3));
+        }
+
+        @Test
+        public void shouldResolveNestedAndInsideOr() {
+            final P p = P.gt(__.constant(10)).and(P.lt(__.constant(20)))
+                     .or(P.gt(__.constant(50)).and(P.lt(__.constant(60))));
+            p.resolve(createTraverser("x"));
+            assertTrue(p.test(15));
+            assertTrue(p.test(55));
+            assertFalse(p.test(25));
+            assertFalse(p.test(5));
+        }
+
+        @Test
+        public void shouldResolveNestedOrInsideAnd() {
+            final P p = P.eq(__.constant(1)).or(P.eq(__.constant(2)))
+                     .and(P.eq(__.constant(2)).or(P.eq(__.constant(3))));
+            p.resolve(createTraverser("x"));
+            assertTrue(p.test(2));
+            assertFalse(p.test(1));
+            assertFalse(p.test(3));
+        }
+
+        @Test
+        public void shouldResolveDeeplyNestedConnectives() {
+            final P p = P.gt(__.constant(0)).and(P.lt(__.constant(10)))
+                     .or(P.gt(__.constant(20))
+                          .and(P.lt(__.constant(30)).or(P.gt(__.constant(90)))));
+            p.resolve(createTraverser("x"));
+            assertTrue(p.test(5));
+            assertTrue(p.test(25));
+            assertTrue(p.test(95));
+            assertFalse(p.test(15));
+            assertFalse(p.test(50));
+        }
+
+        @Test
+        public void shouldResolveOrWithOneEmptyChild() {
+            final P p = P.eq(__.limit(0)).or(P.eq(__.constant(42)));
+            p.resolve(createTraverser("x"));
+            assertTrue(p.test(42));
+            assertFalse(p.test(99));
+        }
+
+        @Test
+        public void shouldResolveNotPWrappingTraversalPredicate() {
+            final P p = P.eq(__.constant(42)).negate();
+            p.resolve(createTraverser("start"));
+            assertFalse(p.test(42));
+            assertTrue(p.test(99));
+        }
+
+        @Test
+        public void shouldProduceConsistentResultsAcrossManySequentialResolves() {
+            final P p = P.gt(__.constant(10));
+            for (int i = 0; i < 1000; i++) {
+                p.resolve(createTraverser("start" + i));
+                assertTrue(p.test(11));
+                assertFalse(p.test(5));
+            }
+        }
+    }
+
+    /**
+     * Tests for clone() and negate() operations on traversal-bearing predicates.
+     */
+    public static class TraversalCloneAndNegateTest {
+
+        private Traverser.Admin<?> createTraverser(final Object value) {
+            return new B_O_Traverser<>(value, 1L);
+        }
+
+        @Test
+        public void shouldCloneScalarTraversalPredicate() {
+            final P original = P.gt(__.constant(10));
+            final P clone = original.clone();
+            assertTrue(clone.hasTraversal());
+            clone.resolve(createTraverser("x"));
+            assertTrue(clone.test(15));
+            assertFalse(clone.test(5));
+        }
+
+        @Test
+        public void shouldCloneWithinTraversalPredicate() {
+            final P original = P.within(__.inject(1, 2, 3).fold());
+            final P clone = original.clone();
+            assertTrue(clone.hasTraversal());
+            clone.resolve(createTraverser("x"));
+            assertTrue(clone.test(2));
+            assertFalse(clone.test(9));
+        }
+
+        @Test
+        public void shouldCloneConnectivePWithTraversals() {
+            final P original = P.gt(__.constant(10)).and(P.lt(__.constant(20)));
+            final P clone = original.clone();
+            assertTrue(clone.hasTraversal());
+            clone.resolve(createTraverser("x"));
+            assertTrue(clone.test(15));
+            assertFalse(clone.test(25));
+        }
+
+        @Test
+        public void shouldCloneIndependentlyFromOriginal() {
+            final P original = P.eq(__.constant(42));
+            final P clone = original.clone();
+            clone.resolve(createTraverser("x"));
+            assertTrue(clone.test(42));
+            assertTrue(original.hasTraversal());
+        }
+
+        @Test
+        public void shouldNegateScalarTraversalPredicate() {
+            final P p = P.gt(__.constant(10)).negate();
+            assertTrue(p.hasTraversal());
+            p.resolve(createTraverser("x"));
+            assertTrue(p.test(5));
+            assertFalse(p.test(15));
+        }
+
+        @Test
+        public void shouldNegateConnectivePWithTraversals() {
+            final P p = P.gt(__.constant(10)).and(P.lt(__.constant(20))).negate();
+            p.resolve(createTraverser("x"));
+            assertTrue(p.test(5));
+            assertTrue(p.test(25));
+            assertFalse(p.test(15));
+        }
+
+        @Test
+        public void shouldCloneThenNegate() {
+            final P original = P.eq(__.constant(42));
+            final P negated = original.clone().negate();
+            assertTrue(negated.hasTraversal());
+            negated.resolve(createTraverser("x"));
+            assertFalse(negated.test(42));
+            assertTrue(negated.test(99));
+        }
+
+        @Test
+        public void shouldNegateMultiTraversalWithin() {
+            final P p = P.within(__.inject(1, 2, 3).fold()).negate();
+            assertTrue(p.hasTraversal());
+            p.resolve(createTraverser("x"));
+            assertFalse(p.test(1));
+            assertTrue(p.test(9));
         }
     }
 }

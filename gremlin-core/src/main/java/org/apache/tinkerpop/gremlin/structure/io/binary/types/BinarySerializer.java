@@ -27,6 +27,14 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 
 /**
+ * Serializes a {@link ByteBuffer} as the GraphBinary {@code binary} type. The value written is the buffer's entire
+ * backing array, as returned by {@link ByteBuffer#array()}, regardless of the buffer's position, limit or array
+ * offset, so a buffer that is a view of part of a larger array, such as one from
+ * {@link ByteBuffer#wrap(byte[], int, int)} or {@link ByteBuffer#slice()}, is written with every byte of that array.
+ * The buffer must also be backed by an accessible array, so a direct or read-only buffer cannot be written. Wrap
+ * exactly the bytes to send, as with {@link ByteBuffer#wrap(byte[])}. A value that is read back is a new heap buffer
+ * positioned at its first byte.
+ *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class BinarySerializer extends SimpleTypeSerializer<ByteBuffer> {

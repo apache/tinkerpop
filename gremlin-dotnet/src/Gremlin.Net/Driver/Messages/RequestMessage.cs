@@ -48,9 +48,24 @@ namespace Gremlin.Net.Driver.Messages
         public string Gremlin { get; }
 
         /// <summary>
-        ///     Gets the fields map containing language, g, bindings, and other options.
+        ///     Gets the fields map containing language, g, parameters, and other options.
         /// </summary>
         public Dictionary<string, object> Fields { get; }
+
+        /// <summary>
+        ///     Returns a copy of this message with <paramref name="key"/> set to
+        ///     <paramref name="value"/>, without mutating this instance (and therefore without
+        ///     mutating the caller-owned message). Used to fill connection-level defaults onto
+        ///     the outgoing request only.
+        /// </summary>
+        /// <param name="key">The field key to set on the copy.</param>
+        /// <param name="value">The field value to set on the copy.</param>
+        /// <returns>A new <see cref="RequestMessage"/> carrying the added field.</returns>
+        internal RequestMessage CloneWithField(string key, object value)
+        {
+            var copiedFields = new Dictionary<string, object>(Fields) { [key] = value };
+            return new RequestMessage(Gremlin, copiedFields);
+        }
 
         /// <summary>
         ///     Initializes a <see cref="Builder" /> to build a <see cref="RequestMessage" />.
@@ -69,8 +84,8 @@ namespace Gremlin.Net.Driver.Messages
         {
             private readonly string _gremlin;
             private readonly Dictionary<string, object> _fields = new Dictionary<string, object>();
-            private readonly Dictionary<string, object> _bindings = new Dictionary<string, object>();
-            private string? _bindingsString;
+            private readonly Dictionary<string, object> _parameters = new Dictionary<string, object>();
+            private string? _parametersString;
 
             internal Builder(string gremlin)
             {
@@ -89,48 +104,48 @@ namespace Gremlin.Net.Driver.Messages
             }
 
             /// <summary>
-            ///     Adds a single binding parameter.
+            ///     Adds a single query parameter.
             /// </summary>
-            /// <param name="key">The binding key.</param>
-            /// <param name="val">The binding value.</param>
+            /// <param name="key">The parameter key.</param>
+            /// <param name="val">The parameter value.</param>
             /// <returns>The <see cref="Builder" />.</returns>
-            public Builder AddBinding(string key, object val)
+            public Builder AddParameter(string key, object val)
             {
-                if (_bindingsString != null)
-                    throw new InvalidOperationException("Cannot mix AddBinding() with AddBindingsString().");
-                _bindings[key] = val;
+                if (_parametersString != null)
+                    throw new InvalidOperationException("Cannot mix AddParameter() with AddParametersString().");
+                _parameters[key] = val;
                 return this;
             }
 
             /// <summary>
-            ///     Adds multiple binding parameters from a dictionary. The values will be
+            ///     Adds multiple query parameters from a dictionary. The values will be
             ///     converted to a gremlin-lang string when the message is created.
-            ///     Cannot be mixed with <see cref="AddBindingsString"/>.
+            ///     Cannot be mixed with <see cref="AddParametersString"/>.
             /// </summary>
-            /// <param name="bindings">The bindings to add.</param>
+            /// <param name="parameters">The parameters to add.</param>
             /// <returns>The <see cref="Builder" />.</returns>
-            public Builder AddBindings(Dictionary<string, object> bindings)
+            public Builder AddParameters(Dictionary<string, object> parameters)
             {
-                if (_bindingsString != null)
-                    throw new InvalidOperationException("Cannot mix AddBindings() with AddBindingsString().");
-                foreach (var kvp in bindings)
+                if (_parametersString != null)
+                    throw new InvalidOperationException("Cannot mix AddParameters() with AddParametersString().");
+                foreach (var kvp in parameters)
                 {
-                    _bindings[kvp.Key] = kvp.Value;
+                    _parameters[kvp.Key] = kvp.Value;
                 }
                 return this;
             }
 
             /// <summary>
-            ///     Sets the bindings as a pre-serialized gremlin-lang map literal string.
-            ///     Cannot be mixed with <see cref="AddBinding"/> or <see cref="AddBindings"/>.
+            ///     Sets the query parameters as a pre-serialized gremlin-lang map literal string.
+            ///     Cannot be mixed with <see cref="AddParameter"/> or <see cref="AddParameters"/>.
             /// </summary>
-            /// <param name="bindingsString">The gremlin-lang bindings string.</param>
+            /// <param name="parametersString">The gremlin-lang parameters string.</param>
             /// <returns>The <see cref="Builder" />.</returns>
-            public Builder AddBindingsString(string bindingsString)
+            public Builder AddParametersString(string parametersString)
             {
-                if (_bindings.Count > 0)
-                    throw new InvalidOperationException("Cannot mix AddBindingsString() with AddBinding()/AddBindings().");
-                _bindingsString = bindingsString;
+                if (_parameters.Count > 0)
+                    throw new InvalidOperationException("Cannot mix AddParametersString() with AddParameter()/AddParameters().");
+                _parametersString = parametersString;
                 return this;
             }
 
@@ -154,13 +169,14 @@ namespace Gremlin.Net.Driver.Messages
             public bool HasField(string key) => _fields.ContainsKey(key);
 
             /// <summary>
-            ///     Sets the evaluation timeout for this request.
+            ///     Sets the timeout in milliseconds for this request. This is the maximum time the request is
+            ///     allowed to execute on the server before it times out.
             /// </summary>
-            /// <param name="timeout">The timeout value.</param>
+            /// <param name="timeout">The timeout value in milliseconds.</param>
             /// <returns>The <see cref="Builder" />.</returns>
-            public Builder AddEvaluationTimeout(object timeout)
+            public Builder AddTimeoutMillis(object timeout)
             {
-                _fields[Tokens.ArgsEvalTimeout] = timeout;
+                _fields[Tokens.ArgsTimeoutMillis] = timeout;
                 return this;
             }
 
@@ -183,17 +199,6 @@ namespace Gremlin.Net.Driver.Messages
             public Builder AddMaterializeProperties(string materializeProperties)
             {
                 _fields[Tokens.ArgMaterializeProperties] = materializeProperties;
-                return this;
-            }
-
-            /// <summary>
-            ///     Sets the user agent for this request.
-            /// </summary>
-            /// <param name="userAgent">The user agent string.</param>
-            /// <returns>The <see cref="Builder" />.</returns>
-            public Builder AddUserAgent(string userAgent)
-            {
-                _fields[Tokens.ArgsUserAgent] = userAgent;
                 return this;
             }
 
@@ -225,14 +230,14 @@ namespace Gremlin.Net.Driver.Messages
             /// <returns>The built <see cref="RequestMessage" />.</returns>
             public RequestMessage Create()
             {
-                // prefer pre-serialized bindings string over raw map
-                if (_bindingsString != null)
+                // prefer pre-serialized parameters string over raw map
+                if (_parametersString != null)
                 {
-                    _fields[Tokens.ArgsBindings] = _bindingsString;
+                    _fields[Tokens.ArgsParameters] = _parametersString;
                 }
-                else if (_bindings.Count > 0)
+                else if (_parameters.Count > 0)
                 {
-                    _fields[Tokens.ArgsBindings] = GremlinLang.ConvertParametersToString(_bindings);
+                    _fields[Tokens.ArgsParameters] = GremlinLang.ConvertParametersToString(_parameters);
                 }
                 return new RequestMessage(_gremlin, _fields);
             }

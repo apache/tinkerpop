@@ -42,7 +42,7 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class RepeatStep<S> extends ComputerAwareStep<S, S> implements TraversalParent {
+public class RepeatStep<S> extends ComputerAwareStep<S, S> implements TraversalParent {
 
     private Traversal.Admin<S, S> repeatTraversal = null;
     private Traversal.Admin<S, ?> untilTraversal = null;

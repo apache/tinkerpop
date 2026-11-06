@@ -19,18 +19,15 @@ under the License.
 
 package examples;
 
-import org.apache.tinkerpop.gremlin.driver.Channelizer;
 import org.apache.tinkerpop.gremlin.driver.Client;
 import org.apache.tinkerpop.gremlin.driver.Cluster;
 import org.apache.tinkerpop.gremlin.driver.remote.DriverRemoteConnection;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Graph;
-import org.apache.tinkerpop.gremlin.structure.io.AbstractIoRegistry;
-import org.apache.tinkerpop.gremlin.structure.io.IoRegistry;
 import org.apache.tinkerpop.gremlin.structure.io.binary.TypeSerializerRegistry;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.apache.tinkerpop.gremlin.util.MessageSerializer;
-import org.apache.tinkerpop.gremlin.util.ser.GraphBinaryMessageSerializerV1;
+import org.apache.tinkerpop.gremlin.util.ser.GraphBinaryMessageSerializerV4;
 
 import static org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource.traversal;
 
@@ -77,12 +74,11 @@ public class Connections {
     // See reference/#gremlin-java-configuration for full list of configurations
     private static void withCluster() throws Exception {
         Cluster cluster = Cluster.build(SERVER_HOST).
-            channelizer(Channelizer.WebSocketChannelizer.class).
-            keepAliveInterval(180000).
-            maxConnectionPoolSize(8).
+            keepAliveTime(30000).
+            maxConnections(8).
             path("/gremlin").
             port(SERVER_PORT).
-            serializer(new GraphBinaryMessageSerializerV1()).
+            responseSerializer(new GraphBinaryMessageSerializerV4()).
             create();
         GraphTraversalSource g = traversal().withRemote(DriverRemoteConnection.using(cluster, "g"));
 
@@ -96,12 +92,11 @@ public class Connections {
 
     // Connecting and specifying a serializer
     private static void withSerializer() throws Exception {
-        IoRegistry registry = new FakeIoRegistry(); // an IoRegistry instance exposed by a specific graph provider
-        TypeSerializerRegistry typeSerializerRegistry = TypeSerializerRegistry.build().addRegistry(registry).create();
-        MessageSerializer serializer = new GraphBinaryMessageSerializerV1(typeSerializerRegistry);
+        TypeSerializerRegistry typeSerializerRegistry = TypeSerializerRegistry.build().create();
+        MessageSerializer serializer = new GraphBinaryMessageSerializerV4(typeSerializerRegistry);
         Cluster cluster = Cluster.build(SERVER_HOST).
             port(SERVER_PORT).
-            serializer(serializer).
+            responseSerializer(serializer).
             create();
         Client client = cluster.connect();
         GraphTraversalSource g = traversal().withRemote(DriverRemoteConnection.using(client, "g"));
@@ -113,6 +108,4 @@ public class Connections {
         cluster.close();
         g.close();
     }
-
-    public static class FakeIoRegistry extends AbstractIoRegistry {}
 }

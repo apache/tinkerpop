@@ -33,6 +33,21 @@ Feature: Data - BIGDECIMAL
       | result |
       | d[123].m |
 
+  Scenario: g_V_valuesXintX_asNumberXGType_BIGDECIMALX_negative_isXtypeOfXGType_BIGDECIMALXX
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("data").property("int", -456)
+      """
+    And the traversal of
+      """
+      g.V().values("int").asNumber(GType.BIGDECIMAL).is(P.typeOf(GType.BIGDECIMAL))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[-456].m |
+
   Scenario: g_V_valuesXintX_asNumberXGType_BIGDECIMALX_isXtypeOfXGType_BIGDECIMALXX_mathXaddX0_5XX
     Given the empty graph
     And the graph initializer of

@@ -28,6 +28,7 @@ import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONMapper;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONUtil;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONVersion;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONXModuleV4;
+import org.apache.tinkerpop.gremlin.structure.io.pdt.PDTRegistry;
 import org.apache.tinkerpop.gremlin.util.Tokens;
 import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
@@ -77,7 +78,8 @@ public abstract class AbstractGraphSONMessageSerializerV4 extends AbstractMessag
 
     private GraphSONMapper.Builder initBuilder() {
         final GraphSONMapper.Builder b = GraphSONMapper.build();
-        return b.addCustomModule(GraphSONXModuleV4.build()).version(GraphSONVersion.V4_0);
+        return b.addCustomModule(GraphSONXModuleV4.build()).version(GraphSONVersion.V4_0)
+                .pdtRegistry(PDTRegistry.create());
     }
 
     private GraphSONMapper.Builder applyMaxTokenLimits(final GraphSONMapper.Builder builder, final Map<String, Object> config) {
@@ -322,12 +324,12 @@ public abstract class AbstractGraphSONMessageSerializerV4 extends AbstractMessag
             if (data.containsKey(SerTokens.TOKEN_G)) {
                 builder.addG(data.get(SerTokens.TOKEN_G).toString());
             }
-            if (data.containsKey(SerTokens.TOKEN_BINDINGS)) {
-                builder.addBindings(data.get(SerTokens.TOKEN_BINDINGS).toString());
+            if (data.containsKey(SerTokens.TOKEN_PARAMETERS)) {
+                builder.addParameters(data.get(SerTokens.TOKEN_PARAMETERS).toString());
             }
-            if (data.containsKey(Tokens.TIMEOUT_MS)) {
+            if (data.containsKey(Tokens.TIMEOUT_MILLIS)) {
                 // Can be int for untyped JSON and long for typed GraphSON.
-                builder.addTimeoutMillis(Long.parseLong(data.get(Tokens.TIMEOUT_MS).toString()));
+                builder.addTimeoutMillis(Long.parseLong(data.get(Tokens.TIMEOUT_MILLIS).toString()));
             }
             if (data.containsKey(Tokens.ARGS_MATERIALIZE_PROPERTIES)) {
                 builder.addMaterializeProperties(data.get(Tokens.ARGS_MATERIALIZE_PROPERTIES).toString());

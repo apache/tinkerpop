@@ -24,6 +24,12 @@ import io.netty.buffer.Unpooled;
 import org.apache.tinkerpop.gremlin.driver.stream.ByteBufQueueInputStream;
 import org.junit.Test;
 
+import java.io.IOException;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
+
 import static org.junit.Assert.*;
 
 public class ByteBufQueueInputStreamTest {
@@ -75,6 +81,51 @@ public class ByteBufQueueInputStreamTest {
         stream.read(); // triggers release of buf and reads EOS
 
         assertEquals(0, buf.refCnt());
+    }
+
+    @Test
+    public void shouldThrowWhenBoundedReadTimesOut() throws Exception {
+        // A positive timeout is a backstop - when it elapses with no buffer offered, the read fails rather than
+        // blocking forever.
+        final ByteBufQueueInputStream stream = new ByteBufQueueInputStream(50L);
+        try {
+            stream.read();
+            fail("Expected a timeout since no buffer was ever offered");
+        } catch (IOException ex) {
+            assertEquals("Timed out waiting for streaming response data", ex.getMessage());
+        }
+    }
+
+    @Test(timeout = 10000)
+    public void shouldBlockIndefinitelyWhenUnboundedUntilBufferArrives() throws Exception {
+        // A timeout <= 0 means "no timeout" - the read blocks until a buffer is offered rather than giving up.
+        final ByteBufQueueInputStream stream = new ByteBufQueueInputStream(0L);
+        final AtomicInteger readValue = new AtomicInteger(-2);
+        final AtomicReference<Throwable> failure = new AtomicReference<>();
+        final CountDownLatch started = new CountDownLatch(1);
+
+        final Thread reader = new Thread(() -> {
+            started.countDown();
+            try {
+                readValue.set(stream.read());
+            } catch (Throwable t) {
+                failure.set(t);
+            }
+        });
+        reader.start();
+
+        // Let the reader block, then confirm it is still waiting well past what any old hardcoded bound would allow
+        // to elapse in this test, and only unblocks once a buffer is actually offered.
+        assertTrue(started.await(1, TimeUnit.SECONDS));
+        Thread.sleep(200);
+        assertTrue("reader should still be blocked waiting for data", reader.isAlive());
+
+        stream.offer(Unpooled.wrappedBuffer(new byte[]{7}));
+        reader.join(5000);
+
+        assertFalse("reader should have unblocked once data arrived", reader.isAlive());
+        assertNull(failure.get());
+        assertEquals(7, readValue.get());
     }
 
     @Test

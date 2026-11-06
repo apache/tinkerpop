@@ -31,7 +31,7 @@ import java.util.Map;
  * <p>Configuration parameters (via {@code config} in YAML):
  * <ul>
  *   <li>{@code graph} — name of the graph (as defined in {@code graphs:} config) to load data into</li>
- *   <li>{@code dataset} — which dataset to load: modern, classic, crew, grateful, sink, airroutes</li>
+ *   <li>{@code dataset} — which dataset to load: modern, classic, crew, grateful, sink, airroutes, zoo</li>
  * </ul>
  *
  * <p>Example YAML usage:
@@ -87,6 +87,9 @@ public class TinkerFactoryDataLoader implements LifeCycleHook {
                 break;
             case "airroutes":
                 TinkerFactory.generateAirRoutes(tinkerGraph);
+                break;
+            case "zoo":
+                TinkerFactory.generateTheZoo(tinkerGraph);
                 break;
             default:
                 c.getLogger().warn("TinkerFactoryDataLoader unknown dataset [{}]", dataset);

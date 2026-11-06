@@ -16,6 +16,7 @@ KIND, either express or implied.  See the License for the
 specific language governing permissions and limitations
 under the License.
 ////
+[llms-summary="Guidelines for TinkerPop committers: the Review-then-Commit (RTC) process, commit conventions, branch and merge practices, and committer responsibilities.",allow-oversize="true"]
 = For Committers
 
 image::business-gremlin.png[width=400]
@@ -51,10 +52,295 @@ listing provides a summary of what to do next:
 *** Wait for an email to arrive from "support_at_github.com", and click "Join @apache". Accept the invitation on github.com. Your new MFA status will not immediately be reflected on github, but you will get a confirmation email from noreply_at_github.com. Later, the status will read "MFA ENABLED"
 **** e.g. "[GitHub] @asf-gitbox has invited you to join the @apache organization"
 *** You can find yourself by searching in the link:https://github.com/orgs/apache/teams/apache-committers[Apache Committers listing]
+* Obtain access to DoltHub and the link:https://www.dolthub.com/repositories/tinkerpop/tinkerbeads[tinkerpop/tinkerbeads] repository. PMC members will help you get the correct permissions.
 * Read the link:https://www.apache.org/dev/new-committers-guide.html[Apache Committer Guide] and link:http://www.apache.org/dev/committers.html[Apache Committer FAQ]
 * Read through the other sections of this document - the Developer Documentation - for more details on project procedures and other administrative items.
 ** In particular, see <<rtc,Review then Commit>>
 * If you have trouble committing, email dev@tinkerpop.apache.org
+
+[[beads]]
+== Using Beads
+
+Git history and JIRA record what changed in the project. Neither records why, and the reasoning
+behind a change is often the part that is most needed when that change is revisited years later.
+TinkerPop uses link:https://beads.gascity.com/[beads], a command line tool named `bd`, to capture
+that reasoning while it is still exact. A bead can hold a decision that was taken, an alternative
+that was weighed and turned down, or a direction that was abandoned partway.
+
+Beads matters most for work done with an AI coding agent. Such an agent explores approaches,
+discards some of them, and is redirected by the contributor guiding it, but none of that survives
+the end of the session. Recording it as the work proceeds turns a transient conversation into a
+durable project artifact. Beads is only a tool for official contributors in some respects, as any
+beads created by third-parties will not have permissions to push to the remote repository holding
+them. 
+
+In case of third-party contribution, contributors can and should do code reviews with beads in 
+mind where the merge of that pull request is accompanied by beads that capture the decision making 
+around the change. Note that beads are not a replacement for standard ASF decision-making which 
+must grounded on the dev list. 
+
+[[beads-setup]]
+=== Setting Up Beads
+
+The `bd` tool, available from link:https://beads.gascity.com/[the beads project], must be installed
+before any of the commands below will work. Beads data lives in a Dolt database published at
+link:https://www.dolthub.com/repositories/tinkerpop/tinkerbeads[tinkerpop/tinkerbeads], and only
+`.beads/PRIME.md` and `.beads/config.yaml` are tracked in the repository. Running the following
+command from the repository root reads the remote recorded in `config.yaml` and clones that
+database into place:
+
+[source,text]
+----
+bd bootstrap
+----
+
+The same command repairs a damaged database and restores one after a move to a new machine. It
+never deletes existing beads, which makes it safe to run when the current state is unclear.
+
+An agent has to be told about the workflow before it can follow it. The `bin/agent-setup.sh`
+script installs the necessary hooks, which load the workflow at the start of every session and
+again after the agent's context is compacted:
+
+[source,text]
+----
+bin/agent-setup.sh --contributor claude
+----
+
+NOTE: Current beads support is for `claude` and `kiro` only. If you use another agent, beads 
+support will need to be added.
+
+Passing `--list` instead reports which agents are supported. The workflow itself is
+`.beads/PRIME.md`, which is tracked in Git and kept identical on every maintained branch. It
+describes how an agent binds to a root bead, plans work as a dependency graph, captures decisions
+as they occur, and pins the result once the work has merged.
+
+[[beads-root]]
+=== Choosing a Root Bead
+
+Every session works beneath a single root bead, which stands for the body of work in hand. An
+agent following the workflow asks which root to use before it writes any code, and answering that
+prompt is the most consequential moment in the exchange. Everything the session produces hangs
+from the answer, because tasks, decisions and records all attach to that root. A session bound to
+the wrong root scatters its reasoning into an unrelated body of work, where nobody looking for it
+later will think to search.
+
+An existing root is the right answer when the work continues something already under way, and a
+new root is the right answer when it does not. A small fix is often its own root (i.e. a single
+bead) rather than a child of something larger.
+
+Most work is anchored by something outside the repository, such as a JIRA issue, a pull request,
+a proposal, or a thread on the dev mailing list. That reference belongs on the root as a record
+bead, and supplying it falls to the committer, because an agent has no way to know which ticket
+or thread a piece of work belongs to. The link carries weight because records are the only
+connection between a bead and the code, given that commit messages hold no bead identifiers.
+The commits themselves become a record as well, though not until the work merges, as described
+in <<beads-commits,Linking Commits to Beads>>.
+It is not mandatory. A small fix that never had a ticket needs no record, and
+`bin/beads-report.py` accordingly reports a root without one as a question rather than a defect.
+
+[[beads-decisions]]
+=== What Beads Records
+
+Most beads are ordinary tasks, but the ones that justify the setup are the decision beads. Each
+records a choice that had a real alternative, and the alternative is stored beside it as its own
+bead. The example below is the rejected half of one such pair, taken from the Gryo
+deserialization hardening work:
+
+[source,text]
+----
+○ tp-cxt · Public getMapper() on GryoReader and GryoWriter   [● P2 · OPEN]
+Owner: Stephen Mallette · Type: decision
+
+DESIGN
+
+  REJECTED. GryoReader and GryoWriter would retain the Mapper they are handed
+  and expose it via a public getMapper(), matching the existing
+  GryoPool.getMapper() precedent at GryoPool.java:64.
+
+  Why rejected: it is permanent public API, plus a new retained field on both
+  classes, added to satisfy one guard test. TinkerPop cannot withdraw it later
+  without a deprecation cycle, and it invites providers to reach into reader
+  internals. The package-private getKryo() gets the test the same access with
+  none of that surface.
+
+LABELS: gremlin-core, io
+
+METADATA
+  rejected: true
+----
+
+The `rejected: true` metadata is what separates the road not taken from the one that was
+followed, since both are stored as decisions. The value of the pair lies in the reason rather
+than in the verdict. An objection expressed as a concrete mechanism can be tested again later,
+and an alternative whose objection no longer holds is precisely the one worth reopening.
+
+Because the reason carries that weight, an agent is instructed to ask for it rather than infer
+it. A reason it reconstructed reads exactly like one it was told, and nothing downstream can
+separate the two, so a plausible guess is more damaging than an absent bead. Answering that
+question with the mechanism rather than the preference is what makes the record worth keeping,
+and the answer cannot be corrected quietly later, since an agent is forbidden from editing
+reasoning already written.
+
+[[beads-structure]]
+=== The Shape of a Plan
+
+Work is organised as a graph rather than as a checklist. One root bead stands for the
+deliverable, and everything belonging to that effort hangs beneath it:
+
+[source,text]
+----
+root (feature/epic/task)
+  ├─parent-child─▶ record            TINKERPOP-3456
+  ├─parent-child─▶ decision "chose X"          {rejected: false}
+  │                  └─related─▶ decision "Y"  {rejected: true}
+  ├─parent-child─▶ task A "implement X" ──caused-by──▶ decision "chose X"
+  ├─parent-child─▶ task B ──blocks──▶ task A     (B waits for A)
+  └─parent-child─▶ task C                        (no blocker: starts with A)
+----
+
+Four kinds of bead appear in that graph. A `task` is a unit of work. A `decision` is a choice
+and carries its reasoning. A `record` points at an external artifact such as a JIRA issue, a
+pull request, or the commits that a landing merged as, and is the only link between a bead and
+the code, because commit messages carry no bead identifiers. A record is a child of the root it
+belongs to, and only a record carries an external reference. The root itself is usually a task or an epic.
+
+The edges carry as much meaning as the beads. A `parent-child` edge establishes membership in
+the effort, while a `blocks` edge establishes order, so a subtree without any `blocks` edges is
+merely a list. A `caused-by` edge is what connects a task back to the decision that shaped it,
+and without it there is no path from the work to the reasoning behind it.
+
+[[beads-lifecycle]]
+=== The Bead Lifecycle
+
+A bead is closed when its work is finished, in the same sense that a JIRA issue is resolved.
+Closing is not a formality. A task that blocks another releases it only by closing, so a finished
+task left open stalls whatever was waiting on it. Decision beads are closed as they are written,
+because a decision is settled at the moment it is made. The root is the exception and stays open
+until the work merges, since it stands for the deliverable rather than for any single step.
+
+The database can be pushed at any point with `bd dolt push`, and pushing often is encouraged for
+the same reason that pushing a topic branch often is encouraged. Nothing about a push is final.
+
+Pinning is the step that matters at merge. When a change merges to a release line, in the same
+motion that resolves its JIRA issue, the whole subgraph beneath the root is pinned:
+
+[source,text]
+----
+bd children <root>
+bin/beads-commits.py --root <root> --branch 3.7-dev --suggest
+bin/beads-commits.py --root <root> --branch 3.7-dev --commits <hash>...
+bd close <root>
+bd update <id1> <id2> ... -s pinned
+bd dolt pull && bd dolt push
+----
+
+Pinning is what makes a bead permanent. Destructive maintenance operations act on closed beads
+and skip pinned ones, so a subgraph left closed but unpinned remains eligible for routine
+cleanup. Pinning covers the entire subgraph rather than the beads that seem most interesting in
+hindsight. The work shipped, so all of it is project history.
+
+[[beads-commits]]
+=== Linking Commits to Beads
+
+Git history and the bead graph describe the same work from two directions. A commit message
+carries no bead identifier, so a line of `git log` offers no route into the reasoning behind it,
+and a bead names no commit until one is recorded against it.
+
+Recording one is only safe after the work has merged, because a commit hash is not stable while
+work is in flight. A squash or a rebase replaces whatever a topic branch held, so a hash taken
+during development often points at nothing by the time the change lands. TinkerPop merges
+forward with ordinary merge commits, so a commit published on `3.7-dev` keeps its hash on
+`3.8-dev` and on `master`, and a hash recorded after the merge stays correct permanently. That is
+also the moment the subgraph is pinned, which is why the two steps belong together.
+
+`bin/beads-commits.py` performs the linking. It creates one record bead for the landing, titled
+with GitHub's `owner/repo@hash` form so that it announces its own kind in the way that
+`apache/tinkerpop#3578` and `TINKERPOP-3278` announce theirs. Every commit in the landing is
+written to that bead's notes.
+
+Linking happens when a committer says the work has merged, in the same way that a JIRA issue is
+resolved once its change is in. An agent does not detect that moment and should not attempt to,
+since the hashes are not final until the merge has happened. Asked to pin, it proposes the
+commits that appear to belong to the root and waits for confirmation.
+
+[source,text]
+----
+bin/beads-commits.py --root tp-abc --branch 3.7-dev --suggest
+----
+
+The root's own record beads are what identify those commits, which is the practical sense in
+which records are the link between a bead and the code. A JIRA record supplies a ticket
+identifier that TinkerPop commit subjects carry, and a pull request record supplies a number that
+GitHub resolves to the commit its merge produced. A squash merge produces a single commit holding
+the whole change. A pull request merged with an ordinary merge commit is expanded to every commit
+that merge brought in, because those commits, rather than the merge itself, are where `git blame`
+and `git log -S` lead, and a hash missing from the record cannot be traced back to its bead. That
+range is whatever the topic branch carried, which can include commits belonging to other work, so
+the committer reviews it commit by commit and drops any that do not belong before recording.
+Commits that landed on the branch since
+the root was created are listed alongside, marking those belonging to the current committer,
+because a follow-up fix or a documentation pass often quotes no ticket and would otherwise go
+unnoticed. That second list is a prompt to check rather than an answer, and a root carrying no
+record at all has nothing else to offer. Nothing is written in this mode.
+
+Once the committer has confirmed the list, the same command records it.
+
+[source,text]
+----
+bin/beads-commits.py --root tp-abc --branch 3.7-dev --commits 374b0c76d0 e1ca7ea3e4
+bin/beads-commits.py --root tp-abc --branch 3.7-dev --pr 3610
+bin/beads-commits.py --root tp-abc --branch 3.7-dev --range 74fe2a64d0..374b0c76d0
+----
+
+The `--pr` form suits a pull request that was squash merged. It refuses one that landed as an
+ordinary merge commit, since recording that range without review is how another root's commits
+come to be attributed to this one, and points to `--suggest` and `--commits` instead.
+
+Every hash is checked against `origin/<branch>` before anything is written. A hash that has not
+landed there is refused rather than recorded, because it is precisely the hash that a later
+squash would invalidate. Running the command a second time finds the existing record and creates
+nothing.
+
+The notes field is what makes the link work in reverse. The query language searches it, so a
+hash held there can be found, while one held in a comment can be read but never found.
+
+[source,text]
+----
+bd query 'notes="e1ca7ea3e4"' --all --json
+----
+
+The reply carries the record bead and its `parent`, which is the root that the work hung from, so
+a single command turns a line of `git log` into the reasoning behind it. Hashes are stored at full
+length and matched as substrings, so an abbreviated hash copied from `git log --oneline` finds the
+bead as readily as a complete one. Quoting matters. Most hashes begin with a digit, and an
+unquoted value that begins with a digit is read as a number and fails to parse, in the same way
+that an unquoted version label does.
+
+[[beads-curation]]
+=== Curating the Record
+
+The subgraph is worth reading end to end before it is pinned, because pinning is what makes it
+permanent. Beads written early may describe an approach that later changed, tasks may have been
+left open, and a decision may have been recorded without the reason that gives it value.
+
+A committer may delete, retag, retitle or otherwise correct any part of the subgraph, exactly as
+a JIRA issue is corrected before it is resolved. This is the project's record of its own
+reasoning, and being right matters more than preserving a first draft. The corresponding
+prohibition in `.beads/PRIME.md` binds the agent rather than the committer. An agent is told
+never to rewrite reasoning it finds, precisely so that judgment about what is correct stays with
+a person.
+
+[[beads-shared]]
+=== A Shared Database
+
+The Dolt database is shared by every committer using beads, so `bd dolt pull` brings in beads
+written by other contributors alongside any local work. Open and in-progress beads belonging to
+other people are therefore a normal sight, which is no different from browsing JIRA.
+
+The same courtesy applies. A bead that is already in progress belongs to whoever claimed it, and
+picking up that work unannounced invites duplicated effort or a conflict at merge. Anything
+ambiguous is worth raising on the dev mailing list, which remains where project decisions are
+made.
 
 == Communication
 
@@ -339,6 +625,12 @@ conforms to the pattern of "Given the _xxx_ graph" where the "xxx" may be one of
 * crew
 * sink
 * grateful
+* zoo
+* airroutes
+
+Scenarios that use the "airroutes" graph should only return values (e.g. strings, numbers, maps) rather than graph
+elements. The language variant test harnesses do not build element lookups for that graph because its vertices have no
+"name" property and it is too large to cache efficiently.
 
 Never modify the data of any of the graphs except for the "empty" graph. The "empty" graph is the only graph that is
 guaranteed to be refreshed between tests. The "empty" graph maybe be modified by the traversal under test or by an
@@ -366,6 +658,10 @@ And the graph initializer of
 
 The above configuration will use the "empty" graph and initialize it with the specified traversal. In this case, that
 traversal loads the "empty" graph with the "modern" graph.
+
+An initializer may also load data that follows one of the domain schemas described in <<gherkin-domain-schemas>>. In
+that case the schema is shared and the data is not, so each scenario adds only the vertices, edges and values its
+traversal needs.
 
 Once the graph for the test is defined, the context can be expanded to include parameters that will be applied to the
 traversal under test. Any variable value being used in the traversal under test, especially ones that require a
@@ -476,6 +772,34 @@ And using the side effect x defined as "v[marko].id"
 
 The above example is equivalent to configuring a traversal with `g.withSideEffect(x, <marko vertex id>)` and may be
 used to add side effect values which could otherwise not be inlined into the traversal script.
+
+A scenario may also carry an intent, which is a natural language description of what the traversal under test does:
+
+[source,gherkin]
+----
+Given the modern graph
+And the intent
+  """
+  For each vertex in the graph, traverse edges with a weight of 1.0 and return the vertex the edges come out of.
+  """
+----
+
+The intent has no effect on the test. Every language variant accepts the step without acting on it, and the code that
+generates language variant translations from the feature files skips it. An intent is a single paragraph, wrapped
+at 120 characters like the rest of the feature file, and its lines are read back as one. It may describe the
+traversal step by step, as Gremlin is commonly explained in English, or pose the question the traversal answers.
+Parameters may be referenced by name in angle brackets, as in `What are the outgoing vertices for vertex id: <vid1>?`.
+Intents pair natural language
+with a traversal and a verified result, which makes the annotated scenarios a corpus for evaluating how well an agent
+or model writes Gremlin. The Gremlin Fluency tool in `gremlin-tools/gremlin-fluency` runs that evaluation, and its
+`README.md` describes how. Each intent should be written and reviewed with care, so that it accurately describes its
+traversal.
+
+An intent should admit only one reasonable reading, and that reading should produce the scenario's expected result on
+any graph with the same schema, not only on the graph the scenario uses. For example, "the vertices connected to vertex
+<vid1>" says nothing about edge direction, so a traversal using `both()` might match one using `out()` on the modern
+graph and still differ on another. Domain language is enough to settle such details. Phrases like "the people marko
+knows" or "the airports that can be flown to from Austin" fix the direction without mentioning edges at all.
 
 Finally, specify the traversal under test with the "Given" option "and the traversal":
 
@@ -622,7 +946,7 @@ Scenario: g_V_outE_drop
 ==== Tags
 
 Features have tags associated with them to help allow developers to better break up test runs if they desire. There
-are two types of tags:
+are three types of tags:
 
 * `@StepClass*` - Marks the step grouping and is a prefix that precedes and either refers to one of the following:
 ** One of the four types of steps: `Branch`, `Filter`, `Map`, and `SideEffect` (e.g. `@StepClassBranch`)
@@ -633,6 +957,9 @@ file itself and test filtering could be accomplished at that level by way of the
 secondary option and allows filtering to be consistently managed by tags alone. The suffix is the Gremlin step itself
 (e.g. `@StepHas`) in all cases except for `@StepVertex` which covers `V()`, `E()`, `out()`, `in()`, `both()`, `inE()`,
 `outE()`, and `bothE()`.
+* `@Data*` - Marks testing for a particular data type. The suffix is the name of the `GType` in camel case (e.g.
+`@DataBigDecimal`). The features under `data` carry it for the type they test, and a scenario elsewhere carries it when
+its result depends on values of that type, such as a scenario on a domain schema that sums decimal amounts.
 
 Scenarios have tags associated with them that help identify subsets of tests so that a test runner can selectively
 include or ignore certain tests. The tags enable the practical and necessary ability for providers to ignore tests that
@@ -665,11 +992,24 @@ tries to reference inaccessible properties that are on elements only available b
 the traversal does not mind the star graph limitation.
 * `@GremlinGroovyNotSupported` - The scenario uses `gremlin-lang` syntax which is incompatible with `gremlin-groovy` and
 cannot be resolved with the groovy translator. This is typically for scenarios using ambiguously-types `null` parameters.
+* `@TinkerGQL` - The scenario uses `match(String)` with GQL MATCH syntax and requires a graph that supports the
+TinkerGQL engine (i.e. has `GqlDeclarativeMatchStrategy` registered). Graph providers that do not support
+`match(String)` should add `and not @TinkerGQL` to their `@CucumberOptions` tag filter. TinkerGraph includes
+TinkerGQL support out of the box and runs these scenarios without any additional configuration.
 * `@InsertionOrderingRequired` - The scenario is reliant on the graph system predictably returning results (vertices,
 edges, properties) in the same order in which they were inserted into the graph.
 * `@MetaProperties` - The scenario makes use of meta-properties.
+* `@MultiLabel` - The scenario requires a graph that supports multiple labels per vertex (i.e.
+`ONE_OR_MORE` or `ZERO_OR_MORE` vertex label cardinality). Providers that only support a vertex label cardinality of
+`ONE` should exclude these tests.
+* `@MultiLabelDefault` - The scenario assumes a graphs unconfigured `valueMap()`/`elementMap()` steps
+produce results following `with("multilabel")` semantics. Graphs which default to single-label semantics
+should exclude these tests.
 * `@MultiProperties` - The scenario makes use of multi-properties.
 * `@SupportsChar` - The scenario requires that `char` is completely supported.
+* `@SingleLabelDefault` - The scenario assumes a graphs unconfigured `valueMap()`/`elementMap()` steps
+produce results following `with("singlelabel")` semantics. Graphs which default to multi-label semantics
+should exclude these tests.
 * `@SupportsDuration` - The scenario requires that `Duration` is completely supported.
 * `@SupportsBinary` - The scenario requires that `Binary` is completely supported.
 * `@UserSuppliedVertexIds` - The scenario relies on the vertex IDs specified in the dataset used by the scenario.
@@ -689,26 +1029,89 @@ Tag filters can be applied to Intellij at execution time by adding a system prop
 filtered by name with `-Dcucumber.filter.name=<scenario-regex>`. Note that these settings will override those
 configured by `CucumberOptions` on "*FeatureTest" setups.
 
+[[gherkin-domain-schemas]]
+==== Domain Schemas
+
+The preloaded graphs fix both a schema and its data, which suits tests of individual steps but leaves little room for
+data types beyond strings and common numbers, and they are graphs that models have seen many times. Domain schemas
+cover that ground. Each one defines a test graph for a common use case by its schema alone: its vertex and edge
+labels, its property keys and the type of each value. A scenario that uses a domain schema starts from the "empty"
+graph and its initializer adds whatever data the scenario needs, as long as that data follows the schema. Scenarios
+written against the same schema therefore share a standard definition of the graph while choosing their data
+independently, so a scenario can add exactly the values that make its traversal meaningful, such as a decimal amount
+whose sum must stay exact or a multi-property with a meta-property on one of its values.
+
+The schema is a contract. An initializer must use the labels and keys exactly as defined and must store each value
+with the defined type, writing `19.99m` for a `BIGDECIMAL` rather than `19.99`, because the type of a value is part of
+what such scenarios test. An initializer may leave out labels, keys and optional properties that its scenario does not
+need. Changing a schema means reviewing every scenario that uses it. The schema is also what an intent is judged
+against, since an intent must produce the expected result on any graph with the same schema (see
+<<gremlin-language-test-cases>>). Each scenario carries a `@Data*` tag for every data type its result depends on, and
+the tags for values that need specific support, such as `@AllowDateTimePropertyValues`, `@AllowMapPropertyValues`,
+`@SupportsChar`, `@SupportsDuration`, `@MultiProperties` and `@MetaProperties`, as described in <<gherkin-tags>>.
+Null values are not stored in these graphs, as many graphs do not support them, so a `NULL` is only ever a result of
+the traversal.
+
+The schemas are written in the notation of
+link:https://learn.microsoft.com/en-us/fabric/graph/gql-graph-types[GQL Graph Types] used throughout the reference
+documentation. Where the GQL type does not name the TinkerPop type precisely, a comment gives the `GType`. Each schema
+is kept in its own file under `gremlin-test/src/main/resources/org/apache/tinkerpop/gremlin/test/schemas`, which is
+the copy that tools such as gremlin-fluency read.
+
+A schema also carries what is understood about its data in the real world, even where GQL has no syntax for it. No
+edge connects a vertex to itself, as a person does not report to themselves and a device does not send through
+itself. An edge type marked with a `hierarchy` comment gives each vertex at most one outgoing edge of that label and
+never leads back to where it started, so following it from any vertex ends at a root. An edge type marked with a
+`containment` comment gives each vertex at most one incoming edge of that label, as a reading is recorded by a single
+sensor. Edge types without a mark, such as `transfer`, may form cycles and connect a vertex to any number of others.
+Data written for a scenario follows these conventions, and a traversal written against the schema may rely on them.
+
+*ledger* - Accounts that transfer money to each other and pay merchants.
+
+[source,text]
+----
+include::../../../../gremlin-test/src/main/resources/org/apache/tinkerpop/gremlin/test/schemas/ledger.gql[tags=schema]
+----
+
+*telemetry* - Devices at sites that send through gateway devices and carry sensors that record readings.
+
+[source,text]
+----
+include::../../../../gremlin-test/src/main/resources/org/apache/tinkerpop/gremlin/test/schemas/telemetry.gql[tags=schema]
+----
+
+*organization* - Employees in a reporting hierarchy who belong to teams and work on projects.
+
+[source,text]
+----
+include::../../../../gremlin-test/src/main/resources/org/apache/tinkerpop/gremlin/test/schemas/organization.gql[tags=schema]
+----
+
+*contacts* - Contacts imported from a spreadsheet, where the same property holds values of different types.
+
+[source,text]
+----
+include::../../../../gremlin-test/src/main/resources/org/apache/tinkerpop/gremlin/test/schemas/contacts.gql[tags=schema]
+----
+
 [[gremlin-socket-server-tests]]
 === Gremlin Socket Server Tests
 
-IMPORTANT: 4.0.0-beta.2 Release - Removes websockets. This section will be updated as the new HTTP test server falls into place.
-
-`gremlin-socket-server` is an included test server for driver tests which require predefined server
+`gremlin-socket-server` is an included HTTP test server for driver tests which require predefined server
 behavior. Typically, this is to test scenarios such as the server closing the connection or returning
 an error code but other response behavior can be added as needed for tests.
 
-Gremlin socket server uses the request id of incoming messages to determine how to respond.
-Request ids are defined in `gremlin-tools/gremlin-socket-server/conf/*.yaml`. The server side
-behavior for each request id is implemented in `TestWSGremlinInitializer`.
+Gremlin socket server uses the gremlin string of incoming requests to determine how to respond.
+These gremlin strings are defined as constants in `SocketServerConstants`. The server side
+behavior for each string is implemented in `TestHttpGremlinHandler`.
 
-To add new server side behavior, define a new request id in the config yaml, then add a corresponding
-field in `SocketServerSettings`. In `TestWSGremlinInitializer`, add a new block to the if else chain in the
-decode method which matches the request id. Define all server behavior and responses in this block.
+To add new server side behavior, define a new gremlin string constant in `SocketServerConstants`, then
+add a matching `case` to the switch statement in the `channelRead0` method of `TestHttpGremlinHandler`.
+Define all server behavior and responses in this block.
 
-To write the driver test, send a request message to the gremlin socket server port as if it were a normal
-gremlin server. Override the request id on the request with one defined in the config yaml and gremlin
-socket server will respond according to the defined behavior.
+To write the driver test, send an HTTP request to the gremlin socket server port as if it were a normal
+gremlin server, setting the `gremlin` field to one of the strings defined in `SocketServerConstants` and
+gremlin socket server will respond according to the defined behavior.
 
 Ensure that the socket server is running during driver tests. By default, a docker image for
 `gremlin-socket-server` is built during `mvn install`. The simplest way to use the socket server during
@@ -744,6 +1147,7 @@ that may be used as building blocks for your benchmarks; `AbstractBenchmarkBase`
 * `AbstractGraphMutateBenchmark` - extend when you are benchmarking graph mutation operations eg. `g.addV()`, `graph.addVertex()`
 
 [[rtc]]
+[llms-summary="The Review-then-Commit (RTC) process TinkerPop uses for changes: how contributions are proposed, reviewed, voted on, and merged."]
 == Review then Commit
 
 Code modifications must go through a link:http://www.apache.org/foundation/glossary.html#ReviewThenCommit[review-then-commit] (RTC)
@@ -833,6 +1237,15 @@ merge through the release branches after review. If there is conflict or the lik
 branches then this process is best handled by multiple pull requests: one to each release branch. Release branches with
 merged changes should be pushed in reverse order, starting with the latest release version first (e.g. if the fix is
 going to 3.3.x then the change should be merged in the following order: `master`, 3.4-dev`, `3.3-dev`).
+
+The `tinker-merge` Agent Skill automates this process for a coding agent. Asked to merge a pull request, a feature
+branch or commits made directly on a release branch, the agent asks only how to test, then merges and tests each release
+branch in turn with `.skills/tinker-merge/scripts/merge-forward.sh`. The script stops at merge conflicts and test
+failures and resumes with `--continue`, which can retest a failed branch with a different command, such as a Maven build
+resumed from the failing module. Branches the committer does not need built can be merged without being tested. It never
+pushes. The run ends with the local branches merged and an atomic push
+command, which leaves the committer to review the result before anything reaches the remote. The `--abort` option
+returns every branch to where it stood before the run.
 
 As an example, consider a situation where there is a feature branch named "TINKERPOP-1234" that contains a fix for
 the `3.4-dev` branch:
@@ -965,9 +1378,9 @@ of the Apache "Licensing How-to" for more information.
 
 The documentation for TinkerPop is stored in the git repository in `docs/src/` and are then split into several
 subdirectories, each representing a "book" (or its own publishable body of work). If a new AsciiDoc file is added to
-a book, then it should also be included in the `index.asciidoc` file for that book, otherwise the preprocessor will
-ignore it. Likewise, if a whole new book (subdirectory) is added, it must include an `index.asciidoc` file to be
-recognized by the AsciiDoc preprocessor.
+a book, then it should also be included in the `index.asciidoc` file for that book, otherwise the documentation build
+will ignore it. Likewise, if a whole new book (subdirectory) is added, it must include an `index.asciidoc` file to be
+recognized by the documentation build.
 
 Adding a book also requires a change to the root `pom.xml` file. Find the "asciidoc" Maven profile and add a new
 `<execution>` to the `asciidoctor-maven-plugin` configuration. For each book in `docs/src/`, there should be a
@@ -1046,80 +1459,3 @@ resources.  That file gets copied to the `target/test-classes` on build and sure
 are then configured to point at that area of the file system for those configuration files. The XML files
 can be edited to fine tune control of the log output, but generally speaking the current configuration is likely
 best for everyone's general purposes, so if changes are made please revert them prior to commit.
-
-[[beads]]
-== Using Beads
-
-link:https://github.com/steveyegge/beads[Beads] (`bd`) is an agent planning, execution, and
-long-term memory system that TinkerPop is trialing as part of its AI-assisted development
-workflow. *Use of beads is optional for committers at this time.* It is primarily intended for
-committers who work with AI coding agents such as link:https://www.anthropic.com/claude-code[Claude Code],
-link:https://kiro.dev/[Kiro], or link:https://junie.jetbrains.com/[Junie], and want a structured way to
-plan, track, and preserve the reasoning behind their work.
-
-=== Intent
-
-Traditional development workflows capture the final output — code, tests, documentation — but
-discard the thinking that produced it. Beads addresses this by structuring decisions as a
-persistent graph. Each bead represents a unit of work or an open design question, and the
-accumulated graph of beads becomes a traversable record of what was decided, why, and what
-alternatives were rejected. For AI agents, this means future sessions can access the path of
-decisions that led to the current state rather than re-deriving intent from the code alone.
-
-Beads are backed by a shared DoltHub database at
-link:https://www.dolthub.com/repositories/tinkerpop/tinkerbeads[tinkerpop/tinkerbeads], making
-the graph of decisions visible across contributors and sessions.
-
-=== Workflow
-
-Because beads usage is optional, the agent does not load beads context automatically. Once the
-`tinkerpop-dev` skill is active, the committer opts in by telling the agent to use beads:
-
-----
-Use beads.
-----
-
-The agent will then read the beads workflow reference and use beads to structure the session:
-creating issues for planned work before writing any code, capturing design decisions and
-alternatives as the work evolves, and closing issues as commits are approved. Sessions where
-the committer does not give this instruction will proceed without beads involvement.
-
-From the committer's perspective this means:
-
-* *At session start* — invoke the `tinkerpop-dev` skill, then say "Use beads" to opt in.
-  The agent will check for available work and propose a plan using beads.
-* *During work* — the agent creates and updates beads as it goes. The committer reviews and
-  guides this, the same way they review the code changes themselves.
-* *At commit time* — the agent will include the relevant bead ID(s) in the commit message.
-  The committer reviews and approves the commit message before it lands. The agent then closes
-  the associated bead(s).
-* *At merge time* — the operator pushes the accumulated bead state to DoltHub (see below).
-
-This workflow is deliberate: beads are closed locally as work commits, but the shared DoltHub
-database only reflects that state after a PR has merged. This keeps the canonical shared
-record aligned with accepted work rather than in-flight changes.
-
-=== Operator Responsibilities
-
-Operators (typically PMC members or active committers managing the shared database) are
-responsible for two actions that contributors do not perform:
-
-* *Pushing to DoltHub* — after a batch of PRs has merged, the operator runs
-  `bd dolt pull && bd dolt push` to publish the closed state of beads to the shared
-  `tinkerpop/tinkerbeads` database.
-
-* *JIRA linking* — when a JIRA ticket is associated with work tracked in beads, the operator
-  supplies the ticket identifier to the agent, which records it against the relevant bead.
-
-=== Setup
-
-Contributors wishing to use beads run the bootstrap script from the repository root:
-
-[source,bash]
-----
-bin/beads-bootstrap.sh
-----
-
-This requires `bd` and `dolt` to be installed and valid DoltHub credentials (`dolt login`).
-Full workflow guidance for AI agents is in `.claude/skills/tinkerpop-dev/references/beads-workflow.md`.
-

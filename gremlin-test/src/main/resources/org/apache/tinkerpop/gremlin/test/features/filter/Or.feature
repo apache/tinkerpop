@@ -60,3 +60,34 @@ Feature: Step - or()
       | v[josh] |
       | v[ripple] |
       | v[peter]  |
+
+  @MultiLabel
+  Scenario: g_V_orXhasLabelXbirdX_hasLabelXreptileXX_name_multilabel
+    Given the zoo graph
+    And the traversal of
+      """
+      g.V().or(__.hasLabel("bird"), __.hasLabel("reptile")).values("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | tux |
+      | atlas |
+      | monty |
+
+  Scenario: g_V_whereXoutEXcreatedX_or_outEXknowsXX_name
+    Given the modern graph
+    And the intent
+      """
+      Which vertices have created something or know someone? Return their names.
+      """
+    And the traversal of
+      """
+      g.V().where(outE("created").or().outE("knows")).values("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | marko |
+      | josh |
+      | peter |

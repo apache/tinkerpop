@@ -111,6 +111,7 @@ public final class StepDefinition {
     private static final ObjectMapper mapper = new ObjectMapper();
 
     private World world;
+    private Scenario currentScenario;
     private GraphTraversalSource g;
     private File tempWorkingDir;
     private final Map<String, Object> stringParameters = new HashMap<>();
@@ -314,8 +315,23 @@ public final class StepDefinition {
         this.world = Objects.requireNonNull(world, "world must not be null");
     }
 
+    /**
+     * The result of iterating the traversal under test, or {@code null} if it has not been iterated or failed.
+     */
+    public Object getResult() {
+        return result;
+    }
+
+    /**
+     * The error raised while parsing or iterating the traversal under test, or {@code null} if there was none.
+     */
+    public Throwable getError() {
+        return error;
+    }
+
     @Before
     public void beforeEachScenario(final Scenario scenario) throws Exception {
+        this.currentScenario = scenario;
         world.beforeEachScenario(scenario);
         stringParameters.clear();
         if (traversal != null) {
@@ -355,10 +371,20 @@ public final class StepDefinition {
 
     @Given("the {word} graph")
     public void givenTheXGraph(final String graphName) {
-        if (graphName.equals("empty"))
-            this.g = world.getGraphTraversalSource(null);
-        else
-            this.g = world.getGraphTraversalSource(GraphData.valueOf(graphName.toUpperCase()));
+        final boolean isMultiLabel = currentScenario != null &&
+                currentScenario.getSourceTagNames().contains("@MultiLabel");
+        if (graphName.equals("empty")) {
+            if (isMultiLabel)
+                this.g = world.getMultiLabelGraphTraversalSource();
+            else
+                this.g = world.getGraphTraversalSource(null);
+        } else {
+            // graph names in the feature files drop the underscore of multi-word GraphData names (e.g. airroutes)
+            final GraphData graphData = Stream.of(GraphData.values()).
+                    filter(gd -> gd.name().replace("_", "").equalsIgnoreCase(graphName)).
+                    findFirst().orElseThrow(() -> new IllegalArgumentException("No graph named " + graphName));
+            this.g = world.getGraphTraversalSource(graphData);
+        }
     }
 
     @Given("the graph initializer of")
@@ -380,6 +406,11 @@ public final class StepDefinition {
     @Given("using the side effect {word} defined as {string}")
     public void usingTheSideEffectXDefinedAsX(final String key, final String value) {
         sideEffects.put(key, convertToString(value));
+    }
+
+    @Given("the intent")
+    public void theIntent(final String docString) {
+        // a natural language description of the traversal that has no effect on the test
     }
 
     @Given("the traversal of")
@@ -545,20 +576,20 @@ public final class StepDefinition {
         final List<TreeNode> roots = parseTree(asciiTree);
 
         // Validate that the tree matches the data in roots
-        assertEquals(roots.size(), tree.keySet().size());
+        assertEquals(roots.size(), tree.rootNodes().size());
         for (TreeNode root : roots) {
             assertThat(String.format("Tree not matching at %s", root.getValue()),
-                    tree.containsKey(root.getValue()), CoreMatchers.is(true));
-            validateTreeStructure((Tree) tree.get(root.getValue()), root);
+                    tree.hasChild(root.getValue()), CoreMatchers.is(true));
+            validateTreeStructure(tree.childAt(root.getValue()), root);
         }
     }
 
-    private void validateTreeStructure(final Tree<?> actualTree, final TreeNode expectedNode) {
-        assertEquals(expectedNode.getChildren().size(), actualTree.keySet().size());
+    private void validateTreeStructure(final Tree actualTree, final TreeNode expectedNode) {
+        assertEquals(expectedNode.getChildren().size(), actualTree.rootNodes().size());
         for (TreeNode child : expectedNode.getChildren()) {
             assertThat(String.format("Tree not matching at %s", child.getValue()),
-                    actualTree.containsKey(child.getValue()), CoreMatchers.is(true));
-            validateTreeStructure(actualTree.get(child.getValue()), child);
+                    actualTree.hasChild(child.getValue()), CoreMatchers.is(true));
+            validateTreeStructure(actualTree.childAt(child.getValue()), child);
         }
     }
 

@@ -254,7 +254,7 @@ public class JavaTranslateVisitor extends AbstractTranslateVisitor {
         final String text = ctx.getText();
         final String withoutSuffix = text.substring(0, text.length() - 1);
         final String inner = removeFirstAndLastCharacters(withoutSuffix);
-        sb.append("'").append(inner).append("'");
+        sb.append("'").append(inner.equals("'") ? "\\'" : inner).append("'");
         return null;
     }
 
@@ -267,6 +267,24 @@ public class JavaTranslateVisitor extends AbstractTranslateVisitor {
         sb.append(String.format("Duration.ofSeconds(%d, %d)", seconds, nanos));
         if (!isPositive)
             sb.append(".negated()");
+        return null;
+    }
+
+    @Override
+    public Void visitPdtLiteral(final GremlinParser.PdtLiteralContext ctx) {
+        if (ctx.genericMapLiteral() != null) {
+            sb.append("new CompositePDT(");
+            sb.append(ctx.stringLiteral(0).getText());
+            sb.append(", ");
+            visitGenericMapLiteral(ctx.genericMapLiteral());
+            sb.append(")");
+        } else {
+            sb.append("new PrimitivePDT(");
+            sb.append(ctx.stringLiteral(0).getText());
+            sb.append(", ");
+            sb.append(ctx.stringLiteral(1).getText());
+            sb.append(")");
+        }
         return null;
     }
 

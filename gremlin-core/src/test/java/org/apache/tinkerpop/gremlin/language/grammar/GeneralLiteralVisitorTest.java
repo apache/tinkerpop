@@ -21,9 +21,14 @@ package org.apache.tinkerpop.gremlin.language.grammar;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.apache.tinkerpop.gremlin.process.traversal.GType;
+import org.apache.tinkerpop.gremlin.process.traversal.Merge;
+import org.apache.tinkerpop.gremlin.process.traversal.Pick;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ReadOnlyStrategy;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
+import org.apache.tinkerpop.gremlin.structure.io.pdt.PrimitivePDT;
+import org.apache.tinkerpop.gremlin.structure.io.pdt.CompositePDT;
 import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Test;
@@ -52,6 +57,7 @@ import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.hamcrest.number.OrderingComparison.greaterThanOrEqualTo;
 import static org.hamcrest.number.OrderingComparison.lessThan;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -83,6 +89,12 @@ public class GeneralLiteralVisitorTest {
                     {1, 1000000},
                     {1, 1},
                     {1000000, 1},
+                    // endpoint cases where an inclusive int loop would wrap around past the endpoint
+                    {Integer.MAX_VALUE, Integer.MAX_VALUE},
+                    {Integer.MIN_VALUE, Integer.MIN_VALUE},
+                    {Integer.MAX_VALUE - 1, Integer.MAX_VALUE},
+                    {Integer.MIN_VALUE, Integer.MIN_VALUE + 1},
+                    {Integer.MIN_VALUE + 1, Integer.MIN_VALUE},
             });
         }
 
@@ -122,6 +134,10 @@ public class GeneralLiteralVisitorTest {
             return Arrays.asList(new Object[][]{
                     {0, 10000000},
                     {10000000, 1},
+                    // widths that overflow signed int arithmetic and used to slip past the guard:
+                    // Math.abs(start - end) == Integer.MIN_VALUE (stays negative), and start - end overflow
+                    {-1073741824, 1073741824},
+                    {Integer.MIN_VALUE, Integer.MAX_VALUE},
             });
         }
 
@@ -130,7 +146,7 @@ public class GeneralLiteralVisitorTest {
          */
         @Test(expected = IllegalArgumentException.class)
         public void shouldNotParse() {
-            assertThat(Math.abs(end - start), greaterThanOrEqualTo(GenericLiteralVisitor.TOTAL_INTEGER_RANGE_RESULT_COUNT_LIMIT));
+            assertThat(Math.abs((long) start - (long) end), greaterThanOrEqualTo((long) GenericLiteralVisitor.TOTAL_INTEGER_RANGE_RESULT_COUNT_LIMIT));
             parseGenericLiteralRange(String.format("%d..%d", start, end));
         }
     }
@@ -450,7 +466,16 @@ public class GeneralLiteralVisitorTest {
                     {"1.0E+12d", "1.0E12", "java.lang.Double"},
                     {"-0.1E-12D", "-0.1E-12", "java.lang.Double"},
                     {"1E12d", "1E12", "java.lang.Double"},
-                    {"1D", "1", "java.lang.Double"}
+                    {"1D", "1", "java.lang.Double"},
+
+                    // float literals without a leading digit (e.g. .5)
+                    {".5", ".5", "java.lang.Double"},
+                    {".5m", ".5", "java.math.BigDecimal"},
+                    {".5f", ".5", "java.lang.Float"},
+                    {".5d", ".5", "java.lang.Double"},
+                    {"-.5f", "-.5", "java.lang.Float"},
+                    {".5E2", ".5E2", "java.lang.Double"},
+                    {".5E-2d", ".5E-2", "java.lang.Double"}
             });
         }
 
@@ -1047,6 +1072,131 @@ public class GeneralLiteralVisitorTest {
             } catch (GremlinParserException gpe) {
                 assertThat(gpe.getMessage().contains("Invalid Binary literal:"), Matchers.is(true));
             }
+        }
+    }
+
+    public static class ValidPdtLiteralTest {
+        @Test
+        public void shouldParsePdtLiteral() {
+            final GremlinLexer lexer = new GremlinLexer(CharStreams.fromString("PDT(\"MyType\",[\"x\":1,\"y\":\"hello\"])"));
+            final GremlinParser parser = new GremlinParser(new CommonTokenStream(lexer));
+            final GremlinParser.PdtLiteralContext ctx = parser.pdtLiteral();
+            final Object result = new GenericLiteralVisitor(new GremlinAntlrToJava()).visitPdtLiteral(ctx);
+            assertThat(result, instanceOf(CompositePDT.class));
+            final CompositePDT pdt = (CompositePDT) result;
+            assertEquals("MyType", pdt.getName());
+            assertEquals(1, pdt.getFields().get("x"));
+            assertEquals("hello", pdt.getFields().get("y"));
+        }
+
+        @Test
+        public void shouldParsePdtLiteralWithEmptyMap() {
+            final GremlinLexer lexer = new GremlinLexer(CharStreams.fromString("PDT(\"Empty\",[:])"));
+            final GremlinParser parser = new GremlinParser(new CommonTokenStream(lexer));
+            final GremlinParser.PdtLiteralContext ctx = parser.pdtLiteral();
+            final Object result = new GenericLiteralVisitor(new GremlinAntlrToJava()).visitPdtLiteral(ctx);
+            assertThat(result, instanceOf(CompositePDT.class));
+            final CompositePDT pdt = (CompositePDT) result;
+            assertEquals("Empty", pdt.getName());
+            assertTrue(pdt.getFields().isEmpty());
+        }
+
+        @Test
+        public void shouldRejectNonStringMapKey() {
+            final GremlinLexer lexer = new GremlinLexer(CharStreams.fromString("PDT(\"Bad\",[1:\"value\"])"));
+            final GremlinParser parser = new GremlinParser(new CommonTokenStream(lexer));
+            final GremlinParser.PdtLiteralContext ctx = parser.pdtLiteral();
+            try {
+                new GenericLiteralVisitor(new GremlinAntlrToJava()).visitPdtLiteral(ctx);
+                fail("Expected IllegalArgumentException for non-String map key");
+            } catch (final IllegalArgumentException e) {
+                assertTrue(e.getMessage().contains("PDT fields map must have String keys, found: java.lang.Integer"));
+            }
+        }
+
+        @Test
+        public void shouldParsePrimitivePdtLiteral() {
+            final GremlinLexer lexer = new GremlinLexer(CharStreams.fromString("PDT(\"Uint32\",\"42\")"));
+            final GremlinParser parser = new GremlinParser(new CommonTokenStream(lexer));
+            final GremlinParser.PdtLiteralContext ctx = parser.pdtLiteral();
+            final Object result = new GenericLiteralVisitor(new GremlinAntlrToJava()).visitPdtLiteral(ctx);
+            assertThat(result, instanceOf(PrimitivePDT.class));
+            final PrimitivePDT pdt = (PrimitivePDT) result;
+            assertEquals("Uint32", pdt.getName());
+            assertEquals("42", pdt.getValue());
+        }
+
+        @Test
+        public void shouldParsePrimitivePdtLiteralWithEmptyValue() {
+            final GremlinLexer lexer = new GremlinLexer(CharStreams.fromString("PDT(\"Empty\",\"\")"));
+            final GremlinParser parser = new GremlinParser(new CommonTokenStream(lexer));
+            final GremlinParser.PdtLiteralContext ctx = parser.pdtLiteral();
+            final Object result = new GenericLiteralVisitor(new GremlinAntlrToJava()).visitPdtLiteral(ctx);
+            assertThat(result, instanceOf(PrimitivePDT.class));
+            final PrimitivePDT pdt = (PrimitivePDT) result;
+            assertEquals("Empty", pdt.getName());
+            assertEquals("", pdt.getValue());
+        }
+    }
+
+    /**
+     * Tests parsing and visiting of generic literal productions: generic literal expressions,
+     * terminated traversals, merge/pick tokens, traversal strategies and string varargs.
+     */
+    public static class GenericLiteralProductionTest {
+
+        @Test
+        public void shouldParseGenericLiteralExpr() {
+            final GremlinLexer lexer = new GremlinLexer(CharStreams.fromString("1,2,3"));
+            final GremlinParser parser = new GremlinParser(new CommonTokenStream(lexer));
+            final GremlinParser.GenericLiteralExprContext ctx = parser.genericLiteralExpr();
+            final Object result = new GenericLiteralVisitor(new GremlinAntlrToJava()).visitGenericLiteralExpr(ctx);
+            assertArrayEquals(new Object[]{1, 2, 3}, (Object[]) result);
+        }
+
+        @Test
+        public void shouldParseTerminatedTraversal() {
+            final GremlinLexer lexer = new GremlinLexer(CharStreams.fromString("g.inject(1).toList()"));
+            final GremlinParser parser = new GremlinParser(new CommonTokenStream(lexer));
+            final GremlinParser.TerminatedTraversalContext ctx = parser.terminatedTraversal();
+            final Object result = new GenericLiteralVisitor(new GremlinAntlrToJava()).visitTerminatedTraversal(ctx);
+            assertEquals(Arrays.asList(1), result);
+        }
+
+        @Test
+        public void shouldParseTraversalMerge() {
+            final GremlinLexer lexer = new GremlinLexer(CharStreams.fromString("Merge.onCreate"));
+            final GremlinParser parser = new GremlinParser(new CommonTokenStream(lexer));
+            final GremlinParser.TraversalMergeContext ctx = parser.traversalMerge();
+            final Object result = new GenericLiteralVisitor(new GremlinAntlrToJava()).visitTraversalMerge(ctx);
+            assertEquals(Merge.onCreate, result);
+        }
+
+        @Test
+        public void shouldParseTraversalPick() {
+            final GremlinLexer lexer = new GremlinLexer(CharStreams.fromString("Pick.any"));
+            final GremlinParser parser = new GremlinParser(new CommonTokenStream(lexer));
+            final GremlinParser.TraversalPickContext ctx = parser.traversalPick();
+            final Object result = new GenericLiteralVisitor(new GremlinAntlrToJava()).visitTraversalPick(ctx);
+            assertEquals(Pick.any, result);
+        }
+
+        @Test
+        public void shouldParseTraversalStrategy() {
+            final GremlinLexer lexer = new GremlinLexer(CharStreams.fromString("ReadOnlyStrategy"));
+            final GremlinParser parser = new GremlinParser(new CommonTokenStream(lexer));
+            final GremlinParser.TraversalStrategyContext ctx = parser.traversalStrategy();
+            final Object result = new GenericLiteralVisitor(new GremlinAntlrToJava()).visitTraversalStrategy(ctx);
+            assertEquals(ReadOnlyStrategy.instance(), result);
+        }
+
+        @Test
+        public void shouldParseStringNullableLiteralVarargs() {
+            final GremlinLexer lexer = new GremlinLexer(CharStreams.fromString("'a','b'"));
+            final GremlinParser parser = new GremlinParser(new CommonTokenStream(lexer));
+            final GremlinParser.StringNullableLiteralVarargsContext ctx = parser.stringNullableLiteralVarargs();
+            final String[] result = new GenericLiteralVisitor(new GremlinAntlrToJava()).parseStringVarargs(ctx);
+            assertArrayEquals(new String[]{"a", "b"}, result);
         }
     }
 }

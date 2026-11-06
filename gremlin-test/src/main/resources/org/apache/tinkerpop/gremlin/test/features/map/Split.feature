@@ -111,3 +111,18 @@ Feature: Step - split()
       | l[m,a,r,k,o] |
       | l[p,e,t,e,r] |
       | l[v,a,d,a,s] |
+
+  Scenario: g_V_hasXcode_AUSX_valuesXdescX_splitXspaceX
+    Given the airroutes graph
+    And the intent
+      """
+      Split the description of AUS into its words, splitting on spaces, and return them in order as one list.
+      """
+    And the traversal of
+      """
+      g.V().has("code","AUS").values("desc").split(" ")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | l[Austin,Bergstrom,International,Airport] |

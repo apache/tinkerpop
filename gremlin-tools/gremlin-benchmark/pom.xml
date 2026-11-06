@@ -106,7 +106,7 @@ limitations under the License.
                     </excludes>
                     <systemPropertyVariables>
                         <benchmarkReportDir>${project.build.directory}/reports/benchmark/</benchmarkReportDir>
-                        <jvmArgs>-Dlogback.configurationFile=${logback-test.properties} -server -Xms4g -Xmx4g -Xss4m</jvmArgs>
+                        <jvmArgs>-Dlogback.configurationFile=${logback-test.properties} -server -Xms4g -Xmx4g -Xss4m --add-opens=java.base/java.io=ALL-UNNAMED --add-opens=java.base/java.nio=ALL-UNNAMED --add-opens=java.base/sun.nio.cs=ALL-UNNAMED --add-opens=java.base/java.lang=ALL-UNNAMED --add-opens=java.base/java.lang.invoke=ALL-UNNAMED --add-opens=java.base/java.lang.reflect=ALL-UNNAMED --add-opens=java.base/java.util=ALL-UNNAMED --add-opens=java.base/java.util.concurrent=ALL-UNNAMED --add-opens=java.base/java.util.concurrent.atomic=ALL-UNNAMED --add-opens=java.base/java.net=ALL-UNNAMED</jvmArgs>
                         <warmupIterations>3</warmupIterations>
                         <measureIterations>10</measureIterations>
                         <forks>2</forks>

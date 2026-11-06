@@ -18,11 +18,12 @@
  */
 package org.apache.tinkerpop.gremlin.tinkergraph.process.computer;
 
+import org.apache.commons.configuration2.BaseConfiguration;
+import org.apache.commons.configuration2.Configuration;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.computer.GraphFilter;
 import org.apache.tinkerpop.gremlin.process.computer.VertexComputeKey;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertiesStep;
-import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -171,16 +172,8 @@ public final class TinkerGraphComputerView {
                 this.addPropertiesToOriginalGraph();
                 return this.graph;
             } else {
-                final TinkerGraph newGraph = TinkerGraph.open();
-                this.graph.vertices().forEachRemaining(vertex -> {
-                    final Vertex newVertex = newGraph.addVertex(T.id, vertex.id(), T.label, vertex.label());
-                    vertex.properties().forEachRemaining(vertexProperty -> {
-                        final VertexProperty<?> newVertexProperty = newVertex.property(VertexProperty.Cardinality.list, vertexProperty.key(), vertexProperty.value(), T.id, vertexProperty.id());
-                        vertexProperty.properties().forEachRemaining(property -> {
-                            newVertexProperty.property(property.key(), property.value());
-                        });
-                    });
-                });
+                final TinkerGraph newGraph = createResultGraph();
+                this.graph.vertices().forEachRemaining(vertex -> copyVertexToResultGraph(newGraph, vertex));
                 return newGraph;
             }
         } else {  // Persist.EDGES
@@ -188,16 +181,8 @@ public final class TinkerGraphComputerView {
                 this.addPropertiesToOriginalGraph();
                 return this.graph;
             } else {
-                final TinkerGraph newGraph = TinkerGraph.open();
-                this.graph.vertices().forEachRemaining(vertex -> {
-                    final Vertex newVertex = newGraph.addVertex(T.id, vertex.id(), T.label, vertex.label());
-                    vertex.properties().forEachRemaining(vertexProperty -> {
-                        final VertexProperty<?> newVertexProperty = newVertex.property(VertexProperty.Cardinality.list, vertexProperty.key(), vertexProperty.value(), T.id, vertexProperty.id());
-                        vertexProperty.properties().forEachRemaining(property -> {
-                            newVertexProperty.property(property.key(), property.value());
-                        });
-                    });
-                });
+                final TinkerGraph newGraph = createResultGraph();
+                this.graph.vertices().forEachRemaining(vertex -> copyVertexToResultGraph(newGraph, vertex));
                 this.graph.edges().forEachRemaining(edge -> {
                     final Vertex outVertex = newGraph.vertices(edge.outVertex().id()).next();
                     final Vertex inVertex = newGraph.vertices(edge.inVertex().id()).next();
@@ -207,6 +192,31 @@ public final class TinkerGraphComputerView {
                 return newGraph;
             }
         }
+    }
+
+    /**
+     * Opens a new result graph that preserves the source graph's vertex {@code LabelCardinality} so that
+     * multi-label and zero-label vertices can be persisted without violating the default cardinality.
+     */
+    private TinkerGraph createResultGraph() {
+        final Configuration conf = new BaseConfiguration();
+        conf.setProperty(AbstractTinkerGraph.GREMLIN_TINKERGRAPH_VERTEX_LABEL_CARDINALITY,
+                this.graph.features().vertex().getLabelCardinality().name());
+        return TinkerGraph.open(conf);
+    }
+
+    /**
+     * Copies a vertex and its (meta-)properties into the result graph, carrying over all of its labels so
+     * that vertices with zero or multiple labels round-trip correctly.
+     */
+    private static void copyVertexToResultGraph(final TinkerGraph newGraph, final Vertex vertex) {
+        final Vertex newVertex = newGraph.addVertex(T.id, vertex.id(), T.label, vertex.labels());
+        vertex.properties().forEachRemaining(vertexProperty -> {
+            final VertexProperty<?> newVertexProperty = newVertex.property(VertexProperty.Cardinality.list, vertexProperty.key(), vertexProperty.value(), T.id, vertexProperty.id());
+            vertexProperty.properties().forEachRemaining(property -> {
+                newVertexProperty.property(property.key(), property.value());
+            });
+        });
     }
 
     private void addPropertiesToOriginalGraph() {

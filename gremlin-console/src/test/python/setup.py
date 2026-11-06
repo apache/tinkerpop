@@ -22,17 +22,10 @@ import sys
 import time
 from setuptools import setup
 
+# Test dependencies are installed in the test image and the suite is run with
+# pytest directly (see src/test/python/docker/Dockerfile). The deprecated
+# setup.py test / pytest-runner mechanism was removed as it is incompatible with
+# modern setuptools.
 setup(
-    name='gremlinconsoletest',
-    test_suite="tests",
-    setup_requires=[
-        'pytest-runner==6.0.0',
-        'importlib-metadata<5.0.0'
-    ],
-    tests_require=[
-        'pytest>=6.2.5,<8.0.0',
-        'mock>=3.0.5,<5.1.0',
-        'pexpect==4.9.0',
-        'iniconfig<2.0.0'
-    ]
+    name='gremlinconsoletest'
 )

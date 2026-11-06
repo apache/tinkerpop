@@ -30,7 +30,7 @@ import (
 func TestGraphStructureFunctions(t *testing.T) {
 	t.Run("Test Vertex.String()", func(t *testing.T) {
 		uid, _ := uuid.NewUUID()
-		v := Vertex{Element{uid, "Vertex-Label", nil}}
+		v := Vertex{Element: Element{uid, "Vertex-Label", nil}}
 		assert.Equal(t, fmt.Sprintf("v[%s]", uid.String()), v.String())
 	})
 
@@ -38,14 +38,14 @@ func TestGraphStructureFunctions(t *testing.T) {
 		uidEdge, _ := uuid.NewUUID()
 		uidIn, _ := uuid.NewUUID()
 		uidOut, _ := uuid.NewUUID()
-		v := Edge{Element{uidEdge, "edge_label", nil}, Vertex{Element{uidOut, "vertex_out", nil}}, Vertex{Element{uidIn, "vertex_in", nil}}}
+		v := Edge{Element: Element{uidEdge, "edge_label", nil}, OutV: Vertex{Element: Element{uidOut, "vertex_out", nil}}, InV: Vertex{Element: Element{uidIn, "vertex_in", nil}}}
 		assert.Equal(t, fmt.Sprintf("e[%s][%s-edge_label->%s]", uidEdge.String(), uidOut.String(), uidIn.String()), v.String())
 	})
 
 	t.Run("Test VertexProperty.String()", func(t *testing.T) {
 		uidVProp, _ := uuid.NewUUID()
 		uidV, _ := uuid.NewUUID()
-		v := VertexProperty{Element{uidVProp, "Vertex-prop", nil}, "Vertex", []uint32{0, 1}, Vertex{Element{uidV, "Vertex", nil}}}
+		v := VertexProperty{Element{uidVProp, "Vertex-prop", nil}, "Vertex", []uint32{0, 1}, Vertex{Element: Element{uidV, "Vertex", nil}}}
 		assert.Equal(t, "vp[Vertex-prop->[0 1]]", v.String())
 	})
 
@@ -54,6 +54,24 @@ func TestGraphStructureFunctions(t *testing.T) {
 		data := []uint32{0, 1}
 		p := Property{"property-Key", data, Element{uidElement, "prop", nil}}
 		assert.Equal(t, "p[property-Key->[0 1]]", p.String())
+	})
+
+	t.Run("Test Graph.String() empty graph", func(t *testing.T) {
+		g := NewGraph()
+		assert.Equal(t, "graph[vertices:0 edges:0]", g.String())
+	})
+
+	t.Run("Test Graph.String() with vertices and edges", func(t *testing.T) {
+		g := NewGraph()
+		v1 := &Vertex{Element: Element{Id: int32(1), Label: "person"}}
+		v2 := &Vertex{Element: Element{Id: int32(2), Label: "person"}}
+		g.Vertices[v1.Id] = v1
+		g.Vertices[v2.Id] = v2
+		g.Edges[int32(3)] = &Edge{
+			Element: Element{Id: int32(3), Label: "knows"},
+			InV:     *v2, OutV: *v1,
+		}
+		assert.Equal(t, "graph[vertices:2 edges:1]", g.String())
 	})
 
 	s1 := NewSimpleSet("foo")
@@ -175,5 +193,128 @@ func TestCustomStructs(t *testing.T) {
 			set = NewSimpleSet("a", 1)
 			assert.Equal(t, []interface{}{"a", 1}, set.ToSlice())
 		})
+	})
+}
+
+func TestVertexPropertyMap(t *testing.T) {
+	t.Run("Test Vertex.PropertyMap() groups multi-valued properties by key", func(t *testing.T) {
+		v := &Vertex{Element: Element{1, "person", []interface{}{
+			&VertexProperty{Element{10, "name", nil}, "name", "marko", Vertex{}},
+			&VertexProperty{Element{11, "name", nil}, "name", "marko-a-polo", Vertex{}},
+			&VertexProperty{Element{12, "age", nil}, "age", 29, Vertex{}},
+		}}}
+		propertyMap := v.PropertyMap()
+		assert.Equal(t, 2, len(propertyMap))
+		assert.Equal(t, 2, len(propertyMap["name"]))
+		assert.Equal(t, "marko", propertyMap["name"][0].Value)
+		assert.Equal(t, "marko-a-polo", propertyMap["name"][1].Value)
+		assert.Equal(t, 1, len(propertyMap["age"]))
+		assert.Equal(t, 29, propertyMap["age"][0].Value)
+	})
+
+	t.Run("Test Vertex.PropertyMap() single-valued property returns a one-element slice", func(t *testing.T) {
+		v := &Vertex{Element: Element{1, "person", []interface{}{
+			&VertexProperty{Element{10, "name", nil}, "name", "marko", Vertex{}},
+		}}}
+		propertyMap := v.PropertyMap()
+		assert.Equal(t, 1, len(propertyMap))
+		assert.Equal(t, 1, len(propertyMap["name"]))
+		assert.Equal(t, "marko", propertyMap["name"][0].Value)
+	})
+
+	t.Run("Test Vertex.PropertyMap() with nil Properties returns empty map", func(t *testing.T) {
+		v := &Vertex{Element: Element{1, "person", nil}}
+		propertyMap := v.PropertyMap()
+		assert.NotNil(t, propertyMap)
+		assert.Equal(t, 0, len(propertyMap))
+	})
+
+	t.Run("Test Vertex.PropertyMap() with empty Properties slice returns empty map", func(t *testing.T) {
+		v := &Vertex{Element: Element{1, "person", []interface{}{}}}
+		propertyMap := v.PropertyMap()
+		assert.NotNil(t, propertyMap)
+		assert.Equal(t, 0, len(propertyMap))
+	})
+}
+
+func TestEdgePropertyMap(t *testing.T) {
+	t.Run("Test Edge.PropertyMap() groups multi-valued properties by key", func(t *testing.T) {
+		e := &Edge{Element: Element{1, "created", []interface{}{
+			&Property{"weight", 0.4, Element{}},
+			&Property{"weight", 0.6, Element{}},
+			&Property{"since", 2010, Element{}},
+		}}, OutV: Vertex{}, InV: Vertex{}}
+		propertyMap := e.PropertyMap()
+		assert.Equal(t, 2, len(propertyMap))
+		assert.Equal(t, 2, len(propertyMap["weight"]))
+		assert.Equal(t, 0.4, propertyMap["weight"][0].Value)
+		assert.Equal(t, 0.6, propertyMap["weight"][1].Value)
+		assert.Equal(t, 1, len(propertyMap["since"]))
+		assert.Equal(t, 2010, propertyMap["since"][0].Value)
+	})
+
+	t.Run("Test Edge.PropertyMap() single-valued property returns a one-element slice", func(t *testing.T) {
+		e := &Edge{Element: Element{1, "created", []interface{}{
+			&Property{"weight", 0.4, Element{}},
+		}}, OutV: Vertex{}, InV: Vertex{}}
+		propertyMap := e.PropertyMap()
+		assert.Equal(t, 1, len(propertyMap))
+		assert.Equal(t, 1, len(propertyMap["weight"]))
+		assert.Equal(t, 0.4, propertyMap["weight"][0].Value)
+	})
+
+	t.Run("Test Edge.PropertyMap() with nil Properties returns empty map", func(t *testing.T) {
+		e := &Edge{Element: Element{1, "created", nil}, OutV: Vertex{}, InV: Vertex{}}
+		propertyMap := e.PropertyMap()
+		assert.NotNil(t, propertyMap)
+		assert.Equal(t, 0, len(propertyMap))
+	})
+
+	t.Run("Test Edge.PropertyMap() with empty Properties slice returns empty map", func(t *testing.T) {
+		e := &Edge{Element: Element{1, "created", []interface{}{}}, OutV: Vertex{}, InV: Vertex{}}
+		propertyMap := e.PropertyMap()
+		assert.NotNil(t, propertyMap)
+		assert.Equal(t, 0, len(propertyMap))
+	})
+}
+
+func TestVertexPropertyMetaPropertyMap(t *testing.T) {
+	t.Run("Test VertexProperty.PropertyMap() groups multi-valued properties by key", func(t *testing.T) {
+		vp := &VertexProperty{Element{1, "name", []interface{}{
+			&Property{"acl", "public", Element{}},
+			&Property{"acl", "private", Element{}},
+			&Property{"startTime", 2010, Element{}},
+		}}, "name", "marko", Vertex{}}
+		propertyMap := vp.PropertyMap()
+		assert.Equal(t, 2, len(propertyMap))
+		assert.Equal(t, 2, len(propertyMap["acl"]))
+		assert.Equal(t, "public", propertyMap["acl"][0].Value)
+		assert.Equal(t, "private", propertyMap["acl"][1].Value)
+		assert.Equal(t, 1, len(propertyMap["startTime"]))
+		assert.Equal(t, 2010, propertyMap["startTime"][0].Value)
+	})
+
+	t.Run("Test VertexProperty.PropertyMap() single-valued property returns a one-element slice", func(t *testing.T) {
+		vp := &VertexProperty{Element{1, "name", []interface{}{
+			&Property{"acl", "public", Element{}},
+		}}, "name", "marko", Vertex{}}
+		propertyMap := vp.PropertyMap()
+		assert.Equal(t, 1, len(propertyMap))
+		assert.Equal(t, 1, len(propertyMap["acl"]))
+		assert.Equal(t, "public", propertyMap["acl"][0].Value)
+	})
+
+	t.Run("Test VertexProperty.PropertyMap() with nil Properties returns empty map", func(t *testing.T) {
+		vp := &VertexProperty{Element{1, "name", nil}, "name", "marko", Vertex{}}
+		propertyMap := vp.PropertyMap()
+		assert.NotNil(t, propertyMap)
+		assert.Equal(t, 0, len(propertyMap))
+	})
+
+	t.Run("Test VertexProperty.PropertyMap() with empty Properties slice returns empty map", func(t *testing.T) {
+		vp := &VertexProperty{Element{1, "name", []interface{}{}}, "name", "marko", Vertex{}}
+		propertyMap := vp.PropertyMap()
+		assert.NotNil(t, propertyMap)
+		assert.Equal(t, 0, len(propertyMap))
 	})
 }

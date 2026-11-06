@@ -20,4 +20,4 @@ port: 8182
 graphs: {
   graph: conf/tinkergraph-empty.properties}
 metrics: {
-  slf4jReporter: {enabled: true, interval: 180000}}
+  slf4jReporter: {enabled: true, intervalMillis: 180000}}

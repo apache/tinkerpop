@@ -54,8 +54,24 @@ TinkerPopWorld.prototype.cleanEmptyGraph = function () {
   return g.V().drop().toList();
 };
 
+TinkerPopWorld.prototype.cleanMultilabelGraph = function () {
+  const connection = this.cache['multilabel'].connection;
+  const g = anon.traversal().withRemote(connection);
+  return g.V().drop().toList();
+};
+
 TinkerPopWorld.prototype.loadEmptyGraphData = function () {
   const cacheData = this.cache['empty'];
+  const c = cacheData.connection;
+  return Promise.all([ getVertices(c), getEdges(c), getVertexProperties(c) ]).then(values => {
+    cacheData.vertices = values[0];
+    cacheData.edges = values[1];
+    cacheData.vertexProperties = values[2]
+  });
+};
+
+TinkerPopWorld.prototype.loadMultilabelGraphData = function () {
+  const cacheData = this.cache['multilabel'];
   const c = cacheData.connection;
   return Promise.all([ getVertices(c), getEdges(c), getVertexProperties(c) ]).then(values => {
     cacheData.vertices = values[0];
@@ -68,11 +84,21 @@ setWorldConstructor(TinkerPopWorld);
 
 BeforeAll(function () {
   // load all traversals
-  const promises = ['modern', 'classic', 'crew', 'grateful', 'sink', 'empty'].map(graphName => {
+  const promises = ['modern', 'classic', 'crew', 'grateful', 'sink', 'zoo', 'airroutes', 'empty', 'multilabel'].map(graphName => {
     let connection = null;
     if (graphName === 'empty') {
       connection = getConnection('ggraph');
       return connection.open().then(() => cache['empty'] = { connection: connection });
+    }
+    if (graphName === 'multilabel') {
+      connection = getConnection('gmultilabel');
+      return connection.open().then(() => cache['multilabel'] = { connection: connection });
+    }
+    if (graphName === 'airroutes') {
+      // air-routes scenarios only return values so the graph needs no element lookups
+      connection = getConnection('gairroutes');
+      return connection.open().then(() => cache['airroutes'] = {
+        connection: connection, vertices: new Map(), edges: {}, vertexProperties: {} });
     }
     connection = getConnection('g' + graphName);
     return connection.open()
@@ -96,6 +122,7 @@ AfterAll(function () {
 Before(function (info) {
   this.scenario = info.pickle.name;
   this.cache = cache;
+  this.isMultiLabel = info.pickle.tags && info.pickle.tags.some(t => t.name === '@MultiLabel');
 });
 
 Before({tags: "@GraphComputerOnly"}, function() {
@@ -103,6 +130,10 @@ Before({tags: "@GraphComputerOnly"}, function() {
 })
 
 Before({tags: "@AllowNullPropertyValues"}, function() {
+  return 'skipped'
+})
+
+Before({tags: "@MultiLabelDefault"}, function() {
   return 'skipped'
 })
 

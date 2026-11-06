@@ -18,10 +18,9 @@
  */
 package org.apache.tinkerpop.gremlin.driver.auth;
 
-import io.netty.handler.codec.http.FullHttpRequest;
-import io.netty.handler.codec.http.HttpHeaderNames;
 import org.apache.tinkerpop.gremlin.driver.HttpRequest;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
 public class Basic implements Auth {
@@ -35,10 +34,9 @@ public class Basic implements Auth {
     }
 
     @Override
-    public HttpRequest apply(final HttpRequest httpRequest) {
+    public void intercept(final HttpRequest httpRequest) {
         final String valueToEncode = username + ":" + password;
         httpRequest.headers().put(HttpRequest.Headers.AUTHORIZATION,
-                "Basic " + Base64.getEncoder().encodeToString(valueToEncode.getBytes()));
-        return httpRequest;
+                "Basic " + Base64.getEncoder().encodeToString(valueToEncode.getBytes(StandardCharsets.UTF_8)));
     }
 }

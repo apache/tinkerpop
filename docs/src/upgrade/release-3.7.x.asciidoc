@@ -17,20 +17,151 @@ specific language governing permissions and limitations
 under the License.
 ////
 
+[llms-summary="Upgrade notes for the TinkerPop 3.7.x release line: breaking changes, new features, and provider migration guidance across its releases."]
 = TinkerPop 3.7.0
 
 image::gremlin-zamfir.png[width=185]
 
 *Gremfir Master of the Pan Flute*
 
-== TinkerPop 3.7.7
+== TinkerPop 3.7.8
 
 *Release Date: NOT OFFICIALLY RELEASED YET*
+
+Please see the link:https://github.com/apache/tinkerpop/blob/3.7.8/CHANGELOG.asciidoc#release-3-7-8[changelog] for a
+complete list of all the modifications that are part of this release.
+
+== TinkerPop 3.7.7
+
+*Release Date: September 1, 2026*
 
 Please see the link:https://github.com/apache/tinkerpop/blob/3.7.7/CHANGELOG.asciidoc#release-3-7-7[changelog] for a
 complete list of all the modifications that are part of this release.
 
 === Upgrading for Users
+
+==== Gryo IO Disables Java Serialization
+
+A small number of Gryo type registrations, mostly `TraversalStrategy` implementations, were registered with Kryo's
+`JavaSerializer`, which reads by way of `java.io.ObjectInputStream.readObject()`. Reading a Gryo document from an
+untrusted source was therefore unsafe, as a crafted document could carry an arbitrary Java object graph that runs
+during decoding.
+
+The paths that consume graph documents, `io()`, `GryoReader`, `GryoWriter` and `GryoIo` (including `gryo` graph
+persistence) and the Hadoop Gryo input/output formats, no longer install those registrations. A graph document only needs graph structure, so nothing is lost
+in practice. A stream that does present one of the affected type ids now fails with an unregistered class id:
+
+[source,text]
+----
+org.apache.tinkerpop.shaded.kryo.KryoException: Encountered unregistered class ID: 187
+----
+
+The affected types are `PartitionStrategy`, `SubgraphStrategy`, `SeedStrategy`, `VertexProgramStrategy`,
+`ProductiveByStrategy`, `OptionsStrategy` and `TraversalExplanation` in both Gryo 1.0 and 3.0, plus
+`GroupStep.GroupBiOperator` and `OrderGlobalStep.OrderBiOperator` in Gryo 1.0.
+
+A mapper built directly is unchanged and keeps full fidelity for trusted, in-process work such as OLAP. The new
+`GryoMapper.Builder.javaSerializationAllowed(boolean)` selects the behavior:
+
+[source,java]
+----
+// full fidelity, unchanged, appropriate for trusted bytes only
+GryoMapper.build().create();
+
+// hardened, what io() and GryoReader/GryoWriter now use by default
+GryoMapper.build().javaSerializationAllowed(false).create();
+----
+
+Callers that supply their own mapper to `GryoReader` or `GryoWriter` are unaffected and should add
+`javaSerializationAllowed(false)` if they read bytes they do not control. Dropping those registrations only holds
+while classes must be registered up front, so `create()` rejects `javaSerializationAllowed(false)` combined with
+`registrationRequired(false)` and throws `IllegalStateException`. `GryoIo` accepts an `onMapper` consumer, so
+full fidelity can be restored where the bytes are trusted:
+
+[source,java]
+----
+GryoIo.build().graph(graph).onMapper(m -> ((GryoMapper.Builder) m).javaSerializationAllowed(true)).create();
+----
+
+Note that the builder handed to `onMapper` is already hardened, so turning registration off there completes the
+rejected combination even though `javaSerializationAllowed(false)` was never called directly. Such a consumer now
+needs to opt back into full fidelity explicitly:
+
+[source,java]
+----
+GryoIo.build().graph(graph).onMapper(m -> ((GryoMapper.Builder) m)
+        .registrationRequired(false).javaSerializationAllowed(true)).create();
+----
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-3278[TINKERPOP-3278]
+
+==== GraphSON 1.0 Type Allow-List
+
+Typed GraphSON 1.0 now resolves a Java class named by an `@class` property only when that exact name is allowed.
+This change is breaking on read for provider and application types outside the default set. Some values that GraphSON
+1.0 can write, including `ByteBuffer` and `EnumMap`, also no longer round-trip. The written format is unchanged.
+
+The failure looks like this:
+
+[source,text]
+----
+Could not resolve type id ...: Configured `PolymorphicTypeValidator` ... denied resolution
+----
+
+Further simple class names can be added on the mapper:
+
+[source,java]
+----
+GraphSONMapper.build().version(GraphSONVersion.V1_0).typeInfo(TypeInfo.PARTIAL_TYPES)
+        .addAllowedTypeIdName("com.example.MyType", "com.example.MyOtherType").create();
+----
+
+Expected application types can be added to the message serializer configuration:
+
+[source,yaml]
+----
+serializers:
+  - className: org.apache.tinkerpop.gremlin.util.ser.GraphSONMessageSerializerV1
+    config:
+      allowedTypeIdNames:
+        - com.example.MyType
+----
+
+Allowlisting cannot restore a parameterized type id such as `java.util.EnumMap<...>` because GraphSON 1.0 rejects
+all parameterized type ids unconditionally. Affected applications can convert values to non-parameterized
+representations such as `HashMap`, or move to GraphSON 2.0, GraphSON 3.0 or GraphBinary.
+
+See: link:https://tinkerpop.apache.org/docs/3.7.7/reference/#server-graphson[GraphSON Server Configuration],
+link:https://tinkerpop.apache.org/docs/3.7.7/dev/io/#graphson-1d0[GraphSON 1.0 IO Documentation]
+
+==== OLAP Restrictions
+
+The OLAP `io()` step on `HadoopGraph` (`g.withComputer().io(path)...`) historically transferred every
+`with(key, value)` option into the graph configuration and accepted any class name as the reader or writer. As of
+3.7.7 a remotely submitted traversal may name only the built-in `gryo` and `graphson` formats, and its
+`io().with(key, value)` and `GraphComputer.configure(key, value)` options are no longer transferred automatically.
+Naming another reader or writer class, selecting `ScriptInputFormat` or `ScriptOutputFormat`, or setting a key that
+has not been approved now fails with an error rather than loading the class or applying the key.
+
+To keep using a custom format, a script format, or additional `with()` or `configure()` keys from a remote traversal,
+they must be listed in the graph configuration. Setting `gremlin.io.trusted=true` instead restores the previous
+behavior in full for an in-process deployment:
+
+[source,properties]
+----
+# approve specific reader/writer, interceptor, or script format classes
+gremlin.io.approvedClasses=org.example.MyInputFormat,org.example.MyOutputFormat
+# approve specific io().with() and GraphComputer.configure() keys
+gremlin.io.approvedGraphConfigKeys=some.graph.option
+gremlin.io.approvedComputerConfigKeys=spark.executor.memory
+# or restore the previous behavior in full
+gremlin.io.trusted=true
+----
+
+Deployments that use only the built-in formats and configure OLAP through the graph properties file, rather than
+through `with()` on a remote traversal, are unaffected.
+
+See: link:https://tinkerpop.apache.org/docs/3.7.7/reference/#remote-olap-configuration[Remote OLAP Configuration]
 
 ==== conjoin() Step Null Handling
 
@@ -57,7 +188,193 @@ an empty string instead.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-3225[TINKERPOP-3225]
 
+==== FailResponseException for fail() Step
 
+The purpose of `fail()` step is to allow the user to raise error conditions when a traversal takes a particular path.
+It provides exception feedback to the user while immediately stopping the traversal in an error state. In embedded
+cases, it raises a `FailException` which implements the `Failure` interface and provides more details about the failure
+itself. Unfortunately, remote cases behaved differently and returned the common `ResponseException`. While it was
+possible to check the response code on this exception, it was not possible to catch the exception in quite the same way
+as embedded.
+
+To remedy this shortcoming, this version introduces a new `FailResponseException` which extends `ResponseException` and
+implements the `Failure` interface. When the driver encounters a 595 status code, an indicator that the `fail()` step
+was triggered on the server, it will throw a `FailResponseException` instead of the generic `ResponseException`. Note
+that the server does not send back many of the internal details needed to fully form a `Failure`, so the
+`FailResponseException` is really just a marker that makes it easier to trap these types of errors.
+
+Note that this change is for Java only and designed to better align embedded and remote use cases.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-3238[TINKERPOP-3238]
+
+==== hasId() Collection Unrolling
+
+`hasId()` now only unrolls a collection into individual identifiers when that collection is supplied as the *single*
+argument to the step. This aligns its behavior with `g.V()` and `g.E()`, where only a single `Collection` of ids is
+unrolled. Previously, `hasId()` would unroll a collection even when it was mixed with other arguments, which was
+inconsistent with `g.V()`/`g.E()`. The `hasId()` step has worked this way since 3.6.3 while attempting to reach
+feature parity with `V()` and `E()`. The unwrapping behavior for multiple arguments was at odds with the defined
+semantics for the step and unfortunately went unnoticed until now.
+
+[source,groovy]
+----
+// 3.7.6 - the collection is unrolled even alongside other ids
+gremlin> g.V().hasId(1, [2, 4])
+==>v[1]
+==>v[2]
+==>v[4]
+
+// 3.7.7 - a collection mixed with other arguments is treated as a literal id (not unrolled),
+//         consistent with g.V(1, [2, 4])
+gremlin> g.V().hasId(1, [2, 4])
+// no longer matches v[2] and v[4] by unrolling the list
+
+// unchanged: a single collection argument is still unrolled
+gremlin> g.V().hasId([1, 2])
+==>v[1]
+==>v[2]
+----
+
+Code that relied on `hasId()` unrolling a collection that was passed alongside other id arguments should be updated to
+either pass all ids as a single collection (for example `g.V().hasId([1, 2, 4])`) or as individual arguments (for
+example `g.V().hasId(1, 2, 4)`).
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-3273[TINKERPOP-3273]
+
+==== Deprecated ProductiveByStrategy
+
+`ProductiveByStrategy` is deprecated as of 3.7.7 and is not replaced. The strategy was introduced in 3.5.0 as a
+temporary way to mimic the `null` processing behavior of versions prior to 3.5.0, where a `by()` modulator would
+always produce a result. That compatibility need has passed, so the strategy is no longer recommended and will be
+removed in 4.0.0. This deprecation applies across all Gremlin Language Variants.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-3042[TINKERPOP-3042]
+
+==== InetAddress GraphSON Deserialization No Longer Resolves Hostnames
+
+TinkerPop's Jackson dependency was upgraded to jackson-databind 2.18.9 to address a number of CVEs. As part of that
+upgrade, Jackson changed how it deserializes `java.net.InetAddress` values from GraphSON, it will no longer perform a
+DNS lookup to resolve a hostname string (e.g. `"localhost"`, `"example.com"`) into an `InetAddress`. Only literal IPv4
+or IPv6 address strings (e.g. `"127.0.0.1"`, `"::1"`) are now accepted, anything else fails deserialization with an
+error such as `Not a valid IP address string literal`.
+
+Applications that store or transmit `InetAddress` values via GraphSON (as a vertex/edge property, or as a bound
+Gremlin parameter) must use literal IP address strings going forward. Existing serialized data containing hostname
+strings will fail to deserialize after upgrading and will need to be migrated to literal IP addresses.
+
+==== Traversal Strategy Registration
+
+Starting with 3.7.7, GraphBinary only deserializes custom `TraversalStrategy` classes registered with
+`TraversalStrategies.GlobalCache`. `JavaTranslator` applies the same requirement when it reconstructs a
+`TraversalStrategyProxy`. Applications and providers that send custom strategies over GraphBinary or translate
+bytecode containing custom strategies must register each strategy before requests are processed:
+
+[source,java]
+----
+TraversalStrategies.GlobalCache.registerStrategy(MyStrategy.class);
+JavaTranslator.of(g).translate(bytecode);
+----
+
+The presence of a strategy on the application class path is no longer sufficient. TinkerPop's built-in strategies are
+registered by default. An unregistered custom strategy produces an error such as
+`TraversalStrategy not recognized - com.example.MyStrategy`.
+
+See: link:https://tinkerpop.apache.org/docs/3.7.7/reference/#traversalstrategy-registration[TraversalStrategy Registration]
+
+==== Pre-Authentication Request Limits
+
+Gremlin Server now bounds what a channel can make it retain while that channel's SASL authentication is pending, and
+terminates a channel whose authentication does not complete. Only deployments that configure an `Authenticator` are
+affected, as the handler is not in the pipeline for the default `AllowAllAuthenticator`.
+A channel may defer at most 64 requests, and at most 2 MiB of total request bytes covering both the request that began
+authentication and the deferred ones. A request beyond either cap is answered with `UNAUTHORIZED` (status code `401`)
+rather than deferred, and can be resent once the channel is authenticated.
+A request larger than 2 MiB that arrives first on a channel still receives the `AUTHENTICATE` challenge, but it is not
+held, so it is answered the same way. Note that `maxContentLength` defaults to 10 MiB, so a request the server
+otherwise accepts can be affected. Because drivers open pooled connections on demand, the first request on a new
+connection is an ordinary user request, so this can appear intermittently for workloads that send bulk data inside a
+query, such as a large `inject()` or a `within()` over many ids.
+`MAX_REQUEST_DEFERRABLE_DURATION` was raised from 5 seconds to 30 seconds, and a channel that has not completed
+authentication within that duration is now closed. Previously the handler never closed such a channel, and
+`idleConnectionTimeout` defaults to `0`, so nothing reaped it. A request that a failed authentication attempt already
+answered is no longer replayed when a later attempt on the same channel succeeds.
+All three limits are configurable, as `authentication.maxDeferredRequests`, `authentication.maxPreAuthRetainedBytes`
+and `authentication.preAuthTimeout`, the last in milliseconds. Each must be greater than zero and Gremlin Server fails
+to start otherwise. The defaults are the values described above, so a configuration that sets none of them behaves as
+described.
+Each of the errors below is a resource limit rather than a credential failure, so an operator seeing the `UNAUTHORIZED`
+status code they share need not investigate credentials. The messages show the default limits.
+[cols="1,3,3", options="header"]
+|=========================================================
+|Status Code |Message |Remedy
+|`401` |`Too many requests were deferred pending authentication (64 maximum).` |Resend once authenticated, or raise `authentication.maxDeferredRequests`.
+|`401` |`Too many bytes were retained pending authentication (2097152 bytes maximum).` |Resend once authenticated, or raise `authentication.maxPreAuthRetainedBytes`.
+|`401` |`Request is too large to hold pending authentication (2097152 bytes maximum).` |Resend once authenticated, or raise `authentication.maxPreAuthRetainedBytes`.
+|`401` |`Authentication did not finish in the allowed duration (30000 ms).` |Complete the SASL handshake sooner, or raise `authentication.preAuthTimeout`.
+|=========================================================
+
+=== Upgrading for Providers
+
+==== Graph System Providers
+
+===== Traversal Strategy Registry
+
+TinkerPop 3.7.7 backports the global `TraversalStrategy` registry in `TraversalStrategies.GlobalCache` from the 3.8.x
+line. `registerStrategies()` now publishes cached strategy classes by name, while the new `registerStrategy()` and
+`unregisterStrategy()` methods allow individual strategy classes to be added to or removed from the registry.
+GraphBinary uses this registry when deserializing traversal strategies, so providers must register every custom
+strategy sent over GraphBinary.
+
+[source,java]
+----
+TraversalStrategies.GlobalCache.registerStrategies(MyGraph.class, traversalStrategies);
+TraversalStrategies.GlobalCache.registerStrategy(MyStrategy.class);
+TraversalStrategies.GlobalCache.unregisterStrategy(MyStrategy.class);
+----
+
+The new `denyStrategy()` method permanently removes a strategy from the registry and prevents later registration from
+restoring it. It does not alter cached graph or graph computer defaults. This deployment-wide registry operation is
+intended only for graph system providers and operators. Reversible removal should use `unregisterStrategy()`.
+
+[source,java]
+----
+TraversalStrategies.GlobalCache.denyStrategy(MyStrategy.class);
+----
+
+See: link:https://tinkerpop.apache.org/docs/3.7.7/reference/#traversalstrategy-registration[TraversalStrategy Registration]
+
+===== Class Values Must Be Registered
+
+For deserialization, a `Class` value must now name a registered class, in GraphBinary, GraphSON and Gryo alike. An unregistered name is
+refused on read and the class is never loaded. Strategies registered with `TraversalStrategies.GlobalCache.registerStrategy` already
+resolve, so only an application or provider that serializes its own classes needs to act.
+
+[source,java]
+----
+ClassRegistry.register(MyClass.class);
+ClassRegistry.unregister(MyClass.class);
+----
+
+Registration is only required for in Java for deserialization, which typically only impacts the server. Without
+registration, read attempts fail with a `Class not recognized` message naming the class, raised as an
+`IOException` for GraphBinary, a `MismatchedInputException` for GraphSON and a `RuntimeException` for Gryo.
+
+===== Hadoop/Spark OLAP IO Class Loading
+
+As of 3.7.7, a remotely submitted OLAP traversal loads a reader, writer, or Spark vertex-program interceptor class only
+after that class has been approved in the graph configuration. Providers that ship custom Hadoop input or output
+formats, or a custom interceptor, must make those classes approvable by declaring them in the graph configuration or by
+listing them in `gremlin.io.approvedClasses`. The Spark vertex-program interceptor
+(`gremlin.hadoop.vertexProgramInterceptor`) is validated against the approved classes at its load site, regardless of
+how its value entered the configuration.
+
+The typed fluent setters on `SparkGraphComputer` (`master(...)`, `serializer(...)`, `sparkKryoRegistrator(...)`,
+`persistContext(...)`) are reachable only from embedded Java code and never from a remote traversal, so they continue
+to work unchanged. Only a `configure(key, value)` call with a key that has not been approved is affected. Embedded code
+that needs arbitrary `configure()` keys can set `gremlin.io.trusted=true`, or set the configuration in the graph
+properties file.
+
+See: link:https://tinkerpop.apache.org/docs/3.7.7/reference/#remote-olap-configuration[Remote OLAP Configuration]
 
 == TinkerPop 3.7.6
 
@@ -363,6 +680,7 @@ Please see the link:https://github.com/apache/tinkerpop/blob/3.7.2/CHANGELOG.asc
 complete list of all the modifications that are part of this release.
 
 == TinkerPop 3.7.1
+
 *Release Date: November 20, 2023*
 
 Please see the link:https://github.com/apache/tinkerpop/blob/3.7.1/CHANGELOG.asciidoc#release-3-7-1[changelog] for a
@@ -730,6 +1048,7 @@ Added a new `@InsertionOrderingRequired` tag which signifies Gherkin feature tes
 predictably returning results (vertices, edges, properties) in the same order in which they were inserted into the
 graph. These tests should be skipped by any graph which does not guarantee such ordering.
 
+[llms-summary="Upgrade notes specific to the TinkerPop 3.7.0 release: its breaking changes, new features, and changelog."]
 == TinkerPop 3.7.0
 
 *Release Date: July 31, 2023*

@@ -29,7 +29,6 @@ VERTEX_LABEL = 'connection'
 def main():
     with_remote()
     with_auth()
-    with_kerberos()
     with_configs()
 
 
@@ -67,25 +66,12 @@ def with_auth():
     rc.close()
 
 
-# connecting with Kerberos SASL authentication
-def with_kerberos():
-    server_url = 'ws://localhost:8182/gremlin'
-    rc = DriverRemoteConnection(server_url, 'g', kerberized_service='gremlin@hostname.your.org')
-    g = traversal().with_remote(rc)
-
-    v = g.add_v(VERTEX_LABEL).iterate()
-    count = g.V().has_label(VERTEX_LABEL).count().next()
-    print("Vertex count: " + str(count))
-
-    rc.close()
-
-
 # connecting with customized configurations
 def with_configs():
     server_url = 'ws://localhost:8182/gremlin'
     rc = DriverRemoteConnection(
         server_url, 'g',
-        username="", password="", kerberized_service='',
+        username="", password="",
         message_serializer=GraphBinarySerializersV1(), graphson_reader=None,
         graphson_writer=None, headers=None, session=None,
         enable_user_agent_on_connect=True

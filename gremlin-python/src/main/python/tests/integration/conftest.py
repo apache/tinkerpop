@@ -18,7 +18,7 @@
 #
 
 import concurrent.futures
-from json import dumps
+from collections import namedtuple
 import os
 import ssl
 import pytest
@@ -40,6 +40,21 @@ basic_url = gremlin_basic_auth_url.format(45941)
 
 verbose_logging = False
 
+# Shared namedtuple used by remote_connection_with_registry fixture and its tests.
+RegistryPoint = namedtuple('RegistryPoint', ['x', 'y'])
+# Shared namedtuple used by remote_connection_with_primitive_registry fixture and its tests.
+RegistryUint32 = namedtuple('RegistryUint32', ['value'])
+
+
+@pytest.fixture
+def registry_point_class():
+    return RegistryPoint
+
+
+@pytest.fixture
+def registry_uint32_class():
+    return RegistryUint32
+
 logging.basicConfig(format='%(asctime)s [%(levelname)8s] [%(filename)15s:%(lineno)d - %(funcName)10s()] - %(message)s',
                     level=logging.DEBUG if verbose_logging else logging.INFO)
 
@@ -53,7 +68,6 @@ def connection(request):
     try:
         conn = Connection(anonymous_url, 'gmodern',
                           executor, pool,
-                          request_serializer=GraphBinarySerializersV4(),
                           response_serializer=GraphBinarySerializersV4(),
                           auth=basic('stephen', 'password'))
     except OSError:
@@ -91,7 +105,7 @@ def authenticated_client(request):
             ssl_opts.verify_mode = ssl.CERT_NONE
             client = Client(basic_url, 'gmodern',
                             auth=basic('stephen', 'password'),
-                            ssl_options=ssl_opts)
+                            ssl=ssl_opts)
         else:
             raise ValueError("Invalid authentication option - " + request.param)
     except OSError:
@@ -113,7 +127,6 @@ def graphbinary_serializer_v4(request):
 def remote_connection(request):
     try:
         remote_conn = DriverRemoteConnection(anonymous_url, 'gmodern',
-                                             request_serializer=serializer.GraphBinarySerializersV4(),
                                              response_serializer=serializer.GraphBinarySerializersV4())
     except OSError:
         pytest.skip('Gremlin Server is not running')
@@ -149,7 +162,7 @@ def remote_connection_authenticated(request):
             ssl_opts.verify_mode = ssl.CERT_NONE
             remote_conn = DriverRemoteConnection(basic_url, 'gmodern',
                                                  auth=basic('stephen', 'password'),
-                                                 ssl_options=ssl_opts)
+                                                 ssl=ssl_opts)
         else:
             raise ValueError("Invalid authentication option - " + request.param)
     except OSError:
@@ -183,8 +196,7 @@ def invalid_alias_remote_connection(request):
 def remote_connection_with_interceptor(request):
     try:
         remote_conn = DriverRemoteConnection(anonymous_url, 'gmodern',
-                                             request_serializer=None,
-                                             interceptors=json_interceptor)
+                                             interceptors=mutating_interceptor)
     except OSError:
         pytest.skip('Gremlin Server is not running')
     else:
@@ -198,9 +210,8 @@ def remote_connection_with_interceptor(request):
 @pytest.fixture()
 def client_with_interceptor(request):
     try:
-        client = Client(anonymous_url, 'gmodern', request_serializer=None,
-                        response_serializer=GraphBinarySerializersV4(),
-                        interceptors=json_interceptor)
+        client = Client(anonymous_url, 'gmodern',
+                        interceptors=mutating_interceptor)
     except OSError:
         pytest.skip('Gremlin Server is not running')
     else:
@@ -209,6 +220,55 @@ def client_with_interceptor(request):
 
         request.addfinalizer(fin)
         return client
+
+
+@pytest.fixture
+def remote_connection_with_registry(request):
+    from gremlin_python.structure.graph import PDTRegistry
+
+    registry = PDTRegistry()
+    registry.register('RegistryPoint',
+                      deserialize_fn=lambda fields: RegistryPoint(x=fields['x'], y=fields['y']),
+                      serialize_fn=lambda p: {'x': p.x, 'y': p.y},
+                      target_class=RegistryPoint)
+    try:
+        remote_conn = DriverRemoteConnection(anonymous_url, 'gmodern', pdt_registry=registry)
+    except OSError:
+        pytest.skip('Gremlin Server is not running')
+    else:
+        def fin():
+            remote_conn.close()
+
+        request.addfinalizer(fin)
+        return remote_conn
+
+
+def mutating_interceptor(http_request):
+    """Interceptor that replaces the gremlin query with g.inject(2) for testing."""
+    from gremlin_python.driver.request import RequestMessage
+    if isinstance(http_request.body, RequestMessage):
+        http_request.body = RequestMessage(fields={"g": "g"}, gremlin="g.inject(2)")
+
+
+@pytest.fixture
+def remote_connection_with_primitive_registry(request):
+    from gremlin_python.structure.graph import PDTRegistry
+
+    registry = PDTRegistry()
+    registry.register_primitive('Uint32',
+                                from_value=lambda v: RegistryUint32(value=int(v)),
+                                to_value=lambda u: str(u.value),
+                                target_class=RegistryUint32)
+    try:
+        remote_conn = DriverRemoteConnection(anonymous_url, 'gmodern', pdt_registry=registry)
+    except OSError:
+        pytest.skip('Gremlin Server is not running')
+    else:
+        def fin():
+            remote_conn.close()
+
+        request.addfinalizer(fin)
+        return remote_conn
 
 
 def json_interceptor(request):

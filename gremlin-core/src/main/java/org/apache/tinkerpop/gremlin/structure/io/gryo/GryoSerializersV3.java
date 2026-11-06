@@ -23,6 +23,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Path;
 import org.apache.tinkerpop.gremlin.process.traversal.Text;
 import org.apache.tinkerpop.gremlin.process.traversal.TextP;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.Tree;
 import org.apache.tinkerpop.gremlin.process.traversal.util.AndP;
 import org.apache.tinkerpop.gremlin.process.traversal.util.ConnectiveP;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversalMetrics;
@@ -444,6 +445,30 @@ public final class GryoSerializersV3 {
                 m.addNested(nested);
             }
             return m;
+        }
+    }
+
+    public final static class TreeSerializer implements SerializerShim<Tree> {
+        @Override
+        public <O extends OutputShim> void write(final KryoShim<?, O> kryo, final O output, final Tree tree) {
+            final java.util.Set keys = tree.rootNodes();
+            output.writeInt(keys.size());
+            for (final Object key : keys) {
+                kryo.writeClassAndObject(output, key);
+                this.write(kryo, output, (Tree) tree.childAt(key));
+            }
+        }
+
+        @Override
+        public <I extends InputShim> Tree read(final KryoShim<I, ?> kryo, final I input, final Class<Tree> clazz) {
+            final Tree tree = new Tree();
+            final int size = input.readInt();
+            for (int i = 0; i < size; i++) {
+                final Object key = kryo.readClassAndObject(input);
+                final Tree child = this.read(kryo, input, clazz);
+                tree.getOrCreateChild(key).addTree(child);
+            }
+            return tree;
         }
     }
 

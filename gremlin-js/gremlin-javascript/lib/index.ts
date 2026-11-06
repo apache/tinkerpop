@@ -25,13 +25,16 @@ import * as t from './process/traversal.js';
 import * as gt from './process/graph-traversal.js';
 import * as strategiesModule from './process/traversal-strategy.js';
 import * as graph from './structure/graph.js';
+import { PDTRegistry } from './structure/PDTRegistry.js';
 import * as rc from './driver/remote-connection.js';
 import GremlinLang from './process/gremlin-lang.js';
+import { GValue } from './process/gvalue.js';
 import * as utils from './utils.js';
 import DriverRemoteConnection from './driver/driver-remote-connection.js';
 import ResponseError from './driver/response-error.js';
 import Client from './driver/client.js';
 import ResultSet from './driver/result-set.js';
+import { HttpRequest } from './driver/http-request.js';
 import { basic, sigv4 } from './driver/auth.js';
 import AnonymousTraversalSource from './process/anonymous-traversal.js';
 
@@ -43,6 +46,7 @@ export const driver = {
   DriverRemoteConnection,
   Client,
   ResultSet,
+  HttpRequest,
   auth: {
     basic,
     sigv4,
@@ -72,8 +76,10 @@ export const process = {
   t: t.t,
   GraphTraversal: gt.GraphTraversal,
   GraphTraversalSource: gt.GraphTraversalSource,
+  CardinalityValue: gt.CardinalityValue,
   statics: gt.statics,
   GremlinLang,
+  GValue,
   traversal: AnonymousTraversalSource.traversal,
   AnonymousTraversalSource,
   withOptions: t.withOptions,
@@ -83,7 +89,11 @@ export const structure = {
   Edge: graph.Edge,
   Graph: graph.Graph,
   Path: graph.Path,
+  Tree: graph.Tree,
   Property: graph.Property,
+  PrimitivePDT: graph.PrimitivePDT,
+  CompositePDT: graph.CompositePDT,
+  PDTRegistry,
   Vertex: graph.Vertex,
   VertexProperty: graph.VertexProperty,
   toLong: utils.toLong,

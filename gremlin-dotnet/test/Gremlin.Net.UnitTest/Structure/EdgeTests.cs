@@ -21,6 +21,7 @@
 
 #endregion
 
+using System.Collections.Generic;
 using Gremlin.Net.Structure;
 using Xunit;
 
@@ -52,6 +53,46 @@ namespace Gremlin.Net.UnitTest.Structure
             var edgeStr = edge.ToString();
 
             Assert.Equal("e[2][1-said->hello]", edgeStr);
+        }
+
+        [Fact]
+        public void ShouldGroupMultiPropertiesUnderOneKeyForPropertyMap()
+        {
+            var first = new Property("name", "marko");
+            var second = new Property("name", "marko a. rodriguez");
+            var edge = new Edge(2, new Vertex(1), "said", new Vertex("hello", "phrase"),
+                new dynamic[] {first, second});
+
+            var propertyMap = edge.PropertyMap();
+
+            Assert.Single(propertyMap);
+            Assert.True(propertyMap.ContainsKey("name"));
+            Assert.Equal(new List<Property> {first, second}, propertyMap["name"]);
+        }
+
+        [Fact]
+        public void ShouldGroupSingleValuedPropertiesIntoSingleElementListsForPropertyMap()
+        {
+            var since = new Property("since", 2009);
+            var weight = new Property("weight", 0.5);
+            var edge = new Edge(2, new Vertex(1), "said", new Vertex("hello", "phrase"),
+                new dynamic[] {since, weight});
+
+            var propertyMap = edge.PropertyMap();
+
+            Assert.Equal(2, propertyMap.Count);
+            Assert.Equal(new List<Property> {since}, propertyMap["since"]);
+            Assert.Equal(new List<Property> {weight}, propertyMap["weight"]);
+        }
+
+        [Fact]
+        public void ShouldReturnEmptyDictionaryForPropertyMapWhenNoProperties()
+        {
+            var edge = new Edge(2, new Vertex(1), "said", new Vertex("hello", "phrase"));
+
+            var propertyMap = edge.PropertyMap();
+
+            Assert.Empty(propertyMap);
         }
     }
 }

@@ -62,6 +62,10 @@ Feature: Step - max()
 
   Scenario: g_V_aggregateXaX_byXageX_capXaX_maxXlocalX
     Given the modern graph
+    And the intent
+      """
+      What is the highest age of any vertex in the graph?
+      """
     And the traversal of
       """
       g.V().aggregate("a").by("age").cap("a").max(Scope.local)
@@ -203,6 +207,7 @@ Feature: Step - max()
       | d[29].i |
 
   # It verifies if empty lists are filtered out as expected
+
   Scenario: g_V_localXunionXvaluesXageX_outE_valuesXweightXX_foldX_maxXlocalX
     Given the modern graph
     And the traversal of

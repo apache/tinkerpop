@@ -38,7 +38,7 @@ final class TinkerElementContainer<T extends TinkerElement> {
     /**
      * Used to separate deleted elements from {@code null} ones.
      */
-    private boolean isDeleted = false;
+    private volatile boolean isDeleted = false;
     /**
      * Value of elements updated in current transaction.
      */
@@ -194,6 +194,14 @@ final class TinkerElementContainer<T extends TinkerElement> {
     }
 
     /**
+     * Mark the element as removed by {@code TinkerGraph.clear()}, so a transaction that still holds this container
+     * fails to commit with a conflict instead of bringing the element back.
+     */
+    void markCleared() {
+        isDeleted = true;
+    }
+
+    /**
      * Used to understand if elements was changed by other transaction.
      */
     public boolean updatedOutsideTransaction() {
@@ -223,8 +231,12 @@ final class TinkerElementContainer<T extends TinkerElement> {
             element = null;
             isDeleted = true;
         } else if (isModifiedInTx.get()){
-            element = transactionUpdatedValue.get();
-            element.currentVersion = txVersion;
+            // the draft is an object the transaction handed out, so the caller may still hold it after commit.
+            // commit a copy, so that writes through that reference in a later transaction go to a draft and
+            // not to committed state.
+            final T draft = transactionUpdatedValue.get();
+            draft.currentVersion = txVersion;
+            element = (T) draft.clone();
         }
         reset();
     }

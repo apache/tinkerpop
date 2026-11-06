@@ -1,5 +1,8 @@
 *.log
 target/
+# Spark local-cluster OLAP ITs leave an untracked "file:"-scheme output dir under the module
+file:/
+**/file:/
 *.iml
 **/.idea/
 *.iws
@@ -29,7 +32,6 @@ __pycache__/
 __version__.py
 .glv
 settings.xml
-tools/
 [Dd]ebug/
 [Rr]elease/
 [Oo]bj/
@@ -53,12 +55,8 @@ CLAUDE.md
 .cursor/
 .codex/
 .github/skills/
-.beads/
 gremlin-python/src/main/python/build/
 node_modules/
 node/
 gremlin-js/node_modules/
 gremlin-js/node/
-.dolt/
-*.db
-state.json

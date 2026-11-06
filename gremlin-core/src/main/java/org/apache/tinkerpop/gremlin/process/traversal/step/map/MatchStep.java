@@ -65,7 +65,10 @@ import java.util.stream.Stream;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
+ * @deprecated As of release 4.0.0, replaced by {@link DeclarativeMatchStep} for declarative pattern matching.
+ *             Use {@code GraphTraversal#match(String)} for GQL-based matching.
  */
+@Deprecated
 public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> implements TraversalParent, Scoping, PathProcessor {
 
     public enum TraversalType {WHERE_PREDICATE, WHERE_TRAVERSAL, MATCH_TRAVERSAL}

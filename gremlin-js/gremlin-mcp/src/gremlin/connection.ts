@@ -72,7 +72,7 @@ const createConnection = (
   authenticatorInput: Option.Option<{ username: string; password: string }>
 ): Effect.Effect<ConnectionState, GremlinConnectionError> =>
   Effect.gen(function* () {
-    const protocol = useSSL ? 'wss' : 'ws';
+    const protocol = useSSL ? 'https' : 'http';
     const url = `${protocol}://${host}:${port}/gremlin`;
 
     yield* Effect.logInfo('Creating Gremlin connection', {
@@ -82,21 +82,16 @@ const createConnection = (
       traversalSource,
     });
 
-    const headers = Option.match(authenticatorInput, {
+    const auth = Option.match(authenticatorInput, {
       onNone: () => undefined,
-      onSome: ({ username, password }) => {
-        const credentials = `${username}:${password}`;
-        return {
-          Authorization: `Basic ${Buffer.from(credentials).toString('base64')}`,
-        };
-      },
+      onSome: ({ username, password }) => driver.auth.basic(username, password),
     });
 
     const connection = yield* Effect.try({
       try: () =>
         new DriverRemoteConnection(url, {
           traversalSource,
-          headers,
+          auth,
         }),
       catch: error => Errors.connection('Failed to create remote connection', { error }),
     });
@@ -104,7 +99,7 @@ const createConnection = (
     const g = AnonymousTraversalSource.traversal().withRemote(connection);
     const client = new Client(url, {
       traversalSource,
-      headers,
+      auth,
     });
 
     // Verify the server is reachable before caching

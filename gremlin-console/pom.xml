@@ -160,6 +160,14 @@ limitations under the License.
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <!-- Isolate console preference tests in an in-memory java.util.prefs store so they never
+                         touch the developer's real per-user preferences. Resolved at fork startup, before
+                         Preferences.STORE binds. Merges with the inherited argLine configuration. -->
+                    <systemPropertyVariables>
+                        <java.util.prefs.PreferencesFactory>org.apache.tinkerpop.gremlin.console.InMemoryPreferencesFactory</java.util.prefs.PreferencesFactory>
+                    </systemPropertyVariables>
+                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -384,12 +392,12 @@ limitations under the License.
                                     <target>
                                         <exec executable="docker" failonerror="true">
                                             <!-- This build command relies on Docker's caching mechanism to reduce the amount of times it is run. -->
-                                            <arg line="build -t gremlin-console-test:py3.10jre11 ./src/test/python/docker"/>
+                                            <arg line="build -t gremlin-console-test:py3.10jre17 ./src/test/python/docker"/>
                                         </exec>
                                         <exec executable="docker" failonerror="true">
                                             <arg line="run --rm --mount type=bind,src=${project.basedir}/src/test/python,dst=/console_app
                                             --mount type=bind,src=${project.basedir}/target/apache-tinkerpop-gremlin-console-${project.version}-standalone,dst=/console_app/gremlin-console
-                                            gremlin-console-test:py3.10jre11"/>
+                                            gremlin-console-test:py3.10jre17"/>
                                         </exec>
                                     </target>
                                 </configuration>

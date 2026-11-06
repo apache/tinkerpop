@@ -17,6 +17,7 @@ specific language governing permissions and limitations
 under the License.
 ////
 [[development-environment]]
+[llms-summary="Setting up a TinkerPop development environment: build prerequisites, Maven and Docker workflows, and how to build and test the code and documentation."]
 = Development Environment
 
 TinkerPop is a fairly large body of code spread across many modules and covering multiple programming languages. Despite
@@ -28,10 +29,11 @@ image:conspiracy.png[]
 [[system-configuration]]
 == System Configuration
 
-At a minimum, development of TinkerPop requires link:https://openjdk.java.net/projects/jdk/11/[Java 11] or
-link:https://openjdk.org/projects/jdk/17/[Java 17]. Note, however, that there are some issues with deep reflection
+At a minimum, development of TinkerPop requires link:https://openjdk.org/projects/jdk/17/[Java 17]; builds and tests
+also run on link:https://openjdk.org/projects/jdk/21/[Java 21] and link:https://openjdk.org/projects/jdk/25/[Java 25].
+Note, however, that there are some issues with deep reflection
 so there are `--add-opens` JVM options included in the pom files to enable this to work. Maven (requiring a minimum of
-link:https://maven.apache.org/download.cgi[Maven 3.5.3+]) is used as the common build system, which even
+link:https://maven.apache.org/download.cgi[Maven 3.6.3+]) is used as the common build system, which even
 controls the builds of non-JVM link:https://tinkerpop.apache.org/docs/x.y.z/reference/#gremlin-drivers-variants[GLVs]
 such as `gremlin-python`. Java and Maven are described as a "minimum" for a development environment, because they
 will only build JVM portions of TinkerPop and many integration tests will not fire with this simple setup. It is
@@ -47,7 +49,7 @@ system. You will need to install both link:https://docs.docker.com/engine/instal
 link:https://docs.docker.com/compose/install/[Docker Compose], which are included in
 link:https://docs.docker.com/desktop/[Docker Desktop].
 
-IMPORTANT: Use Java 11 for documentation generation with `bin/process-docs.sh` and for other build features outside
+IMPORTANT: Use Java 17 for documentation generation with `bin/process-docs.sh` and for other build features outside
 of the basic `mvn clean install` sort of function.
 
 IMPORTANT: For those who intend to offer a contribution, building with a minimal configuration may not be sufficient
@@ -55,10 +57,7 @@ when submitting a pull request. Consider setting up the full environment.
 
 TIP: Consider using link:https://sdkman.io/[SDKMAN!] to manage Java and Maven versions and environments.
 
-NOTE: For those using Windows, efforts have been made to keep the build OS independent, but, in practice, it is likely
-that TinkerPop's build system will only allow for a minimum build at best. +
- +
- Refer to <<building-on-windows>> section for more details.
+NOTE: The TinkerPop build supports Linux and macOS.
 
 [[groovy-environment]]
 === Groovy Environment
@@ -119,94 +118,38 @@ an issue when working with SNAPSHOT dependencies.
 [[documentation-environment]]
 === Documentation Environment
 
-The documentation generation process is not Maven-based and uses shell scripts to process the project's asciidoc. The
-scripts should work on Mac and Linux. Javadocs should be built using Java 11.
+The core of the documentation generation process is an link:https://asciidoctor.org/[AsciidoctorJ] extension
+(`docs/tinkeradoc-extension`) which walks each AsciiDoc book, executes the `[gremlin-groovy]` code blocks against a long-lived
+Gremlin Console subprocess, and renders the console output as tabbed HTML. The orchestration script
+`bin/process-docs.sh` wraps this and acts as the entrypoint: it validates the Gremlin Console and Gremlin Server
+distributions, installs the required plugins into the console, starts a Gremlin Server (for the `:remote` examples) and
+a Gephi mock, then invokes Maven to run the extension. Javadocs should be built using Java 17.
 
-TIP: We recommend performing documentation generation on Linux. For the scripts to work on Mac, you will need to
-install GNU versions of the utility programs via `homebrew`, e.g.`grep`, `awk`, `sed`, `findutils`, and `diffutils`.
+NOTE: Documentation generation uses the `asciidoctor-maven-plugin`, which requires link:https://maven.apache.org/download.cgi[Maven 3.8.8+],
+newer than the Maven 3.6.3 minimum for the rest of the build.
 
-To generate documentation, it is required that link:https://hadoop.apache.org[Hadoop 3.3.x] is running in
-link:https://hadoop.apache.org/docs/r3.3.1/hadoop-project-dist/hadoop-common/SingleCluster.html#Pseudo-Distributed_Operation[pseudo-distributed]
-mode. Be sure to set the `HADOOP_GREMLIN_LIBS` environment variable as described in the
-link:https://tinkerpop.apache.org/docs/x.y.z/reference/#hadoop-gremlin[reference documentation]. It is also important
-to set the `CLASSPATH` to point at the directory containing the Hadoop configuration files, like `mapred-site.xml`.
+The `docs/tinkeradoc-extension` project is a standalone Maven project rather than a module of the root reactor, so a
+`mvn clean install` from the project root does not build it. It must be built and installed into the local repository
+before generating documentation -- both because the `asciidoctor-maven-plugin` consumes it as a plugin dependency and
+because `bin/process-docs.sh` runs its compiled classes to produce the Markdown mirror and `llms.txt` (see
+<<agent-friendly-documentation>>). If the extension has not been built, the Markdown and `llms.txt` step is silently
+skipped with a `skipping Markdown split` warning. Build it with:
 
-The `/etc/hadoop/yarn-site.xml` file prefers this configuration over the one provided in the Hadoop documentation
-referenced above:
+[source,text]
+mvn clean install -f docs/tinkeradoc-extension/pom.xml
 
-[source,xml]
-----
-<configuration>
-  <property>
-    <name>yarn.nodemanager.aux-services</name>
-    <value>mapreduce_shuffle</value>
-  </property>
-  <property>
-    <name>yarn.nodemanager.vmem-check-enabled</name>
-    <value>false</value>
-  </property>
-  <property>
-    <name>yarn.nodemanager.vmem-pmem-ratio</name>
-    <value>4</value>
-  </property>
-</configuration>
-----
+Next, build all of the dependencies that the documentation process consumes:
 
-The `/etc/hadoop/mapred-site.xml` file prefers the following configuration:
+[source,text]
+mvn clean install -pl :gremlin-console,:gremlin-server,:spark-gremlin -am -DskipTests
 
-[source,xml]
-----
-<configuration>
-  <property>
-    <name>mapreduce.framework.name</name>
-    <value>yarn</value>
-  </property>
-  <property>
-    <name>mapred.map.tasks</name>
-    <value>4</value>
-  </property>
-  <property>
-    <name>mapred.reduce.tasks</name>
-    <value>4</value>
-  </property>
-  <property>
-    <name>mapreduce.job.counters.limit</name>
-    <value>1000</value>
-  </property>
-  <property>
-    <name>mapreduce.jobtracker.address</name>
-    <value>localhost:9001</value>
-  </property>
-  <property>
-    <name>mapreduce.map.memory.mb</name>
-    <value>2048</value>
-  </property>
-  <property>
-    <name>mapreduce.reduce.memory.mb</name>
-    <value>4096</value>
-  </property>
-  <property>
-    <name>mapreduce.map.java.opts</name>
-    <value>-Xmx2048m</value>
-  </property>
-  <property>
-    <name>mapreduce.reduce.java.opts</name>
-    <value>-Xmx4096m</value>
-  </property>
-</configuration>
-----
-
-Also note that link:http://www.grymoire.com/Unix/Awk.html[awk] version `4.0.1` is required for documentation generation.
-The link:https://tinkerpop.apache.org/docs/x.y.z/recipes/#olap-spark-yarn[YARN recipe] also uses the `zip` program to
-create an archive so that needs to be installed, too, if you don't have it already.
-
-The Hadoop 3.3.x installation instructions call for installing `pdsh` but installing that seems to cause permission
-problems when executing `sbin/start-dfs.sh`. Skipping that prerequisite seems to solve the problem.
-
-Documentation can be generated locally with:
+Documentation can then be generated locally with:
 
 [source,text]
 bin/process-docs.sh
+
+A `--dryRun` option renders the books without starting a console or server and without executing any code blocks,
+which is useful for quickly checking AsciiDoc/formatting changes.
 
 Documentation is generated to the `target/docs` directory. It is also possible to generate documentation locally with
 Docker. `docker/build.sh -d`.
@@ -216,14 +159,86 @@ failed`. It often helps in this case to delete the directories for the dependenc
 in the `.m2` (`~/.m2/`) and in the `grapes` (`~/.groovy/grapes/`) cache. E.g., if the error is about
 `asm#asm;3.2!asm.jar`, then remove the `asm/asm` sub directory in both directories.
 
-NOTE: Unexpected failures with OLAP often point to a jar conflict that arises in scenarios where Hadoop or Spark
-dependencies (or other dependencies for that matter) are modified and conflict. It is not picked up by the enforcer
-plugin because the inconsistency arises through plugin installation in Gremlin Console at document generation time.
-Making adjustments to the various paths by way of the `<manifestEntries>` on the jar given the functionality provided
-by the `DependencyGrabber` class which allows you to manipulate (typically deleting conflicting files from `/lib` and
-`/plugin`) plugin loading will usually resolve it, though it could also be a more general environmental problem with
-Spark or Hadoop. The easiest way to see the error is to simply run the examples in the Gremlin Console which more
-plainly displays the error than the failure of the documentation generation process.
+NOTE: Unexpected failures with OLAP often point to a jar conflict that arises when Hadoop or Spark
+dependencies are modified and collide on the console's classpath. It is not picked up by the enforcer plugin because
+the inconsistency arises through plugin installation in the Gremlin Console at document generation time. Such
+conflicts are handled by the per-book plugin exclusion mechanism described in <<docs-plugin-exclusions>>. For other
+conflicts, the `<manifestEntries>` (`Gremlin-Plugin-Paths` /
+`Gremlin-Lib-Paths`) on the plugin jar control how the `DependencyGrabber` lays jars out under `ext/<plugin>/plugin`
+and `ext/<plugin>/lib`, which can be adjusted to resolve ordering or duplicate-jar problems. The easiest way to see
+the underlying error is to run the offending example directly in the Gremlin Console, which displays it more plainly
+than the documentation build does.
+
+[[docs-plugin-exclusions]]
+==== Per-book Plugin Exclusions
+
+Some plugins cannot share the documentation console's classpath due to transitive dependency conflicts (e.g.
+incompatible Scala versions). To avoid this, a book can restart the console with certain plugins removed by declaring
+the `gremlin-docs-plugins-exclude` attribute (a comma-separated list of plugin directory names) on a section heading:
+
+[source,asciidoc]
+----
+[gremlin-docs-plugins-exclude="spark-gremlin"]
+==== SomeSection
+----
+
+When the `GremlinTreeprocessor` reaches a section carrying this attribute, it closes the current console, moves the
+named `ext/<plugin>` directories aside (and updates `ext/plugins.txt`), then starts a fresh console so the excluded
+plugins are off the classpath. The exclusion is latched: it remains in effect for subsequent sections until another
+section declares a different set, so each conflicting chapter declares its complete exclusion set. This replaces the
+old preprocessor's per-file plugin juggling; `bin/process-docs.sh` installs each plugin's dependencies into
+`ext/<plugin>/plugin/` (not the shared `lib/`) precisely so they can be toggled this way.
+
+[[agent-friendly-documentation]]
+==== Agent-Friendly Documentation
+
+Alongside the HTML, the documentation build produces an agent-friendly rendering of the reference documentation that
+follows the link:https://agentdocsspec.com/[Agent Friendly Documentation Specification] (which builds on
+link:https://llmstxt.org/[llms.txt]). This lets AI agents and other automated consumers discover and read the docs as
+plain Markdown. It is generated by two standalone tools that live in the `docs/tinkeradoc-extension` project alongside
+the AsciidoctorJ extension: `MarkdownSplitter` and `LlmsTxtGenerator`. Because these run from the extension's compiled
+classes, the extension must already be built (see the build step at the start of this section) or `bin/process-docs.sh`
+prints `skipping Markdown split` and produces no Markdown output.
+
+The build emits three kinds of artifact under `target/docs`:
+
+* a *Markdown mirror* -- a `.md` copy of each page beside its `.html`, so every page is reachable at both
+`.../<path>.html` and `.../<path>.md`;
+* a per-version *discovery index* at `docs/<version>/llms.txt`; and
+* a site-root *discovery index* at `/llms.txt`.
+
+Pages are summary-driven: a section becomes its own Markdown page if and only if it carries an `llms-summary` attribute,
+whose value is the one-line description used in `llms.txt`. Authors add these directly in the AsciiDoc source:
+
+[source,asciidoc]
+----
+[[looping]]
+[llms-summary="Recipe: complex looping statements using the repeat() step."]
+== Looping
+----
+
+Each generated page must stay under a 50,000-character budget. `bin/process-docs.sh` runs the splitter in `--strict`
+mode, which fails the build when a page exceeds the budget and is not explicitly allowed to. Resolve a violation either
+by adding an `llms-summary` to a subsection so the page is split into smaller pages, or -- when a page must remain whole
+-- by marking it `allow-oversize="true"`:
+
+[source,asciidoc]
+----
+[llms-summary="A collection of practical Gremlin traversal patterns and solutions to common graph problems.",allow-oversize="true"]
+----
+
+When the docs are published, `bin/publish-docs.sh` regenerates both `llms.txt` files with absolute URLs (the spec's
+link-resolution checks only recognize full `http(s)://` links); the local build intentionally uses relative links for
+offline inspection.
+
+The result can be validated against the specification's own tooling with `bin/validate-llms-txt.sh`, which runs
+`npx afdocs check` (requires Node.js >= 22). It can check the published site or a local build:
+
+[source,text]
+----
+bin/validate-llms-txt.sh              # check the published current docs
+bin/validate-llms-txt.sh -v local     # check the local build under target/docs
+----
 
 To generate the web site locally, there is no need for any of the above infrastructure. Site generation is a simple
 shell script:
@@ -280,10 +295,7 @@ and `test` directories of the `gremlin-dotnet` module which will signify to Mave
 The `.glv` file need not have any contents and is ignored by Git. A standard `mvn clean install` will then build
 `gremlin-dotnet` in full.
 
-In order to pack the Gremlin.Net.Template project, it is also necessary to install link:http://www.mono-project.com/[Mono].
-The template can still be built and tested without Mono but packing will be skipped.
-To pack the template (which will also download the link:https://docs.microsoft.com/en-us/nuget/tools/nuget-exe-cli-reference[NuGet CLI tool])
-the `nuget` property has to be set:
+To pack the Gremlin.Net.Template, the `nuget` property has to be set:
 
 [source,text]
 mvn clean install -Dnuget
@@ -415,21 +427,16 @@ link:https://pypi.org/manage/account/token/[account settings] and then the usern
 and the password to the token value. Please see link:https://pypi.org/help/#apitoken[PyPI documentation] for more
 details.
 
-For .NET releases, install link:http://www.mono-project.com/[Mono]. The release process is known to work with 6.12.0,
-so it is best to probably install that version. Release managers should probably also do an install of
-link:https://dist.nuget.org/win-x86-commandline/v3.4.4/nuget.exe[nuget 3.4.4] as it will help with environmental setup.
-To get an environment ready to deploy to NuGet, it is necessary to have a NuGet API key. First, create an account with
+For .NET releases, it is necessary to have a NuGet API key. First, create an account with
 link:https://www.nuget.org[nuget] and request that a PMC member add your account to the Gremlin.Net and
 the Gremlin.Net.Template package in nuget so that you can deploy. Next, generate an API key for your account on the
-nuget website. The API key should be added to `NuGet.Config` with the following:
+nuget website. During deployments, supply the key with the `nuget.apiKey`
+Maven property when running `mvn deploy`, which the build passes explicitly to `dotnet nuget push --api-key`:
 
 [source,text]
 ----
-mono nuget.exe setApiKey [your-api-key]
+mvn deploy -pl :gremlin-dotnet-source -Dnuget -Dnuget.apiKey=[your-api-key]
 ----
-
-This should update `~/.config/NuGet/NuGet.Config` a file with an entry containing the encrypted API key. On
-`mvn deploy`, this file will be referenced on the automated `nuget push`.
 
 To deploy JavaScript / TypeScript artifacts on the link:https://www.npmjs.com[npm registry], the release manager must
 set the authentication information on the ~/.npmrc file. The easiest way to do that is to use the `npm adduser`
@@ -448,22 +455,31 @@ be done automatically on `mvn deploy` or it can be triggered manually with `mvn 
 == Using AI Coding Agents
 
 TinkerPop does not endorse or require any particular AI Coding Agents or tool. As a result, tool-specific project
-guidelines are not included with the code base. In general, TinkerPop attempts to stay agnostic to coding agents
-while also supporting 
+guidelines are not included with the code base. TinkerPop instead provides a generic, agent-agnostic `AGENTS.md` file at
+the root of the project, which every supported tool can be pointed at, and a set of Agent Skills that carry the detail.
 
 === Agent Skills
 
-TinkerPop provides development guidance as an link:https://agentskills.io[Agent Skill] in `.skills/tinkerpop-dev/`.
-The skill follows the open Agent Skills standard and includes:
+TinkerPop provides development guidance as link:https://agentskills.io[Agent Skills] in `.skills/`. The skills follow the
+open Agent Skills standard:
 
-* Project conventions, coding standards, and agent guardrails (in `SKILL.md`)
-* Build and test recipes for each Gremlin Language Variant (in `references/`)
-* Development environment setup instructions and a verification script (in `scripts/`)
-* Gremlin MCP server usage guidance for query translation, formatting, and graph querying
+* `tinker-dev` covers project conventions, coding standards, build and test recipes for each Gremlin Language Variant,
+and development environment setup, along with a verification script in `scripts/`
+* `tinker-doc` covers documentation authoring and review, meaning the per-book voice, the executable Gremlin code-block
+pipeline, and AsciiDoc conventions
+* `tinker-review` covers review of a pull request by number, building a knowledge graph from the changed source and
+analyzing it against domain playbooks to produce an evidence report
+* `tinker-merge` covers merging a pull request, a feature branch or commits on a release branch forward through the
+release branches toward `master`, testing each branch locally and stopping before the push
+
+Unlike the others, `tinker-review` depends on more than the repository. It requires Docker, Node.js 20 or newer, a
+remote that fetches from `apache/tinkerpop`, and a one-time `npm install --prefix .skills/tinker-review` to install its
+dependencies. A review runs against the branch the pull request targets rather than the branch that is checked out, so
+any checkout can review any pull request.
 
 Tools that support Agent Skills (Claude Code, GitHub Copilot, Cursor, OpenAI Codex, JetBrains Junie, Kiro, and others)
-will discover and activate the skill automatically when it is placed in the tool's expected directory. A setup script
-is provided to create the necessary symlinks or copies:
+will discover and activate a skill automatically when it is placed in the tool's expected directory. A setup script is
+provided to create the necessary symlinks or copies:
 
 [source,bash]
 ----
@@ -474,12 +490,18 @@ bin/agent-setup.sh kiro
 # Set up for all supported tools
 bin/agent-setup.sh --all
 
+# Also install the beads workflow hooks for official contributors, which is supported for claude and kiro only
+bin/agent-setup.sh --contributor claude
+
 # List supported tools and their discovery paths
 bin/agent-setup.sh --list
 ----
 
 The script supports: `claude`, `copilot`, `cursor`, `codex`, `junie`, and `kiro`. The generated symlinks and copies
 are gitignored and local to each developer's environment.
+
+NOTE: Official contributors should install and use beads in conjunction with their coding agent. See
+<<beads,Using Beads>> for what it records and how to set it up.
 
 [[building-testing]]
 == Building and Testing
@@ -506,7 +528,7 @@ mvn -Dmaven.javadoc.skip=true --projects tinkergraph-gremlin test
 ** Build AsciiDocs (but don't evaluate code blocks): `bin/process-docs.sh --dryRun`
 ** Build AsciiDocs (but don't evaluate code blocks in specific files): `bin/process-docs.sh --dryRun docs/src/reference/the-graph.asciidoc,docs/src/tutorial/getting-started,...`
 ** Build AsciiDocs (but evaluate code blocks only in specific files): `bin/process-docs.sh --fullRun docs/src/reference/the-graph.asciidoc,docs/src/tutorial/getting-started,...`
-** Process a single AsciiDoc file: +pass:[docs/preprocessor/preprocess-file.sh `pwd`/gremlin-console/target/apache-tinkerpop-gremlin-console-*-standalone "" "*" `pwd`/docs/src/xyz.asciidoc]+
+** Process docs in dry-run mode (no console required): `bin/process-docs.sh --dryRun`
 * Build JavaDocs/JSDoc: `mvn process-resources -Djavadoc`
 ** Javadoc to `target/site/apidocs` directory
 ** JSDoc to the `gremlin-js/gremlin-javascript/doc/` directory
@@ -520,6 +542,8 @@ mvn -Dmaven.javadoc.skip=true --projects tinkergraph-gremlin test
 ** Reports are generated to the console and to `gremlin-tools/gremlin-benchmark/target/reports/benchmark`.
 * Test coverage report: `mvn clean install -Dcoverage` - note that the `install` is necessary because report aggregation is bound to that part of the lifecycle.
 ** Reports are generated to `gremlin-tools/gremlin-coverage/target/site`.
+* Evaluate how well AI agents write Gremlin from the intents in the feature tests: see `gremlin-tools/gremlin-fluency/README.md`
+** Results are written to `~/.gremlin-fluency/runs`.
 * `cd site`
 ** Generate web site locally: `bin/generate-home.sh`
 ** Publish web site: `bin/publish-home.sh <username>`
@@ -531,24 +555,6 @@ TinkerPop maintains GLV examples in two distinct locations. User-facing examples
 utilize published driver versions and are referenced in the main documentation. Module-level examples within each GLV
 directory (e.g., `gremlin-python/src/main/python/examples/`) use local development code to ensure compatibility and
 prevent regressions.
-
-[[building-on-windows]]
-== Building On Windows
-
-The following steps must be taken in order to build TinkerPop on Windows:
-
-. Install winutils for Hadoop
-* Download the latest version of link:https://github.com/kontext-tech/winutils[winutils] binaries for Hadoop. The binaries `winutils.exe` and `hadoop.dll` are required.
-** Note that these libraries require Microsoft Visual C++ Redistributable 2015-2022 to be installed. We've tested it on Windows 10 and Windows 11 with Microsoft Visual C++ Redistributable 2015-2022 14.32.31326.
-* Place contents of the bin folder on your local driver in the following folder structure:
-** e.g. `hadoop-3.3.1/bin/winutils.exe`
-* Set `HADOOP_HOME` to point to the `hadoop-3.3.1` folder
-* Add `%HADOOP_HOME%\bin` to your `PATH`
-. Run `mvn clean install` from root of tinkerpop
-. Follow IDE specific steps if applicable:
-* <<intellij>>
-
-You should now be able to work with TinkerPop on Windows.
 
 [[docker-integration]]
 == Docker Integration
@@ -568,7 +574,7 @@ supported:
 A list of command line options is provided by `docker/build.sh --help`. The container will install,
 configure and start all required dependencies, such as Hadoop.
 
-By default, this script will run every module in the project. However, if you are planning on working on just a 
+By default, this script will run every module in the project. However, if you are planning on working on just a
 small set of the modules (e.g. the GLVs) then you can use the script options to reduce the modules included by
 specifically selecting which modules you want. This behavior is currently supported for the non-Java GLVs and
 gremlin-console. This option will include only the selected modules as well as gremlin-server, gremlin-test,
@@ -662,8 +668,7 @@ link:https://hub.docker.com/r/tinkerpop/gremlin-server[Docker Hub] (do not use `
 version number, e.g. `GREMLIN_SERVER=3.5.x` or `GREMLIN_SERVER=3.6.x`).
 
 The docker compose environment variable `HOME` specifies the user home directory for mounting volumes during test image
-set up. This variable is set by default in Unix/Linux, but will need to be set for Windows, for example, run
-`$env:HOME=$env:USERPROFILE` in PowerShell.
+set up. This variable is set by default in Unix/Linux.
 
 There are different ways to launch the test suite and set the `GREMLIN_SERVER` environment variable depending on
 your Platform:
@@ -750,12 +755,12 @@ tips are helpful to know when doing so:
 * It is not possible to run the tests in `gremlin-test` without a `Graph` implementation. For example, it is not
 possible to just right-click `org.apache.tinkerpop.gremlin.process.traversal.step.map.MatchTest` and then select
 `Debug 'MatchTest'`. Instead, running that test would require opening `tinkergraph-gremlin` and executing the
-`TinkerGraphProcessStandardTest` (as an example) which runs the full Gremlin test suite to include `MatchTest`.
+`TinkerMemoryGraphProcessStandardTest` (as an example) which runs the full Gremlin test suite to include `MatchTest`.
 * To run just `MatchTest`, set a `GREMLIN_TESTS` environment variable with the fully qualified path name to the test
 configuration in Intellij. Note that the fully qualified test name is really
 `org.apache.tinkerpop.gremlin.process.traversal.step.map.MatchTest$CountMatchTraversals`.
 * Gherkin tests have a similar pattern in that they require a `Graph` implementation to execute them. Therefore,
-debugging entails going to `tinkergraph-gremlin` and running `TinkerGraphFeatureTest` in the debugger.
+debugging entails going to `tinkergraph-gremlin` and running `TinkerMemoryGraphFeatureTest` in the debugger.
 * It is possible to filter the Gherkin tests by adding a system property to the debug configuration that specifies the
 tags to use or ignore. For example to just run the `coin()` tests: `-Dcucumber.filter.tags="@StepCoin"`
 

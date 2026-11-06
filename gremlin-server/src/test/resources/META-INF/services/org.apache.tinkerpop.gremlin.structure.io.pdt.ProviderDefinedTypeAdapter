@@ -1,0 +1,2 @@
+org.apache.tinkerpop.gremlin.server.pdt.Uint32Adapter
+org.apache.tinkerpop.gremlin.server.pdt.TinkerIdAdapter

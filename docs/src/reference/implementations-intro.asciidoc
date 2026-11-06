@@ -17,6 +17,7 @@ specific language governing permissions and limitations
 under the License.
 ////
 [[implementations]]
+[llms-summary="Graph system and processor implementations that ship with TinkerPop, including TinkerGraph, Neo4j, and the Hadoop/Spark OLAP engines."]
 = Implementations
 
 image::gremlin-racecar.png[width=325]

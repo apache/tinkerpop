@@ -36,10 +36,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class GoTranslateVisitor extends AbstractTranslateVisitor {
     private final static String GO_PACKAGE_NAME = "gremlingo.";
+    private final static Pattern OCTAL_ESCAPE = Pattern.compile("\\\\([0-7]{1,3})");
     private final static List<String> STRATEGY_WITH_MAP_OPTS = Collections.unmodifiableList(Arrays.asList(
             "OptionsStrategy",
             "ReferenceElementStrategy", "ComputerFinalizationStrategy", "ProfileStrategy",
@@ -362,7 +365,25 @@ public class GoTranslateVisitor extends AbstractTranslateVisitor {
 
     @Override
     public Void visitCharacterLiteral(final GremlinParser.CharacterLiteralContext ctx) {
-        throw new TranslatorException("Character literals are not supported in Go");
+        final String text = ctx.getText();
+        final String withoutSuffix = text.substring(0, text.length() - 1);
+        final String inner = removeFirstAndLastCharacters(withoutSuffix);
+        final Matcher octal = OCTAL_ESCAPE.matcher(inner);
+        if (octal.matches()) {
+            sb.append(GO_PACKAGE_NAME).append("Char(0o")
+                    .append(Integer.toOctalString(Integer.parseInt(octal.group(1), 8))).append(")");
+            return null;
+        }
+
+        final String goRune;
+        if (inner.equals("'"))
+            goRune = "\\'";
+        else if (inner.equals("\\\""))
+            goRune = "\"";
+        else
+            goRune = inner;
+        sb.append(GO_PACKAGE_NAME).append("Char('").append(goRune).append("')");
+        return null;
     }
 
     @Override
@@ -373,6 +394,24 @@ public class GoTranslateVisitor extends AbstractTranslateVisitor {
                 Boolean.parseBoolean(ctx.booleanLiteral().getText());
         final long totalNanos = seconds * 1_000_000_000L + nanos;
         sb.append("time.Duration(").append(isPositive ? totalNanos : -totalNanos).append(")");
+        return null;
+    }
+
+    @Override
+    public Void visitPdtLiteral(final GremlinParser.PdtLiteralContext ctx) {
+        if (ctx.genericMapLiteral() != null) {
+            sb.append("&gremlingo.CompositePDT{Name: ");
+            visitStringLiteral(ctx.stringLiteral(0));
+            sb.append(", Fields: ");
+            visitGenericMapLiteral(ctx.genericMapLiteral());
+            sb.append("}");
+        } else {
+            sb.append("&gremlingo.PrimitivePDT{Name: ");
+            visitStringLiteral(ctx.stringLiteral(0));
+            sb.append(", Value: ");
+            visitStringLiteral(ctx.stringLiteral(1));
+            sb.append("}");
+        }
         return null;
     }
 
@@ -413,6 +452,51 @@ public class GoTranslateVisitor extends AbstractTranslateVisitor {
     @Override
     protected void appendAnonymousSpawn() {
         sb.append(GO_PACKAGE_NAME).append("T__.");
+    }
+
+    @Override
+    public Void visitTraversalSourceSpawnMethod_match_string(final GremlinParser.TraversalSourceSpawnMethod_match_stringContext ctx) {
+        sb.append("Match(");
+        visit(ctx.stringLiteral());
+        sb.append(")");
+        return null;
+    }
+
+    @Override
+    public Void visitTraversalSourceSpawnMethod_match_string_map(final GremlinParser.TraversalSourceSpawnMethod_match_string_mapContext ctx) {
+        sb.append("Match(");
+        visit(ctx.stringLiteral());
+        sb.append(", ");
+        visitGoParamsMap(ctx.genericMapLiteral());
+        sb.append(")");
+        return null;
+    }
+
+    @Override
+    public Void visitTraversalMethod_match_string(final GremlinParser.TraversalMethod_match_stringContext ctx) {
+        sb.append("Match(");
+        visit(ctx.stringLiteral());
+        sb.append(")");
+        return null;
+    }
+
+    @Override
+    public Void visitTraversalMethod_match_string_map(final GremlinParser.TraversalMethod_match_string_mapContext ctx) {
+        sb.append("Match(");
+        visit(ctx.stringLiteral());
+        sb.append(", ");
+        visitGoParamsMap(ctx.genericMapLiteral());
+        sb.append(")");
+        return null;
+    }
+
+    private void visitGoParamsMap(final GremlinParser.GenericMapLiteralContext mapLiteral) {
+        sb.append("map[string]interface{}{");
+        for (int i = 0; i < mapLiteral.mapEntry().size(); i++) {
+            visit(mapLiteral.mapEntry(i));
+            if (i < mapLiteral.mapEntry().size() - 1) sb.append(", ");
+        }
+        sb.append(" }");
     }
 
     static final class SymbolHelper {

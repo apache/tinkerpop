@@ -21,6 +21,7 @@
 
 #endregion
 
+using System.Collections.Generic;
 using Gremlin.Net.Structure;
 using Xunit;
 
@@ -64,6 +65,46 @@ namespace Gremlin.Net.UnitTest.Structure
             var stringRepresentation = vertexProperty.ToString();
 
             Assert.Equal("vp[name->marko]", stringRepresentation);
+        }
+
+        [Fact]
+        public void ShouldGroupMultiPropertiesUnderOneKeyForPropertyMap()
+        {
+            var first = new Property("startTime", 2009);
+            var second = new Property("startTime", 2010);
+            var vertexProperty = new VertexProperty((long) 24, "name", "marko", new Vertex(1),
+                new dynamic[] {first, second});
+
+            var propertyMap = vertexProperty.PropertyMap();
+
+            Assert.Single(propertyMap);
+            Assert.True(propertyMap.ContainsKey("startTime"));
+            Assert.Equal(new List<Property> {first, second}, propertyMap["startTime"]);
+        }
+
+        [Fact]
+        public void ShouldGroupSingleValuedPropertiesIntoSingleElementListsForPropertyMap()
+        {
+            var startTime = new Property("startTime", 2009);
+            var endTime = new Property("endTime", 2010);
+            var vertexProperty = new VertexProperty((long) 24, "name", "marko", new Vertex(1),
+                new dynamic[] {startTime, endTime});
+
+            var propertyMap = vertexProperty.PropertyMap();
+
+            Assert.Equal(2, propertyMap.Count);
+            Assert.Equal(new List<Property> {startTime}, propertyMap["startTime"]);
+            Assert.Equal(new List<Property> {endTime}, propertyMap["endTime"]);
+        }
+
+        [Fact]
+        public void ShouldReturnEmptyDictionaryForPropertyMapWhenNoProperties()
+        {
+            var vertexProperty = new VertexProperty((long) 24, "name", "marko", new Vertex(1));
+
+            var propertyMap = vertexProperty.PropertyMap();
+
+            Assert.Empty(propertyMap);
         }
     }
 }

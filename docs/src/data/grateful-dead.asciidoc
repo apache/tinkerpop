@@ -1,0 +1,124 @@
+////
+Licensed to the Apache Software Foundation (ASF) under one
+or more contributor license agreements.  See the NOTICE file
+distributed with this work for additional information
+regarding copyright ownership.  The ASF licenses this file
+to you under the Apache License, Version 2.0 (the
+"License"); you may not use this file except in compliance
+with the License.  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on an
+"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied.  See the License for the
+specific language governing permissions and limitations
+under the License.
+////
+[[grateful-dead]]
+[llms-summary="The Grateful Dead graph: a larger, real-world graph of songs and artists linked by concert play order. Includes its GQL Graph Types schema and runnable Gremlin examples, including a recommendation traversal."]
+== The Grateful Dead Graph
+
+The Grateful Dead graph is built from concert data for the band the Grateful Dead. Its vertices are
+`song` and `artist` records, and its edges capture three relationships: a song was `sungBy` an
+artist, a song was `writtenBy` an artist, and one song was `followedBy` another in a concert set
+list. The `followedBy` edge carries a `weight` that counts how often that particular transition
+occurred across the recorded performances, so the graph encodes not just which songs exist but the
+order in which they tended to be played.
+
+With 808 vertices and 8049 edges, it is substantially larger than the other sample graphs, and its
+data reflects real-world structure rather than a hand-built illustration. That combination makes it
+the best choice for demonstrating more involved traversals: aggregation over many results,
+ranking by edge weight, and recommendation queries that follow the play-order transitions to
+suggest what to listen to next. The graph is created with `TinkerFactory.createGratefulDead()` and
+ships as `data/grateful-dead.*`. It is too large to depict as a single diagram.
+
+=== Schema
+
+[source,gql]
+----
+-- node types
+(:song => { name :: STRING NOT NULL, songType :: STRING, performances :: INT }),
+(:artist => { name :: STRING NOT NULL }),
+
+-- edge types
+(:song)-[:followedBy { weight :: INT }]->(:song),
+(:song)-[:sungBy]->(:artist),
+(:song)-[:writtenBy]->(:artist)
+----
+
+A `song` records the number of times it was played in its `performances` property and whether it is
+an `original` or a `cover` in its `songType` property. Some songs have an empty `songType`. The
+`sungBy` and `writtenBy` edges form an edge type family in the GQL sense: they share the same
+`song` to `artist` endpoints and carry no properties, differing only in label.
+
+=== Examples
+
+A first look at the data summarizes the songs by type and finds those that were performed most
+often.
+
+[gremlin-groovy,grateful]
+----
+g.V().hasLabel('song').groupCount().by('songType') <1>
+g.V().hasLabel('song').
+      order().by('performances',desc).
+      limit(5).
+      valueMap('name','performances') <2>
+----
+
+<1> Count the songs of each `songType`. The empty-string group holds songs whose type was not
+recorded.
+<2> The five most frequently performed songs, with their `performances` count.
+
+The `writtenBy` edge connects a song to its author, so the incoming direction of that label on an
+artist yields the songs that artist wrote.
+
+[gremlin-groovy,grateful]
+----
+g.V().has('artist','name','Hunter').in('writtenBy').count() <1>
+g.V().has('artist','name','Hunter').in('writtenBy').
+      order().by('performances',desc).
+      limit(5).values('name') <2>
+----
+
+<1> The number of songs written by the lyricist Robert Hunter.
+<2> His five most performed songs.
+
+A basic recommendation follows the `followedBy` transitions out of a song and ranks them by
+`weight`, which answers the question of what was most often played next.
+
+[gremlin-groovy,grateful]
+----
+g.V().has('song','name','DARK STAR').
+      outE('followedBy'). <1>
+      order().by('weight',desc).
+      limit(5).
+      inV().values('name') <2>
+----
+
+<1> Step onto the outgoing `followedBy` edges of "DARK STAR" so the transition `weight` is
+available for ordering.
+<2> Rank those transitions by `weight` and report the songs that most frequently followed
+"DARK STAR" in concert.
+
+A recommendation that reaches beyond the immediate successors looks two transitions ahead. It
+collects the songs that directly followed "DARK STAR", then follows their transitions in turn and
+counts where they lead, excluding the direct successors so the result surfaces songs a step further
+out in the set list.
+
+[gremlin-groovy,grateful]
+----
+g.V().has('song','name','DARK STAR').
+      out('followedBy').aggregate('direct'). <1>
+      out('followedBy').
+      where(without('direct')). <2>
+      groupCount().by('name').
+      order(local).by(values,desc).
+      limit(local,5) <3>
+----
+
+<1> Gather the songs that directly followed "DARK STAR" into a side collection named `direct`.
+<2> From those songs, take another `followedBy` step and discard any song already in `direct`.
+<3> Count how often each remaining song is reached and keep the five most common, giving songs that
+tend to appear soon after "DARK STAR" without immediately following it.

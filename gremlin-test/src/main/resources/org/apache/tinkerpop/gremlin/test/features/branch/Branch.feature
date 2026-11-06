@@ -75,6 +75,11 @@ Feature: Step - branch()
 
   Scenario: g_V_branchXageX_optionXltX30X__youngX_optionXgtX30X__oldX_optionXnone__on_the_edgeX
     Given the modern graph
+    And the intent
+      """
+      Classify each person by age: under 30 is "young", over 30 is "old", and exactly 30 is "on the edge". Return one
+      classification per person only.
+      """
     And the traversal of
       """
       g.V().hasLabel("person").
@@ -107,3 +112,29 @@ Feature: Step - branch()
       | l[josh,josh,marko,peter] |
       | d[27].i |
       | d[12].l |
+
+  # On a multi-label graph a vertex can satisfy several branch option predicates at once, so branch()
+  # routes it down every matching branch. canopy [habitat] -> place; lagoon [habitat, aquatic] ->
+  # place + wet; atlas [animal, reptile, aquatic, endangered] -> scaly + wet; monty [animal, reptile,
+  # nocturnal] -> scaly.
+
+  @MultiLabel
+  Scenario: g_V_hasLabelXhabitat_reptileX_branchXidentityX_optionXhasLabelXaquaticXX_optionXhasLabelXreptileXX_optionXhasLabelXhabitatXX_multilabel
+    Given the zoo graph
+    And the traversal of
+      """
+      g.V().hasLabel("habitat", "reptile").
+        branch(__.identity()).
+          option(__.hasLabel("aquatic"), __.constant("wet")).
+          option(__.hasLabel("reptile"), __.constant("scaly")).
+          option(__.hasLabel("habitat"), __.constant("place"))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | wet |
+      | wet |
+      | scaly |
+      | scaly |
+      | place |
+      | place |

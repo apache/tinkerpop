@@ -59,15 +59,39 @@ public class NotP<V> extends P<V> {
     }
 
     /**
-     * Returns the original unwrapped P contained within this NotP, as double negation cancels out.
+     * Returns the inner predicate wrapped by this NotP.
+     */
+    public P<V> getWrapped() {
+        return this.originalP;
+    }
+
+    /**
+     * Returns the original unwrapped P, since double negation cancels out.
+     * @apiNote Functionally identical to {@link #getWrapped()}, but fulfills the {@link java.util.function.Predicate#negate()} contract.
      */
     @Override
     public P<V> negate() {
-        return originalP;
+        return getWrapped();
     }
 
     public P<V> clone() {
         return new NotP<>(this.originalP.clone());
+    }
+
+    @Override
+    public boolean hasTraversal() {
+        return super.hasTraversal() || this.originalP.hasTraversal();
+    }
+
+    @Override
+    public boolean isResolvedEmpty() {
+        return this.originalP.isResolvedEmpty();
+    }
+
+    @Override
+    public void resolve(final Traverser.Admin<?> traverser) {
+        super.resolve(traverser);
+        this.originalP.resolve(traverser);
     }
 
     /**

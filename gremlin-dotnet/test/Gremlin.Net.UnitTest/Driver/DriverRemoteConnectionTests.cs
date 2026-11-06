@@ -103,7 +103,7 @@ namespace Gremlin.Net.UnitTest.Driver
         }
 
         [Fact]
-        public async Task ShouldBuildRequestWithBindings()
+        public async Task ShouldBuildRequestWithParameters()
         {
             RequestMessage? capturedRequest = null;
             var client = CreateCapturingClient(msg => capturedRequest = msg);
@@ -116,8 +116,28 @@ namespace Gremlin.Net.UnitTest.Driver
             await connection.SubmitAsync<object, object>(gl);
 
             Assert.NotNull(capturedRequest);
-            var bindingsString = (string)capturedRequest!.Fields[Tokens.ArgsBindings];
-            Assert.Contains("\"x\":42", bindingsString);
+            var parametersString = (string)capturedRequest!.Fields[Tokens.ArgsParameters];
+            Assert.Contains("\"x\":42", parametersString);
+            Assert.DoesNotContain("\"g\":", parametersString);
+        }
+
+        [Fact]
+        public async Task ShouldNotBuildRequestWithTraversalSourceAsParameter()
+        {
+            RequestMessage? capturedRequest = null;
+            var client = CreateCapturingClient(msg => capturedRequest = msg);
+            var connection = new DriverRemoteConnection(client, "mySource");
+
+            var gl = new GremlinLang();
+            gl.AddStep("V", Array.Empty<object>());
+
+            await connection.SubmitAsync<object, object>(gl);
+
+            Assert.NotNull(capturedRequest);
+            var parametersString = capturedRequest!.Fields.TryGetValue(Tokens.ArgsParameters, out var parameters)
+                ? (string) parameters
+                : "";
+            Assert.DoesNotContain("\"g\":", parametersString);
         }
 
         [Fact]
@@ -133,7 +153,7 @@ namespace Gremlin.Net.UnitTest.Driver
             await connection.SubmitAsync<object, object>(gl);
 
             Assert.NotNull(capturedRequest);
-            Assert.Equal("true", capturedRequest!.Fields[Tokens.ArgsBulkResults]);
+            Assert.Equal(true, capturedRequest!.Fields[Tokens.ArgsBulkResults]);
         }
 
         [Fact]
@@ -147,14 +167,14 @@ namespace Gremlin.Net.UnitTest.Driver
             gl.AddStep("V", Array.Empty<object>());
             gl.OptionsStrategies.Add(new OptionsStrategy(new Dictionary<string, object>
             {
-                { Tokens.ArgsEvalTimeout, 5000L },
+                { Tokens.ArgsTimeoutMillis, 5000L },
                 { Tokens.ArgsBatchSize, 100 }
             }));
 
             await connection.SubmitAsync<object, object>(gl);
 
             Assert.NotNull(capturedRequest);
-            Assert.Equal(5000L, capturedRequest!.Fields[Tokens.ArgsEvalTimeout]);
+            Assert.Equal(5000L, capturedRequest!.Fields[Tokens.ArgsTimeoutMillis]);
             Assert.Equal(100, capturedRequest.Fields[Tokens.ArgsBatchSize]);
         }
 
@@ -189,13 +209,81 @@ namespace Gremlin.Net.UnitTest.Driver
             gl.AddStep("V", Array.Empty<object>());
             gl.OptionsStrategies.Add(new OptionsStrategy(new Dictionary<string, object>
             {
-                { Tokens.ArgsBulkResults, "false" }
+                { Tokens.ArgsBulkResults, false }
             }));
 
             await connection.SubmitAsync<object, object>(gl);
 
             Assert.NotNull(capturedRequest);
-            Assert.Equal("false", capturedRequest!.Fields[Tokens.ArgsBulkResults]);
+            Assert.Equal(false, capturedRequest!.Fields[Tokens.ArgsBulkResults]);
+        }
+
+        [Fact]
+        public async Task ShouldYieldRawScalarFromNonBulkedResponse()
+        {
+            // A raw (non-bulked) scalar must be yielded directly, not cast-failed as a Traverser.
+            var client = CreateResultClient(10L);
+            var connection = new DriverRemoteConnection(client, "g");
+            var gl = new GremlinLang();
+            gl.AddStep("V", Array.Empty<object>());
+
+            var traversal = await connection.SubmitAsync<object, long>(gl);
+            var results = traversal.ToList();
+
+            Assert.Equal(new long[] { 10L }, results);
+        }
+
+        [Fact]
+        public async Task ShouldExpandBulkedTraverserFromResponse()
+        {
+            // A bulked Traverser must be expanded by its bulk count.
+            var client = CreateResultClient(new Traverser("a", 3));
+            var connection = new DriverRemoteConnection(client, "g");
+            var gl = new GremlinLang();
+            gl.AddStep("V", Array.Empty<object>());
+
+            var traversal = await connection.SubmitAsync<object, string>(gl);
+            var results = traversal.ToList();
+
+            Assert.Equal(new[] { "a", "a", "a" }, results);
+        }
+
+        [Fact]
+        public async Task ShouldHandleMixOfRawValuesAndTraversers()
+        {
+            // Raw values and bulked Traversers may interleave in one response.
+            var client = CreateResultClient(1L, new Traverser(2L, 2), 3L);
+            var connection = new DriverRemoteConnection(client, "g");
+            var gl = new GremlinLang();
+            gl.AddStep("V", Array.Empty<object>());
+
+            var traversal = await connection.SubmitAsync<object, long>(gl);
+            var results = traversal.ToList();
+
+            Assert.Equal(new long[] { 1L, 2L, 2L, 3L }, results);
+        }
+
+        /// <summary>
+        ///     Creates a mock IGremlinClient whose submission returns a ResultSet streaming the
+        ///     provided items (raw values and/or Traverser instances).
+        /// </summary>
+        private static IGremlinClient CreateResultClient(params object[] items)
+        {
+            var client = Substitute.For<IGremlinClient>();
+            client.SubmitAsync<object>(Arg.Any<RequestMessage>(), Arg.Any<CancellationToken>())
+                .Returns(_ =>
+                {
+                    var channel = System.Threading.Channels.Channel.CreateUnbounded<object>();
+                    foreach (var item in items)
+                    {
+                        channel.Writer.TryWrite(item);
+                    }
+                    channel.Writer.Complete();
+                    var cts = new CancellationTokenSource();
+                    var resultSet = new ResultSet<object>(channel.Reader, cts, Task.CompletedTask);
+                    return Task.FromResult(resultSet);
+                });
+            return client;
         }
 
         /// <summary>
@@ -204,14 +292,14 @@ namespace Gremlin.Net.UnitTest.Driver
         private static IGremlinClient CreateCapturingClient(Action<RequestMessage> capture)
         {
             var client = Substitute.For<IGremlinClient>();
-            client.SubmitAsync<Traverser>(Arg.Any<RequestMessage>(), Arg.Any<CancellationToken>())
+            client.SubmitAsync<object>(Arg.Any<RequestMessage>(), Arg.Any<CancellationToken>())
                 .Returns(callInfo =>
                 {
                     capture(callInfo.Arg<RequestMessage>());
                     var channel = System.Threading.Channels.Channel.CreateUnbounded<object>();
                     channel.Writer.Complete();
                     var cts = new CancellationTokenSource();
-                    var emptyResult = new ResultSet<Traverser>(
+                    var emptyResult = new ResultSet<object>(
                         channel.Reader, cts, Task.CompletedTask);
                     return Task.FromResult(emptyResult);
                 });

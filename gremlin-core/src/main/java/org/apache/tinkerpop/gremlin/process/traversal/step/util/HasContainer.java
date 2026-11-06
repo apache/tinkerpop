@@ -92,7 +92,14 @@ public class HasContainer implements Serializable, Cloneable, Predicate<Element>
     }
 
     protected boolean testLabel(final Element element) {
-        return this.predicate.test(element.label());
+        // Test against all labels for multi-label support.
+        // For single-label elements this is equivalent to testing element.label().
+        for (final String label : element.labels()) {
+            if (this.predicate.test(label)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     protected boolean testValue(final Property property) {
@@ -119,7 +126,7 @@ public class HasContainer implements Serializable, Cloneable, Predicate<Element>
 
     @Override
     public int hashCode() {
-        return (this.key != null ? this.key.hashCode() : 0) ^ (this.predicate != null ? this.predicate.hashCode() : 0);
+        return (this.key != null ? this.key.hashCode() : 0) ^ this.predicate.hashCode();
     }
 
     public final String getKey() {
@@ -140,6 +147,14 @@ public class HasContainer implements Serializable, Cloneable, Predicate<Element>
 
     public final Object getValue() {
         return this.predicate.getValue();
+    }
+
+    /**
+     * Determines if this {@code HasContainer}'s predicate holds a child traversal whose result is resolved
+     * at runtime (e.g. {@code P.eq(traversal)} or {@code P.within(traversal)}).
+     */
+    public boolean hasTraversal() {
+        return this.predicate.hasTraversal();
     }
 
     ////////////

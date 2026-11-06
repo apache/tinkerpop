@@ -20,22 +20,20 @@ package org.apache.tinkerpop.gremlin.socket.server;
 
 import io.netty.channel.Channel;
 
-import java.io.IOException;
-import java.nio.file.FileSystems;
-
 /**
- * A simple main class to create and run a SimpleSocketServer
+ * A simple main class to create and run a SimpleTestServer
  */
 public class SocketServerRunner {
 
-    public static void main(final String[] args) throws InterruptedException, IOException {
-        final SocketServerSettings settings = SocketServerSettings.read(FileSystems.getDefault().getPath("conf", "test-ws-gremlin.yaml"));
-        final SimpleSocketServer server = new SimpleSocketServer(settings);
-        // TODO: add HTTP version of socketserver
-//        final Channel channel = server.start(new TestWSGremlinInitializer(settings));
-//        while(channel.isOpen()) {
-//            Thread.sleep(1000);
-//        }
-    }
+    public static void main(final String[] args) throws InterruptedException {
+        final SimpleTestServer server = new SimpleTestServer(SocketServerConstants.PORT);
+        final Channel channel = server.start(new TestHttpServerInitializer());
 
+        final RecordingProxyServer proxyServer = new RecordingProxyServer(SocketServerConstants.PROXY_PORT);
+        proxyServer.start();
+
+        while (channel.isOpen()) {
+            Thread.sleep(1000);
+        }
+    }
 }

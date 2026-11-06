@@ -28,6 +28,7 @@ import (
 	"math/big"
 	"reflect"
 	"time"
+	"unicode/utf8"
 
 	"github.com/google/uuid"
 )
@@ -57,10 +58,11 @@ import (
 // The bufio.Reader wrapper provides efficient buffering without affecting the
 // streaming semantics - it simply reduces the number of underlying read syscalls.
 type GraphBinaryDeserializer struct {
-	r      *bufio.Reader
-	buf    [8]byte
-	err    error // sticky error
-	bulked bool  // whether the response stream uses bulked encoding
+	r           *bufio.Reader
+	buf         [8]byte
+	err         error        // sticky error
+	bulked      bool         // whether the response stream uses bulked encoding
+	pdtRegistry *PDTRegistry // optional: auto-hydrates CompositePDT results
 }
 
 // GraphBinary flag for bulked list/set
@@ -70,6 +72,12 @@ const flagBulked = 0x02
 // The reader is wrapped in a buffered reader for efficient reading.
 func NewGraphBinaryDeserializer(r io.Reader) *GraphBinaryDeserializer {
 	return &GraphBinaryDeserializer{r: bufio.NewReaderSize(r, 8192)}
+}
+
+// NewGraphBinaryDeserializerWithRegistry creates a new GraphBinaryDeserializer with a PDTRegistry
+// for automatic hydration of CompositePDT values.
+func NewGraphBinaryDeserializerWithRegistry(r io.Reader, registry *PDTRegistry) *GraphBinaryDeserializer {
+	return &GraphBinaryDeserializer{r: bufio.NewReaderSize(r, 8192), pdtRegistry: registry}
 }
 
 func (d *GraphBinaryDeserializer) readByte() (byte, error) {
@@ -210,6 +218,8 @@ func (d *GraphBinaryDeserializer) readValue(dt dataType, flag byte) (interface{}
 		return b != 0, err
 	case byteType:
 		return d.readByte()
+	case charType:
+		return d.readChar()
 	case shortType:
 		if d.err != nil {
 			return nil, d.err
@@ -243,8 +253,12 @@ func (d *GraphBinaryDeserializer) readValue(dt dataType, flag byte) (interface{}
 		return d.readVertex(true)
 	case edgeType:
 		return d.readEdge()
+	case graphType:
+		return d.readGraph()
 	case pathType:
 		return d.readPath()
+	case treeType:
+		return d.readTree()
 	case propertyType:
 		return d.readProperty()
 	case vertexPropertyType:
@@ -265,8 +279,12 @@ func (d *GraphBinaryDeserializer) readValue(dt dataType, flag byte) (interface{}
 		return Of(b)
 	case byteBuffer:
 		return d.readByteBuffer()
-	case tType, directionType, mergeType, gTypeType:
+	case tType, directionType, mergeType:
 		return d.readEnum(dt)
+	case compositePDTType:
+		return d.readCompositePDT()
+	case primitivePDTType:
+		return d.readPrimitivePDT()
 	default:
 		return nil, newError(err0408GetSerializerToReadUnknownTypeError, dt)
 	}
@@ -285,6 +303,39 @@ func (d *GraphBinaryDeserializer) readString() (string, error) {
 		return "", err
 	}
 	return string(buf), nil
+}
+
+// readChar reads a Character value, encoded as one to four UTF-8 bytes with no length prefix.
+// The number of bytes making up the encoded rune is determined by the leading bits of the first byte.
+func (d *GraphBinaryDeserializer) readChar() (Char, error) {
+	firstByte, err := d.readByte()
+	if err != nil {
+		return 0, err
+	}
+	byteLength := 1
+	if firstByte&0x80 > 0 {
+		switch {
+		case firstByte&0xf0 == 0xf0:
+			byteLength = 4
+		case firstByte&0xe0 == 0xe0:
+			byteLength = 3
+		case firstByte&0xc0 == 0xc0:
+			byteLength = 2
+		}
+	}
+
+	buf := make([]byte, byteLength)
+	buf[0] = firstByte
+	if byteLength > 1 {
+		rest, err := d.readBytes(byteLength - 1)
+		if err != nil {
+			return 0, err
+		}
+		copy(buf[1:], rest)
+	}
+
+	r, _ := utf8.DecodeRune(buf)
+	return Char(r), nil
 }
 
 func (d *GraphBinaryDeserializer) readList(bulked bool) (interface{}, error) {
@@ -351,14 +402,24 @@ func (d *GraphBinaryDeserializer) readVertex(withProps bool) (*Vertex, error) {
 		return nil, err
 	}
 	labelSlice, ok := labels.([]interface{})
-	if !ok || len(labelSlice) == 0 {
-		return nil, newError(err0404ReadNullTypeError)
-	}
-	label, ok := labelSlice[0].(string)
 	if !ok {
 		return nil, newError(err0404ReadNullTypeError)
 	}
-	v := &Vertex{Element: Element{Id: id, Label: label}}
+	// A vertex may carry zero or more labels. The deprecated singular Label holds the first
+	// label for backward compatibility, or "" when the vertex has no labels.
+	allLabels := make([]string, 0, len(labelSlice))
+	for _, l := range labelSlice {
+		s, ok := l.(string)
+		if !ok {
+			return nil, newError(err0404ReadNullTypeError)
+		}
+		allLabels = append(allLabels, s)
+	}
+	label := ""
+	if len(allLabels) > 0 {
+		label = allLabels[0]
+	}
+	v := &Vertex{Element: Element{Id: id, Label: label}, Labels: allLabels}
 	if withProps {
 		props, err := d.ReadFullyQualified()
 		if err != nil {
@@ -382,12 +443,22 @@ func (d *GraphBinaryDeserializer) readEdge() (*Edge, error) {
 		return nil, err
 	}
 	labelSlice, ok := labels.([]interface{})
-	if !ok || len(labelSlice) == 0 {
-		return nil, newError(err0404ReadNullTypeError)
-	}
-	label, ok := labelSlice[0].(string)
 	if !ok {
 		return nil, newError(err0404ReadNullTypeError)
+	}
+	// An edge carries a single label in practice, but the label is read as a list for symmetry
+	// with vertices. The deprecated singular Label holds the first label, or "" when absent.
+	allLabels := make([]string, 0, len(labelSlice))
+	for _, l := range labelSlice {
+		s, ok := l.(string)
+		if !ok {
+			return nil, newError(err0404ReadNullTypeError)
+		}
+		allLabels = append(allLabels, s)
+	}
+	label := ""
+	if len(allLabels) > 0 {
+		label = allLabels[0]
 	}
 	inV, err := d.readVertex(false)
 	if err != nil {
@@ -408,12 +479,217 @@ func (d *GraphBinaryDeserializer) readEdge() (*Edge, error) {
 		Element: Element{Id: id, Label: label},
 		InV:     *inV,
 		OutV:    *outV,
+		Labels:  allLabels,
 	}
 	e.Properties = make([]interface{}, 0)
 	if props != nil {
 		e.Properties = props
 	}
 	return e, nil
+}
+
+func (d *GraphBinaryDeserializer) readGraph() (*Graph, error) {
+	graph := NewGraph()
+
+	// {vertex_count} value-only int32
+	vertexCount, err := d.readInt32()
+	if err != nil {
+		return nil, err
+	}
+
+	for i := int32(0); i < vertexCount; i++ {
+		// {id} fully-qualified
+		vId, err := d.ReadFullyQualified()
+		if err != nil {
+			return nil, err
+		}
+
+		// {labels} list<string> value-only. A vertex may carry zero or more labels; the
+		// deprecated singular Label holds the first label, or "" when there are none.
+		vLabels, err := d.readList(false)
+		if err != nil {
+			return nil, err
+		}
+		labelSlice, ok := vLabels.([]interface{})
+		if !ok {
+			return nil, newError(err0404ReadNullTypeError)
+		}
+		vAllLabels := make([]string, 0, len(labelSlice))
+		for _, l := range labelSlice {
+			s, ok := l.(string)
+			if !ok {
+				return nil, newError(err0404ReadNullTypeError)
+			}
+			vAllLabels = append(vAllLabels, s)
+		}
+		vLabel := ""
+		if len(vAllLabels) > 0 {
+			vLabel = vAllLabels[0]
+		}
+
+		v := &Vertex{Element: Element{Id: vId, Label: vLabel}, Labels: vAllLabels}
+
+		// {vp_count} value-only int32
+		vpCount, err := d.readInt32()
+		if err != nil {
+			return nil, err
+		}
+
+		vps := make([]*VertexProperty, 0, vpCount)
+		for j := int32(0); j < vpCount; j++ {
+			// {vp_id} fully-qualified
+			vpId, err := d.ReadFullyQualified()
+			if err != nil {
+				return nil, err
+			}
+
+			// {vp_label} list<string> value-only, take first element
+			vpLabels, err := d.readList(false)
+			if err != nil {
+				return nil, err
+			}
+			vpLabelSlice, ok := vpLabels.([]interface{})
+			if !ok || len(vpLabelSlice) == 0 {
+				return nil, newError(err0404ReadNullTypeError)
+			}
+			vpLabel, ok := vpLabelSlice[0].(string)
+			if !ok {
+				return nil, newError(err0404ReadNullTypeError)
+			}
+
+			// {vp_value} fully-qualified
+			vpValue, err := d.ReadFullyQualified()
+			if err != nil {
+				return nil, err
+			}
+
+			// {parent} fully-qualified null placeholder — discard
+			if _, err := d.ReadFullyQualified(); err != nil {
+				return nil, err
+			}
+
+			// {meta_props} value-only list<property>
+			metaProps, err := d.readList(false)
+			if err != nil {
+				return nil, err
+			}
+
+			vp := &VertexProperty{
+				Element: Element{Id: vpId, Label: vpLabel},
+				Key:     vpLabel,
+				Value:   vpValue,
+				Vertex:  *v,
+			}
+			vp.Properties = make([]interface{}, 0)
+			if metaProps != nil {
+				vp.Properties = metaProps
+			}
+			vps = append(vps, vp)
+		}
+		// Store vertex properties on the Vertex; match the existing convention
+		// of storing as []interface{} (see readVertex above).
+		if vpCount > 0 {
+			vpList := make([]interface{}, len(vps))
+			for k, vp := range vps {
+				vpList[k] = vp
+			}
+			v.Properties = vpList
+		} else {
+			v.Properties = make([]interface{}, 0)
+		}
+
+		graph.Vertices[vId] = v
+	}
+
+	// {edge_count} value-only int32
+	edgeCount, err := d.readInt32()
+	if err != nil {
+		return nil, err
+	}
+
+	for i := int32(0); i < edgeCount; i++ {
+		// {id} fully-qualified
+		eId, err := d.ReadFullyQualified()
+		if err != nil {
+			return nil, err
+		}
+
+		// {labels} list<string> value-only. The deprecated singular Label holds the first
+		// label, or "" when there are none.
+		eLabels, err := d.readList(false)
+		if err != nil {
+			return nil, err
+		}
+		labelSlice, ok := eLabels.([]interface{})
+		if !ok {
+			return nil, newError(err0404ReadNullTypeError)
+		}
+		eAllLabels := make([]string, 0, len(labelSlice))
+		for _, l := range labelSlice {
+			s, ok := l.(string)
+			if !ok {
+				return nil, newError(err0404ReadNullTypeError)
+			}
+			eAllLabels = append(eAllLabels, s)
+		}
+		eLabel := ""
+		if len(eAllLabels) > 0 {
+			eLabel = eAllLabels[0]
+		}
+
+		// {inV_id} fully-qualified
+		inVId, err := d.ReadFullyQualified()
+		if err != nil {
+			return nil, err
+		}
+		// {inV_label} fully-qualified null placeholder — discard
+		if _, err := d.ReadFullyQualified(); err != nil {
+			return nil, err
+		}
+		// {outV_id} fully-qualified
+		outVId, err := d.ReadFullyQualified()
+		if err != nil {
+			return nil, err
+		}
+		// {outV_label} fully-qualified null placeholder — discard
+		if _, err := d.ReadFullyQualified(); err != nil {
+			return nil, err
+		}
+		// {parent} fully-qualified null placeholder — discard
+		if _, err := d.ReadFullyQualified(); err != nil {
+			return nil, err
+		}
+
+		// {props} value-only list<property>
+		props, err := d.readList(false)
+		if err != nil {
+			return nil, err
+		}
+
+		// Reuse previously-read vertex instances if present, else build stand-ins.
+		inV, ok := graph.Vertices[inVId]
+		if !ok {
+			inV = &Vertex{Element: Element{Id: inVId}}
+		}
+		outV, ok := graph.Vertices[outVId]
+		if !ok {
+			outV = &Vertex{Element: Element{Id: outVId}}
+		}
+
+		e := &Edge{
+			Element: Element{Id: eId, Label: eLabel},
+			InV:     *inV,
+			OutV:    *outV,
+			Labels:  eAllLabels,
+		}
+		e.Properties = make([]interface{}, 0)
+		if props != nil {
+			e.Properties = props
+		}
+		graph.Edges[eId] = e
+	}
+
+	return graph, nil
 }
 
 func (d *GraphBinaryDeserializer) readPath() (*Path, error) {
@@ -444,6 +720,30 @@ func (d *GraphBinaryDeserializer) readPath() (*Path, error) {
 		}
 	}
 	return path, nil
+}
+
+func (d *GraphBinaryDeserializer) readTree() (interface{}, error) {
+	return d.readTreeValue()
+}
+
+func (d *GraphBinaryDeserializer) readTreeValue() (*Tree, error) {
+	length, err := d.readInt32()
+	if err != nil {
+		return nil, err
+	}
+	tree := &Tree{}
+	for i := int32(0); i < length; i++ {
+		key, err := d.ReadFullyQualified()
+		if err != nil {
+			return nil, err
+		}
+		child, err := d.readTreeValue()
+		if err != nil {
+			return nil, err
+		}
+		tree.GetOrCreateChild(key).AddTree(child)
+	}
+	return tree, nil
 }
 
 func (d *GraphBinaryDeserializer) readProperty() (*Property, error) {
@@ -516,7 +816,9 @@ func (d *GraphBinaryDeserializer) readBigInt() (*big.Int, error) {
 	bi := big.NewInt(0).SetBytes(b)
 	if b[0]&0x80 != 0 {
 		one := big.NewInt(1)
-		bitLen := uint((len(b)*8)/8+1) * 8
+		// High bit set: the bytes are a two's-complement negative, so recover the
+		// signed value by subtracting 2^(bit width), where the width is 8 bits per byte.
+		bitLen := uint(len(b)) * 8
 		bi.Sub(bi, new(big.Int).Lsh(one, bitLen))
 	}
 	return bi, nil
@@ -606,11 +908,70 @@ func (d *GraphBinaryDeserializer) readEnum(dt dataType) (interface{}, error) {
 		return direction(s), nil
 	case mergeType:
 		return merge(s), nil
-	case gTypeType:
-		return gType(s), nil
 	default:
 		return s, nil
 	}
+}
+
+func (d *GraphBinaryDeserializer) readCompositePDT() (interface{}, error) {
+	nameObj, err := d.ReadFullyQualified()
+	if err != nil {
+		return nil, err
+	}
+	name, ok := nameObj.(string)
+	if !ok || name == "" {
+		return nil, fmt.Errorf("CompositePDT name must be a non-empty string")
+	}
+	fieldsObj, err := d.ReadFullyQualified()
+	if err != nil {
+		return nil, err
+	}
+	var fields map[string]interface{}
+	if fieldsObj != nil {
+		raw, ok := fieldsObj.(map[interface{}]interface{})
+		if !ok {
+			return nil, fmt.Errorf("CompositePDT fields must be a map")
+		}
+		fields = make(map[string]interface{}, len(raw))
+		for k, v := range raw {
+			fields[fmt.Sprint(k)] = v
+		}
+	}
+	pdt := &CompositePDT{Name: name, Fields: fields}
+	if d.pdtRegistry != nil {
+		hydrated := d.pdtRegistry.Hydrate(pdt)
+		if hydrated != pdt {
+			return hydrated, nil
+		}
+	}
+	return pdt, nil
+}
+
+func (d *GraphBinaryDeserializer) readPrimitivePDT() (interface{}, error) {
+	nameObj, err := d.ReadFullyQualified()
+	if err != nil {
+		return nil, err
+	}
+	name, ok := nameObj.(string)
+	if !ok || name == "" {
+		return nil, fmt.Errorf("PrimitivePDT name must be a non-empty string")
+	}
+	valueObj, err := d.ReadFullyQualified()
+	if err != nil {
+		return nil, err
+	}
+	value, ok := valueObj.(string)
+	if !ok {
+		return nil, fmt.Errorf("PrimitivePDT value must be a string")
+	}
+	pdt := &PrimitivePDT{Name: name, Value: value}
+	if d.pdtRegistry != nil {
+		hydrated := d.pdtRegistry.HydratePrimitive(pdt)
+		if hydrated != pdt {
+			return hydrated, nil
+		}
+	}
+	return pdt, nil
 }
 
 // ReadStatus reads the response status after the EndOfStream marker.

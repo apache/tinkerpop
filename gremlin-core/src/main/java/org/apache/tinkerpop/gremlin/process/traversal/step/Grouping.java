@@ -31,6 +31,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.LambdaMapStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GroupSideEffectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ProfileStep;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -106,12 +107,17 @@ public interface Grouping<S, K, V> {
     public default Map<K, V> doFinalReduction(final Map<K, Object> map, final Traversal.Admin<S, V> valueTraversal) {
         final Barrier barrierStep = determineBarrierStep(valueTraversal);
         if (barrierStep != null) {
+            final List<K> keysToRemove = new ArrayList<>();
             for (final K key : map.keySet()) {
                 valueTraversal.reset();
                 barrierStep.addBarrier(map.get(key));
-                if (valueTraversal.hasNext())
+                if (valueTraversal.hasNext()) {
                     map.put(key, valueTraversal.next());
+                } else {
+                    keysToRemove.add(key);
+                }
             }
+            keysToRemove.forEach(map::remove);
         }
         return (Map<K, V>) map;
     }

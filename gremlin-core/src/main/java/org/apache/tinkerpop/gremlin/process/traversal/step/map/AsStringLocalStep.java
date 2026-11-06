@@ -30,8 +30,10 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Reference implementation for asString() step, a mid-traversal step which returns the incoming traverser value
- * as a string. Null values are returned unchanged.
+ * Reference implementation for asString(Scope.local), a mid-traversal step which returns the value of the incoming
+ * traverser as a string. For a list traverser ({@link java.lang.Iterable}, {@link java.util.Iterator}, or array),
+ * each element is converted to produce a list of strings. A null traverser, or a null element of a list traverser,
+ * raises an {@link IllegalArgumentException}.
  *
  * @author David Bechberger (http://bechberger.com)
  * @author Yang Xia (http://github.com/xiazcy)

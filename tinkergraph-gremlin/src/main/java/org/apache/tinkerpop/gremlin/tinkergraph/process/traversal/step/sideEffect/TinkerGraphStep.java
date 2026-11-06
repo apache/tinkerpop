@@ -59,6 +59,14 @@ public final class TinkerGraphStep<S, E extends Element> extends GraphStep<S, E>
         super(originalGraphStep.getTraversal(), originalGraphStep.getReturnClass(), originalGraphStep.isStartStep(), originalGraphStep.getIds());
         originalGraphStep.getLabels().forEach(this::addLabel);
 
+        // preserve the idTraversal if the original GraphStep had one
+        if (originalGraphStep instanceof GraphStep) {
+            final GraphStep<S, E> gs = (GraphStep<S, E>) originalGraphStep;
+            if (gs.getIdTraversal() != null) {
+                this.setIdTraversal(gs.getIdTraversal());
+            }
+        }
+
         // we used to only setIteratorSupplier() if there were no ids OR the first id was instanceof Element,
         // but that allowed the filter in g.V(v).has('k','v') to be ignored.  this created problems for
         // PartitionStrategy which wants to prevent someone from passing "v" from one TraversalSource to

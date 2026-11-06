@@ -21,15 +21,18 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.filter;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.step.ReadOnlyTraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
-import java.util.EnumSet;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 
-public final class AllStep<S, S2> extends FilterStep<S> {
+public final class AllStep<S, S2> extends FilterStep<S> implements ReadOnlyTraversalParent {
 
     private P<S2> predicate;
 
@@ -45,6 +48,10 @@ public final class AllStep<S, S2> extends FilterStep<S> {
 
     @Override
     protected boolean filter(final Traverser.Admin<S> traverser) {
+        if (this.predicate.hasTraversal()) {
+            this.predicate.resolve(traverser);
+        }
+
         final S item = traverser.get();
 
         if (item instanceof Iterable || item instanceof Iterator || ((item != null) && item.getClass().isArray())) {
@@ -66,6 +73,13 @@ public final class AllStep<S, S2> extends FilterStep<S> {
     }
 
     @Override
+    public <S, E> List<Traversal.Admin<S, E>> getLocalChildren() {
+        final List<Traversal.Admin<?, ?>> traversals = new ArrayList<>();
+        P.collectTraversals(this.predicate, traversals);
+        return (List) Collections.unmodifiableList(traversals);
+    }
+
+    @Override
     public AllStep<S, S2> clone() {
         final AllStep<S, S2> clone = (AllStep<S, S2>) super.clone();
         clone.predicate = this.predicate.clone();
@@ -74,6 +88,14 @@ public final class AllStep<S, S2> extends FilterStep<S> {
 
     @Override
     public Set<TraverserRequirement> getRequirements() {
-        return EnumSet.of(TraverserRequirement.OBJECT);
+        return this.getSelfAndChildRequirements(TraverserRequirement.OBJECT);
+    }
+
+    @Override
+    public void setTraversal(final Traversal.Admin<?, ?> parentTraversal) {
+        super.setTraversal(parentTraversal);
+        final List<Traversal.Admin<?, ?>> traversals = new ArrayList<>();
+        P.collectTraversals(this.predicate, traversals);
+        traversals.forEach(this::integrateChild);
     }
 }

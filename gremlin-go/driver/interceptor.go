@@ -23,9 +23,12 @@ import (
 	"bytes"
 	"crypto/sha256"
 	"encoding/hex"
+	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 	"net/url"
+	"strconv"
 )
 
 // Common HTTP header keys
@@ -90,24 +93,33 @@ func (r *HttpRequest) PayloadHash() string {
 	}
 }
 
-// RequestInterceptor is a function that modifies an HTTP request before it is sent.
-type RequestInterceptor func(*HttpRequest) error
-
-// SerializeRequest returns a RequestInterceptor that serializes the raw *RequestMessage body
-// to GraphBinary []byte. Place this before auth interceptors (e.g., SigV4Auth) that
-// need the serialized body bytes.
-func SerializeRequest() RequestInterceptor {
-	serializer := newGraphBinarySerializer(nil)
-	return func(req *HttpRequest) error {
-		r, ok := req.Body.(*RequestMessage)
-		if !ok {
-			return nil // already serialized or not a *RequestMessage
+// SerializeBody serializes the request body to JSON if it is still a *RequestMessage.
+// If the body is already []byte, it returns those bytes (idempotent).
+// On successful serialization from *RequestMessage, it sets the body to the resulting bytes
+// and updates the Content-Type and Content-Length headers.
+func (r *HttpRequest) SerializeBody() ([]byte, error) {
+	switch b := r.Body.(type) {
+	case []byte:
+		return b, nil
+	case *RequestMessage:
+		payload := make(map[string]interface{})
+		payload["gremlin"] = b.Gremlin
+		for k, v := range b.Fields {
+			payload[k] = v
 		}
-		data, err := serializer.SerializeMessage(r)
+		data, err := json.Marshal(payload)
 		if err != nil {
-			return err
+			return nil, fmt.Errorf("failed to serialize request to JSON: %w", err)
 		}
-		req.Body = data
-		return nil
+		r.Body = data
+		r.Headers.Set(HeaderContentType, "application/json")
+		r.Headers.Set("Content-Length", strconv.Itoa(len(data)))
+		return data, nil
+	default:
+		return nil, fmt.Errorf("cannot serialize request body of type %T; expected *RequestMessage or []byte. "+
+			"If an interceptor modified the body, it must set it to []byte or leave it as *RequestMessage", r.Body)
 	}
 }
+
+// RequestInterceptor is a function that modifies an HTTP request before it is sent.
+type RequestInterceptor func(*HttpRequest) error

@@ -21,7 +21,6 @@ package org.apache.tinkerpop.gremlin.driver.handler;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToMessageDecoder;
-import io.netty.handler.codec.TooLongFrameException;
 import io.netty.handler.codec.http.DefaultHttpObject;
 import io.netty.handler.codec.http.HttpContent;
 import io.netty.handler.codec.http.HttpHeaderNames;
@@ -52,12 +51,10 @@ public class HttpGremlinResponseStreamDecoder extends MessageToMessageDecoder<De
     private static final AttributeKey<Long> BYTES_READ = AttributeKey.valueOf("bytesRead");
 
     private final MessageSerializer<?> serializer;
-    private final long maxResponseContentLength;
     private final ObjectMapper mapper = new ObjectMapper();
 
-    public HttpGremlinResponseStreamDecoder(final MessageSerializer<?> serializer, final long maxResponseContentLength) {
+    public HttpGremlinResponseStreamDecoder(final MessageSerializer<?> serializer) {
         this.serializer = serializer;
-        this.maxResponseContentLength = maxResponseContentLength;
     }
 
     @Override
@@ -81,9 +78,6 @@ public class HttpGremlinResponseStreamDecoder extends MessageToMessageDecoder<De
             ByteBuf content = ((HttpContent) msg).content();
             Attribute<Long> bytesRead = ctx.channel().attr(BYTES_READ);
             bytesRead.set(bytesRead.get() + content.readableBytes());
-            if (maxResponseContentLength > 0 && bytesRead.get() > maxResponseContentLength) {
-                throw new TooLongFrameException("Response exceeded " + maxResponseContentLength + " bytes.");
-            }
 
             try {
                 // no more chunks expected

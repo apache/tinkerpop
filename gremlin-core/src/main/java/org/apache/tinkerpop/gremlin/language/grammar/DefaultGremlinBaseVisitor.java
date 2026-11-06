@@ -97,7 +97,15 @@ public class DefaultGremlinBaseVisitor<T> extends AbstractParseTreeVisitor<T> im
 	/**
 	 * {@inheritDoc}
 	 */
-	@Override public T visitTraversalSourceSpawnMethod_addV(final GremlinParser.TraversalSourceSpawnMethod_addVContext ctx) { notImplemented(ctx); return null; }
+	@Override public T visitTraversalSourceSpawnMethod_addV_Empty(final GremlinParser.TraversalSourceSpawnMethod_addV_EmptyContext ctx) { notImplemented(ctx); return null; }
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override public T visitTraversalSourceSpawnMethod_addV_String(final GremlinParser.TraversalSourceSpawnMethod_addV_StringContext ctx) { notImplemented(ctx); return null; }
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override public T visitTraversalSourceSpawnMethod_addV_Traversal(final GremlinParser.TraversalSourceSpawnMethod_addV_TraversalContext ctx) { notImplemented(ctx); return null; }
 	/**
 	 * {@inheritDoc}
 	 */
@@ -458,6 +466,18 @@ public class DefaultGremlinBaseVisitor<T> extends AbstractParseTreeVisitor<T> im
 	/**
 	 * {@inheritDoc}
 	 */
+	@Override public T visitTraversalMethod_has_String_Traversal(final GremlinParser.TraversalMethod_has_String_TraversalContext ctx) { notImplemented(ctx); return null; }
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override public T visitTraversalMethod_has_T_Traversal(final GremlinParser.TraversalMethod_has_T_TraversalContext ctx) { notImplemented(ctx); return null; }
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override public T visitTraversalMethod_has_String_String_Traversal(final GremlinParser.TraversalMethod_has_String_String_TraversalContext ctx) { notImplemented(ctx); return null; }
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override public T visitTraversalMethod_hasId_Object_Object(final GremlinParser.TraversalMethod_hasId_Object_ObjectContext ctx) { notImplemented(ctx); return null; }
 	/**
 	 * {@inheritDoc}
@@ -471,10 +491,15 @@ public class DefaultGremlinBaseVisitor<T> extends AbstractParseTreeVisitor<T> im
 	 * {@inheritDoc}
 	 */
 	@Override public T visitTraversalMethod_hasKey_String_String(final GremlinParser.TraversalMethod_hasKey_String_StringContext ctx) { notImplemented(ctx); return null; }
+	@Override public T visitTraversalMethod_hasKey_Traversal(final GremlinParser.TraversalMethod_hasKey_TraversalContext ctx) { notImplemented(ctx); return null; }
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override public T visitTraversalMethod_hasLabel_P(final GremlinParser.TraversalMethod_hasLabel_PContext ctx) { notImplemented(ctx); return null; }
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override public T visitTraversalMethod_hasLabel_Traversal(final GremlinParser.TraversalMethod_hasLabel_TraversalContext ctx) { notImplemented(ctx); return null; }
 	/**
 	 * {@inheritDoc}
 	 */
@@ -491,6 +516,7 @@ public class DefaultGremlinBaseVisitor<T> extends AbstractParseTreeVisitor<T> im
 	 * {@inheritDoc}
 	 */
 	@Override public T visitTraversalMethod_hasValue_P(final GremlinParser.TraversalMethod_hasValue_PContext ctx) { notImplemented(ctx); return null; }
+	@Override public T visitTraversalMethod_hasValue_Traversal(final GremlinParser.TraversalMethod_hasValue_TraversalContext ctx) { notImplemented(ctx); return null; }
 	/**
 	 * {@inheritDoc}
 	 */
@@ -542,6 +568,30 @@ public class DefaultGremlinBaseVisitor<T> extends AbstractParseTreeVisitor<T> im
 	/**
 	 * {@inheritDoc}
 	 */
+	@Override public T visitTraversalMethod_labels(final GremlinParser.TraversalMethod_labelsContext ctx) { notImplemented(ctx); return null; }
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override public T visitTraversalMethod_addLabel_String(final GremlinParser.TraversalMethod_addLabel_StringContext ctx) { notImplemented(ctx); return null; }
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override public T visitTraversalMethod_addLabel_Traversal(final GremlinParser.TraversalMethod_addLabel_TraversalContext ctx) { notImplemented(ctx); return null; }
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override public T visitTraversalMethod_dropLabels_Empty(final GremlinParser.TraversalMethod_dropLabels_EmptyContext ctx) { notImplemented(ctx); return null; }
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override public T visitTraversalMethod_dropLabel_String(final GremlinParser.TraversalMethod_dropLabel_StringContext ctx) { notImplemented(ctx); return null; }
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override public T visitTraversalMethod_dropLabel_Traversal(final GremlinParser.TraversalMethod_dropLabel_TraversalContext ctx) { notImplemented(ctx); return null; }
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override public T visitTraversalMethod_limit_Scope_long(final GremlinParser.TraversalMethod_limit_Scope_longContext ctx) { notImplemented(ctx); return null; }
 	/**
 	 * {@inheritDoc}
@@ -566,7 +616,15 @@ public class DefaultGremlinBaseVisitor<T> extends AbstractParseTreeVisitor<T> im
 	/**
 	 * {@inheritDoc}
 	 */
-	@Override public T visitTraversalMethod_match(final GremlinParser.TraversalMethod_matchContext ctx) { notImplemented(ctx); return null; }
+	@Override public T visitTraversalMethod_match_traversal(final GremlinParser.TraversalMethod_match_traversalContext ctx) { notImplemented(ctx); return null; }
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override public T visitTraversalMethod_match_string(final GremlinParser.TraversalMethod_match_stringContext ctx) { notImplemented(ctx); return null; }
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override public T visitTraversalMethod_match_string_map(final GremlinParser.TraversalMethod_match_string_mapContext ctx) { notImplemented(ctx); return null; }
 	/**
 	 * {@inheritDoc}
 	 */
@@ -703,6 +761,18 @@ public class DefaultGremlinBaseVisitor<T> extends AbstractParseTreeVisitor<T> im
 	 * {@inheritDoc}
 	 */
 	@Override public T visitTraversalMethod_property_Object(final GremlinParser.TraversalMethod_property_ObjectContext ctx) { notImplemented(ctx); return null; }
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override public T visitTraversalMethod_property_Cardinality_Object_Traversal(final GremlinParser.TraversalMethod_property_Cardinality_Object_TraversalContext ctx) { notImplemented(ctx); return null; }
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override public T visitTraversalMethod_property_Object_Traversal(final GremlinParser.TraversalMethod_property_Object_TraversalContext ctx) { notImplemented(ctx); return null; }
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override public T visitTraversalMethod_property_Traversal(final GremlinParser.TraversalMethod_property_TraversalContext ctx) { notImplemented(ctx); return null; }
 	/**
 	 * {@inheritDoc}
 	 */
@@ -1286,6 +1356,10 @@ public class DefaultGremlinBaseVisitor<T> extends AbstractParseTreeVisitor<T> im
 	/**
 	 * {@inheritDoc}
 	 */
+	@Override public T visitStringLiteralVarargs(final GremlinParser.StringLiteralVarargsContext ctx) { notImplemented(ctx); return null; }
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override public T visitStringNullableArgumentVarargs(final GremlinParser.StringNullableArgumentVarargsContext ctx) { notImplemented(ctx); return null; }
 	/**
 	 * {@inheritDoc}
@@ -1355,6 +1429,10 @@ public class DefaultGremlinBaseVisitor<T> extends AbstractParseTreeVisitor<T> im
      * {@inheritDoc}
      */
     @Override public T visitBinaryLiteral(final GremlinParser.BinaryLiteralContext ctx) { notImplemented(ctx); return null; }
+    /**
+	 * {@inheritDoc}
+	 */
+    @Override public T visitPdtLiteral(final GremlinParser.PdtLiteralContext ctx) { notImplemented(ctx); return null; }
     /**
 	 * {@inheritDoc}
 	 */
@@ -1455,6 +1533,10 @@ public class DefaultGremlinBaseVisitor<T> extends AbstractParseTreeVisitor<T> im
 	 * {@inheritDoc}
 	 */
     @Override public T visitStringArgument(final GremlinParser.StringArgumentContext ctx) { notImplemented(ctx); return null; }
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override public T visitStringArgumentVarargs(final GremlinParser.StringArgumentVarargsContext ctx) { notImplemented(ctx); return null; }
 	/**
 	 * {@inheritDoc}
 	 */
@@ -1695,4 +1777,12 @@ public class DefaultGremlinBaseVisitor<T> extends AbstractParseTreeVisitor<T> im
 	 * {@inheritDoc}
 	 */
 	@Override public T visitNakedKey(final GremlinParser.NakedKeyContext ctx) { notImplemented(ctx); return null;}
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override public T visitTraversalSourceSpawnMethod_match_string(final GremlinParser.TraversalSourceSpawnMethod_match_stringContext ctx) { notImplemented(ctx); return null; }
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override public T visitTraversalSourceSpawnMethod_match_string_map(final GremlinParser.TraversalSourceSpawnMethod_match_string_mapContext ctx) { notImplemented(ctx); return null; }
 }

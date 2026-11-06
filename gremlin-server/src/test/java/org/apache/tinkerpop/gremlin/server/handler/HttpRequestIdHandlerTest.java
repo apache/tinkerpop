@@ -32,10 +32,12 @@ import io.netty.handler.codec.http.HttpServerCodec;
 import io.netty.handler.codec.http.HttpVersion;
 import io.netty.util.CharsetUtil;
 import org.junit.Test;
+import org.mockito.Mockito;
 
 import java.util.UUID;
 
 import static org.apache.tinkerpop.gremlin.server.handler.HttpRequestIdHandler.REQUEST_ID_HEADER_NAME;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 public class HttpRequestIdHandlerTest {
@@ -78,5 +80,28 @@ public class HttpRequestIdHandlerTest {
 
         httpRequest.release();
         httpResponse.release();
+    }
+
+    @Test
+    public void shouldClearStaleResponseCoordinatorOnNewRequest() {
+        final HttpRequestIdHandler httpRequestIdHandler = new HttpRequestIdHandler();
+        final EmbeddedChannel testChannel = new EmbeddedChannel(new HttpServerCodec(), httpRequestIdHandler);
+
+        // Simulate a coordinator left over from a previous request on this keep-alive connection.
+        testChannel.attr(StateKey.RESPONSE_COORDINATOR).set(Mockito.mock(HttpResponseCoordinator.class));
+
+        final ByteBuf buffer = testChannel.alloc().buffer();
+        buffer.writeCharSequence("abc", CharsetUtil.UTF_8);
+        final FullHttpRequest httpRequest = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.POST, "/gremlin", buffer);
+
+        testChannel.writeInbound(httpRequest);
+        testChannel.finish();
+
+        // A newly arriving request must clear the stale coordinator so that an exception from an upstream handler
+        // (before the endpoint publishes this request's coordinator) falls back to sendError rather than no-opping on
+        // the prior, already-completed coordinator.
+        assertNull(testChannel.attr(StateKey.RESPONSE_COORDINATOR).get());
+
+        buffer.release();
     }
 }

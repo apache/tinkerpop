@@ -36,6 +36,7 @@ import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.CloseableIterator;
+import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import static java.util.stream.Collectors.toList;
@@ -99,12 +100,24 @@ public class MergeVertexStep<S> extends MergeElementStep<S, Vertex, Map<Object, 
                 traverser.set((S) v);
 
                 // assume good input from GraphTraversal - folks might drop in a T here even though it is immutable
-                final Map<String, Object> onMatchMap = materializeMap(traverser, onMatchTraversal);
+                final Map<Object, Object> onMatchMap = materializeMap(traverser, onMatchTraversal);
                 validateMapInput(onMatchMap, true);
 
+                // Handle T.label separately: append-only addLabel semantics for multi-label support
+                Object labelValue = onMatchMap.get(T.label);
+                if (labelValue == null) {
+                    labelValue = onMatchMap.get(T.label.getAccessor());
+                }
+                if (labelValue != null) {
+                    ElementHelper.applyLabelsToVertex(v, labelValue);
+                }
+
+                // Remaining entries are all String property keys — skip T.label if present
                 onMatchMap.forEach((key, value) -> {
+                    if (T.label.equals(key) || T.label.getAccessor().equals(key)) return;
+
                     Object val = value;
-                    VertexProperty.Cardinality card = graph.features().vertex().getCardinality(key);
+                    VertexProperty.Cardinality card = graph.features().vertex().getCardinality((String) key);
 
                     // a value can be a traversal in the case where the user specifies the cardinality for the value.
                     if (value instanceof CardinalityValueTraversal) {
@@ -115,10 +128,10 @@ public class MergeVertexStep<S> extends MergeElementStep<S, Vertex, Map<Object, 
 
                     // trigger callbacks for eventing - in this case, it's a VertexPropertyChangedEvent. if there's no
                     // registry/callbacks then just set the property
-                    EventUtil.registerVertexPropertyChange(callbackRegistry, getTraversal(), v, key, val);
+                    EventUtil.registerVertexPropertyChange(callbackRegistry, getTraversal(), v, (String) key, val);
 
                     // try to detect proper cardinality for the key according to the graph
-                    v.property(card, key, val);
+                    v.property(card, (String) key, val);
                 });
             });
         }

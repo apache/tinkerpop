@@ -23,7 +23,7 @@ ARG GREMLIN_CONSOLE_DIR
 
 RUN apk add --no-cache --update \
     bash \
-    openjdk11-jdk
+    openjdk17-jdk
 
 COPY src/main/docker/docker-entrypoint.sh /
 COPY ${GREMLIN_CONSOLE_DIR} /opt/gremlin-console

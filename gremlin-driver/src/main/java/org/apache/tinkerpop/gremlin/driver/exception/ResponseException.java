@@ -38,6 +38,19 @@ public class ResponseException extends Exception {
         this.remoteException = remoteException;
     }
 
+    /**
+     * Creates a {@code ResponseException} from a server response, returning the more specific
+     * {@link FailResponseException} when the {@code remoteException} indicates that a {@link
+     * org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal#fail()} step was triggered on the
+     * server. This allows remote {@code fail()} handling to be made consistent with the local behavior.
+     */
+    public static ResponseException create(final HttpResponseStatus responseStatusCode, final String serverMessage,
+                                           final String remoteException) {
+        return FailResponseException.EXCEPTION_NAME.equals(remoteException)
+                ? new FailResponseException(responseStatusCode, serverMessage)
+                : new ResponseException(responseStatusCode, serverMessage, remoteException);
+    }
+
     public HttpResponseStatus getResponseStatusCode() {
         return responseStatusCode;
     }

@@ -43,6 +43,7 @@ import java.util.concurrent.TimeUnit;
 
 import static org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource.traversal;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.hamcrest.core.StringContains.containsString;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -85,10 +86,10 @@ public class GremlinDriverTransactionIntegrateTest extends AbstractGremlinServer
             case "shouldTimeoutIdleTransaction":
             case "shouldTimeoutIdleTransactionWithNoOperations":
             case "shouldRejectLateCommitAfterTimeout":
-                settings.transactionTimeout = 1000;
+                settings.idleTransactionTimeoutMillis = 1000;
                 break;
             case "shouldTimeoutOnlyIdleTransactionNotActiveOne":
-                settings.transactionTimeout = 2000;
+                settings.idleTransactionTimeoutMillis = 2000;
                 break;
         }
         return settings;
@@ -197,16 +198,22 @@ public class GremlinDriverTransactionIntegrateTest extends AbstractGremlinServer
     }
 
     @Test
-    public void shouldThrowOnDoubleBegin() throws Exception {
+    public void shouldBeIdempotentOnDoubleBegin() throws Exception {
         final RemoteTransaction tx = cluster.transact(GTX);
         tx.begin();
+        final String txId = tx.getTransactionId();
 
-        try {
-            tx.begin();
-            fail("Expected IllegalStateException on second begin()");
-        } catch (IllegalStateException ex) {
-            assertThat(ex.getMessage(), containsString("Transaction already started"));
-        }
+        // begin() while already open is idempotent: it does not throw, does not start a new server-side
+        // transaction (the transactionId is unchanged), and returns a usable source bound to the same tx
+        final GraphTraversalSource gtx = tx.begin();
+        assertTrue(tx.isOpen());
+        assertEquals(txId, tx.getTransactionId());
+
+        // the source from the second begin() works within the same transaction
+        gtx.addV("person").property("name", "double_begin").iterate();
+        assertEquals(1L, (long) gtx.V().has("name", "double_begin").count().next());
+
+        tx.rollback();
     }
 
     @Test
@@ -249,11 +256,25 @@ public class GremlinDriverTransactionIntegrateTest extends AbstractGremlinServer
     }
 
     @Test
-    public void shouldCommitOnCloseByDefault() throws Exception {
+    public void shouldRollbackOnCloseByDefault() throws Exception {
         final RemoteTransaction tx1 = cluster.transact(GTX);
         tx1.begin();
         tx1.submit("g.addV('person').property('name','close_test')");
-        // close() should trigger default COMMIT behavior
+        // close() should trigger default ROLLBACK behavior
+        tx1.close();
+        assertFalse(tx1.isOpen());
+
+        final RemoteTransaction tx2 = cluster.transact(GTX);
+        tx2.begin();
+        assertEquals(0L, tx2.submit("g.V().hasLabel('person').count()").one().getLong());
+    }
+
+    @Test
+    public void shouldCommitOnCloseWhenConfigured() throws Exception {
+        final RemoteTransaction tx1 = cluster.transact(GTX);
+        tx1.onClose(Transaction.CLOSE_BEHAVIOR.COMMIT);
+        tx1.begin();
+        tx1.submit("g.addV('person').property('name','commit_close_test')");
         tx1.close();
         assertFalse(tx1.isOpen());
 
@@ -263,17 +284,15 @@ public class GremlinDriverTransactionIntegrateTest extends AbstractGremlinServer
     }
 
     @Test
-    public void shouldRollbackOnCloseWhenConfigured() throws Exception {
-        final RemoteTransaction tx1 = cluster.transact(GTX);
-        tx1.onClose(Transaction.CLOSE_BEHAVIOR.ROLLBACK);
-        tx1.begin();
-        tx1.submit("g.addV('person').property('name','rollback_close_test')");
-        tx1.close();
-        assertFalse(tx1.isOpen());
+    public void shouldBeIdempotentOnDoubleClose() throws Exception {
+        final RemoteTransaction tx = cluster.transact(GTX);
+        tx.begin();
+        tx.close();
+        assertFalse(tx.isOpen());
 
-        final RemoteTransaction tx2 = cluster.transact(GTX);
-        tx2.begin();
-        assertEquals(0L, tx2.submit("g.V().hasLabel('person').count()").one().getLong());
+        // close() is idempotent: closing an already-closed transaction is a safe no-op (no exception)
+        tx.close();
+        assertFalse(tx.isOpen());
     }
 
     @Test
@@ -290,6 +309,10 @@ public class GremlinDriverTransactionIntegrateTest extends AbstractGremlinServer
         // close cluster without committing — should rollback open transactions
         cluster.close();
         cluster = null;
+
+        // verify transactions are marked closed on the driver side
+        assertFalse(tx1.isOpen());
+        assertFalse(tx2.isOpen());
 
         // reconnect and verify data was not persisted
         final Cluster cluster2 = TestClientFactory.open();
@@ -508,11 +531,11 @@ public class GremlinDriverTransactionIntegrateTest extends AbstractGremlinServer
 
         // vertex should exist in the transactional graph (gtx)
         assertEquals(1L, client.submit("g.V().hasLabel('routed').count()",
-                RequestOptions.build().addG(GTX).create()).all().get().get(0).getLong());
+                RequestOptions.build().traversalSource(GTX).create()).all().get().get(0).getLong());
 
         // vertex should NOT exist in the classic graph (gclassic)
         assertEquals(0L, client.submit("g.V().hasLabel('routed').count()",
-                RequestOptions.build().addG("gclassic").create()).all().get().get(0).getLong());
+                RequestOptions.build().traversalSource("gclassic").create()).all().get().get(0).getLong());
     }
 
     @Test
@@ -574,12 +597,13 @@ public class GremlinDriverTransactionIntegrateTest extends AbstractGremlinServer
         assertFalse(tx.isOpen());
         assertNull(tx.getTransactionId());
 
-        // second begin should fail — state moved to CLOSED, not back to NOT_STARTED
+        // second begin should fail — state moved to CLOSED, not back to NOT_STARTED. A remote transaction is
+        // single-use, so begin() on a closed transaction throws rather than reusing it.
         try {
             tx.begin();
             fail("Expected IllegalStateException on begin after failed begin");
         } catch (IllegalStateException ex) {
-            assertThat(ex.getMessage(), containsString("Transaction already started"));
+            assertThat(ex.getMessage(), containsString("Transaction is closed and cannot be reused"));
         }
     }
 
@@ -646,5 +670,177 @@ public class GremlinDriverTransactionIntegrateTest extends AbstractGremlinServer
         } finally {
             gtx.tx().rollback();
         }
+    }
+
+    @Test
+    public void shouldAutoCommitNonTransactionalMutatingTraversal() throws Exception {
+        final Client client = cluster.connect().alias(GTX);
+
+        // add a vertex without explicit transaction management - should be auto-committed
+        client.submit("g.addV('person').property('name','alice')").all().get();
+
+        // verify persisted on a subsequent request
+        assertEquals(1L, client.submit("g.V().hasLabel('person').count()").all().get().get(0).getLong());
+    }
+
+    @Test
+    public void shouldAutoRollbackOnFailedNonTransactionalMutatingTraversal() throws Exception {
+        final Client client = cluster.connect().alias(GTX);
+
+        // submit a traversal that mutates then fails - should be rolled back
+        try {
+            client.submit("g.addV('person').fail()").all().get();
+            fail("Expected an exception");
+        } catch (Exception ex) {
+            // expected
+        }
+
+        // verify nothing was persisted
+        assertEquals(0L, client.submit("g.V().hasLabel('person').count()").all().get().get(0).getLong());
+    }
+
+    @Test
+    public void shouldRollbackOpenTransactionsOnTraversalClose() throws Exception {
+        final DriverRemoteConnection drc = DriverRemoteConnection.using(cluster, GTX);
+        final GraphTraversalSource g = traversal().with(drc);
+
+        final Transaction tx = g.tx();
+        final GraphTraversalSource gtx = tx.begin();
+        gtx.addV("drc-close").iterate();
+
+        // close the DriverRemoteConnection without committing
+        cluster.close();
+
+        // verify transaction is marked closed on the driver side
+        assertFalse(tx.isOpen());
+
+        // reconnect and verify data was not persisted
+        final Cluster cluster2 = TestClientFactory.open();
+        try {
+            final Client client2 = cluster2.connect().alias(GTX);
+            assertEquals(0L, client2.submit("g.V().hasLabel('drc-close').count()").all().get().get(0).getLong());
+        } finally {
+            cluster2.close();
+        }
+    }
+
+    /**
+     * A sentinel exception used by {@link #shouldRollbackAndRethrowOriginalErrorWhenTxClosureBodyThrows()} to verify
+     * that the exact original error thrown by an {@code executeInTx}/{@code evaluateInTx} body propagates to the
+     * caller unchanged.
+     */
+    private static class TxClosureSentinelException extends RuntimeException {
+        TxClosureSentinelException(final String message) {
+            super(message);
+        }
+    }
+
+    @Test
+    public void shouldCommitWhenTxClosureBodyCompletes() throws Exception {
+        final Client client = cluster.connect().alias(GTX);
+        final GraphTraversalSource g = traversal().with(DriverRemoteConnection.using(cluster, GTX));
+
+        g.executeInTx(gtx -> gtx.addV("person").property("name", "alice").iterate());
+
+        // committed data is visible to non-transactional reads
+        assertEquals(1L, client.submit("g.V().hasLabel('person').count()").one().getLong());
+
+        client.close();
+    }
+
+    @Test
+    public void shouldRollbackAndRethrowOriginalErrorWhenTxClosureBodyThrows() throws Exception {
+        final Client client = cluster.connect().alias(GTX);
+        final GraphTraversalSource g = traversal().with(DriverRemoteConnection.using(cluster, GTX));
+
+        try {
+            g.executeInTx(gtx -> {
+                gtx.addV("person").property("name", "bob").iterate();
+                throw new TxClosureSentinelException("boom");
+            });
+            fail("The exact exception thrown by the closure body should propagate to the caller");
+        } catch (Exception ex) {
+            // (i) the exact original error (type + message) propagates to the caller, unchanged
+            assertThat(ex, instanceOf(TxClosureSentinelException.class));
+            assertEquals("boom", ex.getMessage());
+        }
+
+        // (ii) the vertex added before the error was rolled back and is not persisted
+        assertEquals(0L, client.submit("g.V().hasLabel('person').count()").one().getLong());
+
+        client.close();
+    }
+
+    @Test
+    public void shouldReturnBodyValueFromTxClosureCall() throws Exception {
+        final Client client = cluster.connect().alias(GTX);
+        final GraphTraversalSource g = traversal().with(DriverRemoteConnection.using(cluster, GTX));
+
+        final Long count = g.evaluateInTx(gtx -> {
+            gtx.addV("person").iterate();
+            gtx.addV("person").iterate();
+            return gtx.V().hasLabel("person").count().next();
+        });
+
+        // the value computed in the body is returned to the caller
+        assertEquals(Long.valueOf(2L), count);
+
+        // the work also committed, so the data is visible afterward
+        assertEquals(2L, client.submit("g.V().hasLabel('person').count()").one().getLong());
+
+        client.close();
+    }
+
+    @Test
+    public void shouldBeIdempotentWhenBeginningInsideTxClosureBody() throws Exception {
+        final GraphTraversalSource g = traversal().with(DriverRemoteConnection.using(cluster, GTX));
+
+        g.executeInTx(gtx -> {
+            // gtx.tx() itself is legitimate and returns a transaction handle - it must NOT throw, as it is the
+            // standard way to commit/rollback when holding a transactional source.
+            final Transaction nested = gtx.tx();
+            assertNotNull(nested);
+            final String txId = ((RemoteTransaction) nested).getTransactionId();
+
+            // begin() from within an already-open transaction is idempotent: it does not throw and does not start a
+            // new server-side transaction (the transactionId is unchanged), returning a source bound to the same tx.
+            final GraphTraversalSource gtx2 = nested.begin();
+            assertNotNull(gtx2);
+            assertEquals(txId, ((RemoteTransaction) gtx2.tx()).getTransactionId());
+
+            gtx.addV("person").iterate();
+        });
+    }
+
+    @Test
+    public void shouldPropagateCommitFailureFromTxClosure() throws Exception {
+        final Client client = cluster.connect().alias(GTX);
+        // a second connection used to kill the transaction out-of-band, so the closure's own commit fails
+        final Client sideClient = cluster.connect().alias(GTX);
+        final GraphTraversalSource g = traversal().with(DriverRemoteConnection.using(cluster, GTX));
+
+        // The closure body succeeds, but the transaction is rolled back server-side from a separate
+        // connection (by its transactionId) before the body returns. The wrapper's automatic commit() then
+        // fails with "Transaction not found", and that commit error must propagate out of executeInTx().
+        try {
+            g.executeInTx(gtx -> {
+                gtx.addV("person").property("name", "doomed_commit").iterate();
+                final String txId = ((RemoteTransaction) gtx.tx()).getTransactionId();
+                sideClient.submit("g.tx().rollback()",
+                        RequestOptions.build().traversalSource(GTX).transactionId(txId).create()).all().join();
+            });
+            fail("The commit failure should propagate out of executeInTx()");
+        } catch (Exception ex) {
+            // the commit failure is the error surfaced to the caller; the server reports it as
+            // "Transaction not found" (asserted on the root cause, as the other transaction-error tests do)
+            final Throwable root = ExceptionHelper.getRootCause(ex);
+            assertThat(root.getMessage(), containsString("Transaction not found"));
+        }
+
+        // data was not persisted (the transaction was rolled back out-of-band)
+        assertEquals(0L, client.submit("g.V().hasLabel('person').count()").one().getLong());
+
+        client.close();
+        sideClient.close();
     }
 }

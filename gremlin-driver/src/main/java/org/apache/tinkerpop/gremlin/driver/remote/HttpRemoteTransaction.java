@@ -65,7 +65,10 @@ public class HttpRemoteTransaction implements RemoteTransaction {
     private static final Logger logger = LoggerFactory.getLogger(HttpRemoteTransaction.class);
     private static final long CLOSING_MAX_WAIT_MS = 10000;
 
-    protected Consumer<Transaction> closeConsumer = CLOSE_BEHAVIOR.COMMIT;
+    // Rollback-on-close is the default because non-Java GLVs don't support configurable close behavior and must have a
+    // single default. Rollback is the safest choice since partial work is discarded rather than accidentally persisted
+    // if a user forgets to call commit().
+    protected Consumer<Transaction> closeConsumer = CLOSE_BEHAVIOR.ROLLBACK;
     private final Client.PinnedClient pinnedClient;
     private final Cluster cluster;
     private final Host pinnedHost;
@@ -95,44 +98,46 @@ public class HttpRemoteTransaction implements RemoteTransaction {
     }
 
     /**
-     * Not supported for remote transactions. Use {@link #begin(Class)} instead.
-     *
-     * @throws UnsupportedOperationException always
-     */
-    @Override
-    public void open() {
-        begin();
-    }
-
-    /**
      * Starts a transaction and returns a traversal source bound to it.
      * <p>
-     * This method sends {@code g.tx().begin()} to the server, which returns
-     * the transaction ID. All subsequent requests will include this ID.
+     * When this transaction has not yet been started, this method sends {@code g.tx().begin()} to the server,
+     * which returns the transaction ID that all subsequent requests will include. This method is idempotent: if
+     * the transaction is already open, it does not send a second begin to the server and does not throw - it
+     * reuses the existing transaction ID and returns a traversal source bound to the same transaction. A remote
+     * transaction is single-use, so once it has been closed (via {@code commit()}, {@code rollback()}, timeout,
+     * or a failed begin) it cannot be reused and this method throws.
      *
      * @param traversalSourceClass the class of the traversal source to create
      * @param <T> the type of the traversal source
-     * @return a new traversal source bound to this transaction
-     * @throws IllegalStateException if the transaction is already started
+     * @return a traversal source bound to this transaction
+     * @throws IllegalStateException if the transaction has already been closed
      * @throws RuntimeException if the transaction fails to begin
      */
     @Override
     public <T extends TraversalSource> T begin(final Class<T> traversalSourceClass) {
-        if (state != TransactionState.NOT_STARTED) {
-            throw new IllegalStateException("Transaction already started");
-        }
-        cluster.trackTransaction(this);
+        switch (state) {
+            case NOT_STARTED:
+                cluster.trackTransaction(this);
+                try {
+                    // Send begin - no txId attached yet
+                    final ResultSet rs = submitInternal("g.tx().begin()");
 
-        try {
-            // Send begin - no txId attached yet
-            final ResultSet rs = submitInternal("g.tx().begin()");
-            
-            // Server returns the transaction ID
-            this.transactionId = extractTransactionId(rs);
-            this.state = TransactionState.OPEN;
-        } catch (Exception e) {
-            cleanUp();
-            throw new RuntimeException("Failed to begin transaction: " + e.getMessage(), e);
+                    // Server returns the transaction ID
+                    this.transactionId = extractTransactionId(rs);
+                    this.state = TransactionState.OPEN;
+                } catch (Exception e) {
+                    cleanUp();
+                    throw new RuntimeException("Failed to begin transaction: " + e.getMessage(), e);
+                }
+                break;
+            case OPEN:
+                // idempotent: a transaction is already open - reuse the existing transactionId without
+                // sending a second begin to the server, and return a source bound to the same transaction
+                break;
+            case CLOSED:
+                throw new IllegalStateException("Transaction is closed and cannot be reused; begin a new transaction");
+            default:
+                throw new IllegalStateException("Unknown transaction state: " + state);
         }
 
         // Create RemoteConnection for the traversal source
@@ -206,7 +211,7 @@ public class HttpRemoteTransaction implements RemoteTransaction {
             submitInternal(closeScript).all().get(CLOSING_MAX_WAIT_MS, TimeUnit.MILLISECONDS);
             cleanUp();
         } catch (Exception e) {
-            logger.warn("Failed to {} transaction on {}", closeScript, pinnedHost);
+            logger.warn("Failed to {} transaction {} on {}", closeScript, transactionId, pinnedHost, e);
             throw new TransactionException("Failed to " + closeScript, e);
         }
     }
@@ -239,8 +244,11 @@ public class HttpRemoteTransaction implements RemoteTransaction {
 
     @Override
     public void close() {
+        // close() is idempotent: closing an already-closed transaction is a safe no-op
+        if (state == TransactionState.CLOSED) return;
+
         closeConsumer.accept(this);
-        
+
         // this is just for safety in case of custom closeConsumer but should normally be handled by commit/rollback
         cleanUp();
     }
@@ -303,7 +311,7 @@ public class HttpRemoteTransaction implements RemoteTransaction {
         final RequestOptions.Builder builder = RequestOptions.Builder.from(options);
         if (graphAlias != null) {
             // Don't allow per-request override of "g" as transactions should only target a single Graph instance.
-            builder.addG(graphAlias);
+            builder.traversalSource(graphAlias);
         }
 
         // Attach txId if we have one (not present for begin())
@@ -312,7 +320,26 @@ public class HttpRemoteTransaction implements RemoteTransaction {
         }
 
         try {
-            return pinnedClient.submit(gremlin, builder.create());
+            final ResultSet rs = pinnedClient.submit(gremlin, builder.create());
+
+            // pinnedClient.submit() returns as soon as the request is written to the wire - it does NOT wait for the
+            // server. That is unsafe for a transaction: a request is fire-and-forget at this point, so a later request
+            // on this transaction (e.g. a commit following an addV) could reach the server first and the earlier
+            // request's work would be lost. Block until the server's response headers come back, which means the
+            // request has made a full round trip and the server has ordered it on the transaction's single-threaded
+            // executor ahead of anything we send next. We deliberately wait on headers, not the full body, so large
+            // result sets still stream lazily to the caller via the returned ResultSet.
+            //
+            // This wait is intentionally unbounded: we must NOT abandon it on a client-side stopwatch. A slow server
+            // may still be going to run the request, so giving up early and letting the caller retry the same traversal
+            // could execute it twice. The wait ends only on a definitive signal - headers arriving (success) or the
+            // future completing exceptionally because the request can no longer succeed: a connection close
+            // (channelInactive -> markError), a transport read timeout (ReadTimeoutHandler -> exceptionCaught ->
+            // markError), or a server error response. The connection's own read timeout, not this method, bounds how
+            // long we can wait for an unresponsive server.
+            rs.headersReceivedAsync().get();
+
+            return rs;
         } catch (Exception e) {
             throw new RuntimeException("Transaction request failed: " + e.getMessage(), e);
         }

@@ -21,6 +21,7 @@
 
 #endregion
 
+using System;
 using Gremlin.Net.Driver;
 using Xunit;
 
@@ -79,6 +80,141 @@ namespace Gremlin.Net.UnitTest.Driver
             var gremlinServer = new GremlinServer("localhost", 8182);
 
             Assert.Equal("/gremlin", gremlinServer.Uri.AbsolutePath);
+        }
+
+        [Fact]
+        public void ShouldBuildFromHttpUrl()
+        {
+            var gremlinServer = GremlinServer.FromUrl("http://example.com:8182/gremlin");
+
+            var uri = gremlinServer.Uri;
+
+            Assert.Equal("http", uri.Scheme);
+            Assert.Equal("example.com", uri.Host);
+            Assert.Equal(8182, uri.Port);
+            Assert.Equal("/gremlin", uri.AbsolutePath);
+        }
+
+        [Fact]
+        public void ShouldBuildFromHttpsUrl()
+        {
+            var gremlinServer = GremlinServer.FromUrl("https://example.com:8182/gremlin");
+
+            var uri = gremlinServer.Uri;
+
+            Assert.Equal("https", uri.Scheme);
+            Assert.Equal("example.com", uri.Host);
+            Assert.Equal(8182, uri.Port);
+            Assert.Equal("/gremlin", uri.AbsolutePath);
+        }
+
+        [Fact]
+        public void ShouldBuildFromUrlWithCustomPath()
+        {
+            var gremlinServer = GremlinServer.FromUrl("https://example.com:8182/custom/path");
+
+            var uri = gremlinServer.Uri;
+
+            Assert.Equal("/custom/path", uri.AbsolutePath);
+            Assert.Equal("https://example.com:8182/custom/path", uri.AbsoluteUri);
+        }
+
+        [Theory]
+        [InlineData("http://example.com:8182/gremlin", "example.com", 8182)]
+        [InlineData("https://1.2.3.4:5678/gremlin", "1.2.3.4", 5678)]
+        public void ShouldExtractHostAndPortFromUrl(string url, string expectedHost, int expectedPort)
+        {
+            var gremlinServer = GremlinServer.FromUrl(url);
+
+            Assert.Equal(expectedHost, gremlinServer.Uri.Host);
+            Assert.Equal(expectedPort, gremlinServer.Uri.Port);
+        }
+
+        [Fact]
+        public void ShouldParseSecureUrlWithExplicitPortAndPath()
+        {
+            var uri = GremlinServer.FromUrl("https://h:1234/p").Uri;
+
+            Assert.Equal("https", uri.Scheme);
+            Assert.Equal("h", uri.Host);
+            Assert.Equal(1234, uri.Port);
+            Assert.Equal("/p", uri.AbsolutePath);
+        }
+
+        [Fact]
+        public void ShouldParseInsecureUrlWithExplicitPortAndPath()
+        {
+            var uri = GremlinServer.FromUrl("http://h:1234/p").Uri;
+
+            Assert.Equal("http", uri.Scheme);
+            Assert.Equal("h", uri.Host);
+            Assert.Equal(1234, uri.Port);
+            Assert.Equal("/p", uri.AbsolutePath);
+        }
+
+        [Fact]
+        public void ShouldDefaultPortWhenUrlOmitsPort()
+        {
+            var uri = GremlinServer.FromUrl("https://host/gremlin").Uri;
+
+            Assert.Equal("https", uri.Scheme);
+            Assert.Equal("host", uri.Host);
+            Assert.Equal(8182, uri.Port);
+            Assert.Equal("/gremlin", uri.AbsolutePath);
+        }
+
+        [Fact]
+        public void ShouldDefaultPathWhenUrlOmitsPath()
+        {
+            var uri = GremlinServer.FromUrl("https://host:8182").Uri;
+
+            Assert.Equal("https", uri.Scheme);
+            Assert.Equal("host", uri.Host);
+            Assert.Equal(8182, uri.Port);
+            Assert.Equal("/gremlin", uri.AbsolutePath);
+        }
+
+        [Fact]
+        public void ShouldDefaultPortAndPathWhenUrlOmitsBoth()
+        {
+            var uri = GremlinServer.FromUrl("https://host").Uri;
+
+            Assert.Equal("https", uri.Scheme);
+            Assert.Equal("host", uri.Host);
+            Assert.Equal(8182, uri.Port);
+            Assert.Equal("/gremlin", uri.AbsolutePath);
+        }
+
+        [Fact]
+        public void ShouldRejectUnsupportedSchemeForUrl()
+        {
+            Assert.Throws<ArgumentException>(() => GremlinServer.FromUrl("ws://example.com:8182/gremlin"));
+        }
+
+        [Fact]
+        public void ShouldRejectNonAbsoluteUrl()
+        {
+            Assert.Throws<ArgumentException>(() => GremlinServer.FromUrl("example.com:8182/gremlin"));
+        }
+
+        [Fact]
+        public void ShouldRejectNullUrl()
+        {
+            Assert.Throws<ArgumentNullException>(() => GremlinServer.FromUrl(null!));
+        }
+
+        [Fact]
+        public void ShouldBuildFromUri()
+        {
+            var gremlinServer = new GremlinServer(new Uri("https://example.com:8182/gremlin"));
+
+            Assert.Equal("https://example.com:8182/gremlin", gremlinServer.Uri.AbsoluteUri);
+        }
+
+        [Fact]
+        public void ShouldRejectUriWithUnsupportedScheme()
+        {
+            Assert.Throws<ArgumentException>(() => new GremlinServer(new Uri("ftp://example.com:8182/gremlin")));
         }
     }
 }

@@ -37,7 +37,6 @@ type dataType uint8
 
 // dataType defined as constants.
 const (
-	customType         dataType = 0x00
 	intType            dataType = 0x01
 	longType           dataType = 0x02
 	stringType         dataType = 0x03
@@ -51,6 +50,7 @@ const (
 	edgeType           dataType = 0x0d
 	pathType           dataType = 0x0e
 	propertyType       dataType = 0x0f
+	graphType          dataType = 0x10
 	vertexType         dataType = 0x11
 	vertexPropertyType dataType = 0x12
 	directionType      dataType = 0x18
@@ -61,9 +61,12 @@ const (
 	byteBuffer         dataType = 0x25
 	shortType          dataType = 0x26
 	booleanType        dataType = 0x27
+	treeType           dataType = 0x2b
 	mergeType          dataType = 0x2e
-	gTypeType          dataType = 0x30
+	charType           dataType = 0x80
 	durationType       dataType = 0x81
+	compositePDTType   dataType = 0xf0
+	primitivePDTType   dataType = 0xf1
 	markerType         dataType = 0xfd
 	nullType           dataType = 0xFE
 )
@@ -161,6 +164,12 @@ func mapWriter(value interface{}, w io.Writer, typeSerializer *graphBinaryTypeSe
 	return nil
 }
 
+// Format: one to four bytes representing a single UTF-8 encoded char, with no length prefix.
+func charWriter(value interface{}, w io.Writer, _ *graphBinaryTypeSerializer) error {
+	_, err := w.Write([]byte(string(rune(value.(Char)))))
+	return err
+}
+
 func stringWriter(value interface{}, w io.Writer, _ *graphBinaryTypeSerializer) error {
 	str := value.(string)
 	if err := binary.Write(w, binary.BigEndian, int32(len(str))); err != nil {
@@ -219,7 +228,8 @@ func getSignedBytesFromBigInt(n *big.Int) []byte {
 		}
 		return b
 	}
-	return []byte{}
+	// zero is encoded as a single 0x00 byte so the length prefix is 1 rather than 0
+	return []byte{0}
 }
 
 // Format: {length}{value_0}...{value_n}
@@ -267,8 +277,14 @@ func vertexWriter(value interface{}, w io.Writer, typeSerializer *graphBinaryTyp
 		return err
 	}
 
-	// Not fully qualified.
-	if err := typeSerializer.writeValue([1]string{v.Label}, w, false); err != nil {
+	// Write all labels as a list. A non-nil Labels slice is authoritative (including an empty
+	// slice, i.e. a zero-label vertex); fall back to the deprecated single Label only when
+	// Labels was never populated (nil).
+	labels := v.Labels
+	if labels == nil {
+		labels = []string{v.Label}
+	}
+	if err := typeSerializer.writeValue(labels, w, false); err != nil {
 		return err
 	}
 	// Note that as TinkerPop currently send "references" only, properties will always be null
@@ -283,8 +299,13 @@ func edgeWriter(value interface{}, w io.Writer, typeSerializer *graphBinaryTypeS
 		return err
 	}
 
-	// Not fully qualified
-	if err := typeSerializer.writeValue([1]string{e.Label}, w, false); err != nil {
+	// Write all labels as a list. A non-nil Labels slice is authoritative; fall back to the
+	// deprecated single Label only when Labels was never populated (nil).
+	labels := e.Labels
+	if labels == nil {
+		labels = []string{e.Label}
+	}
+	if err := typeSerializer.writeValue(labels, w, false); err != nil {
 		return err
 	}
 
@@ -293,8 +314,12 @@ func edgeWriter(value interface{}, w io.Writer, typeSerializer *graphBinaryTypeS
 		return err
 	}
 
-	// Not fully qualified.
-	if err := typeSerializer.writeValue([1]string{e.InV.Label}, w, false); err != nil {
+	// Write in-vertex labels
+	inVLabels := e.InV.Labels
+	if inVLabels == nil {
+		inVLabels = []string{e.InV.Label}
+	}
+	if err := typeSerializer.writeValue(inVLabels, w, false); err != nil {
 		return err
 	}
 	// Write out-vertex
@@ -302,8 +327,12 @@ func edgeWriter(value interface{}, w io.Writer, typeSerializer *graphBinaryTypeS
 		return err
 	}
 
-	// Not fully qualified.
-	if err := typeSerializer.writeValue([1]string{e.OutV.Label}, w, false); err != nil {
+	// Write out-vertex labels
+	outVLabels := e.OutV.Labels
+	if outVLabels == nil {
+		outVLabels = []string{e.OutV.Label}
+	}
+	if err := typeSerializer.writeValue(outVLabels, w, false); err != nil {
 		return err
 	}
 
@@ -361,6 +390,187 @@ func pathWriter(value interface{}, w io.Writer, typeSerializer *graphBinaryTypeS
 		return err
 	}
 	return typeSerializer.write(p.Objects, w)
+}
+
+// Format: {length}{entry_0}...{entry_n}
+// Per entry: {key}{child}
+//   - key:   fully-qualified ({type_code}{type_info}{value_flag}{value}); may be null.
+//   - child: a bare (value-only) child Tree, i.e. its own {length}{entries...}
+//     with no type_code/value_flag, written recursively. A leaf is length 0.
+// Each key is written fully-qualified and each child as a bare value (no
+// type_code/value_flag); this matches readTree/readTreeValue in
+// graphBinaryDeserializer.go.
+func treeWriter(value interface{}, w io.Writer, typeSerializer *graphBinaryTypeSerializer) error {
+	t := value.(*Tree)
+	if err := binary.Write(w, binary.BigEndian, int32(len(t.entries))); err != nil {
+		return err
+	}
+	for _, e := range t.entries {
+		// key fully-qualified (may be null)
+		if err := typeSerializer.write(e.key, w); err != nil {
+			return err
+		}
+		// child written as a bare value (never null; an empty subtree is length 0)
+		child := e.value
+		if child == nil {
+			child = &Tree{}
+		}
+		if err := treeWriter(child, w, typeSerializer); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// Format: {vertex_count}{vertices...}{edge_count}{edges...}
+// Per vertex: {id}{labels:list<string>}{vp_count}{vps...}
+// Per vp:     {id}{labels:list<string>}{value}{parent=null}{meta_props:list<property>}
+// Per edge:   {id}{labels:list<string>}{inVId}{inVLabel=null}{outVId}{outVLabel=null}{parent=null}{props:list<property>}
+func graphWriter(value interface{}, w io.Writer, typeSerializer *graphBinaryTypeSerializer) error {
+	g := value.(*Graph)
+
+	// vertex_count (value-only int32)
+	if err := typeSerializer.writeValue(int32(len(g.Vertices)), w, false); err != nil {
+		return err
+	}
+
+	for _, v := range g.Vertices {
+		// {id} fully-qualified
+		if err := typeSerializer.write(v.Id, w); err != nil {
+			return err
+		}
+		// {labels} list<string> value-only. A non-nil Labels slice is authoritative (including
+		// an empty slice, i.e. a zero-label vertex); fall back to the deprecated single Label
+		// only when Labels was never populated (nil).
+		vLabels := v.Labels
+		if vLabels == nil {
+			vLabels = []string{v.Label}
+		}
+		if err := typeSerializer.writeValue(vLabels, w, false); err != nil {
+			return err
+		}
+
+		// Collect vertex properties as []*VertexProperty regardless of how they are stored.
+		vps := asVertexProperties(v.Properties)
+
+		// {vp_count} value-only int32
+		if err := typeSerializer.writeValue(int32(len(vps)), w, false); err != nil {
+			return err
+		}
+
+		for _, vp := range vps {
+			// {vp_id} fully-qualified
+			if err := typeSerializer.write(vp.Id, w); err != nil {
+				return err
+			}
+			// {vp_label} list<string> value-only, 1 element
+			if err := typeSerializer.writeValue([1]string{vp.Label}, w, false); err != nil {
+				return err
+			}
+			// {vp_value} fully-qualified
+			if err := typeSerializer.write(vp.Value, w); err != nil {
+				return err
+			}
+			// {parent} fully-qualified null placeholder
+			if _, err := w.Write(nullBytes); err != nil {
+				return err
+			}
+			// {meta_props} value-only list<property>
+			if err := typeSerializer.writeValue(asProperties(vp.Properties), w, false); err != nil {
+				return err
+			}
+		}
+	}
+
+	// edge_count (value-only int32)
+	if err := typeSerializer.writeValue(int32(len(g.Edges)), w, false); err != nil {
+		return err
+	}
+
+	for _, e := range g.Edges {
+		// {id} fully-qualified
+		if err := typeSerializer.write(e.Id, w); err != nil {
+			return err
+		}
+		// {labels} list<string> value-only. A non-nil Labels slice is authoritative; fall back
+		// to the deprecated single Label only when Labels was never populated (nil).
+		eLabels := e.Labels
+		if eLabels == nil {
+			eLabels = []string{e.Label}
+		}
+		if err := typeSerializer.writeValue(eLabels, w, false); err != nil {
+			return err
+		}
+		// {inV_id} fully-qualified
+		if err := typeSerializer.write(e.InV.Id, w); err != nil {
+			return err
+		}
+		// {inV_label} fully-qualified null placeholder
+		if _, err := w.Write(nullBytes); err != nil {
+			return err
+		}
+		// {outV_id} fully-qualified
+		if err := typeSerializer.write(e.OutV.Id, w); err != nil {
+			return err
+		}
+		// {outV_label} fully-qualified null placeholder
+		if _, err := w.Write(nullBytes); err != nil {
+			return err
+		}
+		// {parent} fully-qualified null placeholder
+		if _, err := w.Write(nullBytes); err != nil {
+			return err
+		}
+		// {props} value-only list<property>
+		if err := typeSerializer.writeValue(asProperties(e.Properties), w, false); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// asVertexProperties coerces the interface{}-typed Properties field on a Vertex
+// to a slice of *VertexProperty. Returns an empty slice if nothing matches.
+func asVertexProperties(props interface{}) []*VertexProperty {
+	if props == nil {
+		return nil
+	}
+	if vps, ok := props.([]*VertexProperty); ok {
+		return vps
+	}
+	if list, ok := props.([]interface{}); ok {
+		out := make([]*VertexProperty, 0, len(list))
+		for _, p := range list {
+			if vp, ok := p.(*VertexProperty); ok {
+				out = append(out, vp)
+			}
+		}
+		return out
+	}
+	return nil
+}
+
+// asProperties coerces the interface{}-typed Properties field on a Vertex,
+// VertexProperty, or Edge to a slice of *Property. Returns an empty slice if
+// nothing matches.
+func asProperties(props interface{}) []*Property {
+	if props == nil {
+		return nil
+	}
+	if ps, ok := props.([]*Property); ok {
+		return ps
+	}
+	if list, ok := props.([]interface{}); ok {
+		out := make([]*Property, 0, len(list))
+		for _, p := range list {
+			if pp, ok := p.(*Property); ok {
+				out = append(out, pp)
+			}
+		}
+		return out
+	}
+	return nil
 }
 
 // Format: Same as List.
@@ -442,6 +652,8 @@ func (serializer *graphBinaryTypeSerializer) getType(val interface{}) (dataType,
 		return shortType, nil
 	case uint8:
 		return byteType, nil
+	case Char:
+		return charType, nil
 	case bool:
 		return booleanType, nil
 	case uuid.UUID:
@@ -454,12 +666,16 @@ func (serializer *graphBinaryTypeSerializer) getType(val interface{}) (dataType,
 		return vertexType, nil
 	case *Edge:
 		return edgeType, nil
+	case *Graph:
+		return graphType, nil
 	case *Property:
 		return propertyType, nil
 	case *VertexProperty:
 		return vertexPropertyType, nil
 	case *Path:
 		return pathType, nil
+	case *Tree:
+		return treeType, nil
 	case Set:
 		return setType, nil
 	case time.Time:
@@ -472,12 +688,14 @@ func (serializer *graphBinaryTypeSerializer) getType(val interface{}) (dataType,
 		return tType, nil
 	case merge:
 		return mergeType, nil
-	case gType:
-		return gTypeType, nil
 	case *BigDecimal, BigDecimal:
 		return bigDecimalType, nil
 	case *ByteBuffer, ByteBuffer:
 		return byteBuffer, nil
+	case *CompositePDT:
+		return compositePDTType, nil
+	case *PrimitivePDT:
+		return primitivePDTType, nil
 	default:
 		switch reflect.TypeOf(val).Kind() {
 		case reflect.Map:

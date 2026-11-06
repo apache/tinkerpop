@@ -92,3 +92,30 @@ Feature: Step - dateDiff()
     Then the result should be unordered
       | result |
       | d[1596326400000].l |
+
+  Scenario: g_V_hasLabelXorderX_asXoX_projectXnumber_millisX_byXnumberX_byXvaluesXshippedX_asDate_dateDiffXselectXoX_valuesXplacedX_asDateXX
+    Given the empty graph
+    And the intent
+      """
+      How long did each order take to ship? The placement and shipping times are stored as ISO-8601 text. Return a map
+      for each order with its number ("number") and the time from placement to shipping in milliseconds ("millis").
+      """
+    And the graph initializer of
+      """
+      g.addV("product").property("name","lamp").property("price","1999").property("inStock","true").
+        addV("product").property("name","desk").property("price","12000").property("inStock","false").
+        addV("product").property("name","chair").property("price","4550").property("inStock","true").
+        addV("order").property("number","A1").property("placed","2024-03-05T10:00:00Z").property("shipped","2024-03-07T16:00:00Z").
+        addV("order").property("number","A2").property("placed","2024-04-12T09:30:00Z").property("shipped","2024-04-13T09:30:00Z").
+        addV("order").property("number","A3").property("placed","2024-03-28T18:15:00Z").property("shipped","2024-04-02T08:00:00Z")
+      """
+    And the traversal of
+      """
+      g.V().hasLabel("order").as("o").project("number","millis").by("number").by(values("shipped").asDate().dateDiff(select("o").values("placed").asDate()))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | m[{"number":"A1","millis":"d[194400000].l"}] |
+      | m[{"number":"A2","millis":"d[86400000].l"}] |
+      | m[{"number":"A3","millis":"d[395100000].l"}] |

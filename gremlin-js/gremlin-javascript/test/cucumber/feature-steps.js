@@ -29,12 +29,14 @@ import { use, expect } from 'chai';
 use(chaiString);
 import { inspect, format, inherits } from 'util';
 import { gremlin } from './gremlin.js';
-import { Path, Vertex, Edge, Property } from '../../lib/structure/graph.js';
+import { Path, Vertex, Edge, Property, Graph, Tree } from '../../lib/structure/graph.js';
 import { statics } from '../../lib/process/graph-traversal.js';
 import { t, P, direction, merge, barrier, cardinality, column, order, TextP, IO, pick, pop, scope, operator, withOptions } from '../../lib/process/traversal.js';
 import { toLong } from '../../lib/utils.js';
+import { GValue } from '../../lib/process/gvalue.js';
 import anon from '../../lib/process/anonymous-traversal.js';
 const __ = statics;
+const parameterize = process.env.PARAMETERIZE === 'true';
 import { deepMembersById } from './element-comparison.js';
 import { Buffer } from 'buffer';
 import GremlinLang from "../../lib/process/gremlin-lang.js";
@@ -73,31 +75,11 @@ const ignoreReason = {
   nullKeysInMapNotSupportedWell: "Javascript does not nicely support 'null' as a key in Map instances",
   floatingPointIssues: "Javascript floating point numbers not working in this case",
   uuidSerializationIssues: "Javascript does not serialize to a UUID object, which complicates test assertions",
-  subgraphStepNotSupported: "Javascript does not yet support subgraph()",
-  treeStepNotSupported: "Javascript does not yet support tree()",
   needsFurtherInvestigation: '',
 };
 
 // An associative array for ignored feature tests containing the scenario name as key
 const ignoredScenarios = {
-  // javascript doesn't have subgraph() step yet
-  'g_VX1X_outEXknowsX_subgraphXsgX_name_capXsgX': new IgnoreError(ignoreReason.subgraphStepNotSupported),
-  'g_V_repeatXbothEXcreatedX_subgraphXsgX_outVX_timesX5X_name_dedup_capXsgX': new IgnoreError(ignoreReason.subgraphStepNotSupported),
-  'g_V_outEXnoexistX_subgraphXsgXcapXsgX': new IgnoreError(ignoreReason.subgraphStepNotSupported),
-  'g_E_hasXweight_0_5X_subgraphXaX_selectXaX': new IgnoreError(ignoreReason.subgraphStepNotSupported),
-  // javascript doesn't have tree() step yet
-  'g_VX1X_out_out_tree_byXnameX': new IgnoreError(ignoreReason.treeStepNotSupported),
-  'g_VX1X_out_out_tree': new IgnoreError(ignoreReason.treeStepNotSupported),
-  'g_V_out_tree_byXageX': new IgnoreError(ignoreReason.treeStepNotSupported),
-  'g_VX1X_out_out_treeXaX_byXnameX_both_both_capXaX': new IgnoreError(ignoreReason.treeStepNotSupported),
-  'g_VX1X_out_out_treeXaX_both_both_capXaX': new IgnoreError(ignoreReason.treeStepNotSupported),
-  'g_VX1X_out_out_tree_byXlabelX': new IgnoreError(ignoreReason.treeStepNotSupported),
-  'g_VX1X_out_out_treeXaX_byXlabelX_both_both_capXaX': new IgnoreError(ignoreReason.treeStepNotSupported),
-  'g_VX1X_out_out_out_tree': new IgnoreError(ignoreReason.treeStepNotSupported),
-  'g_VX1X_outE_inV_bothE_otherV_tree': new IgnoreError(ignoreReason.treeStepNotSupported),
-  'g_VX1X_outE_inV_bothE_otherV_tree_byXnameX_byXlabelX': new IgnoreError(ignoreReason.treeStepNotSupported),
-  'g_V_out_treeXaX_selectXaX_countXlocalX': new IgnoreError(ignoreReason.treeStepNotSupported),
-  'g_V_out_order_byXnameX_localXtreeXaX_selectXaX_countXlocalXX': new IgnoreError(ignoreReason.treeStepNotSupported), 
    // floating point issues
   'g_withSackXBigInteger_TEN_powX1000X_assignX_V_localXoutXknowsX_barrierXnormSackXX_inXknowsX_barrier_sack': new IgnoreError(ignoreReason.floatingPointIssues),
   'g_withSackX2X_V_sackXdivX_byXconstantX4_0XX_sack': new IgnoreError(ignoreReason.floatingPointIssues),
@@ -117,7 +99,13 @@ Given(/^the (.+) graph$/, function (graphName) {
   if (ignoredScenarios[this.scenario]) {
     return 'skipped';
   }
-  this.graphName = graphName;
+
+  // Multi-label tests use the gmultilabel traversal source for empty graphs
+  if (this.isMultiLabel && graphName === 'empty') {
+    this.graphName = 'multilabel';
+  } else {
+    this.graphName = graphName;
+  }
   const data = this.getData();
   this.g = anon.traversal().with_(data.connection);
 
@@ -125,8 +113,11 @@ Given(/^the (.+) graph$/, function (graphName) {
     this.g = this.g.withComputer();
   }
 
-  if (graphName === 'empty') {
+  if (this.graphName === 'empty') {
     return this.cleanEmptyGraph();
+  }
+  if (this.graphName === 'multilabel') {
+    return this.cleanMultilabelGraph();
   }
 });
 
@@ -134,13 +125,27 @@ Given('the graph initializer of', function (traversalText) {
   const p = Object.assign({}, this.parameters);
   p.g = this.g;
   const traversal = gremlin[this.scenario].shift()(p);
-  return traversal.toList();
+  return traversal.toList().then(() => {
+    // Reload vertex/edge data for dynamic graphs after initializer adds data
+    if (this.graphName === 'empty') {
+      return this.loadEmptyGraphData();
+    } else if (this.graphName === 'multilabel') {
+      return this.loadMultilabelGraphData();
+    }
+  });
 });
 
 Given('an unsupported test', () => {});
 
+Given('the intent', _ => {});
+
 Given('the traversal of', function (traversalText) {
   const p = Object.assign({}, this.parameters);
+  if (parameterize) {
+    for (const k of Object.keys(p)) {
+      p[k] = new GValue(k, p[k]);
+    }
+  }
   p.g = this.g;
   this.traversal = gremlin[this.scenario].shift()(p);
   const sideEffectLang = new GremlinLang();
@@ -157,6 +162,8 @@ Given(/^using the parameter (.+) defined as "(.+)"$/, function (paramName, strin
   let p = Promise.resolve();
   if (this.graphName === 'empty') {
     p = this.loadEmptyGraphData();
+  } else if (this.graphName === 'multilabel') {
+    p = this.loadMultilabelGraphData();
   }
   return p.then(() => {
     this.parameters[paramName] = parseValue.call(this, stringValue);
@@ -174,6 +181,8 @@ Given(/^using the side effect (.+) defined as "(.+)"$/, function (sideEffectKey,
   let p = Promise.resolve();
   if (this.graphName === 'empty') {
     p = this.loadEmptyGraphData();
+  } else if (this.graphName === 'multilabel') {
+    p = this.loadMultilabelGraphData();
   }
   return p.then(() => {
     this.sideEffects[sideEffectKey] = parseValue.call(this, stringValue);
@@ -257,13 +266,124 @@ Then(/^the result should be (\w+)$/, function assertResult(characterizedAs, resu
   }
 });
 
-Then('the result should be a subgraph with the following', _ => {
-  // subgraph is not supported yet in javascript
+Then('the result should be a subgraph with the following', function (resultTable) {
+  if (this.result instanceof Error) {
+    console.error('Error encountered:', this.result.message, this.result.stack);
+  }
+  expect(this.result).to.not.be.a.instanceof(Error);
+
+  // 'iterated next' surfaces the Graph directly; 'iterated to list' wraps it in an array.
+  const sg = Array.isArray(this.result) ? this.result[0] : this.result;
+  expect(sg).to.be.an.instanceof(Graph);
+
+  // No data table means there's nothing further to assert.
+  if (!resultTable || typeof resultTable.raw !== 'function') {
+    return;
+  }
+  const raw = resultTable.raw();
+  if (!raw || raw.length === 0) {
+    return;
+  }
+  const header = raw[0][0];
+  const assertingVertices = header === 'vertices';
+
+  const dataRows = typeof resultTable.rows === 'function' ? resultTable.rows() : raw.slice(1);
+
+  if (assertingVertices) {
+    const expectedVertices = dataRows.map(row => parseValue.call(this, row[0]));
+    expect(sg.vertices.size).to.equal(expectedVertices.length);
+    for (const expected of expectedVertices) {
+      expect(sg.vertices.has(expected.id)).to.equal(true,
+        format('subgraph is missing vertex %s', inspect(expected.id)));
+      const actual = sg.vertices.get(expected.id);
+      expect(actual.label).to.equal(expected.label);
+    }
+  } else {
+    const expectedEdges = dataRows.map(row => parseValue.call(this, row[0]));
+    expect(sg.edges.size).to.equal(expectedEdges.length);
+    for (const expected of expectedEdges) {
+      expect(sg.edges.has(expected.id)).to.equal(true,
+        format('subgraph is missing edge %s', inspect(expected.id)));
+      const actual = sg.edges.get(expected.id);
+      expect(actual.label).to.equal(expected.label);
+      expect(actual.outV.id).to.equal(expected.outV.id);
+      expect(actual.inV.id).to.equal(expected.inV.id);
+    }
+  }
 });
 
-Then('the result should be a tree with a structure of', _ => {
-  // tree is not supported yet in javascript
+Then('the result should be a tree with a structure of', function (expectedTree) {
+  expect(this.result).to.not.be.a.instanceof(Error);
+
+  // The traversal yields a single Tree (via "iterated next"), stored directly on this.result.
+  const tree = this.result;
+  expect(tree).to.be.a.instanceof(Tree, 'expected the result to be a Tree');
+
+  // an empty doc string represents an empty tree
+  const roots = parseTree.call(this, expectedTree);
+
+  // validate that the tree matches the parsed expected structure
+  expect(tree.rootNodes().length).to.equal(roots.length,
+    'tree root node count does not match expected structure');
+  for (const root of roots) {
+    expect(tree.hasChild(root.value)).to.equal(true,
+      format('tree not matching at %s', inspect(root.value)));
+    validateTreeStructure.call(this, tree.childAt(root.value), root);
+  }
 });
+
+function validateTreeStructure(actualTree, expectedNode) {
+  expect(actualTree.rootNodes().length).to.equal(expectedNode.children.length,
+    format('tree child count does not match at %s', inspect(expectedNode.value)));
+  for (const child of expectedNode.children) {
+    expect(actualTree.hasChild(child.value)).to.equal(true,
+      format('tree not matching at %s', inspect(child.value)));
+    validateTreeStructure.call(this, actualTree.childAt(child.value), child);
+  }
+}
+
+// Parses the ascii-tree structure as taken from the Gherkin feature file. Mirrors the Java
+// StepDefinition.parseTree (and the .NET CommonSteps.ParseTree): a line's depth is the number of
+// leading spaces divided by three, and the node value is the line with the leading "|--" marker
+// stripped and trimmed, then run through parseValue.
+function parseTree(asciiTree) {
+  const roots = [];
+  if (asciiTree === undefined || asciiTree === null || asciiTree.length === 0) {
+    return roots;
+  }
+
+  const lines = asciiTree.split(/\r\n|\r|\n/);
+  const levelMap = {};
+
+  for (const line of lines) {
+    if (line.length === 0) {
+      continue;
+    }
+
+    let leadingSpaces = 0;
+    for (const c of line) {
+      if (c === ' ') {
+        leadingSpaces++;
+      } else {
+        break;
+      }
+    }
+    const level = Math.floor(leadingSpaces / 3); // 3 spaces per level
+    const rawValue = line.replace('|--', '').trim();
+
+    const node = { value: parseValue.call(this, rawValue), children: [] };
+    if (level === 0) {
+      roots.push(node);
+    } else {
+      levelMap[level - 1].children.push(node);
+    }
+
+    levelMap[level] = node;
+  }
+
+  return roots;
+}
+
 
 Then(/^the graph should return (\d+) for count of "(.+)"$/, function (stringCount, traversalText) {
   expect(this.result).to.not.be.a.instanceof(Error);

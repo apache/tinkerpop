@@ -50,6 +50,10 @@ Feature: Step - conjoin()
 
   Scenario: g_V_valuesXnameX_order_fold_conjoinX_X
     Given the modern graph
+    And the intent
+      """
+      Join the names of all the vertices, in alphabetical order, into one string separated by "_".
+      """
     And the traversal of
       """
       g.V().values("name").order().fold().conjoin("_")

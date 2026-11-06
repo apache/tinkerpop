@@ -229,8 +229,16 @@ export default class DotNetTranslateVisitor extends TranslateVisitor {
         const text: string = ctx.getText();
         const withoutSuffix = text.substring(0, text.length - 1);
         const inner = TranslateVisitor.removeFirstAndLastCharacters(withoutSuffix);
+        let csChar: string;
+        if (inner === "'") {
+            csChar = "\\'";
+        } else if (/^\\[0-7]{1,3}$/.test(inner)) {
+            csChar = '\\u' + parseInt(inner.substring(1), 8).toString(16).toUpperCase().padStart(4, '0');
+        } else {
+            csChar = inner;
+        }
         this.sb.push("'");
-        this.sb.push(inner);
+        this.sb.push(csChar);
         this.sb.push("'");
     }
 
@@ -359,6 +367,14 @@ export default class DotNetTranslateVisitor extends TranslateVisitor {
         if (ctx?.variable() != null || ctx?.stringLiteral() != null) this.sb.push('(string) ');
     }
 
+    private visitStringArgumentVarargsWithCast(ctx: any): void {
+        for (let ix = 0; ix < ctx.getChildCount(); ix++) {
+            const child = ctx.getChild(ix);
+            if (child.constructor?.name === 'StringArgumentContext') this.tryAppendCastToString_StringArg(child);
+            this.visit(child);
+        }
+    }
+
     private tryAppendCastToString_StringNullableLit(ctx: any): void {
         if (ctx?.K_NULL != null && ctx.K_NULL() != null) this.sb.push('(string) ');
     }
@@ -405,11 +421,28 @@ export default class DotNetTranslateVisitor extends TranslateVisitor {
     visitTraversalSourceSpawnMethod_union(ctx: any): void { this.handleGenerics(ctx); }
     visitTraversalSourceSpawnMethod_call_empty(ctx: any): void { this.handleGenerics(ctx); }
 
-    visitTraversalSourceSpawnMethod_addV(ctx: any): void {
+    visitTraversalSourceSpawnMethod_match_string(ctx: any): void {
+        this.sb.push(capitalize(ctx.getChild(0).getText()));
+        this.sb.push('(');
+        this.visit(ctx.stringLiteral());
+        this.sb.push(')');
+    }
+
+    visitTraversalSourceSpawnMethod_match_string_map(ctx: any): void {
+        this.sb.push(capitalize(ctx.getChild(0).getText()));
+        this.sb.push('(');
+        this.visit(ctx.stringLiteral());
+        this.sb.push(', (IDictionary<object, object>) ');
+        this.visit(ctx.genericMapLiteral());
+        this.sb.push(')');
+    }
+
+    visitTraversalSourceSpawnMethod_addV_String(ctx: any): void {
         this.sb.push(capitalize(ctx.getChild(0).getText()));
         for (let ix = 1; ix < ctx.getChildCount(); ix++) {
             const child = ctx.getChild(ix);
             if (child.constructor?.name === 'StringArgumentContext') this.tryAppendCastToString_StringArg(child);
+            else if (child.constructor?.name === 'StringArgumentVarargsContext') { this.visitStringArgumentVarargsWithCast(child); continue; }
             this.visit(child);
         }
     }
@@ -488,7 +521,7 @@ export default class DotNetTranslateVisitor extends TranslateVisitor {
         this.sb.push(')');
     }
 
-    // ─── Traversal method overrides — handleGenerics ─────────────────────────
+    // ─── Traversal method overrides - handleGenerics ─────────────────────────
 
     visitTraversalMethod_asString_Scope(ctx: any): void { this.handleGenerics(ctx); }
     visitTraversalMethod_branch(ctx: any): void { this.handleGenerics(ctx); }
@@ -520,7 +553,23 @@ export default class DotNetTranslateVisitor extends TranslateVisitor {
     visitTraversalMethod_local(ctx: any): void { this.handleGenerics(ctx); }
     visitTraversalMethod_lTrim_Scope(ctx: any): void { this.handleGenerics(ctx); }
     visitTraversalMethod_map(ctx: any): void { this.handleGenerics(ctx); }
-    visitTraversalMethod_match(ctx: any): void { this.handleGenerics(ctx); }
+    visitTraversalMethod_match_traversal(ctx: any): void { this.handleGenerics(ctx); }
+
+    visitTraversalMethod_match_string(ctx: any): void {
+        this.sb.push(capitalize(ctx.getChild(0).getText()));
+        this.sb.push('(');
+        this.visit(ctx.stringLiteral());
+        this.sb.push(')');
+    }
+
+    visitTraversalMethod_match_string_map(ctx: any): void {
+        this.sb.push(capitalize(ctx.getChild(0).getText()));
+        this.sb.push('(');
+        this.visit(ctx.stringLiteral());
+        this.sb.push(', (IDictionary<object, object>) ');
+        this.visit(ctx.genericMapLiteral());
+        this.sb.push(')');
+    }
     visitTraversalMethod_max_Empty(ctx: any): void { this.handleGenerics(ctx); }
     visitTraversalMethod_max_Scope(ctx: any): void { this.handleGenerics(ctx); }
     visitTraversalMethod_mean_Empty(ctx: any): void { this.handleGenerics(ctx); }
@@ -560,7 +609,7 @@ export default class DotNetTranslateVisitor extends TranslateVisitor {
     visitTraversalMethod_valueMap_boolean_String(ctx: any): void { this.handleGenerics(ctx); }
     visitTraversalMethod_values(ctx: any): void { this.handleGenerics(ctx); }
 
-    // ─── Traversal method overrides — handleLongArguments ────────────────────
+    // ─── Traversal method overrides - handleLongArguments ────────────────────
 
     visitTraversalMethod_limit_long(ctx: any): void { this.handleLongArguments(ctx); }
     visitTraversalMethod_limit_Scope_long(ctx: any): void { this.handleLongArguments(ctx); }
@@ -578,6 +627,7 @@ export default class DotNetTranslateVisitor extends TranslateVisitor {
         for (let ix = 1; ix < ctx.getChildCount(); ix++) {
             const child = ctx.getChild(ix);
             if (child.constructor?.name === 'StringArgumentContext') this.tryAppendCastToString_StringArg(child);
+            else if (child.constructor?.name === 'StringArgumentVarargsContext') { this.visitStringArgumentVarargsWithCast(child); continue; }
             this.visit(child);
         }
     }
@@ -587,6 +637,7 @@ export default class DotNetTranslateVisitor extends TranslateVisitor {
         for (let ix = 1; ix < ctx.getChildCount(); ix++) {
             const child = ctx.getChild(ix);
             if (child.constructor?.name === 'StringArgumentContext') this.tryAppendCastToString_StringArg(child);
+            else if (child.constructor?.name === 'StringArgumentVarargsContext') { this.visitStringArgumentVarargsWithCast(child); continue; }
             this.visit(child);
         }
     }
@@ -833,6 +884,45 @@ export default class DotNetTranslateVisitor extends TranslateVisitor {
     }
 
     // ─── property ────────────────────────────────────────────────────────────
+
+    visitTraversalMethod_property_Object(ctx: any): void {
+        // Property(null) is ambiguous with Property(ITraversal) - cast null to IDictionary to disambiguate
+        if (ctx.genericMapNullableArgument().genericMapNullableLiteral() != null &&
+            ctx.genericMapNullableArgument().genericMapNullableLiteral().nullLiteral() != null) {
+            this.visit(ctx.getChild(0));
+            this.sb.push('(');
+            this.sb.push('(IDictionary<object, object>) ');
+            this.visit(ctx.genericMapNullableArgument());
+            this.sb.push(')');
+            return;
+        }
+        this.visitChildren(ctx);
+    }
+
+    visitTraversalMethod_property_Cardinality_Object(ctx: any): void {
+        // Property(Cardinality, null) - cast null to IDictionary to disambiguate
+        if (ctx.genericMapNullableArgument().genericMapNullableLiteral() != null &&
+            ctx.genericMapNullableArgument().genericMapNullableLiteral().nullLiteral() != null) {
+            this.visit(ctx.getChild(0));
+            this.sb.push('(');
+            this.visit(ctx.traversalCardinality());
+            this.sb.push(', ');
+            this.sb.push('(IDictionary<object, object>) ');
+            this.visit(ctx.genericMapNullableArgument());
+            this.sb.push(')');
+            return;
+        }
+        this.visitChildren(ctx);
+    }
+
+    visitTraversalMethod_property_Traversal(ctx: any): void {
+        // Property(ITraversal) - cast to ITraversal to disambiguate
+        this.visit(ctx.getChild(0));
+        this.sb.push('(');
+        this.sb.push('(ITraversal) ');
+        this.visit(ctx.nestedTraversal());
+        this.sb.push(')');
+    }
 
     visitTraversalMethod_property_Cardinality_Object_Object_Object(ctx: any): void {
         if (ctx.genericArgumentVarargs() == null || ctx.genericArgumentVarargs().getChildCount() === 0) {

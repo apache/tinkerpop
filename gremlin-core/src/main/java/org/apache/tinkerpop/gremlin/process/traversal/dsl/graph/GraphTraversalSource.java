@@ -33,6 +33,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddEdgeStartStepP
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddVertexStartStepPlaceholder;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.CallStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.CallStepPlaceholder;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.DeclarativeMatchStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStepPlaceholder;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.MergeEdgeStepPlaceholder;
@@ -42,6 +43,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.InjectStep
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStepContract;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.RequirementsStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
+import org.apache.tinkerpop.gremlin.process.traversal.util.ReadOnlyChildValidator;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -50,12 +52,22 @@ import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.BinaryOperator;
+import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 
@@ -68,6 +80,8 @@ import java.util.function.UnaryOperator;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class GraphTraversalSource implements TraversalSource {
+    private static final Logger LOGGER = LoggerFactory.getLogger(GraphTraversalSource.class);
+
     protected transient RemoteConnection connection;
     protected final Graph graph;
     protected TraversalStrategies strategies;
@@ -102,6 +116,9 @@ public class GraphTraversalSource implements TraversalSource {
         this(EmptyGraph.instance(), TraversalStrategies.GlobalCache.getStrategies(EmptyGraph.class).clone());
         this.connection = connection;
         this.strategies.addStrategies(new RemoteStrategy(connection));
+        if (connection.getPdtRegistry() != null) {
+            this.gremlinLang.setPdtRegistry(connection.getPdtRegistry());
+        }
     }
 
     @Override
@@ -310,31 +327,63 @@ public class GraphTraversalSource implements TraversalSource {
     //// SPAWNS
 
     /**
-     * Spawns a {@link GraphTraversal} by adding a vertex with the specified label. If the {@code label} is
-     * {@code null} then it will default to {@link Vertex#DEFAULT_LABEL}.
+     * Spawns a {@link GraphTraversal} by adding a vertex with one or more labels.
      *
+     * @param label the first (or only) vertex label
+     * @param additionalLabels  additional labels (may be empty for single-label)
+     * @return the traversal with the vertex added
      * @since 3.1.0-incubating
      */
-    public GraphTraversal<Vertex, Vertex> addV(final String vertexLabel) {
-        if (null == vertexLabel) throw new IllegalArgumentException("vertexLabel cannot be null");
+    public GraphTraversal<Vertex, Vertex> addV(final String label, final String... additionalLabels) {
+        if (null == label) throw new IllegalArgumentException("vertexLabel cannot be null");
+        for (final String l : additionalLabels) {
+            if (null == l) throw new IllegalArgumentException("vertexLabel cannot be null");
+        }
         final GraphTraversalSource clone = this.clone();
-        clone.gremlinLang.addStep(GraphTraversal.Symbols.addV, vertexLabel);
-        final GraphTraversal.Admin<Vertex, Vertex> traversal = new DefaultGraphTraversal<>(clone);
-        return traversal.addStep(new AddVertexStartStepPlaceholder(traversal, vertexLabel));
+        if (additionalLabels.length == 0) {
+            clone.gremlinLang.addStep(GraphTraversal.Symbols.addV, label);
+            final GraphTraversal.Admin<Vertex, Vertex> traversal = new DefaultGraphTraversal<>(clone);
+            return traversal.addStep(new AddVertexStartStepPlaceholder(traversal, label));
+        } else {
+            clone.gremlinLang.addStep(GraphTraversal.Symbols.addV, label, additionalLabels);
+            final GraphTraversal.Admin<Vertex, Vertex> traversal = new DefaultGraphTraversal<>(clone);
+            final Set<Object> allLabels = new LinkedHashSet<>();
+            allLabels.add(label);
+            Collections.addAll(allLabels, additionalLabels);
+            return traversal.addStep(new AddVertexStartStepPlaceholder(traversal, allLabels));
+        }
     }
 
     /**
-     * Spawns a {@link GraphTraversal} by adding a vertex with the label as determined by a {@link Traversal}. If the
-     * {@code vertexLabelTraversal} is {@code null} then it will default to {@link Vertex#DEFAULT_LABEL}.
+     * Spawns a {@link GraphTraversal} by adding a {@link Vertex} with one or more labels each determined by
+     * a {@link Traversal}. Each traversal is iterated for a single result only. If exactly one
+     * {@link Traversal} is provided, and it produces a {@link Collection<String>}, the collection will be
+     * automatically unfolded.
      *
-     * @since 3.3.1
+     * @param label the first (or only) label traversal
+     * @param additionalLabels  additional label traversals (may be empty for single-traversal behavior)
+     * @since 4.0.0
      */
-    public GraphTraversal<Vertex, Vertex> addV(final Traversal<?, String> vertexLabelTraversal) {
-        if (null == vertexLabelTraversal) throw new IllegalArgumentException("vertexLabelTraversal cannot be null");
+    public GraphTraversal<Vertex, Vertex> addV(final Traversal<?, ?> label, final Traversal<?, ?>... additionalLabels) {
+        if (null == label) throw new IllegalArgumentException("vertexLabelTraversal cannot be null");
+        for (final Traversal<?, ?> t : additionalLabels) {
+            if (null == t) throw new IllegalArgumentException("vertexLabelTraversal cannot be null");
+        }
         final GraphTraversalSource clone = this.clone();
-        clone.gremlinLang.addStep(GraphTraversal.Symbols.addV, vertexLabelTraversal);
-        final GraphTraversal.Admin<Vertex, Vertex> traversal = new DefaultGraphTraversal<>(clone);
-        return traversal.addStep(new AddVertexStartStepPlaceholder(traversal, vertexLabelTraversal.asAdmin()));
+        if (additionalLabels.length == 0) {
+            clone.gremlinLang.addStep(GraphTraversal.Symbols.addV, label);
+            final GraphTraversal.Admin<Vertex, Vertex> traversal = new DefaultGraphTraversal<>(clone);
+            return traversal.addStep(new AddVertexStartStepPlaceholder(traversal, label.asAdmin()));
+        } else {
+            clone.gremlinLang.addStep(GraphTraversal.Symbols.addV, label, additionalLabels);
+            final GraphTraversal.Admin<Vertex, Vertex> traversal = new DefaultGraphTraversal<>(clone);
+            final Collection<Object> allTraversals = new LinkedHashSet<>(additionalLabels.length + 1);
+            allTraversals.add(label.asAdmin());
+            for (final Traversal<?, ?> t : additionalLabels) {
+                allTraversals.add(t.asAdmin());
+            }
+            return traversal.addStep(new AddVertexStartStepPlaceholder(traversal, allTraversals));
+        }
     }
 
     /**
@@ -350,17 +399,33 @@ public class GraphTraversalSource implements TraversalSource {
     }
 
     /**
-     * Spawns a {@link GraphTraversal} by adding a vertex with the specified label. If the {@code label} is
-     * {@code null} then it will default to {@link Vertex#DEFAULT_LABEL}.
+     * Spawns a {@link GraphTraversal} by adding a vertex with one or more specified labels. If the
+     * {@code label} is {@code null} then it will default to {@link Vertex#DEFAULT_LABEL}.
      *
-     * @since 3.8.0
+     * @param label the first (or only) label
+     * @param additionalLabels  additional labels. May be empty for single-label)
+     * @return the traversal with the vertex added
+     * @since 4.0.0
      */
-    public GraphTraversal<Vertex, Vertex> addV(final GValue<String> vertexLabel) {
-        if (null == vertexLabel) throw new IllegalArgumentException("vertexLabel cannot be null");
+    @SafeVarargs
+    public final GraphTraversal<Vertex, Vertex> addV(final GValue<String> label, final GValue<String>... additionalLabels) {
+        if (null == label || null == label.get()) throw new IllegalArgumentException("vertexLabel cannot be null");
+        for (final GValue<String> l : additionalLabels) {
+            if (null == l || null == l.get()) throw new IllegalArgumentException("vertexLabel cannot be null");
+        }
         final GraphTraversalSource clone = this.clone();
-        clone.gremlinLang.addStep(GraphTraversal.Symbols.addV, vertexLabel);
-        final GraphTraversal.Admin<Vertex, Vertex> traversal = new DefaultGraphTraversal<>(clone);
-        return traversal.addStep(new AddVertexStartStepPlaceholder(traversal, vertexLabel));
+        if (additionalLabels.length == 0) {
+            clone.gremlinLang.addStep(GraphTraversal.Symbols.addV, label);
+            final GraphTraversal.Admin<Vertex, Vertex> traversal = new DefaultGraphTraversal<>(clone);
+            return traversal.addStep(new AddVertexStartStepPlaceholder(traversal, label));
+        } else {
+            clone.gremlinLang.addStep(GraphTraversal.Symbols.addV, label, (Object[]) additionalLabels);
+            final GraphTraversal.Admin<Vertex, Vertex> traversal = new DefaultGraphTraversal<>(clone);
+            final LinkedHashSet<Object> allLabels = new LinkedHashSet<>();
+            allLabels.add(label);
+            Collections.addAll(allLabels, additionalLabels);
+            return traversal.addStep(new AddVertexStartStepPlaceholder(traversal, allLabels));
+        }
     }
 
     /**
@@ -538,6 +603,24 @@ public class GraphTraversalSource implements TraversalSource {
     }
 
     /**
+     * Spawns a {@link GraphTraversal} starting with vertices whose IDs are resolved from a child traversal.
+     * As a start step, a synthetic traverser is generated to seed the child traversal evaluation,
+     * consistent with how {@code mergeV(traversal)} handles start steps. The child traversal should
+     * be self-contained (e.g., {@code __.V(1).id()}) rather than dependent on an incoming traverser.
+     *
+     * @param traversal the child traversal that produces vertex IDs
+     * @since 4.0.0
+     */
+    public GraphTraversal<Vertex, Vertex> V(final Traversal<?, ?> traversal) {
+        if (null == traversal) return V(new Object[]{ null });
+        ReadOnlyChildValidator.validate(traversal.asAdmin());
+        final GraphTraversalSource clone = this.clone();
+        clone.gremlinLang.addStep(GraphTraversal.Symbols.V, traversal);
+        final GraphTraversal.Admin<Vertex, Vertex> traversalAdmin = new DefaultGraphTraversal<>(clone);
+        return traversalAdmin.addStep(new GraphStep<>(traversalAdmin, Vertex.class, true, traversal.asAdmin()));
+    }
+
+    /**
      * Spawns a {@link GraphTraversal} starting with all edges or some subset of edges as specified by their unique
      * identifier.
      *
@@ -556,6 +639,24 @@ public class GraphTraversalSource implements TraversalSource {
             step = new GraphStep<>(traversal, Edge.class, true, ids);
         }
         return traversal.addStep(step);
+    }
+
+    /**
+     * Spawns a {@link GraphTraversal} starting with edges whose IDs are resolved from a child traversal.
+     * As a start step, a synthetic traverser is generated to seed the child traversal evaluation,
+     * consistent with how {@code mergeE(traversal)} handles start steps. The child traversal should
+     * be self-contained (e.g., {@code __.V(1).outE().id()}) rather than dependent on an incoming traverser.
+     *
+     * @param traversal the child traversal that produces edge IDs
+     * @since 4.0.0
+     */
+    public GraphTraversal<Edge, Edge> E(final Traversal<?, ?> traversal) {
+        if (null == traversal) return E(new Object[]{ null });
+        ReadOnlyChildValidator.validate(traversal.asAdmin());
+        final GraphTraversalSource clone = this.clone();
+        clone.gremlinLang.addStep(GraphTraversal.Symbols.E, traversal);
+        final GraphTraversal.Admin<Edge, Edge> traversalAdmin = new DefaultGraphTraversal<>(clone);
+        return traversalAdmin.addStep(new GraphStep<>(traversalAdmin, Edge.class, true, traversal.asAdmin()));
     }
 
     /**
@@ -666,6 +767,43 @@ public class GraphTraversalSource implements TraversalSource {
     }
 
     /**
+     * Spawns a {@link GraphTraversal} by executing a declarative pattern match query. The query language is not
+     * prescribed or implemented by the framework; it defaults to {@code null}, meaning the graph
+     * provider will use its native query language. Use {@code .with("queryLanguage", value)} to specify a
+     * language explicitly. Consult the graph system you are using to determine what query language you can give to
+     * this step.
+     *
+     * @param matchQuery the declarative query string
+     * @return the traversal with an appended {@link DeclarativeMatchStep}.
+     * @since 4.0.0
+     */
+    public <S> GraphTraversal<S, Map<String, Object>> match(final String matchQuery) {
+        final GraphTraversalSource clone = this.clone();
+        clone.gremlinLang.addStep(GraphTraversal.Symbols.match, matchQuery);
+        final GraphTraversal.Admin<S, Map<String, Object>> traversal = new DefaultGraphTraversal<>(clone);
+        return traversal.addStep(new DeclarativeMatchStep<>(traversal, matchQuery, null, null, true));
+    }
+
+    /**
+     * Spawns a {@link GraphTraversal} by executing a declarative pattern match query. The query language is not
+     * prescribed or implemented by the framework; it defaults to {@code null}, meaning the graph
+     * provider will use its native query language. Use {@code .with("queryLanguage", value)} to specify a
+     * language explicitly. Consult the graph system you are using to determine what query language you can give to
+     * this step.
+     *
+     * @param matchQuery the declarative query string
+     * @param params the query parameters (may be {@code null})
+     * @return the traversal with an appended {@link DeclarativeMatchStep}.
+     * @since 4.0.0
+     */
+    public <S> GraphTraversal<S, Map<String, Object>> match(final String matchQuery, final Map<String, Object> params) {
+        final GraphTraversalSource clone = this.clone();
+        clone.gremlinLang.addStep(GraphTraversal.Symbols.match, matchQuery, params);
+        final GraphTraversal.Admin<S, Map<String, Object>> traversal = new DefaultGraphTraversal<>(clone);
+        return traversal.addStep(new DeclarativeMatchStep<>(traversal, matchQuery, params, null, true));
+    }
+
+    /**
      * Merges the results of an arbitrary number of traversals.
      *
      * @param unionTraversals the traversals to merge
@@ -716,6 +854,93 @@ public class GraphTraversalSource implements TraversalSource {
             return this.graph.tx();
         else
             return this.connection.tx();
+    }
+
+    /**
+     * Runs the supplied unit of work inside a single transaction, managing the transaction lifecycle automatically.
+     * <p>
+     * This is the no-return (action) form of {@link #evaluateInTx(Function)}. It is a thin convenience wrapper that
+     * obtains a {@link Transaction} via {@link #tx()}, {@link Transaction#begin() begins} it, invokes {@code txWork}
+     * with the transaction-bound {@link GraphTraversalSource} ({@code gtx}), and then {@link Transaction#commit()
+     * commits} on normal completion. If {@code txWork} throws, the transaction is {@link Transaction#rollback() rolled
+     * back} and the original error is re-thrown unchanged. Because the lifecycle is driven through {@link #tx()}, the
+     * underlying transaction semantics (embedded thread-bound vs. remote server session) are whatever the underlying
+     * {@code begin()}/{@code commit()}/{@code rollback()} provide.
+     * <p>
+     * This is a <strong>single-shot</strong> operation - exactly one attempt is made, with no automatic retry. The
+     * lambda receives the transactional {@code gtx} and should issue its traversals against that source only.
+     *
+     * @param txWork the unit of work to run against the transaction-bound {@link GraphTraversalSource}
+     * @see #evaluateInTx(Function)
+     */
+    public void executeInTx(final Consumer<GraphTraversalSource> txWork) {
+        evaluateInTx(gtx -> {
+            txWork.accept(gtx);
+            return null;
+        });
+    }
+
+    /**
+     * Runs the supplied unit of work inside a single transaction, managing the transaction lifecycle automatically,
+     * and returns the value the work produces.
+     * <p>
+     * This wrapper obtains a {@link Transaction} via {@link #tx()}, {@link Transaction#begin() begins} it, invokes
+     * {@code txWork} with the transaction-bound {@link GraphTraversalSource} ({@code gtx}), and then
+     * {@link Transaction#commit() commits} on normal completion, returning the value computed by {@code txWork}.
+     * Error handling:
+     * <ul>
+     *   <li>If {@code txWork} throws, the transaction is {@link Transaction#rollback() rolled back} and the exact
+     *       original error is re-thrown to the caller. If that rollback itself fails, the rollback failure is attached
+     *       to the original error via {@link Throwable#addSuppressed(Throwable)} and a warning is logged, but the
+     *       original error still propagates as the primary error.</li>
+     *   <li>If {@link Transaction#commit() commit} fails, a {@link Transaction#rollback() rollback} is attempted
+     *       afterward (to avoid leaving transaction resources tied up on the server), and the commit error is re-thrown
+     *       as the primary error. If the follow-up rollback also fails, the rollback failure is attached to the commit
+     *       error via {@link Throwable#addSuppressed(Throwable)} and a warning is logged.</li>
+     * </ul>
+     * <p>
+     * This is a <strong>single-shot</strong> operation - exactly one attempt is made, with no automatic retry. The
+     * lambda receives the transactional {@code gtx} and should issue its traversals against that source only. Because
+     * the lifecycle is driven through {@link #tx()}, the underlying transaction semantics (embedded thread-bound vs.
+     * remote server session) are whatever the underlying {@code begin()}/{@code commit()}/{@code rollback()} provide.
+     *
+     * @param txWork the unit of work to run against the transaction-bound {@link GraphTraversalSource}
+     * @param <T> the type of value produced by {@code txWork}
+     * @return the value produced by {@code txWork}
+     * @see #executeInTx(Consumer)
+     */
+    public <T> T evaluateInTx(final Function<GraphTraversalSource, T> txWork) {
+        final Transaction tx = this.tx();
+        final GraphTraversalSource gtx = tx.begin();
+        final T result;
+        // Phase 1: run the user's work. If it throws, roll back and rethrow the body error - the
+        // throw below exits the method, so a failed body never reaches the commit in phase 2.
+        try {
+            result = txWork.apply(gtx);
+        } catch (Throwable bodyError) {
+            try {
+                tx.rollback();
+            } catch (Throwable rollbackError) {
+                bodyError.addSuppressed(rollbackError);
+                LOGGER.warn("Rollback failed after transaction body error", rollbackError);
+            }
+            throw bodyError;
+        }
+        // Phase 2: the body succeeded, so commit. A separate try because this failure mode is
+        // distinct (commit, not body): we still roll back for server-side hygiene, then rethrow
+        // the commit error as the primary error.
+        try {
+            tx.commit();
+        } catch (Throwable commitError) {
+            try {
+                tx.rollback();
+            } catch (Throwable rollbackError) {
+                commitError.addSuppressed(rollbackError);
+                LOGGER.warn("Rollback failed after commit failure", rollbackError);
+            }
+            throw commitError;
+        }
+        return result;
     }
 
     /**

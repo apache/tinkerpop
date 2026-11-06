@@ -257,8 +257,30 @@ export default class GoTranslateVisitor extends TranslateVisitor {
         this.sb.push(')');
     }
 
-    visitCharacterLiteral(_ctx: any): void {
-        throw new TranslatorException('Character literals are not supported in Go');
+    visitCharacterLiteral(ctx: any): void {
+        const text: string = ctx.getText();
+        const withoutSuffix = text.substring(0, text.length - 1);
+        let inner = withoutSuffix.substring(1, withoutSuffix.length - 1);
+
+        const octal = /^\\([0-7]{1,3})$/.exec(inner);
+        if (octal) {
+            this.sb.push(GO_PACKAGE_NAME);
+            this.sb.push('Char(0o');
+            this.sb.push(parseInt(octal[1], 8).toString(8));
+            this.sb.push(')');
+            return;
+        }
+
+        inner = inner.replace(/\\([\s\S])|'/g, (m: string, esc?: string) => {
+            if (esc === undefined) return "\\'"; // bare '  -> \'
+            if (esc === '"') return '"';         // \"      -> "
+            if (esc === "'") return "\\'";       // \'      -> \'
+            return m;                            // \n, \\, \uXXXX, ... unchanged
+        });
+        this.sb.push(GO_PACKAGE_NAME);
+        this.sb.push("Char('");
+        this.sb.push(inner);
+        this.sb.push("')");
     }
 
     visitDurationLiteral(ctx: any): void {
@@ -366,6 +388,44 @@ export default class GoTranslateVisitor extends TranslateVisitor {
             const transformed = joined.replace(/^\[\]interface\{\}\{([\s\S]*)\}$/, GO_PACKAGE_NAME + 'NewSimpleSet($1)');
             this.sb.push(transformed);
         }
+    }
+
+    visitTraversalSourceSpawnMethod_match_string(ctx: any): void {
+        this.sb.push('Match(');
+        this.visit(ctx.stringLiteral());
+        this.sb.push(')');
+    }
+
+    visitTraversalSourceSpawnMethod_match_string_map(ctx: any): void {
+        this.sb.push('Match(');
+        this.visit(ctx.stringLiteral());
+        this.sb.push(', ');
+        this.visitGoParamsMap(ctx.genericMapLiteral());
+        this.sb.push(')');
+    }
+
+    visitTraversalMethod_match_string(ctx: any): void {
+        this.sb.push('Match(');
+        this.visit(ctx.stringLiteral());
+        this.sb.push(')');
+    }
+
+    visitTraversalMethod_match_string_map(ctx: any): void {
+        this.sb.push('Match(');
+        this.visit(ctx.stringLiteral());
+        this.sb.push(', ');
+        this.visitGoParamsMap(ctx.genericMapLiteral());
+        this.sb.push(')');
+    }
+
+    private visitGoParamsMap(mapLiteral: any): void {
+        this.sb.push('map[string]interface{}{');
+        const entries: any[] = mapLiteral.mapEntry();
+        for (let i = 0; i < entries.length; i++) {
+            this.visit(entries[i]);
+            if (i < entries.length - 1) this.sb.push(', ');
+        }
+        this.sb.push(' }');
     }
 
     visitTraversalSourceSelfMethod_withoutStrategies(ctx: any): void {

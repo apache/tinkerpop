@@ -3,7 +3,7 @@
     "target": "ES2022",
     "module": "ESNext",
     "moduleResolution": "bundler",
-    "baseUrl": ".",
+    "types": ["node"],
     "paths": {
       "gremlin": [
         "../../../../gremlin-javascript/src/main/javascript/gremlin-javascript/build/esm/index.d.ts"

@@ -41,8 +41,8 @@ public abstract class AbstractTransaction implements Transaction {
     }
 
     /**
-     * Called within {@link #open} if it is determined that the transaction is not yet open given {@link #isOpen}.
-     * Implementers should assume the transaction is not yet started and should thus open one.
+     * Called within {@link #begin(Class)} if it is determined that the transaction is not yet open given
+     * {@link #isOpen}. Implementers should assume the transaction is not yet started and should thus open one.
      */
     protected abstract void doOpen();
 
@@ -88,17 +88,6 @@ public abstract class AbstractTransaction implements Transaction {
      * {@inheritDoc}
      */
     @Override
-    public void open() {
-        if (isOpen())
-            throw Transaction.Exceptions.transactionAlreadyOpen();
-        else
-            doOpen();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
     public void commit() {
         readWrite();
         doCommit();
@@ -123,8 +112,20 @@ public abstract class AbstractTransaction implements Transaction {
         throw Transaction.Exceptions.threadedTransactionsNotSupported();
     }
 
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Starts a transaction if one is not already open for this {@code Transaction} (delegating to
+     * {@link #doOpen()} under an {@link #isOpen()} guard) and returns a {@link TraversalSource} bound to it.
+     * This method is idempotent with respect to the transaction: calling it while a transaction is already open
+     * does not start a new transaction and does not throw - it simply returns a traversal source bound to the
+     * open transaction. The identity of the returned source across calls is unspecified; callers must not rely
+     * on reference identity.
+     */
     @Override
     public <T extends TraversalSource> T begin(final Class<T> traversalSourceClass) {
+        if (!isOpen())
+            doOpen();
         return graph.traversal(traversalSourceClass);
     }
 

@@ -22,6 +22,7 @@ import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.util.AttributeKey;
+import java.io.IOException;
 
 /**
  * Handler used to detect if the channel has become inactive and throw an error in certain scenarios.
@@ -47,7 +48,7 @@ public class InactiveChannelHandler extends ChannelInboundHandlerAdapter {
                 errMsg = "Connection to server closed unexpectedly. Ensure that the server is still" +
                         " reachable. The server may be expecting SSL to be enabled.";
             }
-            ctx.fireExceptionCaught(new RuntimeException(errMsg));
+            ctx.fireExceptionCaught(new IOException(errMsg));
         } else {
             super.channelInactive(ctx);
         }

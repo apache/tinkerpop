@@ -18,11 +18,19 @@
  */
 package org.apache.tinkerpop.gremlin.structure.io.binary;
 
-import org.apache.tinkerpop.gremlin.structure.io.binary.types.CustomTypeSerializer;
+import org.apache.tinkerpop.gremlin.structure.io.binary.types.PrimitivePDTSerializer;
+import org.apache.tinkerpop.gremlin.structure.io.binary.types.CompositePDTSerializer;
 import org.apache.tinkerpop.gremlin.structure.io.binary.types.TransformSerializer;
+import org.apache.tinkerpop.gremlin.structure.io.pdt.CompositePDTAdapter;
+import org.apache.tinkerpop.gremlin.structure.io.pdt.PrimitivePDTAdapter;
+import org.apache.tinkerpop.gremlin.structure.io.pdt.PrimitivePDT;
+import org.apache.tinkerpop.gremlin.structure.io.pdt.CompositePDT;
+import org.apache.tinkerpop.gremlin.structure.io.pdt.PDTRegistry;
 import org.apache.tinkerpop.gremlin.structure.io.Buffer;
 
 import java.io.IOException;
+import java.util.Map;
+import java.util.Optional;
 
 /**
  * Writes a value to a buffer using the {@link TypeSerializer} instances configured in the
@@ -43,6 +51,7 @@ import java.io.IOException;
  */
 public class GraphBinaryWriter {
     private final TypeSerializerRegistry registry;
+    private final PDTRegistry pdtRegistry;
     private final static byte VALUE_FLAG_NULL = 1;
     private final static byte VALUE_FLAG_NONE = 0;
     private final static byte VALUE_FLAG_ORDERED = 2;
@@ -50,14 +59,18 @@ public class GraphBinaryWriter {
     public final static byte VERSION_BYTE = (byte)0x84;
     public final static byte BULKED_BYTE = (byte)0x01;
     private final static byte[] unspecifiedNullBytes = new byte[] { DataType.UNSPECIFIED_NULL.getCodeByte(), 0x01};
-    private final static byte[] customTypeCodeBytes = new byte[] { DataType.CUSTOM.getCodeByte() };
 
     public GraphBinaryWriter() {
         this(TypeSerializerRegistry.INSTANCE);
     }
 
     public GraphBinaryWriter(final TypeSerializerRegistry registry) {
+        this(registry, null);
+    }
+
+    public GraphBinaryWriter(final TypeSerializerRegistry registry, final PDTRegistry pdtRegistry) {
         this.registry = registry;
+        this.pdtRegistry = pdtRegistry;
     }
 
     /**
@@ -75,7 +88,15 @@ public class GraphBinaryWriter {
 
         final Class<?> objectClass = value.getClass();
 
-        final TypeSerializer<T> serializer = (TypeSerializer<T>) registry.getSerializer(objectClass);
+        final TypeSerializer<T> serializer = getSerializerOrAdapterFallback(objectClass);
+        if (serializer instanceof CompositePDTSerializer && !(value instanceof CompositePDT)) {
+            serializer.writeValue((T) dehydrateToPdt(value, objectClass), buffer, this, nullable);
+            return;
+        }
+        if (serializer instanceof PrimitivePDTSerializer && !(value instanceof PrimitivePDT)) {
+            serializer.writeValue((T) dehydrateToPrimitivePdt(value, objectClass), buffer, this, nullable);
+            return;
+        }
         serializer.writeValue(value, buffer, this, nullable);
     }
 
@@ -90,15 +111,18 @@ public class GraphBinaryWriter {
         }
 
         final Class<?> objectClass = value.getClass();
-        final TypeSerializer<T> serializer = (TypeSerializer<T>) registry.getSerializer(objectClass);
+        final TypeSerializer<T> serializer = getSerializerOrAdapterFallback(objectClass);
 
-        if (serializer instanceof CustomTypeSerializer) {
-            // It's a custom type
-            CustomTypeSerializer customTypeSerializer = (CustomTypeSerializer) serializer;
+        if (serializer instanceof CompositePDTSerializer && !(value instanceof CompositePDT)) {
+            // Convert @ProviderDefined-annotated object to CompositePDT, then re-enter write().
+            // On re-entry, CompositePDT.class is directly registered in the registry,
+            // and the instanceof guard prevents double-wrapping.
+            write((T) dehydrateToPdt(value, objectClass), buffer);
+            return;
+        }
 
-            buffer.writeBytes(customTypeCodeBytes);
-            writeValue(customTypeSerializer.getTypeName(), buffer, false);
-            customTypeSerializer.write(value, buffer, this);
+        if (serializer instanceof PrimitivePDTSerializer && !(value instanceof PrimitivePDT)) {
+            write((T) dehydrateToPrimitivePdt(value, objectClass), buffer);
             return;
         }
 
@@ -151,6 +175,53 @@ public class GraphBinaryWriter {
      */
     public void writeValueFlagBulk(Buffer buffer) {
         buffer.writeByte(VALUE_FLAG_BULK);
+    }
+
+    /**
+     * Attempts to get a serializer for the given class. If no serializer is found and the pdtRegistry
+     * has an adapter for the class (composite or primitive), returns the appropriate PDT serializer.
+     */
+    private <DT> TypeSerializer<DT> getSerializerOrAdapterFallback(final Class<?> type) throws IOException {
+        try {
+            return (TypeSerializer<DT>) registry.getSerializer(type);
+        } catch (final IOException e) {
+            if (pdtRegistry != null) {
+                if (pdtRegistry.getCompositeAdapterByClass(type).isPresent()) {
+                    return registry.getSerializer(DataType.COMPOSITE_PDT);
+                }
+                if (pdtRegistry.getPrimitiveAdapterByClass(type).isPresent()) {
+                    return registry.getSerializer(DataType.PRIMITIVE_PDT);
+                }
+            }
+            throw e;
+        }
+    }
+
+    /**
+     * Dehydrates a value to a {@link CompositePDT} using annotation reflection or an adapter from the
+     * pdtRegistry.
+     */
+    private CompositePDT dehydrateToPdt(final Object value, final Class<?> objectClass) {
+        // A registered adapter takes priority
+        if (pdtRegistry != null) {
+            final Optional<CompositePDTAdapter<?>> opt = pdtRegistry.getCompositeAdapterByClass(objectClass);
+            if (opt.isPresent()) {
+                final CompositePDTAdapter adapter = opt.get();
+                return new CompositePDT(adapter.typeName(), adapter.toFields(value));
+            }
+        }
+        // @ProviderDefined annotation base case
+        return CompositePDT.from(value);
+    }
+
+
+    /**
+     * Dehydrates a value to a {@link PrimitivePDT} using a {@link PrimitivePDTAdapter} from the
+     * pdtRegistry.
+     */
+    private PrimitivePDT dehydrateToPrimitivePdt(final Object value, final Class<?> objectClass) {
+        final PrimitivePDTAdapter adapter = pdtRegistry.getPrimitiveAdapterByClass(objectClass).get();
+        return new PrimitivePDT(adapter.typeName(), adapter.toValue(value));
     }
 
 }

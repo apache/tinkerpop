@@ -85,6 +85,11 @@ Feature: Step - path()
   Scenario: g_VX1X_outEXcreatedX_inV_inE_outV_path
     Given the modern graph
     And using the parameter vid1 defined as "v[marko].id"
+    And the intent
+      """
+      Starting from vertex <vid1>, follow each of its outgoing created edges to the software, then each incoming edge of
+      that software back to the vertex it comes from. Return each walk as a path of vertices and edges.
+      """
     And the traversal of
       """
       g.V(vid1).outE("created").inV().inE().outV().path()

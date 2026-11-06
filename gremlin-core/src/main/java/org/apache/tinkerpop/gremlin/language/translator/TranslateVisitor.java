@@ -471,6 +471,12 @@ public class TranslateVisitor extends GremlinBaseVisitor<Void> {
     }
 
     @Override
+    public Void visitPdtLiteral(final GremlinParser.PdtLiteralContext ctx) {
+        sb.append(ctx.getText());
+        return null;
+    }
+
+    @Override
     public Void visitVariable(final GremlinParser.VariableContext ctx) {
         final String var = ctx.getText();
         sb.append(var);

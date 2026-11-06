@@ -30,7 +30,13 @@ import { Effect, Context, Layer, pipe } from 'effect';
 import { type GremlinQueryResult, GremlinQueryResultSchema } from './models/index.js';
 import { parseGremlinResultsWithMetadata } from '../utils/result-parser.js';
 import { isGremlinResult } from '../utils/type-guards.js';
-import { GremlinConnectionError, GremlinQueryError, Errors, ParseError } from '../errors.js';
+import {
+  GremlinConnectionError,
+  GremlinQueryError,
+  Errors,
+  ParseError,
+  describeCause,
+} from '../errors.js';
 import { GremlinClient } from './client.js';
 import { SchemaService } from './schema.js';
 import type { GremlinClientType, GremlinResultSet, ConnectionState } from './types.js';
@@ -97,10 +103,11 @@ const makeGremlinService = Effect.gen(function* () {
     query: string,
     client: GremlinClientType
   ): Effect.Effect<unknown, GremlinQueryError> =>
-    pipe(
-      Effect.tryPromise(() => client.submit(query, null)),
-      Effect.mapError((error: unknown) => Errors.query('Query execution failed', query, error))
-    );
+    Effect.tryPromise({
+      try: () => client.submit(query, null),
+      catch: (error: unknown) =>
+        Errors.query(describeCause(error) ?? 'Query execution failed', query, error),
+    });
 
   /**
    * Processes Gremlin ResultSet into standard array format.

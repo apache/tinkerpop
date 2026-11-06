@@ -206,10 +206,10 @@ public class GremlinServer {
 
             final Channelizer c = (Channelizer) o;
             if (c.supportsIdleMonitor()) {
-                logger.info("idleConnectionTimeout was set to {} which resolves to {} seconds when configuring this value - this feature will be {}",
-                        settings.idleConnectionTimeout, settings.idleConnectionTimeout / 1000, settings.idleConnectionTimeout < 1000 ? "disabled" : "enabled");
-                logger.info("keepAliveInterval was set to {} which resolves to {} seconds when configuring this value - this feature will be {}",
-                        settings.keepAliveInterval, settings.keepAliveInterval / 1000, settings.keepAliveInterval < 1000 ? "disabled" : "enabled");
+                logger.info("idleConnectionTimeoutMillis was set to {} which resolves to {} seconds when configuring this value - this feature will be {}",
+                        settings.idleConnectionTimeoutMillis, settings.idleConnectionTimeoutMillis / 1000, settings.idleConnectionTimeoutMillis < 1000 ? "disabled" : "enabled");
+                logger.info("keepAliveIntervalMillis was set to {} which resolves to {} seconds when configuring this value - this feature will be {}",
+                        settings.keepAliveIntervalMillis, settings.keepAliveIntervalMillis / 1000, settings.keepAliveIntervalMillis < 1000 ? "disabled" : "enabled");
             }
 
             return c;
@@ -402,11 +402,11 @@ public class GremlinServer {
     private static void configureMetrics(final Settings.ServerMetrics settings) {
         final MetricManager metrics = MetricManager.INSTANCE;
         settings.optionalConsoleReporter().ifPresent(config -> {
-            if (config.enabled) metrics.addConsoleReporter(config.interval);
+            if (config.enabled) metrics.addConsoleReporter(config.intervalMillis);
         });
 
         settings.optionalCsvReporter().ifPresent(config -> {
-            if (config.enabled) metrics.addCsvReporter(config.interval, config.fileName);
+            if (config.enabled) metrics.addCsvReporter(config.intervalMillis, config.fileName);
         });
 
         settings.optionalJmxReporter().ifPresent(config -> {
@@ -414,14 +414,14 @@ public class GremlinServer {
         });
 
         settings.optionalSlf4jReporter().ifPresent(config -> {
-            if (config.enabled) metrics.addSlf4jReporter(config.interval, config.loggerName);
+            if (config.enabled) metrics.addSlf4jReporter(config.intervalMillis, config.loggerName);
         });
 
         settings.optionalGangliaReporter().ifPresent(config -> {
             if (config.enabled) {
                 try {
                     metrics.addGangliaReporter(config.host, config.port,
-                            config.addressingMode, config.ttl, config.protocol31, config.hostUUID, config.spoof, config.interval);
+                            config.addressingMode, config.ttl, config.protocol31, config.hostUUID, config.spoof, config.intervalMillis);
                 } catch (IOException ioe) {
                     logger.warn("Error configuring the Ganglia Reporter.", ioe);
                 }
@@ -429,7 +429,7 @@ public class GremlinServer {
         });
 
         settings.optionalGraphiteReporter().ifPresent(config -> {
-            if (config.enabled) metrics.addGraphiteReporter(config.host, config.port, config.prefix, config.interval);
+            if (config.enabled) metrics.addGraphiteReporter(config.host, config.port, config.prefix, config.intervalMillis);
         });
     }
 

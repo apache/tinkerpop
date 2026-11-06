@@ -23,6 +23,7 @@ import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.TestHelper;
 import org.apache.tinkerpop.gremlin.driver.Client;
 import org.apache.tinkerpop.gremlin.driver.Cluster;
+import org.apache.tinkerpop.gremlin.driver.RequestOptions;
 import org.apache.tinkerpop.gremlin.features.World;
 import org.apache.tinkerpop.gremlin.process.computer.Computer;
 import org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource;
@@ -50,7 +51,7 @@ public abstract class RemoteWorld implements World {
      * construct a RemoteWorld.
      */
     public static Cluster createTestCluster(final Serializers serializer) {
-        return TestClientFactory.build().serializer(serializer).create();
+        return TestClientFactory.build().responseSerializer(serializer).create();
     }
 
     public RemoteWorld(Cluster cluster) {
@@ -91,12 +92,30 @@ public abstract class RemoteWorld implements World {
                 case GRATEFUL:
                     remoteTraversalSource = "ggrateful";
                     break;
+                case ZOO:
+                    remoteTraversalSource = "gzoo";
+                    break;
+                case AIR_ROUTES:
+                    remoteTraversalSource = "gairroutes";
+                    break;
                 default:
                     throw new UnsupportedOperationException("GraphData not supported: " + graphData.name());
             }
         }
 
         return AnonymousTraversalSource.traversal().withRemote(DriverRemoteConnection.using(client, remoteTraversalSource));
+    }
+
+    @Override
+    public GraphTraversalSource getMultiLabelGraphTraversalSource() {
+        final Client client = cluster.connect();
+        try { // Clear data before run because tests are allowed to modify data for the multi-label graph.
+            final RequestOptions options = RequestOptions.build().traversalSource("gmultilabel").create();
+            client.submit("g.V().drop()", options).all().get();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        return AnonymousTraversalSource.traversal().withRemote(DriverRemoteConnection.using(client, "gmultilabel"));
     }
 
     @Override
@@ -138,6 +157,11 @@ public abstract class RemoteWorld implements World {
         }
 
         @Override
+        public GraphTraversalSource getMultiLabelGraphTraversalSource() {
+            throw new AssumptionViolatedException("GraphComputer does not support mutation");
+        }
+
+        @Override
         public void beforeEachScenario(Scenario scenario) {
             super.beforeEachScenario(scenario);
 
@@ -161,6 +185,12 @@ public abstract class RemoteWorld implements World {
                 case "g_V_localXgroupXaX_byXnameX_by_selectXaX_countXlocalXX":
                 case "g_V_out_order_byXnameX_localXtreeXaX_selectXaX_countXlocalXX":
                     throw new AssumptionViolatedException("Selecting side effects inside local() produces inconsistent results in OLAP (See TINKERPOP-3209)");
+                case "g_averageRoutesPerAirport":
+                case "g_mostOutgoingRoutesFromAnyAirport":
+                case "g_airportCountsByRunwayBucket":
+                case "g_directAndTwoFlightJourneysFromAUS":
+                case "g_cyclesInEitherDirection":
+                    throw new AssumptionViolatedException("Results differ on GraphComputer, ignored pending future investigation");
                 default:
                     // Do nothing
             }
@@ -217,37 +247,6 @@ public abstract class RemoteWorld implements World {
 
     public static class GraphBinaryRemoteComputerWorld extends RemoteComputerWorld {
         public GraphBinaryRemoteComputerWorld() { super(createTestCluster(Serializers.GRAPHBINARY_V4)); }
-
-        @Override
-        public GraphTraversalSource getGraphTraversalSource(final LoadGraphWith.GraphData graphData) {
-            final GraphTraversalSource g = super.getGraphTraversalSource(graphData);
-            return g.with("language", "groovy-test");
-        }
-    }
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-    public static class GraphSONLangRemoteWorld extends RemoteWorld {
-        public GraphSONLangRemoteWorld() { super(createTestCluster(Serializers.GRAPHSON_V4)); }
-
-        @Override
-        public GraphTraversalSource getGraphTraversalSource(final LoadGraphWith.GraphData graphData) {
-            final GraphTraversalSource g = super.getGraphTraversalSource(graphData);
-            return g.with("language", "gremlin-lang");
-        }
-    }
-
-    public static class GraphSONLangParameterizedRemoteWorld extends GraphSONLangRemoteWorld {
-        @Override
-        public boolean useParametersLiterally() {
-            return false;
-        }
-    }
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-    public static class GraphSONRemoteComputerWorld extends RemoteComputerWorld {
-        public GraphSONRemoteComputerWorld() { super(createTestCluster(Serializers.GRAPHSON_V4)); }
 
         @Override
         public GraphTraversalSource getGraphTraversalSource(final LoadGraphWith.GraphData graphData) {

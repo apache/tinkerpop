@@ -38,57 +38,11 @@ limitations under the License.
                 <plugin>
                     <groupId>com.github.eirslett</groupId>
                     <artifactId>frontend-maven-plugin</artifactId>
-                    <version>1.15.0</version>
+                    <version>2.0.1</version>
                 </plugin>
             </plugins>
         </pluginManagement>
         <plugins>
-            <plugin>
-                <!--
-                Use gmavenplus-plugin to:
-                    - Update version number
-                -->
-                <groupId>org.codehaus.gmavenplus</groupId>
-                <artifactId>gmavenplus-plugin</artifactId>
-                <dependencies>
-                    <dependency>
-                        <groupId>org.apache.groovy</groupId>
-                        <artifactId>groovy-all</artifactId>
-                        <version>${groovy.version}</version>
-                        <type>pom</type>
-                        <scope>runtime</scope>
-                    </dependency>
-                </dependencies>
-                <executions>
-                    <execution>
-                        <id>update-version</id>
-                        <phase>generate-sources</phase>
-                        <goals>
-                            <goal>execute</goal>
-                        </goals>
-                        <configuration>
-                            <properties>
-                                <property>
-                                    <name>projectBaseDir</name>
-                                    <value>${project.basedir}</value>
-                                </property>
-                                <property>
-                                    <name>mavenVersion</name>
-                                    <value>${project.version}</value>
-                                </property>
-                            </properties>
-                            <scripts>
-                                <script>
-                                    def versionForJs = mavenVersion.replace("-SNAPSHOT", "-alpha1")
-                                    def platformAgnosticBaseDirPath = project.basedir.getAbsolutePath().replace("\\","/")
-                                    def file = new File(platformAgnosticBaseDirPath + "/package.json")
-                                    file.write(file.getText("UTF-8").replaceFirst(/"version": "(.*)",/, "\"version\": \"" + versionForJs + "\","))
-                                </script>
-                            </scripts>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-clean-plugin</artifactId>
@@ -141,7 +95,6 @@ limitations under the License.
                         <configuration>
                             <skip>${skipTests}</skip>
                             <arguments>test --exit</arguments>
-                            <failOnError>true</failOnError>
                         </configuration>
                     </execution>
                 </executions>

@@ -23,46 +23,35 @@ import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.LabelCardinality;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.io.Io;
-import org.apache.tinkerpop.gremlin.structure.io.IoCore;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONVersion;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoVersion;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.tinkergraph.process.computer.TinkerGraphComputer;
 import org.apache.tinkerpop.gremlin.tinkergraph.process.computer.TinkerGraphComputerView;
+import org.apache.tinkerpop.gremlin.gql.GqlDeclarativeMatchStrategy;
 import org.apache.tinkerpop.gremlin.tinkergraph.services.TinkerServiceRegistry;
 
-import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
-import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.stream.Stream;
 
 /**
- * Base class for {@link TinkerGraph} and {@link TinkerTransactionGraph}.
+ * Base class for {@link TinkerMemoryGraph} and {@link TinkerStorageGraph}.
  * Contains common methods, variables and constants, but leaves the work with elements and indices
  * to concrete implementations.
  *
  * @author Valentyn Kahamlyk
  */
-public abstract class AbstractTinkerGraph implements Graph {
-
-    public static final String GREMLIN_TINKERGRAPH_VERTEX_ID_MANAGER = "gremlin.tinkergraph.vertexIdManager";
-    public static final String GREMLIN_TINKERGRAPH_EDGE_ID_MANAGER = "gremlin.tinkergraph.edgeIdManager";
-    public static final String GREMLIN_TINKERGRAPH_VERTEX_PROPERTY_ID_MANAGER = "gremlin.tinkergraph.vertexPropertyIdManager";
-    public static final String GREMLIN_TINKERGRAPH_DEFAULT_VERTEX_PROPERTY_CARDINALITY = "gremlin.tinkergraph.defaultVertexPropertyCardinality";
-    public static final String GREMLIN_TINKERGRAPH_GRAPH_LOCATION = "gremlin.tinkergraph.graphLocation";
-    public static final String GREMLIN_TINKERGRAPH_GRAPH_FORMAT = "gremlin.tinkergraph.graphFormat";
-    public static final String GREMLIN_TINKERGRAPH_ALLOW_NULL_PROPERTY_VALUES = "gremlin.tinkergraph.allowNullPropertyValues";
-    public static final String GREMLIN_TINKERGRAPH_SERVICE = "gremlin.tinkergraph.service";
+public abstract class AbstractTinkerGraph implements TinkerGraph {
 
     protected AtomicLong currentId = new AtomicLong(-1L);
     protected Map<Object, VertexProperty> vertexProperties = new ConcurrentHashMap<>();
@@ -77,12 +66,14 @@ public abstract class AbstractTinkerGraph implements Graph {
     protected IdManager<VertexProperty> vertexPropertyIdManager;
     protected VertexProperty.Cardinality defaultVertexPropertyCardinality;
     protected boolean allowNullPropertyValues;
+    protected LabelCardinality vertexLabelCardinality;
+    protected LabelCardinality edgeLabelCardinality;
+    protected String defaultVertexLabel;
+    protected String defaultEdgeLabel;
 
     protected TinkerServiceRegistry serviceRegistry;
 
     protected Configuration configuration;
-    protected String graphLocation;
-    protected String graphFormat;
 
     /**
      * {@inheritDoc}
@@ -117,6 +108,15 @@ public abstract class AbstractTinkerGraph implements Graph {
      * @param edge
      */
     public void touch(final TinkerEdge edge) {};
+
+    /**
+     * Determines if this graph stores elements in transactional containers, meaning elements are held by id
+     * reference and cloned on read rather than referenced directly. Returns {@code false} unless overridden by an
+     * implementation that supports transactions.
+     */
+    public boolean isTxMode() {
+        return false;
+    }
 
     /**
      * Return {@link Vertex} by id.
@@ -167,6 +167,67 @@ public abstract class AbstractTinkerGraph implements Graph {
     public abstract int getEdgesCount();
 
     /**
+     * Returns the number of vertices with the given label. A {@code null} label returns the
+     * total vertex count. The default implementation does a full vertex scan; subclasses that
+     * maintain a label index should override this for O(1) performance.
+     */
+    @Override
+    public long countVerticesByLabel(final String label) {
+        if (label == null) return getVerticesCount();
+        long count = 0;
+        final Iterator<Vertex> it = vertices();
+        while (it.hasNext()) {
+            if (it.next().labels().contains(label)) count++;
+        }
+        return count;
+    }
+
+    /**
+     * Returns the number of edges with the given label. A {@code null} label returns the
+     * total edge count. The default implementation does a full edge scan; subclasses that
+     * maintain a label index should override this for O(1) performance.
+     */
+    @Override
+    public long countEdgesByLabel(final String label) {
+        if (label == null) return getEdgesCount();
+        long count = 0;
+        final Iterator<Edge> it = edges();
+        while (it.hasNext()) {
+            if (it.next().labels().contains(label)) count++;
+        }
+        return count;
+    }
+
+    /**
+     * {@link Graph.Index} implementation backed by TinkerGraph's property index structures.
+     * Returns {@code Long.MAX_VALUE} from {@link Graph.Index#countVertexIndex} when the key
+     * is not indexed, signalling to the GQL executor that a full scan is required.
+     */
+    private final class TinkerGraphIndex implements Graph.Index {
+        @Override
+        public Iterator<Vertex> queryVertexIndex(final String key, final Object value) {
+            return TinkerIndexHelper.queryVertexIndex(AbstractTinkerGraph.this, key, value)
+                    .stream().map(v -> (Vertex) v).iterator();
+        }
+
+        @Override
+        public long countVertexIndex(final String key, final Object value) {
+            if (vertexIndex == null) return Long.MAX_VALUE;
+            // TinkerIndex.count() returns 0 for keys that are not indexed, which is
+            // indistinguishable from "indexed but empty". Use getIndexedKeys() to distinguish.
+            if (!getIndexedKeys(Vertex.class).contains(key)) return Long.MAX_VALUE;
+            return TinkerIndexHelper.countVertexIndex(AbstractTinkerGraph.this, key, value);
+        }
+    }
+
+    private final Graph.Index tinkerGraphIndex = new TinkerGraphIndex();
+
+    @Override
+    public Graph.Index index() {
+        return tinkerGraphIndex;
+    }
+
+    /**
      * {@inheritDoc}
      */
     public abstract boolean hasEdge(final Object id);
@@ -177,54 +238,6 @@ public abstract class AbstractTinkerGraph implements Graph {
     public boolean hasVertexProperty(final Object id) {
         return vertexProperties.containsKey(id);
     }
-
-    protected void loadGraph() {
-        final File f = new File(graphLocation);
-        if (f.exists() && f.isFile()) {
-            try {
-                if (graphFormat.equals("graphml")) {
-                    io(IoCore.graphml()).readGraph(graphLocation);
-                } else if (graphFormat.equals("graphson")) {
-                    io(IoCore.graphson()).readGraph(graphLocation);
-                } else if (graphFormat.equals("gryo")) {
-                    io(IoCore.gryo()).readGraph(graphLocation);
-                } else {
-                    io(IoCore.createIoBuilder(graphFormat)).readGraph(graphLocation);
-                }
-            } catch (Exception ex) {
-                throw new RuntimeException(String.format("Could not load graph at %s with %s", graphLocation, graphFormat), ex);
-            }
-        }
-    }
-
-    protected void saveGraph() {
-        final File f = new File(graphLocation);
-        if (f.exists()) {
-            f.delete();
-        } else {
-            final File parent = f.getParentFile();
-
-            // the parent would be null in the case of an relative path if the graphLocation was simply: "f.gryo"
-            if (parent != null && !parent.exists()) {
-                parent.mkdirs();
-            }
-        }
-
-        try {
-            if (graphFormat.equals("graphml")) {
-                io(IoCore.graphml()).writeGraph(graphLocation);
-            } else if (graphFormat.equals("graphson")) {
-                io(IoCore.graphson()).writeGraph(graphLocation);
-            } else if (graphFormat.equals("gryo")) {
-                io(IoCore.gryo()).writeGraph(graphLocation);
-            } else {
-                io(IoCore.createIoBuilder(graphFormat)).writeGraph(graphLocation);
-            }
-        } catch (Exception ex) {
-            throw new RuntimeException(String.format("Could not save graph at %s with %s", graphLocation, graphFormat), ex);
-        }
-    }
-
 
     @Override
     public <I extends Io> I io(final Io.Builder<I> builder) {
@@ -261,6 +274,7 @@ public abstract class AbstractTinkerGraph implements Graph {
     /**
      * Clear internal graph data
      */
+    @Override
     public void clear() {
         this.variables = null;
         this.currentId.set(-1L);
@@ -271,15 +285,13 @@ public abstract class AbstractTinkerGraph implements Graph {
     }
 
     /**
-     * This method only has an effect if the {@link TinkerGraph#GREMLIN_TINKERGRAPH_GRAPH_LOCATION} is set, in which case the
-     * data in the graph is persisted to that location. This method may be called multiple times and does not release
-     * resources.
+     * Closes the graph, releasing any resources held by its {@link TinkerServiceRegistry}. This method may be called
+     * multiple times and is a no-op with respect to graph data for the in-memory implementation.
      */
     @Override
     public void close() {
-        if (graphLocation != null) saveGraph();
-        // shutdown services
         serviceRegistry.close();
+        GqlDeclarativeMatchStrategy.evict(this);
     }
 
     @Override
@@ -292,12 +304,69 @@ public abstract class AbstractTinkerGraph implements Graph {
 
     protected abstract void addInEdge(final TinkerVertex vertex, final String label, final Edge edge);
 
+    /**
+     * Add an edge to the per-vertex adjacency maps under the given label.
+     * Used when labels are added to an existing edge.
+     *
+     * @param edge  the edge to register
+     * @param label the label under which to register the edge
+     * @since 4.0.0
+     */
+    public abstract void addEdgeToAdjacency(final TinkerEdge edge, final String label);
+
+    /**
+     * Remove an edge from the per-vertex adjacency maps for the given label.
+     * Used when labels are removed from an existing edge.
+     *
+     * @param edge  the edge to unregister
+     * @param label the label from which to unregister the edge
+     * @since 4.0.0
+     */
+    public abstract void removeEdgeFromAdjacency(final TinkerEdge edge, final String label);
+
+    /**
+     * Called when one or more labels have been added to an existing vertex, allowing the graph to update
+     * any internal label indices.
+     *
+     * @param vertex     the vertex to which labels were added
+     * @param labelsAdded the labels that were newly added to the vertex
+     * @since 4.0.0
+     */
+    public void addVertexLabels(final TinkerVertex vertex, final Set<String> labelsAdded) {
+        // no-op by default - TinkerGraph does not maintain a separate label index
+    }
+
+    /**
+     * Called when one or more labels have been removed from an existing vertex, allowing the graph to update
+     * any internal label indices.
+     *
+     * @param vertex       the vertex from which labels were removed
+     * @param labelsRemoved the labels that were actually removed from the vertex
+     * @since 4.0.0
+     */
+    public void removeVertexLabels(final TinkerVertex vertex, final Set<String> labelsRemoved) {
+        // no-op by default - TinkerGraph does not maintain a separate label index
+    }
+
     protected TinkerVertex createTinkerVertex(final Object id, final String label, final AbstractTinkerGraph graph) {
         return new TinkerVertex(id, label, graph);
     }
 
     protected TinkerVertex createTinkerVertex(final Object id, final String label, final AbstractTinkerGraph graph, final long currentVersion) {
         return new TinkerVertex(id, label, graph, currentVersion);
+    }
+
+    /**
+     * Creates a TinkerVertex with multiple labels.
+     *
+     * @param id     the vertex id
+     * @param labels the set of labels for the vertex
+     * @param graph  the graph instance
+     * @return a new TinkerVertex
+     * @since 4.0.0
+     */
+    protected TinkerVertex createTinkerVertex(final Object id, final Set<String> labels, final AbstractTinkerGraph graph) {
+        return new TinkerVertex(id, labels, graph);
     }
 
     protected TinkerEdge createTinkerEdge(final Object id, final Vertex outVertex, final String label, final Vertex inVertex) {
@@ -312,7 +381,7 @@ public abstract class AbstractTinkerGraph implements Graph {
 
     public class TinkerGraphVertexFeatures implements Features.VertexFeatures {
 
-        private final TinkerTransactionGraph.TinkerGraphVertexPropertyFeatures vertexPropertyFeatures = new TinkerTransactionGraph.TinkerGraphVertexPropertyFeatures();
+        private final TinkerGraphVertexPropertyFeatures vertexPropertyFeatures = new TinkerGraphVertexPropertyFeatures();
 
         protected TinkerGraphVertexFeatures() {
         }
@@ -340,6 +409,16 @@ public abstract class AbstractTinkerGraph implements Graph {
         @Override
         public VertexProperty.Cardinality getCardinality(final String key) {
             return defaultVertexPropertyCardinality;
+        }
+
+        @Override
+        public LabelCardinality getLabelCardinality() {
+            return vertexLabelCardinality;
+        }
+
+        @Override
+        public String getDefaultLabel() {
+            return defaultVertexLabel;
         }
     }
 
@@ -394,6 +473,7 @@ public abstract class AbstractTinkerGraph implements Graph {
      * @param <E>          The type of the element class
      * @return the set of keys currently being indexed
      */
+    @Override
     public <E extends Element> Set<String> getIndexedKeys(final Class<E> elementClass) {
         if (Vertex.class.isAssignableFrom(elementClass)) {
             return null == this.vertexIndex ? Collections.emptySet() : this.vertexIndex.getIndexedKeys();
@@ -418,194 +498,6 @@ public abstract class AbstractTinkerGraph implements Graph {
             } catch (Exception ex) {
                 throw new IllegalStateException(String.format("Could not configure TinkerGraph %s id manager with %s", clazz.getSimpleName(), idManagerConfigValue));
             }
-        }
-    }
-
-    /**
-     * TinkerGraph will use an implementation of this interface to generate identifiers when a user does not supply
-     * them and to handle identifier conversions when querying to provide better flexibility with respect to
-     * handling different data types that mean the same thing.  For example, the
-     * {@link DefaultIdManager#LONG} implementation will allow {@code g.vertices(1l, 2l)} and
-     * {@code g.vertices(1, 2)} to both return values.
-     *
-     * @param <T> the id type
-     */
-    public interface IdManager<T> {
-        /**
-         * Generate an identifier which should be unique to the {@link TinkerGraph} instance.
-         */
-        T getNextId(final AbstractTinkerGraph graph);
-
-        /**
-         * Convert an identifier to the type required by the manager.
-         */
-        T convert(final Object id);
-
-        /**
-         * Determine if an identifier is allowed by this manager given its type.
-         */
-        boolean allow(final Object id);
-    }
-
-    /**
-     * A default set of {@link IdManager} implementations for common identifier types.
-     */
-    public enum DefaultIdManager implements IdManager {
-        /**
-         * Manages identifiers of type {@code Long}. Will convert any class that extends from {@link Number} to a
-         * {@link Long} and will also attempt to convert {@code String} values
-         */
-        LONG {
-            @Override
-            public Long getNextId(final AbstractTinkerGraph graph) {
-                return Stream.generate(() -> (graph.currentId.incrementAndGet())).filter(id -> !graph.hasVertex(id) && !graph.hasEdge(id) && !graph.hasVertexProperty(id)).findAny().get();
-            }
-
-            @Override
-            public Object convert(final Object id) {
-                if (null == id)
-                    return null;
-                else if (id instanceof Long)
-                    return id;
-                else if (id instanceof Number)
-                    return ((Number) id).longValue();
-                else if (id instanceof String) {
-                    try {
-                        return Long.parseLong((String) id);
-                    } catch (NumberFormatException nfe) {
-                        throw new IllegalArgumentException(createErrorMessage(Long.class, id));
-                    }
-                }
-                else
-                    throw new IllegalArgumentException(createErrorMessage(Long.class, id));
-            }
-
-            @Override
-            public boolean allow(final Object id) {
-                return id instanceof Number || id instanceof String;
-            }
-        },
-
-        /**
-         * Manages identifiers of type {@code Integer}. Will convert any class that extends from {@link Number} to a
-         * {@link Integer} and will also attempt to convert {@code String} values
-         */
-        INTEGER {
-            @Override
-            public Integer getNextId(final AbstractTinkerGraph graph) {
-                return Stream.generate(() -> (graph.currentId.incrementAndGet())).map(Long::intValue).filter(id -> !graph.hasVertex(id) && !graph.hasEdge(id) && !graph.hasVertexProperty(id)).findAny().get();
-            }
-
-            @Override
-            public Object convert(final Object id) {
-                if (null == id)
-                    return null;
-                else if (id instanceof Integer)
-                    return id;
-                else if (id instanceof Number)
-                    return ((Number) id).intValue();
-                else if (id instanceof String) {
-                    try {
-                        return Integer.parseInt((String) id);
-                    } catch (NumberFormatException nfe) {
-                        throw new IllegalArgumentException(createErrorMessage(Integer.class, id));
-                    }
-                }
-                else
-                    throw new IllegalArgumentException(createErrorMessage(Integer.class, id));
-            }
-
-            @Override
-            public boolean allow(final Object id) {
-                return id instanceof Number || id instanceof String;
-            }
-        },
-
-        /**
-         * Manages identifiers of type {@code UUID}. Will convert {@code String} values to
-         * {@code UUID}.
-         */
-        UUID {
-            @Override
-            public java.util.UUID getNextId(final AbstractTinkerGraph graph) {
-                return java.util.UUID.randomUUID();
-            }
-
-            @Override
-            public Object convert(final Object id) {
-                if (null == id)
-                    return null;
-                else if (id instanceof java.util.UUID)
-                    return id;
-                else  if (id instanceof String) {
-                    try {
-                        return java.util.UUID.fromString((String) id);
-                    } catch (IllegalArgumentException iae) {
-                        throw new IllegalArgumentException(createErrorMessage(java.util.UUID.class, id));
-                    }
-                } else
-                    throw new IllegalArgumentException(createErrorMessage(java.util.UUID.class, id));
-            }
-
-            @Override
-            public boolean allow(final Object id) {
-                return id instanceof UUID || id instanceof String;
-            }
-        },
-
-        /**
-         * Manages identifiers of any type.  This represents the default way {@link TinkerGraph} has always worked.
-         * In other words, there is no identifier conversion so if the identifier of a vertex is a {@code Long}, then
-         * trying to request it with an {@code Integer} will have no effect. Also, like the original
-         * {@link TinkerGraph}, it will generate {@link Long} values for identifiers.
-         */
-        ANY {
-            @Override
-            public Long getNextId(final AbstractTinkerGraph graph) {
-                return Stream.generate(() -> (graph.currentId.incrementAndGet())).filter(id -> !graph.hasVertex(id) && !graph.hasEdge(id) && !graph.hasVertexProperty(id)).findAny().get();
-            }
-
-            @Override
-            public Object convert(final Object id) {
-                return id;
-            }
-
-            @Override
-            public boolean allow(final Object id) {
-                return true;
-            }
-        },
-        
-        /**
-         * Manages identifiers of type {@code String}.
-         */
-        STRING {
-            @Override
-            public String getNextId(final AbstractTinkerGraph graph) {
-                return java.util.UUID.randomUUID().toString();
-            }
-
-            @Override
-            public Object convert(final Object id) {
-                if (null == id)
-                    return null;
-                else  if (id instanceof String) {
-                    if (((String)id).isEmpty())
-                        throw new IllegalArgumentException("Expected a non-empty string but received an empty string.");
-
-                    return id;
-                } else
-                    throw new IllegalArgumentException(createErrorMessage(java.lang.String.class, id));
-            }
-
-            @Override
-            public boolean allow(final Object id) {
-                return id instanceof String && !((String)id).isEmpty();
-            }
-        };
-
-        private static String createErrorMessage(final Class<?> expectedType, final Object id) {
-            return String.format("Expected an id that is convertible to %s but received %s - [%s]", expectedType, id.getClass(), id);
         }
     }
 

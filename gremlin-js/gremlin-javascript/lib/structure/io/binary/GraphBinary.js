@@ -30,7 +30,6 @@
  * TODO: it has the following open topics:
  * Core Data Types support:
  * - [] 0x22: BigDecimal
- * - [] 0x2b: Tree
  * Extended Types support:
  * - [] 0x80: Char
  * - [] 0x81: Duration
@@ -53,9 +52,11 @@ import SetSerializer from './internals/SetSerializer.js';
 import UuidSerializer from './internals/UuidSerializer.js';
 import EdgeSerializer from './internals/EdgeSerializer.js';
 import PathSerializer from './internals/PathSerializer.js';
+import TreeSerializer from './internals/TreeSerializer.js';
 import PropertySerializer from './internals/PropertySerializer.js';
 import VertexSerializer from './internals/VertexSerializer.js';
 import VertexPropertySerializer from './internals/VertexPropertySerializer.js';
+import GraphSerializer from './internals/GraphSerializer.js';
 import BigIntegerSerializer from './internals/BigIntegerSerializer.js';
 import ByteSerializer from './internals/ByteSerializer.js';
 import BinarySerializer from './internals/BinarySerializer.js';
@@ -65,6 +66,8 @@ import MarkerSerializer from './internals/MarkerSerializer.js';
 import UnspecifiedNullSerializer from './internals/UnspecifiedNullSerializer.js';
 import EnumSerializer from './internals/EnumSerializer.js';
 import StubSerializer from './internals/StubSerializer.js';
+import CompositePDTSerializer from './internals/CompositePDTSerializer.js';
+import PrimitivePDTSerializer from './internals/PrimitivePDTSerializer.js';
 import NumberSerializationStrategy from './internals/NumberSerializationStrategy.js';
 import AnySerializer from './internals/AnySerializer.js';
 import GraphBinaryReader from './internals/GraphBinaryReader.js';
@@ -95,6 +98,7 @@ function createIoc(anySerializerOptions) {
   ioc.propertySerializer = new PropertySerializer(ioc);
   ioc.vertexSerializer = new VertexSerializer(ioc);
   ioc.vertexPropertySerializer = new VertexPropertySerializer(ioc);
+  ioc.graphSerializer = new GraphSerializer(ioc);
   ioc.bigIntegerSerializer = new BigIntegerSerializer(ioc);
   ioc.byteSerializer = new ByteSerializer(ioc);
   ioc.binarySerializer = new BinarySerializer(ioc);
@@ -103,12 +107,11 @@ function createIoc(anySerializerOptions) {
   ioc.markerSerializer = new MarkerSerializer(ioc);
   ioc.unspecifiedNullSerializer = new UnspecifiedNullSerializer(ioc);
   ioc.enumSerializer = new EnumSerializer(ioc);
+  ioc.compositePDTSerializer = new CompositePDTSerializer(ioc);
+  ioc.primitivePDTSerializer = new PrimitivePDTSerializer(ioc);
+  ioc.treeSerializer = new TreeSerializer(ioc);
 
-  // Register stub serializers for unimplemented v4 types
-  new StubSerializer(ioc, ioc.DataType.TREE, 'Tree');
-  new StubSerializer(ioc, ioc.DataType.GRAPH, 'Graph');
-  new StubSerializer(ioc, ioc.DataType.COMPOSITEPDT, 'CompositePDT');
-  new StubSerializer(ioc, ioc.DataType.PRIMITIVEPDT, 'PrimitivePDT');
+  ioc.pdtRegistry = null;
 
   ioc.numberSerializationStrategy = new NumberSerializationStrategy(ioc);
   ioc.anySerializer = new AnySerializer(ioc, anySerializerOptions);
@@ -163,6 +166,7 @@ export const {
   propertySerializer,
   vertexSerializer,
   vertexPropertySerializer,
+  graphSerializer,
   bigIntegerSerializer,
   byteSerializer,
   binarySerializer,
@@ -171,6 +175,9 @@ export const {
   markerSerializer,
   unspecifiedNullSerializer,
   enumSerializer,
+  compositePDTSerializer,
+  primitivePDTSerializer,
+  treeSerializer,
   numberSerializationStrategy,
   anySerializer,
   graphBinaryReader,

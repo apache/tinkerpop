@@ -36,7 +36,7 @@ type Traverser struct {
 type Traversal struct {
 	graph         *Graph
 	GremlinLang   *GremlinLang
-	remote        *DriverRemoteConnection
+	remote        remoteConnection
 	results       ResultSet
 	lastTraverser *Traverser // current traverser being lazily unrolled
 }
@@ -905,3 +905,6 @@ func ParseBigInt(strValue string) *big.Int {
 type ByteBuffer struct {
 	Data []byte
 }
+
+// Char represents the GraphBinary/Gremlin Character type.
+type Char rune

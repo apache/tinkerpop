@@ -378,7 +378,7 @@ func createConnection(host string, port, poolSize, buffersSize int) (*GraphTrave
 	drc, err = gremlingo.NewDriverRemoteConnection(endpoint, func(settings *DriverRemoteConnectionSettings) {
 		settings.LogVerbosity = GremlinWarning
 		settings.TraversalSource = gratefulGraphAlias
-		settings.MaximumConcurrentConnections = poolSize
+		settings.MaxConnections = poolSize
 	})
 
 	if err != nil {

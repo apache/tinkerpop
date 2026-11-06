@@ -17,6 +17,7 @@ specific language governing permissions and limitations
 under the License.
 ////
 [[gremlin-semantics]]
+[llms-summary="The formal semantics of the Gremlin language: the type system, traverser model, and the precise expected behavior of each step, as a specification for providers."]
 = Gremlin Semantics
 
 image:tinkerpop-meeting-room.png[]
@@ -26,31 +27,47 @@ them with tests in the Gremlin test suite makes it easier for providers to imple
 TinkerPop Community to have better consistency in their user experiences. While the general Gremlin test suite offers
 an integrated approach to testing Gremlin queries, the `@StepClassSemantics` oriented tests found
 link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-test/src/main/resources/org/apache/tinkerpop/gremlin/test/features[here] are especially focused to the
-definitions found in this section. References to the location of specific tests can be found throughout the
-sub-sections below.
+definitions found in this section.
 
 == Types
 
-The TinkerPop query execution runtime is aligned with Java primitives and handles the following primitive types:
+The Gremlin type system is built on a fixed set of types named by the `GType` enum. Users see these names via
+`P.typeOf(GType)` and `asNumber(GType)`. This specification references types by the same names.
 
-* Boolean
-* Integer
-  ** Byte (int8)
-  ** Short (int16)
-  ** Integer (int32)
-  ** Long (int64)
-  ** BigInteger
-* Decimal
-  ** Float (32-bit) (including +/-Infinity and NaN)
-  ** Double (64-bit) (including +/-Infinity and NaN)
-  ** BigDecimal
-* String
-* UUID
-* Date
-* `nulltype`
-  ** Has only one value in its type space - the "undefined" value `null`
+The primitive types are:
 
-NOTE: TinkerPop has a bit of a JVM-centric view of types as it was developed within that ecosystem.
+* Numerics (supertype `NUMBER`):
+  ** `BYTE`, `SHORT`, `INT`, `LONG` (8/16/32/64-bit fixed-width signed integers)
+  ** `BIGINT` (arbitrary-precision integer)
+  ** `FLOAT`, `DOUBLE` (32-bit and 64-bit floating point, including `±Infinity` and `NaN`)
+  ** `BIGDECIMAL` (arbitrary-precision decimal)
+* `BOOLEAN`
+* `STRING`, `CHAR`
+* `UUID`
+* `BINARY`
+* `DATETIME`, `DURATION`
+* `NULL` (has only one value, the "undefined" value `null`)
+
+The collection types are `LIST`, `MAP`, and `SET`.
+
+The graph types are:
+
+* Graph elements: `VERTEX`, `EDGE`, `VPROPERTY`
+* `PROPERTY` represents edge properties and meta-properties as a (Key, Value) pair where Key is `STRING` and Value
+is any primitive type listed above
+* `PATH` is an ordered sequence of graph elements traversed
+* `TREE` is a hierarchical structure of graph elements
+* `GRAPH` is an entire graph value
+
+Providers can register custom types outside the TinkerPop type space using the `GlobalTypeCache`, making them available
+for `P.typeOf(String)` filtering. Unregistered string inputs raise an `Argument Error`.
+
+The `registerDataType()` method registers the class's simple name by default, or accepts a custom string name. Providers
+should use PascalCase and prefix type names to avoid conflicts
+(e.g., `ProviderPrefix:SimpleTypeName`).
+
+The type cache only enables type recognition for filtering. Custom types still require separate serialization support.
+Clients without custom serializers cannot deserialize these types.
 
 Graph providers may not support all of these types depending on the architecture and implementation. Therefore
 TinkerPop must provide a way for Graph providers to override the behavior while it has its own default behavior. Also
@@ -59,32 +76,17 @@ mapping can be done in either information-preserving manner or non-preserving ma
 mapping they support through `Graph.Features` as well as which types they support.
 
 * Which primitive types are supported
-  ** Boolean, Integer, Float, String, UUID and Date
+  ** `BOOLEAN`, all integer types, all decimal types, `STRING`, `UUID` and `DATETIME`
   ** TinkerPop by default supports all of them
 * Which integer types are supported
-  ** TinkerPop by default supports int8 (Byte), int16 (Short), int32 (Integer), int64 (Long) and BigInteger in Java
+  ** TinkerPop by default supports `BYTE`, `SHORT`, `INT`, `LONG` and `BIGINT`
 * Which float types are supported
-  ** TinkerPop by default supports all as float, double, and BigDecimal in Java
-
-In addition to these, there are composite types as follows:
-
-* Graph Element
-** Vertex
-** Edge
-** VertexProperty
-* Property (edge properties and meta properties)
-** (Key, Value) pair
-** Key is String, Value is any of the primitive types defined above
-* Path
-* List
-* Map
-* Map.Entry
-* Set
+  ** TinkerPop by default supports `FLOAT`, `DOUBLE`, and `BIGDECIMAL`
 
 === Numeric Type Promotion
 
-TinkerPop performs type promotion a.k.a type casting for Numbers. Numbers are Byte, Short, Integer, Long, Float,
-Double, BigInteger, and BigDecimal. In general, numbers are compared using semantic equivalence, without regard for
+TinkerPop performs type promotion (also known as type casting) for Numbers. The number types are `BYTE`, `SHORT`, `INT`, `LONG`,
+`FLOAT`, `DOUBLE`, `BIGINT`, and `BIGDECIMAL`. In general, numbers are compared using semantic equivalence, without regard for
 their specific type, e.g. `1 == 1.0`.
 
 For comparisons numeric types are promoted as follows:
@@ -93,17 +95,17 @@ For comparisons numeric types are promoted as follows:
 convert all of them to floating point.
 * Next determine the maximum bit size of the numerics being compared.
 * If any floating point are present:
-** If the maximum bit size is 32 (up to Integer/Float), we compare as Float
-** If the maximum bit size is 64 (up to Long/Double), we compare as Double
-** Otherwise we compare as BigDecimal
+** If the maximum bit size is 32 (up to `INT`/`FLOAT`), we compare as `FLOAT`
+** If the maximum bit size is 64 (up to `LONG`/`DOUBLE`), we compare as `DOUBLE`
+** Otherwise we compare as `BIGDECIMAL`
 * If no floating point are present:
-** If the maximum bit size is 8 we compare as Byte
-** If the maximum bit size is 16 we compare as Short
-** If the maximum bit size is 32 we compare as Integer
-** If the maximum bit size is 64 we compare as Long
-** Otherwise we compare as BigInteger
+** If the maximum bit size is 8 we compare as `BYTE`
+** If the maximum bit size is 16 we compare as `SHORT`
+** If the maximum bit size is 32 we compare as `INT`
+** If the maximum bit size is 64 we compare as `LONG`
+** Otherwise we compare as `BIGINT`
 
-BigDecimal and BigInteger may not be supported depending on the language and Storage, therefore the behavior of type
+`BIGDECIMAL` and `BIGINT` may not be supported depending on the language and Storage, therefore the behavior of type
 casting for these two types can vary depending on a Graph provider.
 
 For numeric type mathematical operations (div/mul/add/sub), types are promoted as follows:
@@ -113,8 +115,29 @@ the two inputs is used. Any number being floating point forces a floating point 
 If an overflow occurs (either integer or floating-point), the method promotes the precision
 by increasing the bit width, until a suitable type is found. If no suitable type exists
 (e.g., for very large integers beyond 64-bit), an Arithmetic Exception is thrown.
-For floating-point numbers, if double overflows, the result is Double.POSITIVE_INFINITY
-or Double.NEGATIVE_INFINITY instead of an exception.
+For floating-point numbers, if a 64-bit float overflows, the result is `+Infinity`
+or `-Infinity` instead of an exception.
+
+[[gremlin-semantics-errors]]
+== Errors
+
+The Gremlin error model defines a small set of named error categories. Step `*Exceptions:*` sections refer to these
+categories rather than to Java exception class names, since the categories are language-agnostic. Each GLV maps a
+category onto its language's idiomatic error type, and remote responses surface the server message text (which
+providers may localize while preserving the category).
+
+The `Example message` column gives a general, illustrative message that is representative of each category. It is not
+the exact, verbatim text a caller will encounter at runtime, as the precise wording can differ across versions and
+providers.
+
+[width="100%",cols="2,6,3,4",options="header"]
+|=========================================================
+|Category |Description |Java reference exception |Example message
+|`Argument Error` |The caller supplied an invalid argument such as the wrong type, `null` where forbidden, an out-of-range value, or unparseable input. |`IllegalArgumentException`, `NumberFormatException` |"Format string for Format step can't be null."
+|`State Error` |The traversal construction or runtime state is invalid for the operation being attempted, including a traversal rejected during strategy verification. |`IllegalStateException`, `VerificationException` |"The repeat()-traversal was not defined"
+|`Arithmetic Error` |A numeric operation cannot produce a defined result, such as overflow during type narrowing or division by zero. |`ArithmeticException` |"long overflow"
+|`Unsupported Operation` |The requested step, modulator, or option is not implemented or not supported by the current provider or execution mode. |`UnsupportedOperationException` |"Option Merge.outV for Merge is not supported"
+|=========================================================
 
 [[gremlin-semantics-concepts]]
 == Comparability, Equality, Orderability, and Equivalence
@@ -144,11 +167,11 @@ Equivalence semantics are slightly different from Equality and are used for oper
 Key differences include handling of numeric types and NaN.
 
 Both Equality and Equivalence can be understood as complete, i.e. the result of equality and equivalence checks is
-always either `TRUE` or `FALSE` (in particular, it never returns `nulltype` or throws an exception). Similarly,
+always either `TRUE` or `FALSE` (in particular, it never returns `NULL` or throws an exception). Similarly,
 Orderability can be also understood as complete - any two values can be compared without error for ordering purposes.
 Comparability semantics are not complete with respect to traditional binary boolean semantics, as certain comparisons
 cannot be proved as either `TRUE` or `FALSE`. Common examples of such cases are Comparability against `NaN`, cross-type
-Comparability (e.g. `String` vs `Numeric`). For the purposes of Comparability within Gremlin, any such incomputable
+Comparability (e.g. `STRING` vs `Numeric`). For the purposes of Comparability within Gremlin, any such incomputable
 comparison is defined to be `FALSE`, and traditional binary boolean semantics apply thereafter.
 
 [[gremlin-semantics-equality-comparability]]
@@ -195,7 +218,7 @@ Comparing `NaN` to anything (including itself) cannot be evaluated.|`FALSE`
 |Comparisons Involving `null`|`(null,null)`|`compare() == 0`|`TRUE`
 ||`(null, X)`|`FALSE` +
 
-Since `nulltype` is its own type, this falls under the umbrella of cross-type comparisons. |`FALSE`
+Since `NULL` is its own type, this falls under the umbrella of cross-type comparisons. |`FALSE`
 |Comparisons within the same type family (i.e. String vs. String, Number vs. Number, etc.)|`(X, Y)` +
 
 where `X` and `Y` of same type|Result of `compare()` depends on type semantics, defined below.|`TRUE` iff `compare() == 0`
@@ -210,7 +233,7 @@ where `X` and `Y` of different type|`FALSE`|`FALSE`
 For <<Equality,Equality>> and <<Comparability,Comparability>> evaluation of values within the same type family, we
 define the semantics per type family as follows.
 
-===== Number
+===== NUMBER
 
 Numbers are compared using type promotion, described above. As such, `1 == 1.0`.
 
@@ -218,47 +241,57 @@ Edge cases:
 
 * `-0.0 == 0.0 == +0.0`
 * `+INF == +INF`,  `-INF == -INF`,  `-INF != +INF`
-** `Float.±Infinity` and `Double.±Infinity` adhere to the same type promotion rules.
+** `±Infinity` follows the same type promotion rules for both 32-bit and 64-bit floats.
 * As described above `NaN` is not <<Equality,Equal>> and not <<Comparability,Comparable>> to any Number (including itself).
 
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-test/src/main/resources/org/apache/tinkerpop/gremlin/test/features/semantics/Equality.feature[Equality Tests - Scenarios prefixed with "Primitives_Number_"]
 
-===== nulltype
+===== NULL
 
 As described in the table above, `null == null`, but is not <<Equality,Equal>> and not <<Comparability,Comparable>> to
 any non-`null` value.
 
-===== Boolean
+===== BOOLEAN
 
 For Booleans, `TRUE == TRUE`, `FALSE == FALSE`, `TRUE != FALSE`, and `FALSE < TRUE`.
 
-===== String
+===== STRING / CHAR
 
-We assume the common lexicographical order over unicode strings. `A` and `B` are compared lexicographically, and
-`A == B` if `A` and `B` are lexicographically equal.
+We assume the common lexicographical order over unicode strings and characters. `A` and `B` are compared
+lexicographically, and `A == B` if `A` and `B` are of the same type and lexicographically equal.
 
 ===== UUID
 
 UUID is evaluated based on its String representation. However, `UUID("b46d37e9-755c-477e-9ab6-44aabea51d50")` and the
 String `"b46d37e9-755c-477e-9ab6-44aabea51d50"` are not <<Equality,Equal>> and not <<Comparability,Comparable>>.
 
-===== Date
+===== BINARY
+
+Binary values are evaluated based on lexicographical comparison of their byte sequences, comparing each byte as a
+signed 8-bit value. `A == B` if `A` and `B` have the same bytes in the same order.
+
+===== DATETIME
 
 Dates are evaluated based on the numerical comparison of Unix Epoch time.
 
-===== Graph Element (Vertex / Edge / VertexProperty)
+===== DURATION
+
+Durations are evaluated based on the numerical comparison of their total length. `A == B` if `A` and `B` represent the
+same total length.
+
+===== Graph Elements (VERTEX / EDGE / VPROPERTY)
 
 If they are the same type of Element, these are compared by the value of their `T.id` according to the semantics for
 the particular primitive type used for ids (implementation-specific). Elements of different types are
 not <<Equality,Equal>> and not <<Comparability,Comparable>>.
 
-===== Property
+===== PROPERTY
 
-Properties are compared first by key (String semantics), then by value, according to the semantics for the particular
+Properties are compared first by key (`STRING` semantics), then by value, according to the semantics for the particular
 primitive type of the value. Properties with values in different type families are
 not <<Equality,Equal>> and not <<Comparability,Comparable>>.
 
-===== List
+===== LIST
 
 Lists are compared pairwise, element-by-element, in their natural list order. For each element, if the pairs are
 <<Equality and Comparability,Equal>>, we simply move on to the next element pair until we encounter a pair which is not
@@ -285,12 +318,12 @@ Empty lists are equal to other empty lists and less than non-empty lists.
 |`[1]`|`["a"]`|`ERROR`|`P.neq`|cross-type comparison
 |===
 
-===== Path
+===== PATH
 
 <<Equality and Comparability,Equality and Comparability>> semantics for `Paths` are similar to those for `Lists`, described above (though
 `Paths` and `Lists` are still of different types and thus not <<Equality,Equal>> and not <<Comparability,Comparable>>).
 
-===== Set
+===== SET
 
 `Sets` are compared pairwise, element-by-element, in the same way as `Lists`, but they are compared in sorted order
 using <<Orderability,Orderability>> semantics to sort (described further below). We use <<Orderability,Orderability>>
@@ -326,9 +359,9 @@ reference implementation allows for semantically equivalent numerics to appear i
 same time evaluating the same semantically equivalent numerics as equal during pairwise comparison across sets (e.g.
 `{1,2} == {1.0,2.0}`).
 
-===== Map
+===== MAP
 
-'Map' semantics can be thought of as similar to `Set` semantics for the entry set the comprises the `Map`. So again,
+'Map' semantics can be thought of as similar to `SET` semantics for the entry set the comprises the `MAP`. So again,
 we compare pairwise, entry-by-entry, in the same way as `Lists`, and again, we first sort the entries using
 <<Orderability,Orderability>> semantics. Map entries are compared first by key, then by value using the
 <<Equality and Comparability Semantics by Type,Equality and Comparability>> semantics that apply to the specific type
@@ -338,35 +371,6 @@ Maps semantics have the same logical inconsistency as set semantics, because of 
 for providers to decide how to handle this in their implementation. The reference implementation allows for semantically
 equivalent keys to appear in a map (e.g. `1` and `1.0` can both be keys in the same map), but when comparing maps we
 treat pairwise entries with semantically equivalent keys as the same.
-
-==== Comparability of Types
-
-The `P.typeOf()` predicate enables type-based filtering in TinkerPop using inheritance-aware comparison, where a value
-matches if it is the specified type or any of its subtypes.
-
-===== GType Enums
-
-Based on the support type space, we have defined a `GType` enum, which contains a set of enumerations that is used for
-type casting (`asNumber()`) and comparison (`P.typeOf()`) operations.
-
-* **Numeric types**: `INT`, `LONG`, `DOUBLE`, `FLOAT`, `BYTE`, `SHORT`, `BIGDECIMAL`, `BIGINT`
-* **General types**: `STRING`, `BOOLEAN`, `CHAR`, `UUID`, `BINARY`
-* **Collection types**: `LIST`, `SET`, `MAP`
-* **Graph types**: `VERTEX`, `EDGE`, `PROPERTY`, `VPROPERTY`, `PATH`, `TREE`, `GRAPH`
-* **Temporal types**: `DATETIME`, `DURATION`
-* **Special types**: `NULL`, `NUMBER` (supertype for all numeric types)
-
-===== GlobalTypeCache
-
-Providers can register custom types outside the TinkerPop type space using the `GlobalTypeCache`, making them available
-for `P.typeOf(String)` filtering. Unregistered string inputs will throw an `IllegalArgumentException`.
-
-The `registerDataType()` method registers the class's simple name by default, or accepts a custom string name. Providers
-should use PascalCase following Java conventions and prefix type names to avoid conflicts
-(e.g., `ProviderPrefix:SimpleTypeName`).
-
-Do note that the type cache only enables type recognition for filtering. Custom types still require separate
-serialization support - clients without custom serializers cannot deserialize these types.
 
 [[gremlin-semantics-orderability]]
 === Orderability
@@ -385,17 +389,17 @@ follow these semantics.
 
 To achieve this globally complete order, we need to address any cases in Comparability which are incomputable, we must
 define a global order across type families, and we must provide semantics for ordering "unknown"
-values (for cases of in-process JVM implementations, like the TinkerGraph).
+values (for in-process implementations where the host language's value space exceeds the GType enum).
 
 We define the type space, and the global order across the type space as follows:
 
 [source,text]
 ----
-1.  nulltype
-2.  Boolean
-3.  Number
-4.  Date
-5.  String
+1.  NULL
+2.  BOOLEAN
+3.  NUMBER
+4.  DATETIME
+5.  STRING
 6.  UUID
 7.  Vertex
 8.  Edge
@@ -421,14 +425,14 @@ the comparison is incomputable:
 |Incomputable Scenario|Comparability|Orderability
 
 |Comparison against `NaN`|`NaN` not comparable to anything, including itself.|`NaN` appears after `+Infinity` in the numeric type space.
-|Comparison across types|Cannot compare values of different types. This includes the `nulltype`.|Subject to a total
+|Comparison across types|Cannot compare values of different types. This includes the `NULL`.|Subject to a total
 type ordering where every value of type A appears before or after every value of Type B per the priorty list above.
 |===
 
 ==== Key differences from Comparability
 
-One key difference to note is that we use Orderability semantics to compare values within containers (`List`, `Set`,
-`Path`, `Map`, `Property`) rather than using Comparability semantics (i.e. Orderability all the way down).
+One key difference to note is that we use Orderability semantics to compare values within containers (`LIST`, `SET`,
+`Path`, `MAP`, `Property`) rather than using Comparability semantics (i.e. Orderability all the way down).
 
 ===== Numeric Ordering
 
@@ -436,20 +440,20 @@ Same as Comparability, except `NaN` is equivalent to `NaN` and is greater than a
 Additionally, because of type promotion (`1` == `1.0`), numbers of the same value but of different numeric types will
 not have a stable sort order (`1` can appear either before or after `1.0`).
 
-===== Property
+===== PROPERTY
 
 Same as Comparability, except Orderability semantics are used for the property value.
 
-===== Iterables (Path, List, Set, Map)
+===== Iterables (PATH, LIST, SET, MAP)
 
 Same as Comparability, except Orderability semantics apply for the pairwise element-by-element comparisons.
 
 ===== Unknown Types
 
 For Orderability semantics, we allow for the possibility of "unknown" types. If the "unknown" arguments are of the same
-type, we use `java.lang.Object#equals()` and `java.lang.Comparable` (if implemented) to determine their natural order.
-If the unknown arguments are of different types or do not define a natural order, we order first by Class,
-then by `Object.toString()`.
+type, we use the type's native equality and ordering operations (if defined) to determine their natural order.
+If the unknown arguments are of different types or do not define a natural order, we order first by type identity,
+then by canonical string representation.
 
 [[gremlin-semantics-equivalence]]
 === Equivalence
@@ -467,13 +471,13 @@ gremlin> g.V().dedup().by("name")
 gremlin> g.V().group().by("age")
 ----
 
-Like Equality, Equivalence checks always return `true` or `false`, never `nulltype` or `error`, nor do they produce
+Like Equality, Equivalence checks always return `true` or `false`, never `NULL` or `error`, nor do they produce
 exceptions. For the most part Equivalence and Equality are the same, with the following key differences:
 
 * Equivalence ignores type promotion semantics, i.e. two values of different types (e.g. 2^^int vs. 2.0^^float) are
 always considered to be non-equivalent.
 * `NaN` Equivalence is the reverse of Equality: `NaN` is equivalent to `NaN` and not
-Equivalent to any other Number.
+Equivalent to any other `NUMBER`.
 
 === Further Reference
 
@@ -495,6 +499,7 @@ The following table maps the notions proposed above to the various `P` operators
 |P.inside |Comparability
 |P.outside|Comparability
 |P.between|Equality, Comparability
+|P.typeOf |Comparability
 |================
 
 ==== See Also
@@ -502,6 +507,7 @@ The following table maps the notions proposed above to the various `P` operators
 link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-test/src/main/resources/org/apache/tinkerpop/gremlin/test/features/semantics/Equality.feature[Equality Tests],
 link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-test/src/main/resources/org/apache/tinkerpop/gremlin/test/features/semantics/Comparability.feature[Comparability Tests]
 
+[llms-summary="Per-step semantic definitions: the precise input/output behavior each Gremlin step must exhibit, used to verify provider implementations for correctness."]
 == Steps
 
 While TinkerPop has a full test suite for validating functionality of Gremlin, tests alone aren't always exhaustive or
@@ -509,12 +515,19 @@ fully demonstrative of Gremlin step semantics. It is also hard to simply read th
 step is meant to behave. This section discusses the semantics for individual steps to help users and providers
 understand implementation expectations.
 
+Each step entry uses the following labeled fields in order: `Description`, `Syntax`, a start/mid/modulated/domain/range
+table, `Arguments`, `Modulation`, `Considerations`, `Exceptions`, and a closing `See:` line linking to the source file
+and the corresponding reference documentation. When a step has no entries for `Arguments`, `Modulation`, or `Exceptions`,
+the field is still present with `None` as its body. When adding a new step or revising an existing one, follow the
+pattern from a neighboring entry rather than introducing a new structure.
+
+[llms-summary="The formal semantics of the addE() step: adds an edge to the graph."]
 [[adde-step]]
 === addE()
 
 *Description:* Adds an edge to the graph.
 
-*Syntax:* `addE(String edgeLabel)` | `addE(Traversal<?, String> edgeLabelTraversal)`
+*Syntax:* `addE(edgeLabel: STRING)` | `addE(edgeLabelTraversal: Traversal<any, STRING>)`
 
 [width="100%",options="header"]
 |=========================================================
@@ -536,28 +549,31 @@ understand implementation expectations.
 
 The `addE()` step can be used as both a start step and a mid-traversal step. When used as a start step, both `from()`
 and `to()` must be specified. When used as a mid-traversal step, the current traverser becomes the source vertex and
-only `to()` needs to be specified.
+only `to()` needs to be specified. An edge label is not mandatory. Unlike `addV()`, the `addE()` step does not treat a
+missing or `null` edge label as an error. In either case the default edge label for the graph is used.
 
-The gremlin-lang grammar only permits `Traversal` and `String` (alias for `__.select(String)`) arguments in `from()` and
+The gremlin-lang grammar only permits `Traversal` and `STRING` (alias for `__.select(String)`) arguments in `from()` and
 `to()`. The `Traversal` must either produce a `Vertex` which is attachable to the graph, or it must produce the id of an
 existing `Vertex` in the graph. `GraphTraversal` implementations in GLVs may optionally support `from(Vertex)` and
 `to(Vertex)` as syntactic sugar. If translating to gremlin-lang scripts, these sugared modulators must be converted to
 `from(__.V(vertex.id()))` or `from(__.constant(vertex.id()))` (and equivalents for `to()`).
 
-*Exceptions*
+*Exceptions:*
 
-* If the edge label is null, an `IllegalArgumentException` will be thrown.
+* If a `from()` or `to()` value does not resolve to a `Vertex`, or to the id of a `Vertex` present in the graph, a
+`State Error` is raised.
 
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/AddEdgeStep.java[source],
 link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/AddEdgeStartStep.java[source (start)],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#addedge-step[reference]
 
+[llms-summary="The formal semantics of the addV() step: adds a vertex to the graph."]
 [[addv-step]]
 === addV()
 
 *Description:* Adds a vertex to the graph.
 
-*Syntax:* `addV()` | `addV(String vertexLabel)` | `addV(Traversal<?, String> vertexLabelTraversal)`
+*Syntax:* `addV()` | `addV(vertexLabel: STRING, moreLabels: STRING...)` | `addV(vertexLabelTraversal: Traversal<any, STRING>, moreLabelTraversals: Traversal<any, STRING>...)`
 
 [width="100%",options="header"]
 |=========================================================
@@ -568,7 +584,9 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#addedge-step[reference]
 *Arguments:*
 
 * `vertexLabel` - The label of the vertex to add.
+* `moreLabels` - Additional labels for the vertex, on graphs that permit more than one label per vertex.
 * `vertexLabelTraversal` - A traversal that produces the label of the vertex to add.
+* `moreLabelTraversals` - Additional traversals that each produce a further label for the vertex.
 
 *Modulation:*
 
@@ -577,32 +595,117 @@ None
 *Considerations:*
 
 The `addV()` step can be used as both a start step and a mid-traversal step. If no label is provided, the default
-vertex label for the graph will be used.
+vertex label for the graph will be used. On a graph that permits more than one label per vertex, additional labels
+may be supplied to create a multi-label vertex; the resulting set of labels must satisfy the graph's label
+cardinality.
 
-*Exceptions*
+*Exceptions:*
 
-* If the vertex label is null, an `IllegalArgumentException` will be thrown.
+* If the vertex label is null, an `Argument Error` is raised.
+* If the number of labels supplied violates the graph's label cardinality (for example, more than one label on a
+single-label graph), a `State Error` is raised.
 
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/AddVertexStep.java[source],
 link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/AddVertexStartStep.java[source (start)],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#addvertex-step[reference]
 
-[[all-step]]
-=== all()
+[llms-summary="The formal semantics of the addLabel() step: adds one or more labels to an element."]
+[[addlabel-step]]
+=== addLabel()
 
-*Description:* Filters array data from the traversal stream if all of the array's items match the supplied predicate.
+*Description:* Adds one or more labels to an element.
 
-*Syntax:* `all(P predicate)`
+*Syntax:* `addLabel(label: STRING, moreLabels: STRING...)` | `addLabel(labelTraversal: Traversal<any, STRING>, moreLabelTraversals: Traversal<any, STRING>...)`
 
 [width="100%",options="header"]
 |=========================================================
 |Start Step |Mid Step |Modulated |Domain |Range
-|N |Y |N |`List`/`array`/`Iterable`/`Iterator` |`List`/`array`/`Iterable`/`Iterator`
+|N |Y |N |`Element` |`Element`
 |=========================================================
 
 *Arguments:*
 
-* `predicate` - The predicate to use to test each value in the array data.
+* `label` - The label to add.
+* `moreLabels` - Additional labels to add.
+* `labelTraversal` - The first (or only) traversal that produces a label to add.
+* `moreLabelTraversals` - Additional label-producing traversals (may be empty for single-traversal behavior).
+
+*Considerations:*
+
+Label add and remove operations require a graph that permits the set of labels on an element to change. Where a graph
+fixes a single immutable label per vertex, that label is assigned at creation and can be neither added to nor removed.
+Adding a label that already exists on the element is a no-op. The step returns the element (sideEffect semantics).
+Each traversal argument is iterated for a single result only. If exactly one traversal is provided and it produces
+a `LIST` or `SET` of `STRING`, the collection will be automatically unfolded into the set of labels added. If more
+than one traversal is provided, each must resolve to a single `STRING` label.
+
+*Exceptions*
+
+* If the graph does not permit label modification, a `State Error` is raised.
+* If any label argument is null or empty, an `Argument Error` is raised.
+* If more than one traversal is provided and any of them produces a `LIST` or `SET`, an `Argument Error` is raised.
+
+See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/sideEffect/AddLabelStep.java[source],
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#addlabel-step[reference]
+
+[llms-summary="The formal semantics of the dropLabel() step: removes one or more specific labels from an element, or removes all labels."]
+[[droplabel-step]]
+=== dropLabel()
+
+*Description:* Removes one or more specific labels from an element, or removes all labels.
+
+*Syntax:* `dropLabel(label: STRING, moreLabels: STRING...)` | `dropLabel(labelTraversal: Traversal<any, STRING>, moreLabelTraversals: Traversal<any, STRING>...)` | `dropLabels()`
+
+[width="100%",options="header"]
+|=========================================================
+|Start Step |Mid Step |Modulated |Domain |Range
+|N |Y |N |`Element` |`Element`
+|=========================================================
+
+*Arguments:*
+
+* `label` - The label to remove.
+* `moreLabels` - Additional labels to remove.
+* `labelTraversal` - The first (or only) traversal that produces a label to remove.
+* `moreLabelTraversals` - Additional label-producing traversals (may be empty for single-traversal behavior).
+
+*Considerations:*
+
+Label add and remove operations require a graph that permits the set of labels on an element to change. Dropping a
+label that does not exist on the element is a no-op. `dropLabels()` removes all labels and is only valid on a graph
+that allows an element to carry no labels at all. The step returns the
+element (sideEffect semantics).
+Each traversal argument is iterated for a single result only. If exactly one traversal is provided and it produces
+a `LIST` or `SET` of `STRING`, the collection will be automatically unfolded into the set of labels removed. If more
+than one traversal is provided, each must resolve to a single `STRING` label.
+
+*Exceptions*
+
+* If the graph does not permit label modification, a `State Error` is raised.
+* If `dropLabel()` or `dropLabels()` would leave the element with fewer labels than the graph requires, a `State Error`
+is raised.
+* If more than one traversal is provided and any of them produces a `LIST` or `SET`, an `Argument Error` is raised.
+
+See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/sideEffect/DropLabelsStep.java[source],
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#droplabel-step[reference]
+
+[llms-summary="The formal semantics of the all() step: filters array data from the Traversal Stream if all of the array's items match the supplied predicate."]
+[[all-step]]
+=== all()
+
+*Description:* Filters list data from the traversal stream if all of the list's items match the supplied predicate.
+
+*Syntax:* `all(predicate: P)`
+
+[width="100%",options="header"]
+|=========================================================
+|Start Step |Mid Step |Modulated |Domain |Range
+|N |Y |N |`LIST` |`LIST`
+|=========================================================
+
+*Arguments:*
+
+* `predicate` - The predicate to use to test each value in the list data.
 
 *Modulation:*
 
@@ -613,19 +716,20 @@ None
 Each value will be tested using the supplied predicate. Empty lists always pass through and null/non-list traversers
 will be filtered out of the Traversal Stream.
 
-*Exceptions*
+*Exceptions:*
 
-* A GremlinTypeErrorException will be thrown if one occurs and no other value evaluates to false.
+* An `Argument Error` is raised if the input predicate is `null`.
 
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/filter/AllStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#all-step[reference]
 
+[llms-summary="The formal semantics of the aggregate() step: collects all objects in the traversal into a collection."]
 [[aggregate-step]]
 === aggregate()
 
 *Description:* Collects all objects in the traversal into a collection.
 
-*Syntax:* `aggregate(String sideEffectKey)`
+*Syntax:* `aggregate(sideEffectKey: STRING)`
 
 [width="100%",options="header"]
 |=========================================================
@@ -644,21 +748,25 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#all-step[reference]
 *Considerations:*
 
 The `aggregate()` step is a side-effect step that collects objects but passes the traverser to the next step unchanged.
-The aggregated objects can be accessed later using the `cap()` step.
+It is an eager barrier. All incoming objects are collected into the side-effect before any traverser is passed to the
+next step, so a downstream `limit()` or other short-circuiting step does not reduce the aggregated collection.
+The aggregated objects can be accessed later using the `cap()` step, and can also be referenced by steps such as
+`select()`, `where()`, and `math()` through the side-effect key.
 
-*Exceptions*
+*Exceptions:*
 
 None
 
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/sideEffect/AggregateStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#aggregate-step[reference]
 
+[llms-summary="The formal semantics of the and() step: ensures that all provided traversals yield a result."]
 [[and-step]]
 === and()
 
 *Description:* Ensures that all provided traversals yield a result.
 
-*Syntax:* `and(Traversal<?, ?>... andTraversals)`
+*Syntax:* `and(andTraversals: Traversal<any, any>...)`
 
 [width="100%",options="header"]
 |=========================================================
@@ -676,32 +784,48 @@ None
 
 *Considerations:*
 
-The `and()` step is a filter step that allows the traverser to pass if all of the provided traversals yield a result.
-It follows the ternary boolean logic described in the <<gremlin-semantics-concepts,Ternary Boolean Logics>> section.
+The `and()` step is a filter step that allows the traverser to pass only if every provided traversal yields at least
+one result. If any child traversal produces no result, the traverser is filtered out.
 
-*Exceptions*
+The step tests only for the existence of output from each child traversal, never for the content of that output. Any
+object a child emits satisfies its branch, including a `BOOLEAN` `false` or a `NULL`. A branch filters the traverser
+only when it produces no result.
+
+Boolean value expressions evaluated within a child traversal follow the <<gremlin-semantics-concepts,Comparability>>
+semantics, under which an incomputable comparison, such as one against `NaN` or across types, is defined to be `FALSE`.
+Such a comparison therefore produces no result and filters the traverser rather than raising an error.
+
+The `and()` step is also a connective step. Alongside the argument form, it supports an infix form written with no
+arguments, in which the traversal immediately preceding the step and the traversal immediately following it are grouped
+into its two child branches when traversal strategies are applied. That grouping extends through the steps that follow
+the infix `and()`, so a projection or terminal step written after it is absorbed into the second branch rather than
+applied to the surviving traverser. To keep such a step applied to the output of the filter, the connective can be
+enclosed within a `where()` step, or the `and()` can be positioned ahead of the projection or terminal step.
+
+*Exceptions:*
 
 None
 
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/filter/AndStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#and-step[reference]
 
+[llms-summary="The formal semantics of the any() step: filters array data from the Traversal Stream if any of the array's items match the supplied predicate."]
 [[any-step]]
 === any()
 
-*Description:* Filters array data from the Traversal Stream if any of the array's items match the supplied predicate.
+*Description:* Filters list data from the Traversal Stream if any of the list's items match the supplied predicate.
 
-*Syntax:* `any(P predicate)`
+*Syntax:* `any(predicate: P)`
 
 [width="100%",options="header"]
 |=========================================================
 |Start Step |Mid Step |Modulated |Domain |Range
-|N |Y |N |`List`/`array`/`Iterable`/`Iterator` |`List`/`array`/`Iterable`/`Iterator`
+|N |Y |N |`LIST` |`LIST`
 |=========================================================
 
 *Arguments:*
 
-* `predicate` - The predicate to use to test each value in the array data.
+* `predicate` - The predicate to use to test each value in the list data.
 
 *Modulation:*
 
@@ -712,19 +836,20 @@ None
 Each value will be tested using the supplied predicate. Empty lists, null traversers, and non-list traversers will be
 filtered out of the Traversal Stream.
 
-*Exceptions*
+*Exceptions:*
 
-* A GremlinTypeErrorException will be thrown if one occurs and no other value evaluates to true.
+* An `Argument Error` is raised if the input predicate is `null`.
 
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/filter/AnyStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#any-step[reference]
 
+[llms-summary="The formal semantics of the as() step: labels a step for later access by steps that make use of such labels."]
 [[as-step]]
 === as()
 
 *Description:* Labels a step for later access by steps that make use of such labels.
 
-*Syntax:* `as(String stepLabel, String... stepLabels)`
+*Syntax:* `as(stepLabel: STRING, stepLabels: STRING...)`
 
 [width="100%",options="header"]
 |=========================================================
@@ -747,13 +872,14 @@ The `as()` step is not a real step, but a "step modulator" similar to `by()` and
 for later access by steps like `select()` and `match()`. A step can have any number of labels associated with it, which
 is useful for referencing the same step multiple times in a future step.
 
-*Exceptions*
+*Exceptions:*
 
 None
 
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#as-step[reference]
 
+[llms-summary="The formal semantics of the asBool() step: parses the value of the incoming traverser as a boolean."]
 [[asBool-step]]
 === asBool()
 
@@ -764,112 +890,172 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#as-step[reference]
 [width="100%",options="header"]
 |=========================================================
 |Start Step |Mid Step |Modulated |Domain |Range
-|N |Y |N |`Number`/`String`/`Boolean` |`Boolean`
+|N |Y |N |`NUMBER`/`STRING`/`BOOLEAN` |`BOOLEAN`
 |=========================================================
 
 *Arguments:*
 
 None
 
-Booleans are passed as is, numbers evaluate to `true` if non-zero, and `false` if zero or `NaN`. Strings only accept "true" or "false" (case-insensitive).
+*Modulation:*
 
-*Exceptions*
+None
 
-If the incoming traverser type is unsupported, a string other than "true" or "false", or `null`, then an `IllegalArgumentException` is thrown.
+*Considerations:*
+
+Booleans are passed as is, numbers evaluate to `true` if non-zero, and `false` if zero or `NaN`. Strings are accepted when, after trimming leading and trailing whitespace (spaces, tabs, newlines, and carriage returns), they equal "true" or "false" (case-insensitive). For example, " true", "false\t", and "\nTRUE" are all accepted.
+
+*Exceptions:*
+
+If the incoming traverser type is unsupported, a string that (after trimming leading and trailing whitespace) is neither "true" nor "false", or `null`, then an `Argument Error` is raised.
 
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/AsBoolStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#asBool-step[reference]
 
+[llms-summary="The formal semantics of the asDate() step: parse the value of incoming traverser as date."]
 [[asDate-step]]
 === asDate()
 
-*Description:* Parse the value of incoming traverser as date. Supported ISO-8601 strings and Unix time numbers.
+*Description:* Parse the value of the incoming traverser as a `DATETIME`. ISO-8601 strings and numeric Unix-time values are supported.
 
 *Syntax:* `asDate()`
 
 [width="100%",options="header"]
 |=========================================================
 |Start Step |Mid Step |Modulated |Domain |Range
-|N |Y |N |`any` |`any`
+|N |Y |N |`STRING`/`NUMBER`/`DATETIME` |`DATETIME`
 |=========================================================
 
 *Arguments:*
 
 None
 
-Incoming date remains unchanged.
+*Modulation:*
 
-*Exceptions*
+None
 
-* If the incoming traverser is a non-String/Number/Date value then an `IllegalArgumentException` will be thrown.
+*Considerations:*
+
+A `DATETIME` input passes through unchanged. A `STRING` input is parsed as an ISO-8601 datetime, and a numeric input is interpreted as the count of milliseconds since the Unix epoch.
+
+*Exceptions:*
+
+* If the incoming traverser is a non-`STRING`/`NUMBER`/`DATETIME` value then an `Argument Error` is raised.
 
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/AsDateStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#asDate-step[reference]
 
+[llms-summary="The formal semantics of the asNumber() step: converts the incoming traverser to the nearest parsable type, or to the desired numerical type based on the GType type token provided."]
 [[asNumber-step]]
 === asNumber()
 
-*Description:* converts the incoming traverser to the nearest parsable type if no argument is provided, or to the desired numerical type, based on the number token (`N`) provided.
+*Description:* converts the incoming traverser to the nearest parsable type if no argument is provided, or to the desired numerical type, based on the type token (`GType`) provided.
 
-*Syntax:* `asNumber()` | `asNumber(GType typeToken)`
+*Syntax:* `asNumber()` | `asNumber(typeToken: GType)`
 
 [width="100%",options="header"]
 |=========================================================
 |Start Step |Mid Step |Modulated |Domain |Range
-|N |Y |N |`Number`/`String` |`Number`
+|N |Y |N |`NUMBER`/`STRING`/`DATE` |`NUMBER`
 |=========================================================
 
 *Arguments:*
 
 * `typeToken` - The enum `GType` to denote the desired type to parse/cast to.
 
-If no type token is provided, the incoming number remains unchanged.
+*Modulation:*
 
-*Exceptions*
+None
 
-* If any overflow occurs during narrowing of types, then an `ArithmeticException` will be thrown.
-* If the incoming string cannot be parsed into a valid number format, then a `NumberFormatException` will be thrown.
-* If the incoming traverser is a non-String/Number (including `null`) value then an `IllegalArgumentException` will be thrown.
-* If the supplied type token is not a number type, then an `IllegalArgumentException` will be thrown.
+*Considerations:*
+
+If no type token is provided, the incoming number remains unchanged. A `DATE` input is converted to milliseconds since epoch. A `null` input passes through as `null`.
+
+When no type token is provided and the incoming traverser is a `STRING`, the string is parsed according to its numeric value. A string that represents an integer value is parsed to the smallest of `INT`, `LONG`, or `BIGINT` that can represent it. A string containing a decimal point or an exponent is parsed to `FLOAT` when the value is representable as such, and otherwise to a wider floating-point type (`DOUBLE`, then `BIGDECIMAL`).
+
+*Exceptions:*
+
+* If any overflow occurs during narrowing of types, an `Arithmetic Error` is raised.
+* If the incoming string cannot be parsed into a valid number format, an `Argument Error` is raised.
+* If the incoming traverser is a non-`STRING`/`NUMBER`/`DATE` value then an `Argument Error` is raised.
+* If the supplied type token is not a number type, then an `Argument Error` is raised.
 
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/AsNumberStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#asNumber-step[reference]
 
+[llms-summary="The formal semantics of the asString() step: returns the value of incoming traverser as strings, or if Scope.local is specified, returns each element inside incoming list traverser as string."]
 [[asString-step]]
 === asString()
 
 *Description:* Returns the value of incoming traverser as strings, or if `Scope.local` is specified, returns each element inside
 incoming list traverser as string.
 
-*Syntax:* `asString()` | `asString(Scope scope)`
+*Syntax:* `asString()` | `asString(scope: Scope)`
 
 [width="100%",options="header"]
 |=========================================================
 |Start Step |Mid Step |Modulated |Domain |Range
-|N |Y |N |`any` |`String`/`List`
+|N |Y |N |`any` |`STRING`/`LIST`
 |=========================================================
 
 *Arguments:*
 
-* `scope` - Determines the type of traverser it operates on. Both scopes will operate on the level of individual traversers.
-The `global` scope will operate on individual traverser, casting all (except `null`) to string. The `local` scope will behave like
-`global` for everything except lists, where it will cast individual non-`null` elements inside the list into string and return a
-list of string instead.
+* `scope` - Determines the type of traverser it operates on. The `global` scope operates on individual traversers.
+The `local` scope operates on list traversers, converting each element. Non-list
+traversers under `Scope.local` behave as under `Scope.global`.
 
-*Exceptions*
+*Modulation:*
 
-* If the incoming traverser is a `null` value then an `IllegalArgumentException` will be thrown.
+None
+
+*Considerations:*
+
+Under the `global` scope the incoming value is rendered to its canonical String representation. That representation is
+defined per type as follows:
+
+[width="100%",options="header"]
+|=========================================================
+|Type |Rendering |Example
+|`INT`, `LONG` |The decimal value with no type suffix. |`123`, `5`
+|`FLOAT`, `DOUBLE`, `BIGDECIMAL` |The decimal value with no type suffix. The three types render identically and are
+indistinguishable once converted. |`1.5`
+|`BOOLEAN` |The literal `true` or `false`. |`true`
+|`DATETIME` |An ISO-8601 timestamp with trailing zero-valued components elided. |`2023-08-02T00:00Z`
+|`Vertex` |The vertex identifier wrapped as `v[<id>]`. |`v[1]`
+|=========================================================
+
+A `LIST` under the `global` scope is rendered as a whole, producing a single `STRING` in which the elements appear
+bracketed and comma-separated:
+
+[source,text]
+----
+[1, 2, 3] -> "[1, 2, 3]"
+----
+
+Under `Scope.local` the incoming value is a `LIST` and each element is rendered individually. The list structure is
+preserved, yielding a `LIST` of `STRING` rather than a single `STRING`:
+
+[source,text]
+----
+[1, 2, 3] -> ["1", "2", "3"]
+----
+
+*Exceptions:*
+
+* If the incoming traverser is a `null` value then an `Argument Error` is raised.
+* Under `Scope.local`, an `Argument Error` is also raised if any element of the list traverser is `null`.
 
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/AsStringGlobalStep.java[source],
 link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/AsStringLocalStep.java[source (local)],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#asString-step[reference]
 
+[llms-summary="The formal semantics of the barrier() step: turns the lazy traversal pipeline into a bulk-synchronous pipeline."]
 [[barrier-step]]
 === barrier()
 
 *Description:* Turns the lazy traversal pipeline into a bulk-synchronous pipeline.
 
-*Syntax:* `barrier()` | `barrier(int maxBarrierSize)`
+*Syntax:* `barrier()` | `barrier(maxBarrierSize: INT)`
 
 [width="100%",options="header"]
 |=========================================================
@@ -892,19 +1078,20 @@ The `barrier()` step is useful in the following situations:
 * When "stalling" the traversal may lead to a "bulking optimization" in traversals that repeatedly touch many of the
 same elements (i.e., optimizing).
 
-*Exceptions*
+*Exceptions:*
 
 None
 
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/NoOpBarrierStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#barrier-step[reference]
 
+[llms-summary="The formal semantics of the both() step: maps a vertex to its adjacent vertices given the edge labels."]
 [[both-step]]
 === both()
 
 *Description:* Maps a vertex to its adjacent vertices given the edge labels.
 
-*Syntax:* `both(String... edgeLabels)`
+*Syntax:* `both(edgeLabels: STRING...)`
 
 [width="100%",options="header"]
 |=========================================================
@@ -925,19 +1112,20 @@ None
 The `both()` step is a vertex-centric step that traverses both incoming and outgoing edges from the current vertex to
 adjacent vertices. It is equivalent to the union of `in()` and `out()`.
 
-*Exceptions*
+*Exceptions:*
 
 None
 
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/VertexStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#vertex-steps[reference]
 
+[llms-summary="The formal semantics of the bothE() step: maps a vertex to its incident edges given the edge labels."]
 [[bothe-step]]
 === bothE()
 
 *Description:* Maps a vertex to its incident edges given the edge labels.
 
-*Syntax:* `bothE(String... edgeLabels)`
+*Syntax:* `bothE(edgeLabels: STRING...)`
 
 [width="100%",options="header"]
 |=========================================================
@@ -958,13 +1146,14 @@ None
 The `bothE()` step is a vertex-centric step that traverses both incoming and outgoing edges from the current vertex. It
 is equivalent to the union of `inE()` and `outE()`.
 
-*Exceptions*
+*Exceptions:*
 
 None
 
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/VertexStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#vertex-steps[reference]
 
+[llms-summary="The formal semantics of the bothV() step: maps an edge to its incident vertices."]
 [[bothv-step]]
 === bothV()
 
@@ -991,19 +1180,20 @@ None
 The `bothV()` step is an edge-centric step that traverses to both the incoming and outgoing vertices of the current
 edge. It is equivalent to the union of `inV()` and `outV()`.
 
-*Exceptions*
+*Exceptions:*
 
 None
 
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/EdgeVertexStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#vertex-steps[reference]
 
+[llms-summary="The formal semantics of the branch() step: splits the traverser to all the specified traversals."]
 [[branch-step]]
 === branch()
 
-*Description:* Splits the traverser to all the specified traversals.
+*Description:* Routes the traverser to the child traversals declared by its `option()` modulators, selected by a discriminator value.
 
-*Syntax:* `branch(Traversal<?, M> branchTraversal)` | `branch(Function<Traverser<E>, M> function)`
+*Syntax:* `branch(branchTraversal: Traversal)`
 
 [width="100%",options="header"]
 |=========================================================
@@ -1013,32 +1203,41 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#vertex-steps[reference]
 
 *Arguments:*
 
-* `branchTraversal` - The traversal to branch the traverser to.
-* `function` - The function to branch the traverser to.
+* `branchTraversal` - The discriminator traversal whose result is used as the token that selects which options receive the traverser.
 
 *Modulation:*
 
-* `option()` - Specifies the branch options for the traverser.
+* `option(pickToken, traversalOption)` - Declares a branch traversal keyed by `pickToken`. The `pickToken` is matched
+against the discriminator value produced by `branchTraversal` and may be a literal value, a predicate `P`, or a `Pick`
+enum value. The `Pick.none` token declares a default branch taken when the discriminator matches no other option, and
+the `Pick.any` token declares a branch that always receives the traverser. `Pick.unproductive` declares the branch
+taken when the discriminator is unproductive.
 
 *Considerations:*
 
-The `branch()` step is a general step that splits the traverser to all the child traversals provided to it. It's the
-basis for more robust steps like `choose()` and `union()`. The branch step is typically used with the `option()` step
-to specify the branch options.
+The `branch()` step is a general step that routes each traverser to child traversals based on a discriminator value. It
+is the basis for more robust steps like `choose()` and `union()`. The discriminator value produced by `branchTraversal`
+is matched against the `pickToken` of each `option()`, and unlike `choose()`, the traverser is emitted through *every*
+`option()` whose token matches. A value matched by more than one option is multiplexed to all of them. A branch
+declared with `Pick.any` always receives the traverser in addition to any options matched by value. When the
+discriminator value matches no option, the traverser is routed to the `Pick.none` branch if one is declared, and is
+otherwise filtered from the stream. A `branch()` with no `option()` modulator declares no branches and therefore emits
+nothing.
 
-*Exceptions*
+*Exceptions:*
 
 None
 
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/branch/BranchStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#branch-step[reference]
 
+[llms-summary="The formal semantics of the cap() step: iterates the traversal up to itself and emits the sideEffect referenced by the provided key."]
 [[cap-step]]
 === cap()
 
 *Description:* Iterates the traversal up to itself and emits the sideEffect referenced by the provided key.
 
-*Syntax:* `cap(String sideEffectKey, String... sideEffectKeys)`
+*Syntax:* `cap(sideEffectKey: STRING, sideEffectKeys: STRING...)`
 
 [width="100%",options="header"]
 |=========================================================
@@ -1058,21 +1257,30 @@ None
 *Considerations:*
 
 The `cap()` step is a barrier step that iterates the traversal up to itself and emits the sideEffect referenced by the
-provided key. If multiple keys are provided, then a `Map<String,Object>` of sideEffects is emitted.
+provided key. When a single key is provided, the raw sideEffect value referenced by that key is emitted. When multiple
+keys are provided, a `MAP<STRING, any>` of sideEffects is emitted, keyed by side-effect name.
 
-*Exceptions*
+Handling of keys that were never registered or populated is asymmetric with respect to the number of keys provided.
+When a single key is provided and that key does not exist among the traversal's side-effects, an `Argument Error` is
+raised. When multiple keys are provided, keys that do not exist are silently dropped regardless of their position in
+the argument list, so the emitted `MAP<STRING, any>` contains only the keys that resolve and may be partial or, if no
+keys resolve, empty.
 
-None
+*Exceptions:*
+
+* If a single side-effect key is provided and that key was never registered or populated, an `Argument Error` is
+raised.
 
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/sideEffect/SideEffectCapStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#cap-step[reference]
 
+[llms-summary="The formal semantics of the call() step: provides support for provider-specific service calls."]
 [[call-step]]
 === call()
 
 *Description:* Provides support for provider-specific service calls.
 
-*Syntax:* `call()` | `call(String service, Map params)` | `call(String service, Traversal childTraversal)` | `call(String service, Map params, Traversal childTraversal)`
+*Syntax:* `call(service: STRING)` | `call(service: STRING, params: MAP)` | `call(service: STRING, childTraversal: Traversal)` | `call(service: STRING, params: MAP, childTraversal: Traversal)`
 
 [width="100%",options="header"]
 |=========================================================
@@ -1096,7 +1304,7 @@ type currently supported by the Gremlin type system.
 type currently supported by the Gremlin type system.
 
 How static and dynamic parameters are merged is a detail left to the provider implementation. The reference implementation
-(`CallStep`) uses effectively a "left to right" merge of the parameters - it starts with the static parameter `Map`
+(`CallStep`) uses effectively a "left to right" merge of the parameters - it starts with the static parameter `MAP`
 argument, then merges in the parameters from the dynamic `Traversal` argument, then merges in each `with` modulation
 one by one in the order they appear.
 
@@ -1127,7 +1335,7 @@ There are three execution methods in the reference implementation service call A
 * `execute(ServiceCallContext, TraverserSet, Map)` - execute a service call mid-traversal barrier
 
 The Map is the merged collection of all static and dynamic parameters. In the case of `Barrier` execution, notice
-that there is one `Map` for many input. Since the `call()` API supports dynamic parameters, this implies that all
+that there is one `MAP` for many input. Since the `call()` API supports dynamic parameters, this implies that all
 input must reduce to the same set of parameters for `Barrier` execution. In the reference implementation, if more
 than one parameter set is detected, this will cause an exception and the traversal will halt. Providers that
 implement their own version of a call operation may decide on other strategies to handle this case - for example
@@ -1138,26 +1346,27 @@ The reference implementation provides a default version, which will produce a li
 description if run with `verbose=true`. Providers using their own implementation of the call operation must provide their
 own directory listing service with the service name `"--list"`.
 
-*Exceptions*
+*Exceptions:*
 
 * If a named service does not support the execution mode implied by the traversal, for example, using a `Streaming` or
-`Barrier` step as a traversal source, this will result in an `UnsupportedOperationException`.
+`Barrier` step as a traversal source, this raises an `Unsupported Operation`.
 * As mentioned above, dynamic property parameters (`Traversals`) that reduce to more than one property set for a chunk
-of input is not supported in the reference implementation and will result in an `UnsupportedOperationException`.
+of input is not supported in the reference implementation and raises an `Unsupported Operation`.
 * Use of the reference implementation's built-in directory service - `call()` or `call("--list")` - mid-traversal
-will result in an `UnsupportedOperationException`.
+raises an `Unsupported Operation`.
 
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/CallStep.java[CallStep],
 link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/structure/service/Service.java[Service],
 link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/structure/service/ServiceRegistry.java[ServiceRegistry],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#call-step[reference]
 
+[llms-summary="The formal semantics of the choose() step: a branch step that routes the traverser to different paths based on a choice criterion."]
 [[choose-step]]
 === choose()
 
 *Description:* A branch step that routes the traverser to different paths based on a choice criterion.
 
-*Syntax:* `choose(Traversal|T choice)` | `choose(Traversal|P choice, Traversal trueChoice)` |`choose(Traversal|P choice, Traversal trueChoice, Traversal falseChoice)`
+*Syntax:* `choose(choice: Traversal | T)` | `choose(choice: Traversal | P, trueChoice: Traversal)` | `choose(choice: Traversal | P, trueChoice: Traversal, falseChoice: Traversal)`
 
 [width="100%",options="header"]
 |=========================================================
@@ -1175,7 +1384,7 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#call-step[reference]
 
 * `option(pickToken, traversalOption)` - Adds a traversal option to the `choose` step. The `pickToken` is matched
 against the result of the choice traversal. The `pickToken` may be a literal value, a predicate `P` or a `Pick` enum
-value. `Traversal` is not allowed as a `pickToken` here and will lead to `IllegalArgumentException`. If a match is
+value. `Traversal` is not allowed as a `pickToken` here and raises an `Argument Error`. If a match is
 found, the traverser is routed to the corresponding `traversalOption`.
 
 *Considerations:*
@@ -1206,29 +1415,30 @@ g.V().union(__.has("name", "vadas").values('age').fold(), __.has('name',neq('vad
 g.V().choose(__.has("name", "vadas"), __.values('age').fold(), __.values('name').fold())
 ----
 
-*Exceptions*
+*Exceptions:*
 
-* `IllegalArgumentException` - If `Pick.any` is used as an option token, as only one option per traverser is allowed.
+* An `Argument Error` is raised if `Pick.any` is used as an option token, as only one option per traverser is allowed.
 
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/branch/ChooseStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#choose-step[reference]
 
+[llms-summary="The formal semantics of the combine() step: its exact expected behavior when merging an incoming list with a supplied list argument."]
 [[combine-step]]
 === combine()
 
 *Description:* Appends one list to the other and returns the result to the Traversal Stream.
 
-*Syntax:* `combine(Object values)`
+*Syntax:* `combine(values: any)`
 
 [width="100%",options="header"]
 |=========================================================
 |Start Step |Mid Step |Modulated |Domain |Range
-|N |Y |N |`array`/`Iterable` |`List`
+|N |Y |N |`LIST` |`LIST`
 |=========================================================
 
 *Arguments:*
 
-* `values` - A list of items (as an Iterable or an array) or a traversal that will produce a list of items.
+* `values` - A list of items or a traversal that will produce a list of items.
 
 *Modulation:*
 
@@ -1240,21 +1450,22 @@ A list is returned after the combine operation is applied so duplicates are allo
 duplicates aren't wanted. This step only applies to list types which means that non-iterable types (including null)
 will cause exceptions to be thrown.
 
-*Exceptions*
+*Exceptions:*
 
-* If the incoming traverser isn't a list (array or Iterable) then an `IllegalArgumentException` will be thrown.
-* If the argument doesn't resolve to a list (array or Iterable) then an `IllegalArgumentException` will be thrown.
+* If the incoming traverser isn't a list then an `Argument Error` is raised.
+* If the argument doesn't resolve to a list then an `Argument Error` is raised.
 
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/CombineStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#combine-step[reference],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#merge-step[merge() reference]
 
+[llms-summary="The formal semantics of the coin() step: filters traversers from the Traversal Stream based on a biased coin toss."]
 [[coin-step]]
 === coin()
 
 *Description:* Filters traversers from the Traversal Stream based on a biased coin toss.
 
-*Syntax:* `coin(double probability)`
+*Syntax:* `coin(probability: NUMBER)`
 
 [width="100%",options="header"]
 |=========================================================
@@ -1275,56 +1486,64 @@ None
 Each traverser is subject to a random filter based on the provided probability. A probability of 0.0 means no
 traversers pass through, while a probability of 1.0 means all traversers pass through.
 
-*Exceptions*
+*Exceptions:*
 
 None
 
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/filter/CoinStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#coin-step[reference]
 
+[llms-summary="The formal semantics of the concat() step: concatenates the incoming String traverser with the input String arguments, and return the joined String."]
 [[concat-step]]
 === concat()
 
 *Description:* Concatenates the incoming String traverser with the input String arguments, and return the joined String.
 
-*Syntax:* `concat()` | `concat(String... concatStrings)` | `concat(Traversal concatTraversal, Traversal... otherConcatTraversals)`
+*Syntax:* `concat()` | `concat(concatStrings: STRING...)` | `concat(concatTraversal: Traversal<any, STRING>, otherConcatTraversals: Traversal<any, STRING>...)`
 
 [width="100%",options="header"]
 |=========================================================
 |Start Step |Mid Step |Modulated |Domain |Range
-|N |Y |N |`String` |`String`
+|N |Y |N |`STRING` |`STRING`
 |=========================================================
 
 *Arguments:*
 
-* `concatStrings` - Varargs of `String`. If one or more String values are provided, they will be concatenated together
+* `concatStrings` - Varargs of `STRING`. If one or more String values are provided, they will be concatenated together
 with the incoming traverser. If no argument is provided, the String value from the incoming traverser is returned.
-* `concatTraversal` - A `Traversal` whose value must resolve to a `String`. The first result returned from the traversal will
+* `concatTraversal` - A `Traversal` whose value must resolve to a `STRING`. The first result returned from the traversal will
 be concatenated with the incoming traverser.
-* `otherConcatTraversals` - Varargs of `Traversal`. Each `Traversal` value must resolve to a `String`. The first result
+* `otherConcatTraversals` - Varargs of `Traversal`. Each `Traversal` value must resolve to a `STRING`. The first result
 returned from each traversal will be concatenated with the incoming traverser and the previous traversal arguments.
+
+*Modulation:*
+
+None
+
+*Considerations:*
 
 Any `null` String values will be skipped when concatenated with non-`null` String values. If two `null` value are
 concatenated, the `null` value will be propagated and returned.
 
-*Exceptions*
+*Exceptions:*
 
-* If the incoming traverser is a non-String value then an `IllegalArgumentException` will be thrown.
+* If the incoming traverser is a non-`STRING` value then an `Argument Error` is raised.
 
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/ConcatStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#concat-step[reference]
 
+[llms-summary="The formal semantics of the dateAdd() step: increase value of input Date."]
 [[dateAdd-step]]
 === dateAdd()
 
 *Description:* Increase value of input Date.
 
-*Syntax:* `dateAdd(DT dateToken, Integer value)`
+*Syntax:* `dateAdd(dateToken: DT, value: INT)`
 
 [width="100%",options="header"]
 |=========================================================
 |Start Step |Mid Step |Modulated |Domain |Range
-|N |Y |N |`Date` |`Date`
+|N |Y |N |`DATETIME` |`DATETIME`
 |=========================================================
 
 *Arguments:*
@@ -1332,47 +1551,70 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#concat-step[reference]
 * `dateToken` - Date token enum. Supported values `second`, `minute`, `hour`, `day`.
 * `value` - The number of units, specified by the DT Token, to add to the incoming values. May be negative for subtraction.
 
-*Exceptions*
+*Modulation:*
 
-* If the incoming traverser is a non-Date value then an `IllegalArgumentException` will be thrown.
+None
+
+*Considerations:*
+
+The step computes a duration from `dateToken` and `value` at step construction time and adds that duration to
+the incoming date. `DT` is a closed enumeration whose only members are `second`, `minute`, `hour`, and `day`, and
+`dateToken` must name one of them. The `value` is bounded by the `INT` type, so the duration is derived without
+numeric overflow even for large magnitudes.
+
+*Exceptions:*
+
+* If the incoming traverser is a non-`DATETIME` value then an `Argument Error` is raised.
+* If `dateToken` is not one of the supported `DT` members (`second`, `minute`, `hour`, `day`) then an `Argument Error` is raised.
 
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/DateAddStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#dateAdd-step[reference]
 
+[llms-summary="The formal semantics of the dateDiff() step: returns the difference between two dates as a Long, in epoch milliseconds."]
 [[dateDiff-step]]
 === dateDiff()
 
-*Description:* Returns the difference between two Dates in epoch time.
+*Description:* Returns the difference between two Dates in epoch time (milliseconds), computed as the incoming
+traverser `DATETIME` minus the argument `DATETIME`. A positive result means the incoming date is later than the
+argument date, while a negative result means the incoming date is earlier.
 
-*Syntax:* `dateDiff(Date value)` | `dateDiff(Traversal dateTraversal)`
+*Syntax:* `dateDiff(value: DATETIME)` | `dateDiff(dateTraversal: Traversal<any, DATETIME>)`
 
 [width="100%",options="header"]
 |=========================================================
 |Start Step |Mid Step |Modulated |Domain |Range
-|N |Y |N |`Date` |`Date`
+|N |Y |N |`DATETIME` |`LONG`
 |=========================================================
 
 *Arguments:*
 
-* `value` - Date for subtraction.
-* `dateTraversal` - The `Traversal` value must resolve to a `Date`. The first result returned from the traversal will be
-subtracted with the incoming traverser.
+* `value` - The `DATETIME` to subtract from the incoming traverser (result = incoming `DATETIME` - `value`).
+* `dateTraversal` - The `Traversal` value must resolve to a `DATETIME`. The first result returned from the traversal
+is subtracted from the incoming traverser (result = incoming `DATETIME` - traversal result).
 
-If argument resolves as `null` then incoming date will not be changed.
+*Modulation:*
 
-*Exceptions*
+None
 
-* If the incoming traverser is a non-Date value then an `IllegalArgumentException` will be thrown.
+*Considerations:*
+
+If the argument (or the `Traversal`) resolves to `null` it is treated as the epoch, so the result is the incoming
+date's own value in epoch milliseconds.
+
+*Exceptions:*
+
+* If the incoming traverser is a non-`DATETIME` value then an `Argument Error` is raised.
 
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/DateDiffStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#dateDiff-step[reference]
 
+[llms-summary="The formal semantics of the dedup() step: removes repeatedly seen results from the Traversal Stream."]
 [[dedup-step]]
 === dedup()
 
 *Description:* Removes repeatedly seen results from the Traversal Stream.
 
-*Syntax:* `dedup()` | `dedup(String... labels)` | `dedup(Scope scope, String... labels)`
+*Syntax:* `dedup()` | `dedup(labels: STRING...)` | `dedup(scope: Scope, labels: STRING...)`
 
 [width="100%",options="header"]
 |=========================================================
@@ -1431,26 +1673,31 @@ can return any of:
 
 `["Alex", "Bob"]`, `["Bob", "Alex"]`, `["Bob", "Chloe"]`, or `["Chloe", "Bob"]`
 
+*Exceptions:*
+
+None
+
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/filter/DedupGlobalStep.java[source],
 link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/DedupLocalStep.java[source (local)],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#dedup-step[reference]
 
+[llms-summary="The formal semantics of the difference() step: adds the difference of two lists to the Traversal Stream."]
 [[difference-step]]
 === difference()
 
 *Description:* Adds the difference of two lists to the Traversal Stream. 
 
-*Syntax:* `difference(Object values)`
+*Syntax:* `difference(values: any)`
 
 [width="100%",options="header"]
 |=========================================================
 |Start Step |Mid Step |Modulated |Domain |Range
-|N |Y |N |`array`/`Iterable` |`Set`
+|N |Y |N |`LIST` |`SET`
 |=========================================================
 
 *Arguments:*
 
-* `values` - A list of items (as an Iterable or an array) or a `Traversal` that will produce a list of items.
+* `values` - A list of items or a `Traversal` that will produce a list of items.
 
 *Modulation:*
 
@@ -1458,34 +1705,88 @@ None
 
 *Considerations:*
 
-Set difference (`A-B`) is an ordered operation. The incoming traverser is treated as `A` and the provided argument is
-treated as `B`. A set is returned after the difference operation is applied so there won't be duplicates. This step only
-applies to list types which means that non-iterable types (including null) will cause exceptions to be thrown.
+Set difference (`A-B`) is a directional operation. The incoming traverser is treated as `A` and the provided argument
+as `B`, so `A-B` and `B-A` generally yield different results. This directionality is the only sense in which the
+operation is ordered. The result is a `SET`, so it contains no duplicates, and its iteration order is unspecified. In
+particular the result does not preserve the order of the incoming list, so a traversal that depends on a particular
+member order orders the result explicitly.
 
-*Exceptions*
+Membership of the result is decided by comparing each member of `A` against the members of `B` by value and by type.
+Numerically equal values of different numeric types, such as an `INT` and a `LONG` of the same magnitude, are treated
+as distinct members, so a value from `A` is removed only when `B` contains a member of the same type and value. A
+`NULL` is a legal member of either list and is compared in the same way, so a `NULL` in `A` is removed only when `B`
+also contains a `NULL`.
 
-* If the incoming traverser isn't a list (array or Iterable) then an `IllegalArgumentException` will be thrown.
-* If the argument doesn't resolve to a list (array or Iterable) then an `IllegalArgumentException` will be thrown.
+This step only applies to lists. An error is raised when the incoming traverser or the argument is itself `NULL` or is
+not iterable, while a `NULL` that appears as an element of an otherwise iterable list is permitted and behaves as
+described above. When the argument is supplied as a `Traversal`, that traversal produces the comparison list as a
+single result rather than as a stream of separate results.
+
+*Exceptions:*
+
+* If the incoming traverser isn't a list then an `Argument Error` is raised.
+* If the argument doesn't resolve to a list then an `Argument Error` is raised.
 
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/DifferenceStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#difference-step[reference]
 
+[llms-summary="The formal semantics of the discard() step: filters all traversers out of the traversal stream, discarding them."]
+[[discard-step]]
+=== discard()
+
+*Description:* Filters all traversers out of the traversal stream.
+
+*Syntax:* `discard()`
+
+[width="100%",options="header"]
+|=========================================================
+|Start Step |Mid Step |Modulated |Domain |Range
+|N |Y |N |`any` |`any`
+|=========================================================
+
+*Arguments:*
+
+None
+
+*Modulation:*
+
+None
+
+*Considerations:*
+
+The `discard()` step is a filter step that removes every traverser, always producing an empty result. It is commonly
+used to consume a traversal purely for its side effects (for example after an `aggregate()` or a mutation) without
+returning any objects.
+
+This step was named `none()` prior to 3.8.0. The name `none()` has since been reassigned to an unrelated list filter
+step that tests each item of a list against a supplied predicate and therefore requires a predicate argument. A bare
+`none()` no longer discards traversers and raises an error, so `discard()` is the step to use for that behavior. See the
+<<none-step,`none()`>> step for its current semantics.
+
+*Exceptions*
+
+None
+
+See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/filter/DiscardStep.java[source],
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#discard-step[reference]
+
+[llms-summary="The formal semantics of the disjunct() step: adds the disjunct set to the Traversal Stream."]
 [[disjunct-step]]
 === disjunct()
 
 *Description:* Adds the disjunct set to the Traversal Stream.
 
-*Syntax:* `disjunct(Object values)`
+*Syntax:* `disjunct(values: any)`
 
 [width="100%",options="header"]
 |=========================================================
 |Start Step |Mid Step |Modulated |Domain |Range
-|N |Y |N |`array`/`Iterable` |`Set`
+|N |Y |N |`LIST` |`SET`
 |=========================================================
 
 *Arguments:*
 
-* `values` - A list of items (as an Iterable or an array) or a `Traversal` that will produce a list of items.
+* `values` - A list of items or a `Traversal` that will produce a list of items.
 
 *Modulation:*
 
@@ -1493,17 +1794,31 @@ None
 
 *Considerations:*
 
-A set is returned after the disjunct operation is applied so there won't be duplicates. This step only applies to list
-types which means that non-iterable types (including null) will cause exceptions to be thrown.
+The disjunct operation is the symmetric difference of two lists. The result contains the members that appear in the
+incoming traverser or in the provided argument but not in both. The operation is symmetric, so exchanging the incoming
+traverser and the argument does not change the result. The result is a `SET`, so it contains no duplicates, and its
+iteration order is unspecified. In particular the result does not preserve the order of either input list, so a
+traversal that depends on a particular member order orders the result explicitly.
 
-*Exceptions*
+Membership of the result is decided by comparing members by value and by type. Numerically equal values of different
+numeric types, such as an `INT` and a `LONG` of the same magnitude, are treated as distinct members. A `NULL` is a
+legal member of either list and is compared in the same way, so a `NULL` is excluded from the result only when it
+appears in both inputs.
 
-* If the incoming traverser isn't a list (array or Iterable) then an `IllegalArgumentException` will be thrown.
-* If the argument doesn't resolve to a list (array or Iterable) then an `IllegalArgumentException` will be thrown.
+This step only applies to lists. An error is raised when the incoming traverser or the argument is itself `NULL` or is
+not iterable, while a `NULL` that appears as an element of an otherwise iterable list is permitted and behaves as
+described above. When the argument is supplied as a `Traversal`, that traversal produces the comparison list as a
+single result rather than as a stream of separate results.
+
+*Exceptions:*
+
+* If the incoming traverser isn't a list then an `Argument Error` is raised.
+* If the argument doesn't resolve to a list then an `Argument Error` is raised.
 
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/DisjunctStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#disjunct-step[reference]
 
+[llms-summary="The formal semantics of the element() step: traverse from Property to its Element."]
 [[element-step]]
 === element()
 
@@ -1525,44 +1840,161 @@ None
 
 None
 
+*Considerations:*
+
+The `element()` step traverses from a `Property` to the `Element` that owns it. A `VertexProperty`
+yields its `Vertex`, an edge `Property` yields its `Edge`, and a meta `Property` (a property on a
+`VertexProperty`) yields the `VertexProperty`. The step is a pure navigation step and does not
+consult the underlying graph.
+
+Because the step performs no type checking on the incoming traverser, a value outside the
+`Property` domain is neither passed through nor filtered from the traversal stream. Such input
+violates the step's domain contract and causes the traversal to fail with an error.
+
+[llms-summary="The formal semantics of the format() step: a mid-traversal step which will handle result formatting to string values."]
 [[format-step]]
 === format()
 
-*Description:* a mid-traversal step which will handle result formatting to string values.
+*Exceptions:*
 
-*Syntax:* `format(String formatString)`
+None
+
+See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/ElementStep.java[source],
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#element-step[reference]
+
+[llms-summary="The formal semantics of the elementMap() step: converts elements to a `Map` representation containing the element's `id`, `label`, and properties."]
+[[elementmap-step]]
+=== elementMap()
+
+*Description:* Converts elements to a `Map` representation containing the element's `id`, `label`, and properties.
+For an `Edge`, the map also includes the `IN` and `OUT` vertex structures (each a nested map of `id` and `label`).
+
+*Syntax:* `elementMap(String... propertyKeys)`
 
 [width="100%",options="header"]
 |=========================================================
 |Start Step |Mid Step |Modulated |Domain |Range
-|N |Y |`by()` |`any` |`String`
+|N |Y |N |`Element` |`Map`
 |=========================================================
 
 *Arguments:*
 
-* `formatString` - Variables can be represented with `%{variable_name}` notation.
-Positional arguments can be used as `%{_}` token. Can be used multiple times.
-The variable values are used in the order that the first one will be found: Element properties, then Scope values.
-If value for some variable was not found, then the result is filtered out.
+* `propertyKeys` - If `elementMap()` is provided a list of propertyKeys, then the result map will only contain
+property entries specified by propertyKeys. If the list is empty, then all properties are included.
+
+*Considerations:*
+
+The label format in the map is controlled by source-level `with("multilabel")` and `with("singlelabel")` options, not
+by the number of labels the graph permits per element. When `"multilabel"` is present, the label value is a
+`SET<STRING>`. Likewise when
+`"singlelabel"` is present, it is a single `STRING`. The two options are mutually exclusive. Configuring both
+`"multilabel"` and `"singlelabel"` on the same source is rejected with a `State Error`. Note that it is a
+provider choice whether an unconfigured `GraphTraversal` defaults to `multilabel` or `singlelabel` semantics. The
+reference implementation defaults to `singlelabel` semantics.
 
 *Exceptions*
 
 None
 
+See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/ElementMapStep.java[source],
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#elementmap-step[reference]
+
+[llms-summary="The formal semantics of the E() step: reads edges from the graph by their identifiers."]
+[[e-step]]
+=== E()
+
+*Description:* Reads edges from the graph by their identifiers. Can be used as a start step or mid-traversal.
+
+*Syntax:* `E(edgeIds: any...)` | `E(idTraversal: Traversal)`
+
+[width="100%",options="header"]
+|=========================================================
+|Start Step |Mid Step |Modulated |Domain |Range
+|Y |Y |N |`any` |`Edge`
+|=========================================================
+
+*Arguments:*
+
+* `edgeIds` - Zero or more edge identifiers. If none are provided, all edges are returned. When a single `LIST`
+  or `SET` is supplied as the sole argument, it is unrolled one level so that each of its elements is treated as
+  an individual identifier.
+* `idTraversal` - A child traversal which supplies edge identifiers. The child traversal must be read-only
+  (no mutating steps).
+
 *Modulation:*
 
-* `by()` - Used to inject positional argument. For example:
+None
+
+*Considerations:*
+
+* When used as a start step with a traversal argument, a synthetic traverser seeds the child traversal.
+* When used mid-traversal with a traversal argument, the current traverser seeds the child traversal.
+* When used mid-traversal with literal identifiers, the content of the incoming traverser is ignored for
+  identifier resolution. A fresh global lookup by those identifiers is performed once for each incoming
+  traverser, so the same identifiers are resolved again for every traverser that arrives.
+* Unrolling of a single collection argument is one level deep. A collection nested inside that argument is not
+  unrolled further and is passed through as a single identifier value, which a provider will typically reject as
+  invalid.
+* If no edges match the provided identifiers, the step produces no results.
+* Graph providers may optimize `E()` with subsequent `has()` filters by folding `HasContainer` predicates into the
+  step for index-backed lookups.
+
+*Exceptions:*
+
+* An `Argument Error` is raised when an argument cannot be interpreted as a valid edge identifier by the graph,
+  such as a value of an unsupported type or a collection that remains nested after one level of unrolling.
+* An `Argument Error` is raised when a traversal argument contains a mutating step, because the child traversal
+  that supplies identifiers must be read-only.
+
+See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/GraphStep.java[source],
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#graph-step[reference]
+
+[llms-summary="The formal semantics of the format() step: returns a string built by substituting variable references in a template with values from the incoming traverser."]
+[[format-step]]
+=== format()
+
+*Description:* Returns a string built by substituting variable references in a template with values from the
+incoming traverser.
+
+*Syntax:* `format(formatString: STRING)`
+
+[width="100%",options="header"]
+|=========================================================
+|Start Step |Mid Step |Modulated |Domain |Range
+|N |Y |`by()` |`any` |`STRING`
+|=========================================================
+
+*Arguments:*
+
+* `formatString` - The template string. Variables are written as `%{variable_name}` and positional arguments as
+`%{_}`. Either form may appear multiple times.
+
+*Modulation:*
+
+* `by()` - Provides the value for each `%{_}` positional argument in declaration order. For example:
 `g.V().format("%{name} has %{_} connections").by(bothE().count())`.
+
+*Considerations:*
+
+For each `%{variable_name}` reference, the step first looks for a property of that name on the incoming `Element`,
+and if none is found, falls back to a scope value such as an `as()` label. For each `%{_}` reference, the step
+consumes the next `by()` traversal in declaration order. If any variable cannot be resolved, the entire result
+is filtered out of the traversal stream.
+
+*Exceptions:*
+
+* If `formatString` is `null`, an `Argument Error` is raised at step construction.
 
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/FormatStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#format-step[reference]
 
+[llms-summary="The formal semantics of the group() step: groups objects in the traversal stream by a key and applies a reducing operation to the grouped values."]
 [[group-step]]
 === group()
 
 *Description:* Groups objects in the traversal stream by a key and applies a reducing operation to the grouped values.
 
-*Syntax:* `group()` | `group(String sideEffectKey)`
+*Syntax:* `group()` | `group(sideEffectKey: STRING)`
 
 [width="100%",options="header"]
 |=========================================================
@@ -1586,25 +2018,26 @@ objects are collected into a list.
 *Considerations:*
 
 The `group()` step can be used as both a reducing barrier step and a side-effect step. As a reducing barrier step (no
-side-effect key), it returns a `Map<Object, Object>` where keys are the grouping criteria and values are the reduced
+side-effect key), it returns a `MAP<any, any>` where keys are the grouping criteria and values are the reduced
 results. As a side-effect step, it stores the grouping in a side-effect and passes the traverser to the next step
 unchanged. In both forms, this step is a barrier and must fully iterate the traversal before returning any results.
 
-*Exceptions*
+*Exceptions:*
 
-* If more than 2 `by()` modulators are provided, an `IllegalStateException` will be thrown.
+* If more than 2 `by()` modulators are provided, a `State Error` is raised.
 
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/GroupStep.java[source],
 link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/sideEffect/GroupSideEffectStep.java[source (sideEffect)],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#group-step[reference]
 
+[llms-summary="The formal semantics of the groupCount() step: counts the number of times a particular object has been part of a traversal, returning a `MAP` where the object is the key and the value is the count."]
 [[groupcount-step]]
 === groupCount()
 
-*Description:* Counts the number of times a particular object has been part of a traversal, returning a `Map` where the
+*Description:* Counts the number of times a particular object has been part of a traversal, returning a `MAP` where the
 object is the key and the value is the count.
 
-*Syntax:* `groupCount()` | `groupCount(String sideEffectKey)`
+*Syntax:* `groupCount()` | `groupCount(sideEffectKey: STRING)`
 
 [width="100%",options="header"]
 |=========================================================
@@ -1625,30 +2058,298 @@ key.
 *Considerations:*
 
 The `groupCount()` step can be used as both a map step and a side-effect step. As a map step, it returns a
-`Map<Object, Long>` with the counted objects as keys and their counts as values. As a side-effect step, it stores the
-counts in a side-effect and passes the traverser to the next step unchanged. Note that both the map and side-effect
-forms of this step are barriers that must fully iterate the traversal before returning any results.
+`MAP<any, LONG>` with the counted objects as keys and their counts as values. As a side-effect step, it stores the
+counts in a side-effect and passes the traverser to the next step unchanged. In the side-effect form, the aggregated
+counts can be accessed later using the `cap()` step with the same side-effect key. Note that both the map and
+side-effect forms of this step are barriers that must fully iterate the traversal before returning any results.
 
-*Exceptions*
+When a `by()` modulator is supplied and its transform is non-productive for a given object, that object contributes
+nothing to the result. It is neither counted under a `null` key nor treated as an error, and is instead omitted from
+the counts.
 
-* If multiple `by()` modulators are provided, an `IllegalStateException` will be thrown.
+*Exceptions:*
+
+* If multiple `by()` modulators are provided, a `State Error` is raised.
 
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/GroupCountStep.java[source],
 link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/sideEffect/GroupCountSideEffectStep.java[source (sideEffect)],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#groupcount-step[reference]
 
+[llms-summary="The formal semantics of the has() step: filters traversers by property existence, property value, label, or identifier."]
+[[has-step]]
+=== has()
+
+*Description:* Filters traversers by property existence, property value, label, or identifier.
+
+*Syntax:* `has(key: STRING)` | `has(key: STRING, value: any)` | `has(key: STRING, predicate: P)` | `has(key: STRING, traversal: Traversal)` | `has(accessor: T, value: any)` | `has(accessor: T, predicate: P)` | `has(accessor: T, traversal: Traversal)` | `has(label: STRING, key: STRING, value: any)` | `has(label: STRING, key: STRING, predicate: P)` | `has(label: STRING, key: STRING, traversal: Traversal)`
+
+[width="100%",options="header"]
+|=========================================================
+|Start Step |Mid Step |Modulated |Domain |Range
+|N |Y |N |`Element` / `Property` |`Element` / `Property`
+|=========================================================
+
+*Arguments:*
+
+* `key` - The property key to check.
+* `accessor` - A `T` accessor: `T.id` (element identifier), `T.label` (element label), `T.key` (property key), or
+  `T.value` (property value).
+* `value` - The value to compare against using equality.
+* `predicate` - A `P` predicate for comparison. The predicate value may be a literal or a `Traversal`.
+* `traversal` - A child traversal whose first result is used as the comparison value (implicitly wrapped in `P.eq()`).
+  Must be read-only (no mutating steps). The child traversal is evaluated per-traverser: the current traverser seeds
+  the child, and the first result is used for comparison.
+* `label` - A label filter applied before the property check (three-argument form).
+
+*Modulation:*
+
+None
+
+*Considerations:*
+
+* `has(key)` filters to elements that have the specified property (existence check).
+* `has(T.label, value)` is equivalent to `hasLabel(value)`. `has(T.id, value)` is equivalent to `hasId(value)`.
+* When the domain is a `Property` (e.g., from `properties()`), `T.key` and `T.value` accessors are used to filter
+  by property key or property value respectively.
+* When the predicate value for `T.id` is a `STRING`, the element's `id().toString()` is used for comparison.
+* For multi-valued properties (list/set cardinality), `has(key, value)` passes if *any* property with that key matches.
+* When a `Traversal` is supplied as a value or inside a `P`, it is resolved per-traverser and its first result is used.
+* Child traversals must be read-only. Mutating steps are rejected with an `Argument Error`.
+* `has(key, null)` filters to elements where the property value is `null` (not an existence check).
+* `has(null)` and `has(null, value)` always produce an empty result.
+
+*Exceptions:*
+
+* An `Argument Error` is raised if a child traversal contains mutating steps.
+* A `State Error` is raised if the traverser is not an `Element` or `Property`.
+
+See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/filter/HasStep.java[source],
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#has-step[reference]
+
+[llms-summary="The formal semantics of the hasId() step: filters elements by their identifier."]
+[[hasid-step]]
+=== hasId()
+
+*Description:* Filters elements by their identifier.
+
+*Syntax:* `hasId(id: any, otherIds: any...)` | `hasId(predicate: P)`
+
+[width="100%",options="header"]
+|=========================================================
+|Start Step |Mid Step |Modulated |Domain |Range
+|N |Y |N |`Element` |`Element`
+|=========================================================
+
+*Arguments:*
+
+* `id` - One or more identifiers, or Traversals supplying identifiers to match against. Arrays and list-valued
+  arguments are flattened (unrolled) into individual IDs. Multiple IDs are combined into `P.within(...)`.
+* `predicate` - A `P` predicate for identifier comparison. The predicate value may contain a `Traversal`.
+
+*Modulation:*
+
+None
+
+*Considerations:*
+
+* Equivalent to `has(T.id, ...)`.
+* When the predicate value is a `STRING`, the element's `id().toString()` is used for comparison.
+* `hasId(null)` filters all elements since `T.id` cannot be null.
+* Child traversals must be read-only; mutating steps are rejected with an `Argument Error`.
+
+*Exceptions:*
+
+* An `Argument Error` is raised if a child traversal contains mutating steps.
+
+See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/filter/HasStep.java[source],
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#has-step[reference]
+
+[llms-summary="The formal semantics of the hasKey() step: filters properties by their key."]
+[[haskey-step]]
+=== hasKey()
+
+*Description:* Filters properties by their key.
+
+*Syntax:* `hasKey(key: STRING, otherKeys: STRING...)` | `hasKey(predicate: P)` | `hasKey(traversal: Traversal)`
+
+[width="100%",options="header"]
+|=========================================================
+|Start Step |Mid Step |Modulated |Domain |Range
+|N |Y |N |`Property` / `VertexProperty` |`Property` / `VertexProperty`
+|=========================================================
+
+*Arguments:*
+
+* `key` - One or more keys to match against.
+* `predicate` - A `P` predicate for key comparison. The predicate value may contain a `Traversal`.
+* `traversal` - A child traversal whose first result is used as the key (implicitly wrapped in `P.eq()`).
+  Must be read-only.
+
+*Modulation:*
+
+None
+
+*Considerations:*
+
+* Equivalent to `has(T.key, ...)`.
+* Operates on `Property` or `VertexProperty` traversers (typically reached via `properties()`).
+* Not intended for testing key existence on vertices/edges, use `has(key)` for that purpose.
+* Child traversals must be read-only; mutating steps are rejected with an `Argument Error`.
+
+*Exceptions:*
+
+* An `Argument Error` is raised if a child traversal contains mutating steps.
+
+See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/filter/HasStep.java[source],
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#has-step[reference]
+
+[llms-summary="The formal semantics of the hasLabel() step: filters elements by their label."]
+[[haslabel-step]]
+=== hasLabel()
+
+*Description:* Filters elements by their label.
+
+*Syntax:* `hasLabel(label: STRING, otherLabels: STRING...)` | `hasLabel(predicate: P)` | `hasLabel(traversal: Traversal)`
+
+[width="100%",options="header"]
+|=========================================================
+|Start Step |Mid Step |Modulated |Domain |Range
+|N |Y |N |`Element` |`Element`
+|=========================================================
+
+*Arguments:*
+
+* `label` - One or more labels to match against.
+* `predicate` - A `P` predicate for label comparison. The predicate value may contain a `Traversal`.
+* `traversal` - A child traversal whose first result is used as the label (implicitly wrapped in `P.eq()`).
+  Must be read-only.
+
+*Modulation:*
+
+None
+
+*Considerations:*
+
+* Equivalent to `has(T.label, ...)`.
+* Child traversals must be read-only; mutating steps are rejected with an `Argument Error`.
+
+The label test is applied to each label the element carries and the element is retained when at least one label
+satisfies it. For single-label elements this is equivalent to testing the label directly. For multi-label vertices a
+negation predicate therefore retains any vertex carrying at least one other label, so a vertex labelled both "person"
+and "employee" satisfies `hasLabel(neq("person"))`. Excluding every element that carries a given label requires
+`not(hasLabel("person"))`. The same rule makes `hasLabel("a", "b")` a disjunction, matching when either label is
+present, while chained `hasLabel("a").hasLabel("b")` is a conjunction.
+
+*Exceptions:*
+
+* An `Argument Error` is raised if a child traversal contains mutating steps.
+
+See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/filter/HasStep.java[source],
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#has-step[reference]
+
+[llms-summary="The formal semantics of the hasValue() step: filters properties by their value."]
+[[hasvalue-step]]
+=== hasValue()
+
+*Description:* Filters properties by their value.
+
+*Syntax:* `hasValue(value: any, otherValues: any...)` | `hasValue(predicate: P)` | `hasValue(traversal: Traversal)`
+
+[width="100%",options="header"]
+|=========================================================
+|Start Step |Mid Step |Modulated |Domain |Range
+|N |Y |N |`Property` / `VertexProperty` |`Property` / `VertexProperty`
+|=========================================================
+
+*Arguments:*
+
+* `value` - One or more values to match against.
+* `predicate` - A `P` predicate for value comparison. The predicate value may contain a `Traversal`.
+* `traversal` - A child traversal whose first result is used as the value (implicitly wrapped in `P.eq()`).
+  Must be read-only.
+
+*Modulation:*
+
+None
+
+*Considerations:*
+
+* `hasValue(value)` is equivalent to `has(T.value, value)`.
+* When multiple values are supplied, `hasValue(value, otherValues...)` is equivalent to
+  `has(T.value, within(value, otherValues...))`: the property matches if its value equals *any* of the
+  supplied values (any-of / OR semantics).
+* Value matching uses Gremlin equality, so it follows the rules described in
+  <<gremlin-semantics-equality-comparability, Equality and Comparability>>, including cross-type numeric
+  coercion (for example, the integer `1` matches the long `1L`, per <<Numeric Type Promotion>>).
+* A `null` argument matches nothing (produces an empty result) and does not raise an error.
+* Operates on `Property` or `VertexProperty` traversers (typically reached via `properties()`).
+* Child traversals must be read-only; mutating steps are rejected with an `Argument Error`.
+
+*Exceptions:*
+
+* An `Argument Error` is raised if a child traversal contains mutating steps.
+
+See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/filter/HasStep.java[source],
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#has-step[reference]
+
+[llms-summary="The formal semantics of the label() step: maps an element to its label as a single string value."]
+[[label-step]]
+=== label()
+
+*Description:* Maps an element to its label as a single string value.
+
+*Syntax:* `label()`
+
+[width="100%",options="header"]
+|=========================================================
+|Start Step |Mid Step |Modulated |Domain |Range
+|N |Y |N |`Element` |`String`
+|=========================================================
+
+*Considerations:*
+
+The `label()` step returns exactly one label string per element. For graphs that support multiple labels per vertex,
+`label()` returns only one of the vertex's labels and the choice is non-deterministic (implementation-dependent
+ordering). Use `labels()` to retrieve all labels reliably.
+
+See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/LabelStep.java[source],
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#label-step[reference]
+
+[llms-summary="The formal semantics of the labels() step: maps an element to its labels, emitting one traverser per label."]
+[[labels-step]]
+=== labels()
+
+*Description:* Maps an element to its labels, emitting one traverser per label.
+
+*Syntax:* `labels()`
+
+[width="100%",options="header"]
+|=========================================================
+|Start Step |Mid Step |Modulated |Domain |Range
+|N |Y |N |`Element` |`String`
+|=========================================================
+
+*Considerations:*
+
+For vertices with a single label, `labels()` emits one traverser (equivalent to `label()`). For multi-label vertices,
+it emits one traverser per label. For vertices that carry no labels, no traversers are emitted.
+
+See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/LabelsStep.java[source],
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#labels-step[reference]
+
+[llms-summary="The formal semantics of the length() step: returns the length of the incoming string or list, if Scope.local is specified, returns the length of each string elements inside incoming list traverser."]
 [[length-step]]
 === length()
 
 *Description:* Returns the length of the incoming string or list, if `Scope.local` is specified, returns
 the length of each string element inside incoming list traverser.
 
-*Syntax:* `length()` | `length(Scope scope)`
+*Syntax:* `length()` | `length(scope: Scope)`
 
 [width="100%",options="header"]
 |=========================================================
 |Start Step |Mid Step |Modulated |Domain |Range
-|N |Y |N |`String`/`array`/`Iterable` |`Integer`/`List`
+|N |Y |N |`STRING`/`LIST` |`INT`/`LIST`
 |=========================================================
 
 *Arguments:*
@@ -1656,23 +2357,30 @@ the length of each string element inside incoming list traverser.
 * `scope` - Determines the type of traverser it operates on. Both scopes will operate on the level of individual traversers.
 The `global` scope will operate on individual string traverser. The `local` scope will operate on list traverser with string elements inside.
 
+*Modulation:*
+
+None
+
+*Considerations:*
+
 Null values from the incoming traverser are not processed and remain as null when returned.
 
-*Exceptions*
+*Exceptions:*
 
-* For `Scope.global` or parameterless function calls, if the incoming traverser is a non-String value then an `IllegalArgumentException` will be thrown.
-* For `Scope.local`, if the incoming traverser is not a string or a list of strings then an `IllegalArgumentException` will be thrown.
+* For `Scope.global` or parameterless function calls, if the incoming traverser is a non-`STRING` value then an `Argument Error` is raised.
+* For `Scope.local`, if the incoming traverser is not a string or a list of strings then an `Argument Error` is raised.
 
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/LengthGlobalStep.java[source],
 link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/LengthLocalStep.java[source (local)],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#length-step[reference]
 
+[llms-summary="The formal semantics of the local() step: executes the provided traversal in an object-local manner."]
 [[local-step]]
 === local()
 
 *Description:* Executes the provided traversal in an object-local manner.
 
-*Syntax:* `local(Traversal localTraversal)`
+*Syntax:* `local(localTraversal: Traversal)`
 
 [width="100%",options="header"]
 |=========================================================
@@ -1692,27 +2400,43 @@ None
 
 The `local()` step enforces object-local execution. As a branching step with local children, it implements strict lazy
 evaluation by passing a single traverser at a time to the local traversal (bulk of exactly one, if bulking is supported)
-and resetting the traversal to clean state between executions.
+and resetting the traversal to clean state between executions. Each incoming object is therefore processed independently,
+as illustrated by counting the outgoing edges of every vertex in isolation.
+
+[gremlin-groovy,modern]
+----
+g.V().local(outE().count())
+----
+
+The clean state that is reset between executions is the local computational state of the local traversal, such as its
+per-object barriers, ordering, and path history. It does not extend to global side effects. A side-effect step such as
+`aggregate()` or `store()` writes to a side-effect that is shared across the whole traversal, so its contents are not
+reset for each incoming object and instead accumulate across every traverser that passes through `local()`.
+
+*Exceptions:*
+
+None
 
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/LocalStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#local-step[reference]
 
+[llms-summary="The formal semantics of the intersect() step: adds the intersection to the Traversal Stream."]
 [[intersect-step]]
 === intersect()
 
 *Description:* Adds the intersection to the Traversal Stream.
 
-*Syntax:* `intersect(Object values)`
+*Syntax:* `intersect(values: any)`
 
 [width="100%",options="header"]
 |=========================================================
 |Start Step |Mid Step |Modulated |Domain |Range
-|N |Y |N |`array`/`Iterable` |`Set`
+|N |Y |N |`LIST` |`SET`
 |=========================================================
 
 *Arguments:*
 
-* `values` - A list of items (as an Iterable or an array) or a `Traversal` that will produce a list of items.
+* `values` - A list of items or a `Traversal` that will produce a list of items.
 
 
 *Modulation:*
@@ -1724,25 +2448,65 @@ None
 A set is returned after the intersect operation is applied so there won't be duplicates. This step only applies to list
 types which means that non-iterable types (including null) will cause exceptions to be thrown.
 
-*Exceptions*
+*Exceptions:*
 
-* If the incoming traverser isn't a list (array or Iterable) then an `IllegalArgumentException` will be thrown.
-* If the argument doesn't resolve to a list (array or Iterable) then an `IllegalArgumentException` will be thrown.
+* If the incoming traverser isn't a list then an `Argument Error` is raised.
+* If the argument doesn't resolve to a list then an `Argument Error` is raised.
 
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/IntersectStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#intersect-step[reference]
 
+[llms-summary="The formal semantics of the is() step: filters scalar values by testing them against a predicate or value."]
+[[is-step]]
+=== is()
+
+*Description:* Filters scalar values by testing them against a predicate or value.
+
+*Syntax:* `is(value: any)` | `is(predicate: P)`
+
+[width="100%",options="header"]
+|=========================================================
+|Start Step |Mid Step |Modulated |Domain |Range
+|N |Y |N |`any` |`any`
+|=========================================================
+
+*Arguments:*
+
+* `value` - A literal value or a `Traversal` to test equality against. `value` is implicitly wrapped
+  in `P.eq(value)`.
+* `predicate` - A `P` predicate for comparison. The predicate value may be a literal or a `Traversal`.
+
+*Modulation:*
+
+None
+
+*Considerations:*
+
+* When a `Traversal` is supplied as a value or inside a `P`, it is resolved per-traverser: the current traverser seeds
+  the child traversal and its first result is used for comparison.
+* If the child traversal produces no result, the comparison is aborted and the traverser is filtered out.
+* Child traversals must be read-only; mutating steps are rejected with an `Argument Error`.
+* Type mismatches during comparison (e.g., comparing a number to a string) result in the traverser being filtered.
+
+*Exceptions:*
+
+* An `Argument Error` is raised if a child traversal contains mutating steps.
+
+See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/filter/IsStep.java[source],
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#is-step[reference]
+
+[llms-summary="The formal semantics of the conjoin() step: joins every element in a list together into a String."]
 [[conjoin-step]]
 === conjoin()
 
 *Description:* Joins every element in a list together into a String. 
 
-*Syntax:* `conjoin(String delimiter)`
+*Syntax:* `conjoin(delimiter: STRING)`
 
 [width="100%",options="header"]
 |=========================================================
 |Start Step |Mid Step |Modulated |Domain |Range
-|N |Y |N |`array`/`Iterable` |`String`
+|N |Y |N |`LIST` |`STRING`
 |=========================================================
 
 *Arguments:*
@@ -1759,25 +2523,26 @@ Every element in the list (except `null`) is converted to a String. Null values 
 between neighboring elements to form the final result. This step only applies to list types which means that
 non-iterable types (including `null`) will cause exceptions to be thrown.
 
-*Exceptions*
+*Exceptions:*
 
-* If the incoming traverser isn't a list (array or Iterable) then an `IllegalArgumentException` will be thrown.
-* If the argument doesn't resolve to a list (array or Iterable) then an `IllegalArgumentException` will be thrown.
+* If the incoming traverser isn't a list then an `Argument Error` is raised.
+* If the argument doesn't resolve to a list then an `Argument Error` is raised.
 
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/ConjoinStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#conjoin-step[reference]
 
+[llms-summary="The formal semantics of the lTrim() step: returns a string with leading whitespace removed."]
 [[lTrim-step]]
 === lTrim()
 
 *Description:* Returns a string with leading whitespace removed.
 
-*Syntax:* `lTrim()` | `lTrim(Scope scope)`
+*Syntax:* `lTrim()` | `lTrim(scope: Scope)`
 
 [width="100%",options="header"]
 |=========================================================
 |Start Step |Mid Step |Modulated |Domain |Range
-|N |Y |N |`String`/`array`/`Iterable` |`String`/`List`
+|N |Y |N |`STRING`/`LIST` |`STRING`/`LIST`
 |=========================================================
 
 *Arguments:*
@@ -1785,33 +2550,94 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#conjoin-step[reference]
 * `scope` - Determines the type of traverser it operates on. Both scopes will operate on the level of individual traversers.
 The `global` scope will operate on individual string traverser. The `local` scope will operate on list traverser with string elements inside.
 
+*Modulation:*
+
+None
+
+*Considerations:*
+
 Null values from the incoming traverser are not processed and remain as null when returned.
 
-*Exceptions*
+*Exceptions:*
 
-* For `Scope.global` or parameterless function calls, if the incoming traverser is a non-String value then an `IllegalArgumentException` will be thrown.
-* For `Scope.local`, if the incoming traverser is not a string or a list of strings then an `IllegalArgumentException` will be thrown.
+* For `Scope.global` or parameterless function calls, if the incoming traverser is a non-`STRING` value then an `Argument Error` is raised.
+* For `Scope.local`, if the incoming traverser is not a string or a list of strings then an `Argument Error` is raised.
 
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/LTrimGlobalStep.java[source],
 link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/LTrimLocalStep.java[source (local)],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#lTrim-step[reference]
 
+[llms-summary="The formal semantics of the match() step: executes a declarative pattern match query against the graph using a provider-supported query string."]
+[[match-step]]
+=== match()
+
+*Description:* Executes a declarative pattern match query against the graph using a provider-supported query
+string. The query string format is provider-specific; providers may use TinkerPop's optional `gql-gremlin` module
+(which implements the <<tinkergql,TinkerGQL>> dialect) or supply their own engine. Users should consult their
+graph system's documentation to determine what format is supported. The second argument, when provided, supplies
+bound parameters to the query; how (and whether) these are used is left to the provider.
+
+*Syntax:*
+
+* `match(matchQuery: STRING)` +
+* `match(matchQuery: STRING, params: MAP<STRING, any>)`
+
+[width="100%",options="header"]
+|=========================================================
+|Start Step |Mid Step |Modulated |Domain |Range
+|Y |Y |Y (via `with()`) |`any` |`MAP<STRING, any>`
+|=========================================================
+
+*Arguments:*
+
+* `matchQuery` - An opaque query string evaluated by the graph provider. For example, a GQL MATCH expression:
+  `"MATCH (a:person)-[:knows]->(b:person)"`.
+* `params` - Optional bound parameters passed to the provider alongside the query string. May be `null` or empty.
+
+*Modulation:*
+
+`with("queryLanguage", value)` - specifies which query language the provider should use to evaluate the string.
+When omitted, the provider uses its native or default language.
+
+*Considerations:*
+
+* The step is a provider-delegation point. `gremlin-core` supplies only the placeholder `DeclarativeMatchStep`;
+graph providers replace it with their own implementation via a `TraversalStrategy`.
+* The traverser value emitted by the step is a `MAP<STRING, any>` containing one entry per named variable in
+the matched pattern, keyed by variable name. Providers must set this map as the traverser value for each result
+row.
+* Each named variable is also recorded as a labeled entry in the traverser's path, so results remain retrievable
+by name via `select()` when downstream steps require individual values.
+* Anonymous elements in the pattern (those without a variable name) are not exposed in the map or path and cannot be
+referenced by `select()`.
+* When used as a spawn step on `GraphTraversalSource`, no upstream traversers are consumed; the provider
+executes the query once and emits one traverser per result row.
+
+*Exceptions:*
+
+* If the step is reached and no supporting strategy has replaced the placeholder, an `Unsupported Operation` is
+raised.
+
+See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/DeclarativeMatchStep.java[source],
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#match-step[reference]
+
+[llms-summary="The formal semantics of the merge() step: adds the union of two sets (or two maps) to the Traversal Stream."]
 [[merge-step]]
 === merge()
 
 *Description:* Adds the union of two sets (or two maps) to the Traversal Stream.
 
-*Syntax:* `merge(Object values)`
+*Syntax:* `merge(values: any)`
 
 [width="100%",options="header"]
 |=========================================================
 |Start Step |Mid Step |Modulated |Domain |Range
-|N |Y |N |`array`/`Iterable`/`Map` |`Set`/`Map`
+|N |Y |N |`LIST`/`MAP` |`SET`/`MAP`
 |=========================================================
 
 *Arguments:*
 
-* `values` - A list of items (as an `Iterable` or an array), a `Map`, or a `Traversal` that will produce a list of items.
+* `values` - A list of items, a `MAP`, or a `Traversal` that will produce a list of items.
 
 *Modulation:*
 
@@ -1824,58 +2650,59 @@ both maps contain the same key then the value yielded from the argument will be 
 step only applies to list types or maps which means that other non-iterable types (including null) will cause exceptions
 to be thrown.
 
-*Exceptions*
+*Exceptions:*
 
-* If the incoming traverser isn't a list (array or Iterable) or map then an `IllegalArgumentException` will be thrown.
-* If the argument doesn't resolve to a list (array or Iterable) or map then an `IllegalArgumentException` will be thrown.
+* If the incoming traverser isn't a list or map then an `Argument Error` is raised.
+* If the argument doesn't resolve to a list or map then an `Argument Error` is raised.
 
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/MergeStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#merge-step[reference]
 
+[llms-summary="The formal semantics of the mergeE() step: provides upsert-like functionality for edges."]
 [[merge-e-step]]
 === mergeE()
 
 *Description:* Provides upsert-like functionality for edges.
 
-*Syntax:* `mergeE()` | `mergeE(Map searchCreate)` | `mergeE(Traversal searchCreate)`
+*Syntax:* `mergeE()` | `mergeE(searchCreate: MAP)` | `mergeE(searchCreate: Traversal)`
 
 [width="100%",options="header"]
 |=========================================================
 |Start Step |Mid Step |Modulated |Domain |Range
-|Y |Y |`option()` |`Map`/`Vertex` |`Edge`
+|Y |Y |`option()` |`MAP`/`Vertex` |`Edge`
 |=========================================================
 
 *Arguments:*
 
-* `searchCreate` - A `Map` used to match an `Edge` and if not found will be the default set of data to create the new one.
-* `onCreate` - A `Map` used to specify additional existence criteria and/or properties not already specified in `searchCreate`.
-* `onMatch` - A `Map` used to update the `Edge` that is found using the `searchCreate` criteria.
+* `searchCreate` - A `MAP` used to match an `Edge` and if not found will be the default set of data to create the new one.
+* `onCreate` - A `MAP` used to specify additional existence criteria and/or properties not already specified in `searchCreate`.
+* `onMatch` - A `MAP` used to update the `Edge` that is found using the `searchCreate` criteria.
 * `outV` - A `Vertex` that will be late-bound into the `searchCreate` and `onCreate` `Maps` for the `Direction.OUT` key,
-or else another `Map` used to search for that `Vertex`
+or else another `MAP` used to search for that `Vertex`
 * `inV` - A `Vertex` that will be late-bound into the `searchCreate` and `onCreate` `Maps` for the `Direction.IN` key,
-or else another `Map` used to search for that `Vertex`
+or else another `MAP` used to search for that `Vertex`
 
-The `searchCreate` and `onCreate` `Map` instances must consist of any combination of:
+The `searchCreate` and `onCreate` `MAP` instances must consist of any combination of:
 
 * `T` - `id`, `label`
 * `Direction` - `IN` or `to`, `OUT` or `from`
-* Arbitrary `String` keys (which are assumed to be vertex properties).
+* Arbitrary `STRING` keys (which are assumed to be vertex properties).
 
-The `onMatch` `Map` instance only allows for `String` keys as the `id` and `label` of a `Vertex` are immutable as are
+The `onMatch` `MAP` instance only allows for `STRING` keys as the `id` and `label` of a `Vertex` are immutable as are
 the incident vertices. Values for these valid keys that are `null` will be treated according to the semantics of the
 `addE()` step.
 
-The `Map` that is used as the argument for `searchCreate` may be assigned from the incoming `Traverser` for the no-arg
+The `MAP` that is used as the argument for `searchCreate` may be assigned from the incoming `Traverser` for the no-arg
 `mergeE()`. If `mergeE(Map)` is used, then it will override the incoming `Traverser`. If `mergeE(Traversal)` is used,
-the `Traversal` argument must resolve to a `Map` and it would also override the incoming Traverser. The `onCreate` and
+the `Traversal` argument must resolve to a `MAP` and it would also override the incoming Traverser. The `onCreate` and
 `onMatch` arguments are assigned via modulation as described below.
 
-If `onMatch` is triggered the `Traverser` becomes the matched `Edge`, but the traversal still must return a `Map`
-instance to be applied. `Null` is considered semantically equivalent to an empty `Map`.
+If `onMatch` is triggered the `Traverser` becomes the matched `Edge`, but the traversal still must return a `MAP`
+instance to be applied. `Null` is considered semantically equivalent to an empty `MAP`.
 
 [width="100%",options="header"]
 |=========================================================
-|Event |Empty `Map` (or Null)
+|Event |Empty `MAP` (or Null)
 |Search |Matches all edges
 |Create |New edge with defaults
 |Update |No update to matched edge
@@ -1885,22 +2712,24 @@ If `T.id` is used for `searchCreate` or `onCreate`, it may be ignored for edge c
 support user supplied identifiers. `onCreate` inherits from `searchCreate` - values for `T.id`, `T.label`, and
 `Direction.OUT/IN` do not need to be specified twice. Additionally, `onCreate` cannot override values in `searchCreate`
 (i.e. `if (exists(x)) return(x) else create(y)` is not supported). An important point here is that validation for
-`onCreate` must occur at traversal construction for static values (i.e. a `Map`) and at runtime for dynamic values
+`onCreate` must occur at traversal construction for static values (i.e. a `MAP`) and at runtime for dynamic values
 (i.e. a `Traversal`).
 
 *Modulation:*
 
 * `option(Merge, Map)` - Sets the `onCreate` or `onMatch` arguments directly.
 * `option(Merge, Traversal)` - Sets the `onCreate` or `onMatch` arguments dynamically where the `Traversal` must
-resolve to a `Map`.
+resolve to a `MAP`.
 * `option(Merge.outV/inV)` can also accept a `Traversal` that resolves to a `Vertex`, allowing `mergeE` to be combined
 with `mergeV` via a `select` operation.
 
-*Exceptions*
+*Exceptions:*
 
-* `Map` arguments are validated for their keys resulting in exception if they do not meet requirements defined above.
-* Use of `T.label` should always have a value that is a `String`.
+* `MAP` arguments are validated for their keys resulting in exception if they do not meet requirements defined above.
+* Use of `T.label` should always have a value that is a `STRING`.
 * If `T.id`, `T.label`, and/or `Direction.IN/OUT` are specified in `searchCreate`, they cannot be overridden in `onCreate`.
+* Each of `onCreate`, `onMatch`, `outV` and `inV` may be specified with `option()` at most once. A repeated option
+results in exception at traversal construction rather than the later value silently replacing the earlier one.
 * For late binding of the from and to vertices, `Direction.OUT` must be set to `Merge.outV` and `Direction.IN` must
 be set to `Merge.inV`. Other combinations are not allowed and will result in exception.
 
@@ -1912,40 +2741,42 @@ be set to `Merge.inV`. Other combinations are not allowed and will result in exc
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/MergeEdgeStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#mergee-step[reference]
 
+[llms-summary="The formal semantics of the mergeV() step: provides upsert-like functionality for vertices."]
 [[merge-v-step]]
 === mergeV()
 
 *Description:* Provides upsert-like functionality for vertices.
 
-*Syntax:* `mergeV()` | `mergeV(Map searchCreate)` | `mergeV(Traversal searchCreate)`
+*Syntax:* `mergeV()` | `mergeV(searchCreate: MAP)` | `mergeV(searchCreate: Traversal)`
 
 [width="100%",options="header"]
 |=========================================================
 |Start Step |Mid Step |Modulated |Domain |Range
-|Y |Y |`option()` |`Map` |`Vertex`
+|Y |Y |`option()` |`MAP` |`Vertex`
 |=========================================================
 
 *Arguments:*
 
-* `searchCreate` - A `Map` used to match a `Vertex` and if not found will be the default set of data to create the new one.
-* `onCreate` - A `Map` used to specify additional existence criteria and/or properties not already specified in `searchCreate`.
-* `onMatch` - A `Map` used to update the `Vertex` that is found using the `searchCreate` criteria.
+* `searchCreate` - A `MAP` used to match a `Vertex` and if not found will be the default set of data to create the new one.
+* `onCreate` - A `MAP` used to specify additional existence criteria and/or properties not already specified in `searchCreate`.
+* `onMatch` - A `MAP` used to update the `Vertex` that is found using the `searchCreate` criteria.
 
-The `searchCreate` and `onCreate` `Map` instances must consist of any combination of `T.id`, `T.label`, or arbitrary
-`String` keys (which are assumed to be vertex properties). The `onMatch` `Map` instance only allows for `String` keys
-as the `id` and `label` of a `Vertex` are immutable. `null` values for these valid keys are not allowed.
+The `searchCreate` and `onCreate` `MAP` instances must consist of any combination of `T.id`, `T.label`, or arbitrary
+`STRING` keys (which are assumed to be vertex properties). The `onMatch` `MAP` instance only allows for `STRING` keys
+as the `id` and `label` of a `Vertex` are immutable. `null` values are not allowed for the `T` token keys, while
+`null` values for `STRING` property keys are treated according to the semantics of the `addV()` step.
 
-The `Map` that is used as the argument for `searchCreate` may be assigned from the incoming `Traverser` for the no-arg
+The `MAP` that is used as the argument for `searchCreate` may be assigned from the incoming `Traverser` for the no-arg
 `mergeV()`. If `mergeV(Map)` is used, then it will override the incoming `Traverser`. If `mergeV(Traversal)` is used,
-the `Traversal` argument must resolve to a `Map` and it would also override the incoming Traverser. The `onCreate` and
+the `Traversal` argument must resolve to a `MAP` and it would also override the incoming Traverser. The `onCreate` and
 `onMatch` arguments are assigned via modulation as described below.
 
-If `onMatch` is triggered the `Traverser` becomes the matched `Vertex`, but the traversal still must return a `Map`
-instance to be applied. `Null` is considered semantically equivalent to an empty `Map`.
+If `onMatch` is triggered the `Traverser` becomes the matched `Vertex`, but the traversal still must return a `MAP`
+instance to be applied. `Null` is considered semantically equivalent to an empty `MAP`.
 
 [width="100%",options="header"]
 |=========================================================
-|Event |Empty `Map` (or Null)
+|Event |Empty `MAP` (or Null)
 |Search |Matches all vertices
 |Create |New vertex with defaults
 |Update |No update to matched vertex
@@ -1955,45 +2786,57 @@ If `T.id` is used for `searchCreate` or `onCreate`, it may be ignored for vertex
 support user supplied identifiers. `onCreate` inherits from `searchCreate` - values for `T.id`, `T.label` do not need
 to be specified twice. Additionally, `onCreate` cannot override values in `searchCreate` (i.e.
 `if (exists(x)) return(x) else create(y)` is not supported). An important point here is that validation for `onCreate`
-must occur at traversal construction for static values (i.e. a `Map`) and at runtime for dynamic values (i.e. a
+must occur at traversal construction for static values (i.e. a `MAP`) and at runtime for dynamic values (i.e. a
 `Traversal`).
 
 *Modulation:*
 
-* `option(Merge, Map)` - Sets the `onCreate` or `onMatch` arguments directly.
+* `option(Merge, MAP)` - Sets the `onCreate` or `onMatch` arguments directly.
 * `option(Merge, Traversal)` - Sets the `onCreate` or `onMatch` arguments dynamically where the `Traversal` must
-resolve to a `Map`.
+resolve to a `MAP`.
 
-*Exceptions*
+The only `Merge` tokens accepted by `option()` are `onCreate` and `onMatch`. The `onCreate` argument is applied when
+`searchCreate` finds no match and a new `Vertex` is created, while the `onMatch` argument is applied when `searchCreate`
+matches an existing `Vertex`.
 
-* `Map` arguments are validated for their keys resulting in exception if they do not meet requirements defined above.
-* Use of `T.label` should always have a value that is a `String`.
+*Exceptions:*
+
+* `MAP` arguments are validated for their keys resulting in exception if they do not meet requirements defined above.
+* Use of `T.label` should always have a value that is a `STRING`.
 * If `T.id` and/or `T.label` are specified in `searchCreate`, they cannot be overridden in `onCreate`.
+* Each of `onCreate` and `onMatch` may be specified with `option()` at most once. A repeated option results in
+exception at traversal construction rather than the later value silently replacing the earlier one.
 
 *Considerations:*
 
-* `mergeV()` (i.e. the zero-arg overload) can only be used mid-traversal. It is not a start step.
+* The `Start Step` designation in the summary table applies to the `mergeV(searchCreate: MAP)` and
+`mergeV(searchCreate: Traversal)` overloads. The zero-arg `mergeV()` overload can only be used mid-traversal, as it
+draws its `searchCreate` argument from the incoming `Traverser`.
+* An empty `MAP` is the reproducible way to request the match-all and create-with-defaults behavior for `searchCreate`.
+Supplying `null` is treated as equivalent to an empty `MAP`, so the empty `MAP` form is preferred where the overloaded
+signatures make a bare `null` ambiguous.
 * As is common to Gremlin, it is expected that `Traversal` arguments may utilize `sideEffect()` steps.
 
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/MergeVertexStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#mergev-step[reference]
 
+[llms-summary="The formal semantics of the none() step: filters list data from the traversal stream if none of the list's items match the supplied predicate."]
 [[none-step]]
 === none()
 
-*Description:* Filters array data from the traversal stream if none of the array's items match the supplied predicate.
+*Description:* Filters list data from the traversal stream if none of the list's items match the supplied predicate.
 
-*Syntax:* `none(P predicate)`
+*Syntax:* `none(predicate: P)`
 
 [width="100%",options="header"]
 |=========================================================
 |Start Step |Mid Step |Modulated |Domain |Range
-|N |Y |N |`List`/`array`/`Iterable`/`Iterator` |`List`/`array`/`Iterable`/`Iterator`
+|N |Y |N |`LIST` |`LIST`
 |=========================================================
 
 *Arguments:*
 
-* `predicate` - The predicate used to test each value in the array data.
+* `predicate` - The predicate used to test each value in the list data.
 
 *Modulation:*
 
@@ -2004,29 +2847,30 @@ None
 Each value will be tested using the supplied predicate. Empty lists always pass through and null/non-list traversers
 will be filtered out of the traversal stream.
 
-*Exceptions*
+*Exceptions:*
 
-* A GremlinTypeErrorException will be thrown if one occurs and no other value evaluates to true.
+* An `Argument Error` is raised if the input predicate is `null`.
 
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/filter/NoneStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#none-step[reference]
 
+[llms-summary="The formal semantics of the product() step: adds the cartesian product to the Traversal Stream."]
 [[product-step]]
 === product()
 
 *Description:* Adds the cartesian product to the Traversal Stream.
 
-*Syntax:* `product(Object values)`
+*Syntax:* `product(values: any)`
 
 [width="100%",options="header"]
 |=========================================================
 |Start Step |Mid Step |Modulated |Domain |Range
-|N |Y |N |`array`/`Iterable` |`List(List)`
+|N |Y |N |`LIST` |`LIST(LIST)`
 |=========================================================
 
 *Arguments:*
 
-* `values` - A list of items (as an `Iterable` or an array) or a `Traversal` that will produce a list of items.
+* `values` - A list of items or a `Traversal` that will produce a list of items.
 
 *Modulation:*
 
@@ -2034,28 +2878,37 @@ None
 
 *Considerations:*
 
-A list of lists is returned after the product operation is applied with the inner list being a result pair. This step only
-applies to list types which means that non-iterable types (including null) will cause exceptions to be thrown.
+A list of lists is returned after the product operation is applied with the inner list being a result pair. Given an incoming
+list and an argument list, the result contains one pair for every combination of an element of the incoming list with an
+element of the argument list, so its size is the product of the two list sizes. The pairs are produced by taking each element
+of the incoming list in turn and pairing it with every element of the argument list in order. This is a true cartesian product,
+so no de-duplication is performed and repeated elements in either list yield repeated pairs. When either list is empty the step
+produces a single empty list rather than no result or an error, as there are no pairs to form.
 
-*Exceptions*
+This step only applies to list types. A non-iterable incoming traverser or resolved argument, including `null` supplied in place
+of a list, causes an error to be raised. That restriction is on the incoming traverser and the argument as whole values. A `null`
+that appears as a member of an otherwise valid list is a legal element and is paired like any other value.
 
-* If the incoming traverser isn't a list (array or Iterable) then an `IllegalArgumentException` will be thrown.
-* If the argument doesn't resolve to a list (array or Iterable) then an `IllegalArgumentException` will be thrown.
+*Exceptions:*
+
+* If the incoming traverser isn't a list, including when it is `null`, then an `Argument Error` is raised.
+* If the argument doesn't resolve to a list, including when it is `null`, then an `Argument Error` is raised.
 
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/ProductStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#product-step[reference]
 
+[llms-summary="The formal semantics of the project() step: projects the current object in the stream into a `MAP` that is keyed by the provided labels."]
 [[project-step]]
 === project()
 
-*Description:* Projects the current object in the stream into a `Map` that is keyed by the provided labels.
+*Description:* Projects the current object in the stream into a `MAP` that is keyed by the provided labels.
 
-*Syntax:* `project(String projectKey, String... otherProjectKeys)`
+*Syntax:* `project(projectKey: STRING, otherProjectKeys: STRING...)`
 
 [width="100%",options="header"]
 |=========================================================
 |Start Step |Mid Step |Modulated |Domain |Range
-|N |Y |`by()` |`any` |`Map<String, Object>`
+|N |Y |`by()` |`any` |`MAP<STRING, any>`
 |=========================================================
 
 *Arguments:*
@@ -2065,23 +2918,79 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#product-step[reference]
 
 *Modulation:*
 
-* `by()` - Determines how to transform the current object for each key in the resulting map. The number of `by()`
-modulations should match the number of keys provided.
+* `by()` - Determines how to transform the current object for each key in the resulting map. The `by()` modulations
+are matched to the keys in the order both are provided. A mismatch between the number of `by()` modulations and the
+number of keys does not raise an error and is resolved as described in the considerations below.
 
 *Considerations:*
 
 The `project()` step is similar to `select()` but instead of retrieving historic traverser state, it modulates the
 current state of the traverser. Each key in the resulting map corresponds to a `by()` modulation in the order they are
 provided. If a `by()` modulation doesn't produce a value for a particular key (not productive), that key will be omitted
-from the resulting `Map`.
+from the resulting `MAP`.
 
-*Exceptions*
+The number of `by()` modulations need not equal the number of keys, and any mismatch is resolved without raising an
+error. When fewer `by()` modulations than keys are provided, the modulations are reused cyclically across the keys in
+round-robin order, so a single `by()` is applied to every key. When more `by()` modulations than keys are provided, the
+surplus modulations are never consumed and are silently ignored. When no `by()` modulation is provided, every key maps
+to the current object unchanged.
 
-* If duplicate keys are provided, an `IllegalArgumentException` will be thrown.
+*Exceptions:*
+
+* If duplicate keys are provided, an `Argument Error` is raised.
 
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/ProjectStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#project-step[reference]
 
+[llms-summary="The formal semantics of the property() step: adds or sets properties on elements."]
+[[property-step]]
+=== property()
+
+*Description:* Adds or sets properties on elements. This is a sideEffect step: it returns the element, not the
+property it created.
+
+*Syntax:* `property(key: any, value: any, keyValues: any...)` | `property(cardinality: Cardinality, key: any, value: any, keyValues: any...)` | `property(keyValues: MAP)` | `property(cardinality: Cardinality, keyValues: MAP)` | `property(mapTraversal: Traversal)`
+
+[width="100%",options="header"]
+|=========================================================
+|Start Step |Mid Step |Modulated |Domain |Range
+|N |Y |N |`Element` |`Element`
+|=========================================================
+
+*Arguments:*
+
+* `key` - The property key. May be a literal or a `Traversal` whose first result is used as the key.
+* `value` - The property value. May be a literal or a `Traversal` whose first result is used as the value.
+* `keyValues` - Additional key/value pairs for meta-properties on vertex properties.
+* `cardinality` - The vertex property cardinality (`single`, `list`, `set`). If `null`, uses the graph's default.
+* `keyValues` (`MAP`) - A map of property key-value pairs to set. Values may use `CardinalityValue` to override
+  the cardinality on a per-entry basis.
+* `mapTraversal` - A child traversal that must produce a `MAP`. Each entry becomes a property on the element.
+  Must be read-only.
+
+*Modulation:*
+
+None
+
+*Considerations:*
+
+* When following `addV()` or `addE()`, the step may be folded into the creation operation (only when cardinality is
+  not specified and meta-properties are not included).
+* Key and value arguments may be traversals; their first result is used per-traverser.
+* A `MAP` argument (literal or from a traversal) sets multiple properties in one step.
+* `property(null)` and `property(Cardinality, null)` are no-ops that return the input unchanged.
+* Child traversals must be read-only; mutating steps are rejected with an `Argument Error`.
+* If a map traversal does not produce a `MAP`, a `State Error` is raised.
+
+*Exceptions:*
+
+* An `Argument Error` is raised if a child traversal contains mutating steps.
+* A `State Error` is raised if a map traversal does not produce a `MAP`.
+
+See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/sideEffect/AddPropertyStep.java[source],
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#property-step[reference]
+
+[llms-summary="The formal semantics of the repeat() step: iteratively applies a traversal (the \"loop body\") to each incoming traverser until a stopping condition is met."]
 [[repeat-step]]
 === repeat()
 
@@ -2089,7 +2998,7 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#project-step[reference]
 condition is met. Optionally, it can emit traversers on each iteration according to an emit predicate. The
 repeat step supports loop naming and a loop counter via `loops()`.
 
-*Syntax:* `repeat(Traversal repeatTraversal)` | `repeat(String loopName, Traversal repeatTraversal)`
+*Syntax:* `repeat(repeatTraversal: Traversal)` | `repeat(loopName: STRING, repeatTraversal: Traversal)`
 
 [width="100%",options="header"]
 |=========================================================
@@ -2134,6 +3043,8 @@ the repeat traversal operate across all traversers collectively rather than in i
 after the body finishes), not before. Therefore, `loops()` reflects the number of completed iterations.
   - `loops()` without arguments returns the counter for the closest (innermost) `repeat()`. `loops("name")` returns the
 counter for the named loop.
+  - The loop counter is bounded to `Integer.MAX_VALUE` (2,147,483,647) iterations. Exceeding this bound raises an error
+(see Exceptions).
 - Re-queuing for the next iteration:
   - After each iteration, if `until` is not satisfied at the post-check, the traverser is sent back into the loop body
 for another iteration. If it is satisfied, the traverser exits the loop and proceeds downstream.
@@ -2149,26 +3060,28 @@ message containing: `The repeat()-traversal was not defined`.
   - Nested `repeat()` steps maintain separate loop counters. Use `repeat("a", ...)` and `loops("a")` to reference a
     specific counter inside nested loops.
 
-*Exceptions*
+*Exceptions:*
 
-* Using `emit()`, `until()`, or `times()` without a matching `repeat()` will raise an `IllegalStateException` at runtime
+* Using `emit()`, `until()`, or `times()` without a matching `repeat()` raises a `State Error` at runtime
   when the step is initialized during iteration with the message containing: `The repeat()-traversal was not defined`.
+* Incrementing a loop counter past `Integer.MAX_VALUE` (2,147,483,647) will raise an `IllegalStateException` with a
+  message containing: `has exceeded the maximum supported value`.
 
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/branch/RepeatStep.java[source],
-link:https://tinkerpop.apache.org/docs/x.y.z/reference/#repeat-step[reference],
-link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-test/src/main/resources/org/apache/tinkerpop/gremlin/test/features/branch/Repeat.feature[tests]
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#repeat-step[reference]
 
+[llms-summary="The formal semantics of the replace() step: returns a string with the specified characters in the original string replaced with the new characters."]
 [[replace-step]]
 === replace()
 
 *Description:* Returns a string with the specified characters in the original string replaced with the new characters.
 
-*Syntax:* `replace(String oldChar, String newChar)` | `replace(Scope scope, String oldChar, String newChar)`
+*Syntax:* `replace(oldChar: STRING, newChar: STRING)` | `replace(scope: Scope, oldChar: STRING, newChar: STRING)`
 
 [width="100%",options="header"]
 |=========================================================
 |Start Step |Mid Step |Modulated |Domain |Range
-|N |Y |N |`String`/`array`/`Iterable` |`String`/`List`
+|N |Y |N |`STRING`/`LIST` |`STRING`/`LIST`
 |=========================================================
 
 *Arguments:*
@@ -2180,17 +3093,24 @@ will be returned
 * `scope` - Determines the type of traverser it operates on. Both scopes will operate on the level of individual traversers.
 The `global` scope will operate on individual string traverser. The `local` scope will operate on list traverser with string elements inside.
 
+*Modulation:*
+
+None
+
+*Considerations:*
+
 Null values from the incoming traverser are not processed and remain as null when returned.
 
-*Exceptions*
+*Exceptions:*
 
-* For `Scope.global` or parameterless function calls, if the incoming traverser is a non-String value then an `IllegalArgumentException` will be thrown.
-* For `Scope.local`, if the incoming traverser is not a string or a list of strings then an `IllegalArgumentException` will be thrown.
+* For `Scope.global` or parameterless function calls, if the incoming traverser is a non-`STRING` value then an `Argument Error` is raised.
+* For `Scope.local`, if the incoming traverser is not a string or a list of strings then an `Argument Error` is raised.
 
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/ReplaceGlobalStep.java[source],
 link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/ReplaceLocalStep.java[source (local)],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#replace-step[reference]
 
+[llms-summary="The formal semantics of the reverse() step: returns the reverse of the incoming traverser."]
 [[reverse-step]]
 === reverse()
 
@@ -2201,35 +3121,42 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#replace-step[reference]
 [width="100%",options="header"]
 |=========================================================
 |Start Step |Mid Step |Modulated |Domain |Range
-|N |Y |N |`Object` |`Object`
+|N |Y |N |`any` |`any`
 |=========================================================
 
 *Arguments:*
 
 None
 
+*Modulation:*
+
+None
+
+*Considerations:*
+
 The behavior of reverse depends on the type of the incoming traverser. If the traverser is a string, then the string is
-reversed. If the traverser is iterable (Iterable, Iterator, or an array) then a list containing the items in reverse
+reversed. If the traverser is iterable then a list containing the items in reverse
 order are returned. All other types (including null) are not processed and are returned unmodified.
 
-*Exceptions*
+*Exceptions:*
 
-* If the incoming traverser is a non-String value then an `IllegalArgumentException` will be thrown.
+None
 
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/ReverseStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#reverse-step[reference]
 
+[llms-summary="The formal semantics of the rTrim() step: returns a string with trailing whitespace removed."]
 [[rTrim-step]]
 === rTrim()
 
 *Description:* Returns a string with trailing whitespace removed.
 
-*Syntax:* `rTrim()` | `rTrim(Scope scope)`
+*Syntax:* `rTrim()` | `rTrim(scope: Scope)`
 
 [width="100%",options="header"]
 |=========================================================
 |Start Step |Mid Step |Modulated |Domain |Range
-|N |Y |N |`String`/`array`/`Iterable` |`String`/`List`
+|N |Y |N |`STRING`/`LIST` |`STRING`/`LIST`
 |=========================================================
 
 *Arguments:*
@@ -2237,28 +3164,35 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#reverse-step[reference]
 * `scope` - Determines the type of traverser it operates on. Both scopes will operate on the level of individual traversers.
 The `global` scope will operate on individual string traverser. The `local` scope will operate on list traverser with string elements inside.
 
+*Modulation:*
+
+None
+
+*Considerations:*
+
 Null values from the incoming traverser are not processed and remain as null when returned.
 
-*Exceptions*
+*Exceptions:*
 
-* For `Scope.global` or parameterless function calls, if the incoming traverser is a non-String value then an `IllegalArgumentException` will be thrown.
-* For `Scope.local`, if the incoming traverser is not a string or a list of strings then an `IllegalArgumentException` will be thrown.
+* For `Scope.global` or parameterless function calls, if the incoming traverser is a non-`STRING` value then an `Argument Error` is raised.
+* For `Scope.local`, if the incoming traverser is not a string or a list of strings then an `Argument Error` is raised.
 
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/RTrimGlobalStep.java[source],
 link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/RTrimLocalStep.java[source (local)],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#rTrim-step[reference]
 
+[llms-summary="The formal semantics of the split() step: returns a list of strings created by splitting the incoming string traverser around the matches of the given separator."]
 [[split-step]]
 === split()
 
 *Description:* Returns a list of strings created by splitting the incoming string traverser around the matches of the given separator.
 
-*Syntax:* `split(String separator)` | `split(Scope scope, String separator)`
+*Syntax:* `split(separator: STRING)` | `split(scope: Scope, separator: STRING)`
 
 [width="100%",options="header"]
 |=========================================================
 |Start Step |Mid Step |Modulated |Domain |Range
-|N |Y |N |`String`/`array`/`Iterable` |`List`
+|N |Y |N |`STRING`/`LIST` |`LIST`
 |=========================================================
 
 *Arguments:*
@@ -2268,23 +3202,30 @@ whitespaces. An empty string separator will split on each character.
 * `scope` - Determines the type of traverser it operates on. Both scopes will operate on the level of individual traversers.
 The `global` scope will operate on individual string traverser. The `local` scope will operate on list traverser with string elements inside.
 
+*Modulation:*
+
+None
+
+*Considerations:*
+
 Null values from the incoming traverser are not processed and remain as null when returned.
 
-*Exceptions*
+*Exceptions:*
 
-* For `Scope.global` or parameterless function calls, if the incoming traverser is a non-String value then an `IllegalArgumentException` will be thrown.
-* For `Scope.local`, if the incoming traverser is not a string or a list of strings then an `IllegalArgumentException` will be thrown.
+* For `Scope.global` or parameterless function calls, if the incoming traverser is a non-`STRING` value then an `Argument Error` is raised.
+* For `Scope.local`, if the incoming traverser is not a string or a list of strings then an `Argument Error` is raised.
 
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/SplitGlobalStep.java[source],
 link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/SplitLocalStep.java[source (local)],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#split-step[reference]
 
+[llms-summary="The formal semantics of the subgraph() step: extracts an edge-induced subgraph from the current graph based on the edges encountered during traversal."]
 [[subgraph-step]]
 === subgraph()
 
 *Description:* Extracts an edge-induced subgraph from the current graph based on the edges encountered during traversal.
 
-*Syntax:* `subgraph(String sideEffectKey)`
+*Syntax:* `subgraph(sideEffectKey: STRING)`
 
 [width="100%",options="header"]
 |=========================================================
@@ -2306,58 +3247,68 @@ The `subgraph()` step is a side-effect step that extracts edges encountered duri
 into a new subgraph. The step passes traversers through unchanged while building the subgraph as a side-effect. Subgraph
 step is a barrier and must fully iterate the traversal before returning any results.
 
-*Exceptions*
+*Exceptions:*
 
 None
 
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/sideEffect/SubgraphStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#subgraph-step[reference]
 
+[llms-summary="The formal semantics of the substring() step: its exact expected behavior extracting a portion of a string by index."]
 [[substring-step]]
 === substring()
 
 *Description:* Returns a substring of the incoming string traverser with a 0-based start index (inclusive) and end index (exclusive).
 
-*Syntax:* `substring(int startIndex, int endIndex)` | `substring(Scope scope, int startIndex, int endIndex)`
+*Syntax:* `substring(startIndex: INT)` | `substring(startIndex: INT, endIndex: INT)` | `substring(scope: Scope, startIndex: INT)` | `substring(scope: Scope, startIndex: INT, endIndex: INT)`
 
 [width="100%",options="header"]
 |=========================================================
 |Start Step |Mid Step |Modulated |Domain |Range
-|N |Y |N |`String`/`array`/`Iterable` |`String`/`List`
+|N |Y |N |`STRING`/`LIST` |`STRING`/`LIST`
 |=========================================================
 
 *Arguments:*
 
 * `startIndex` - The start index, 0 based. If the start index is negative then it will begin at the specified index counted
 from the end of the string, or 0 if it exceeds the string length.
-* `endIndex` - The end index, 0 based. Optional, if it is not specific then all remaining characters will be returned. End
+* `endIndex` - The end index, 0 based. Optional, if it is not specified then all remaining characters will be returned.
+If the end index is negative then it will end at the specified index counted from the end of the string, or 0 if it
+exceeds the string length. End
 index &leq; start index will return the empty string.
 * `scope` - Determines the type of traverser it operates on. Both scopes will operate on the level of individual traversers.
 The `global` scope will operate on individual string traverser. The `local` scope will operate on list traverser with string elements inside.
 
+*Modulation:*
+
+None
+
+*Considerations:*
+
 Null values from the incoming traverser are not processed and remain as null when returned.
 
-*Exceptions*
+*Exceptions:*
 
-* For `Scope.global` or parameterless function calls, if the incoming traverser is a non-String value then an `IllegalArgumentException` will be thrown.
-* For `Scope.local`, if the incoming traverser is not a string or a list of strings then an `IllegalArgumentException` will be thrown.
+* For `Scope.global` or parameterless function calls, if the incoming traverser is a non-`STRING` value then an `Argument Error` is raised.
+* For `Scope.local`, if the incoming traverser is not a string or a list of strings then an `Argument Error` is raised.
 
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/SubstringGlobalStep.java[source],
 link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/SubstringLocalStep.java[source (local)],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#substring-step[reference]
 
+[llms-summary="The formal semantics of the toLower() step: returns the lowercase representation of incoming string traverser, or if Scope.local is specified, returns the lowercase representation of each string element inside the incoming list traverser."]
 [[toLower-step]]
 === toLower()
 
 *Description:* Returns the lowercase representation of incoming string traverser, or if `Scope.local` is specified, returns
 the lowercase representation of each string elements inside incoming list traverser.
 
-*Syntax:* `toLower()` | `toLower(Scope scope)`
+*Syntax:* `toLower()` | `toLower(scope: Scope)`
 
 [width="100%",options="header"]
 |=========================================================
 |Start Step |Mid Step |Modulated |Domain |Range
-|N |Y |N |`String` |`String`/`List`
+|N |Y |N |`STRING` |`STRING`/`LIST`
 |=========================================================
 
 *Arguments:*
@@ -2365,29 +3316,36 @@ the lowercase representation of each string elements inside incoming list traver
 * `scope` - Determines the type of traverser it operates on. Both scopes will operate on the level of individual traversers.
 The `global` scope will operate on individual string traverser. The `local` scope will operate on list traverser with string elements inside.
 
+*Modulation:*
+
+None
+
+*Considerations:*
+
 Null values from the incoming traverser are not processed and remain as null when returned.
 
-*Exceptions*
+*Exceptions:*
 
-* For `Scope.global` or parameterless function calls, if the incoming traverser is a non-String value then an `IllegalArgumentException` will be thrown.
-* For `Scope.local`, if the incoming traverser is not a string or a list of strings then an `IllegalArgumentException` will be thrown.
+* For `Scope.global` or parameterless function calls, if the incoming traverser is a non-`STRING` value then an `Argument Error` is raised.
+* For `Scope.local`, if the incoming traverser is not a string or a list of strings then an `Argument Error` is raised.
 
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/ToLowerGlobalStep.java[source],
 link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/ToLowerLocalStep.java[source (local)],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#toLower-step[reference]
 
+[llms-summary="The formal semantics of the toUpper() step: returns the uppercase representation of incoming string traverser, or if Scope.local is specified, returns the uppercase representation of each string element inside the incoming list traverser."]
 [[toUpper-step]]
 === toUpper()
 
 *Description:* Returns the uppercase representation of incoming string traverser, or if `Scope.local` is specified, returns
 the uppercase representation of each string elements inside incoming list traverser.
 
-*Syntax:* `toUpper()` | `toUpper(Scope scope)`
+*Syntax:* `toUpper()` | `toUpper(scope: Scope)`
 
 [width="100%",options="header"]
 |=========================================================
 |Start Step |Mid Step |Modulated |Domain |Range
-|N |Y |N |`String`/`array`/`Iterable` |`String`/`List`
+|N |Y |N |`STRING`/`LIST` |`STRING`/`LIST`
 |=========================================================
 
 *Arguments:*
@@ -2395,23 +3353,30 @@ the uppercase representation of each string elements inside incoming list traver
 * `scope` - Determines the type of traverser it operates on. Both scopes will operate on the level of individual traversers.
 The `global` scope will operate on individual string traverser. The `local` scope will operate on list traverser with string elements inside.
 
+*Modulation:*
+
+None
+
+*Considerations:*
+
 Null values from the incoming traverser are not processed and remain as null when returned.
 
-*Exceptions*
+*Exceptions:*
 
-* For `Scope.global` or parameterless function calls, if the incoming traverser is a non-String value then an `IllegalArgumentException` will be thrown.
-* For `Scope.local`, if the incoming traverser is not a string or a list of strings then an `IllegalArgumentException` will be thrown.
+* For `Scope.global` or parameterless function calls, if the incoming traverser is a non-`STRING` value then an `Argument Error` is raised.
+* For `Scope.local`, if the incoming traverser is not a string or a list of strings then an `Argument Error` is raised.
 
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/ToUpperGlobalStep.java[source],
 link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/ToUpperLocalStep.java[source (local)],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#toUpper-step[reference]
 
+[llms-summary="The formal semantics of the tree() step: aggregates the paths of the traversal into a tree data structure."]
 [[tree-step]]
 === tree()
 
 *Description:* Aggregates the paths of the traversal into a tree data structure.
 
-*Syntax:* `tree()` | `tree(String sideEffectKey)`
+*Syntax:* `tree()` | `tree(sideEffectKey: STRING)`
 
 [width="100%",options="header"]
 |=========================================================
@@ -2440,7 +3405,7 @@ structure representing the hierarchical paths taken during traversal. As a side-
 side-effect and passes the traverser to the next step unchanged. The tree structure reflects the branching paths of the
 traversal, with each level representing a step in the path.
 
-*Exceptions*
+*Exceptions:*
 
 None
 
@@ -2448,17 +3413,18 @@ See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/j
 link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/sideEffect/TreeSideEffectStep.java[source (sideEffect)],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#tree-step[reference]
 
+[llms-summary="The formal semantics of the trim() step: returns a string with leading and trailing whitespace removed."]
 [[trim-step]]
 === trim()
 
 *Description:* Returns a string with leading and trailing whitespace removed.
 
-*Syntax:* `trim()` | `trim(Scope scope)`
+*Syntax:* `trim()` | `trim(scope: Scope)`
 
 [width="100%",options="header"]
 |=========================================================
 |Start Step |Mid Step |Modulated |Domain |Range
-|N |Y |N |`String`/`array`/`Iterable` |`String`/`List`
+|N |Y |N |`STRING`/`LIST` |`STRING`/`LIST`
 |=========================================================
 
 *Arguments:*
@@ -2466,28 +3432,75 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#tree-step[reference]
 * `scope` - Determines the type of traverser it operates on. Both scopes will operate on the level of individual traversers.
 The `global` scope will operate on individual string traverser. The `local` scope will operate on list traverser with string elements inside.
 
+*Modulation:*
+
+None
+
+*Considerations:*
+
 Null values from the incoming traverser are not processed and remain as null when returned.
 
-*Exceptions*
+*Exceptions:*
 
-* For `Scope.global` or parameterless function calls, if the incoming traverser is a non-String value then an `IllegalArgumentException` will be thrown.
-* For `Scope.local`, if the incoming traverser is not a string or a list of strings then an `IllegalArgumentException` will be thrown.
+* For `Scope.global` or parameterless function calls, if the incoming traverser is a non-`STRING` value then an `Argument Error` is raised.
+* For `Scope.local`, if the incoming traverser is not a string or a list of strings then an `Argument Error` is raised.
 
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/TrimGlobalStep.java[source],
 link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/TrimLocalStep.java[source (local)],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#trim-step[reference]
 
+[llms-summary="The formal semantics of the V() step: reads vertices from the graph by their identifiers."]
+[[v-step]]
+=== V()
+
+*Description:* Reads vertices from the graph by their identifiers. Can be used as a start step or mid-traversal.
+
+*Syntax:* `V(vertexIds: any...)` | `V(idTraversal: Traversal)`
+
+[width="100%",options="header"]
+|=========================================================
+|Start Step |Mid Step |Modulated |Domain |Range
+|Y |Y |N |`any` |`Vertex`
+|=========================================================
+
+*Arguments:*
+
+* `vertexIds` - Zero or more vertex identifiers. If none are provided, all vertices are returned. Arrays and
+  list-valued arguments are flattened (unrolled) into individual IDs.
+* `idTraversal` - A child traversal which supplies vertex identifiers. The child traversal must be read-only
+  (no mutating steps).
+
+*Modulation:*
+
+None
+
+*Considerations:*
+
+* When used as a start step with a traversal argument, a synthetic traverser seeds the child traversal.
+* When used mid-traversal with a traversal argument, the current traverser seeds the child traversal.
+* If no vertices match the provided identifiers, the step produces no results.
+* Graph providers may optimize `V()` with subsequent `has()` filters by folding `HasContainer` predicates into the
+  step for index-backed lookups.
+
+*Exceptions:*
+
+None
+
+See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/GraphStep.java[source],
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#graph-step[reference]
+
+[llms-summary="The formal semantics of the valueMap() step: converts elements to a map representation of their properties."]
 [[valueMap-step]]
 === valueMap()
 
 *Description:* Converts elements to a map representation of their properties.
 
-*Syntax:* `valueMap(String... propertyKeys)` | `valueMap(boolean includeTokens, String... propertyKeys)`
+*Syntax:* `valueMap(propertyKeys: STRING...)` | `valueMap(includeTokens: BOOLEAN, propertyKeys: STRING...)`
 
 [width="100%",options="header"]
 |=========================================================
 |Start Step |Mid Step |Modulated |Domain |Range
-|N |Y |`by()`/`with()` |`Element` |`Map`
+|N |Y |`by()`/`with()` |`Element` |`MAP`
 |=========================================================
 
 *Arguments:*
@@ -2499,9 +3512,7 @@ specified by propertyKeys. If the list is empty, then all properties are include
 
 *Modulation:*
 
-* `by(Traversal)` - Only a single by() modulator is allowed and it applies to all map values. An attempt to add more
-than one by() will result in an Exception that contains the message "valueMap()/propertyMap() step can only have one by
-modulator".
+* `by(Traversal)` - Only a single by() modulator is allowed and it applies to all map values.
 * `with(key, value)` - Determines which optional entries to add to the map. The key is "tinkerpop.valueMap.tokens" and
 the possible values are:
 ** 0 for no tokens
@@ -2511,6 +3522,84 @@ the possible values are:
 ** 8 for including values (VertexProperty)
 ** 15 for including all
 
+*Considerations:*
+
+A `Vertex` may carry multiple values for a single property key (`Cardinality.list` or `Cardinality.set`). For such
+keys, the resulting map entry contains a `LIST` of the values. An `Edge` and a `VertexProperty` have at most one
+value per key and the value is returned directly.
+
+The label format in the map is controlled by source-level `with("multilabel")` and `with("singlelabel")` options, not
+by the number of labels the graph permits per element. When `"multilabel"` is present, the label value is a
+`SET<STRING>`. Likewise when
+`"singlelabel"` is present, it is a single `STRING`. The two options are mutually exclusive. Configuring both
+`"multilabel"` and `"singlelabel"` on the same source is rejected with a `State Error`. Note that it is a
+provider choice whether an unconfigured `GraphTraversal` defaults to `multilabel` or `singlelabel` semantics. The
+reference implementation defaults to `singlelabel` semantics.
+
+*Exceptions*
+
+None
+
+*Exceptions:*
+
+* If more than one `by()` modulator is supplied, an `Argument Error` is raised with the message
+"valueMap()/propertyMap() step can only have one by modulator".
+* If the `WithOptions.tokens` configuration receives any non-`INT` argument, an `Argument Error` is
+raised.
+
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/PropertyMapStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#valuemap-step[reference],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#propertymap-step[reference]
+
+[llms-summary="The formal semantics of the where() step: filters traversers based on a predicate, a traversal, or a comparison between labeled steps."]
+[[where-step]]
+=== where()
+
+*Description:* Filters traversers based on a predicate, a traversal, or a comparison between labeled steps.
+
+*Syntax:* `where(predicate: P)` | `where(startKey: STRING, predicate: P)` | `where(whereTraversal: Traversal)`
+
+[width="100%",options="header"]
+|=========================================================
+|Start Step |Mid Step |Modulated |Domain |Range
+|N |Y |`by()` |`any` |`any`
+|=========================================================
+
+*Arguments:*
+
+* `predicate` - A `P` predicate. The predicate value may reference a labeled step (scope key) or contain a `Traversal`
+  whose first result is used as the comparison value.
+* `startKey` - A label identifying the traverser to use as the subject of the comparison.
+* `whereTraversal` - A filtering traversal; traversers pass if the traversal produces at least one result.
+
+*Modulation:*
+
+* `by()` - Extracts comparison values. The first `by()` applies to the subject (current traverser or `startKey`),
+  the second applies to the predicate target. If a `by()` modulator is non-productive (produces no value), the
+  traverser is filtered out.
+
+*Considerations:*
+
+* `where(P)` with a scope-label value compares the current traverser (or labeled traverser) against the labeled value.
+* `where(P)` with a traversal value resolves the child traversal per-traverser and compares directly against the
+  current value.
+* `where(P)` can combine scope-label and traversal values in a `ConnectiveP`
+  (e.g., `P.neq('a').and(P.gt(traversal))`).
+* `where(Traversal)` is an existence filter: traversers pass if the child traversal produces at least one result.
+* A child traversal supplied as a predicate value in `where(P)` or `where(startKey, P)` must be read-only. Mutating
+  steps in such a traversal are rejected with an `Argument Error`.
+* This read-only restriction applies only to predicate-value traversals. The existence form `where(Traversal)` does
+  not guard its child traversal, so a mutating step such as `where(__.addV(...))` or `where(out().property(...))`
+  executes against the graph and mutates it rather than raising an error.
+* In OLAP, the anonymous traversal of `where()` processes the current object "locally" within the vertex's
+star graph. It cannot traverse to adjacent vertices' properties or edges.
+
+*Exceptions:*
+
+* An `Argument Error` is raised if a predicate-value child traversal in `where(P)` or `where(startKey, P)` contains
+  mutating steps. The existence form `where(Traversal)` is not subject to this check and raises no error for a
+  mutating child traversal.
+
+See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/filter/WherePredicateStep.java[source],
+link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/filter/WhereTraversalStep.java[source (traversal)],
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#where-step[reference]

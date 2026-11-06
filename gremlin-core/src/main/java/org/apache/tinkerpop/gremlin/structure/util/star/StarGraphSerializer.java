@@ -18,7 +18,9 @@
  */
 package org.apache.tinkerpop.gremlin.structure.util.star;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -49,6 +51,13 @@ public class StarGraphSerializer implements SerializerShim<StarGraph> {
 
     private final static byte VERSION_1 = Byte.MIN_VALUE;
 
+    /**
+     * Introduced to support multi-label vertices: the vertex label is written as a list of labels rather than a
+     * single string. Readers dispatch on this byte, so {@link #VERSION_1} data (single label per vertex) written
+     * by prior versions of this serializer remains readable.
+     */
+    private final static byte VERSION_2 = Byte.MIN_VALUE + 1;
+
     public StarGraphSerializer(final Direction edgeDirectionToSerialize, final GraphFilter graphFilter) {
         this.edgeDirectionToSerialize = edgeDirectionToSerialize;
         this.graphFilter = graphFilter;
@@ -56,11 +65,11 @@ public class StarGraphSerializer implements SerializerShim<StarGraph> {
 
     @Override
     public <O extends OutputShim> void write(final KryoShim<?, O> kryo, final O output, final StarGraph starGraph) {
-        output.writeByte(VERSION_1);
+        output.writeByte(VERSION_2);
         kryo.writeObjectOrNull(output, starGraph.edgeProperties, HashMap.class);
         kryo.writeObjectOrNull(output, starGraph.metaProperties, HashMap.class);
         kryo.writeClassAndObject(output, starGraph.starVertex.id);
-        kryo.writeObject(output, starGraph.starVertex.label);
+        kryo.writeObject(output, new ArrayList<>(starGraph.starVertex.labels()));
         writeEdges(kryo, output, starGraph, Direction.IN);
         writeEdges(kryo, output, starGraph, Direction.OUT);
         kryo.writeObject(output, null != starGraph.starVertex.vertexProperties);
@@ -83,10 +92,19 @@ public class StarGraphSerializer implements SerializerShim<StarGraph> {
     @Override
     public <I extends InputShim> StarGraph read(final KryoShim<I, ?> kryo, final I input, final Class<StarGraph> clazz) {
         final StarGraph starGraph = StarGraph.open();
-        input.readByte();  // version field ignored for now - for future use with backward compatibility
+        final byte version = input.readByte();
         starGraph.edgeProperties = kryo.readObjectOrNull(input, HashMap.class);
         starGraph.metaProperties = kryo.readObjectOrNull(input, HashMap.class);
-        starGraph.addVertex(T.id, kryo.readClassAndObject(input), T.label, kryo.readObject(input, String.class));
+        final Object vertexId = kryo.readClassAndObject(input);
+        if (version == VERSION_2) {
+            final List<String> labels = (List<String>) kryo.readObject(input, ArrayList.class);
+            starGraph.addVertex(T.id, vertexId, T.label, labels.get(0));
+            if (labels.size() > 1) {
+                starGraph.getStarVertex().setLabels(new LinkedHashSet<>(labels));
+            }
+        } else {
+            starGraph.addVertex(T.id, vertexId, T.label, kryo.readObject(input, String.class));
+        }
         readEdges(kryo, input, starGraph, Direction.IN);
         readEdges(kryo, input, starGraph, Direction.OUT);
         if (kryo.readObject(input, Boolean.class)) {

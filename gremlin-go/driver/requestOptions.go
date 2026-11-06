@@ -20,26 +20,28 @@ under the License.
 package gremlingo
 
 type RequestOptions struct {
-	evaluationTimeout     int
+	timeoutMillis         int
 	batchSize             int
-	userAgent             string
-	bindingsString        string
+	parametersString      string
 	materializeProperties string
 	bulkResults           *bool
+	transactionId         string
+	language              string
 }
 
 type RequestOptionsBuilder struct {
-	evaluationTimeout     int
+	timeoutMillis         int
 	batchSize             int
-	userAgent             string
-	bindings              map[string]interface{}
-	bindingsString        string
+	parameters            map[string]interface{}
+	parametersString      string
 	materializeProperties string
 	bulkResults           *bool
+	transactionId         string
+	language              string
 }
 
-func (builder *RequestOptionsBuilder) SetEvaluationTimeout(evaluationTimeout int) *RequestOptionsBuilder {
-	builder.evaluationTimeout = evaluationTimeout
+func (builder *RequestOptionsBuilder) SetTimeoutMillis(timeoutMillis int) *RequestOptionsBuilder {
+	builder.timeoutMillis = timeoutMillis
 	return builder
 }
 
@@ -48,24 +50,19 @@ func (builder *RequestOptionsBuilder) SetBatchSize(batchSize int) *RequestOption
 	return builder
 }
 
-func (builder *RequestOptionsBuilder) SetUserAgent(userAgent string) *RequestOptionsBuilder {
-	builder.userAgent = userAgent
+func (builder *RequestOptionsBuilder) SetParameters(parameters map[string]interface{}) *RequestOptionsBuilder {
+	if builder.parametersString != "" {
+		panic("cannot mix SetParameters() with SetParametersString()")
+	}
+	builder.parameters = parameters
 	return builder
 }
 
-func (builder *RequestOptionsBuilder) SetBindings(bindings map[string]interface{}) *RequestOptionsBuilder {
-	if builder.bindingsString != "" {
-		panic("cannot mix SetBindings() with SetBindingsString()")
+func (builder *RequestOptionsBuilder) SetParametersString(parametersString string) *RequestOptionsBuilder {
+	if builder.parameters != nil {
+		panic("cannot mix SetParametersString() with SetParameters()")
 	}
-	builder.bindings = bindings
-	return builder
-}
-
-func (builder *RequestOptionsBuilder) SetBindingsString(bindingsString string) *RequestOptionsBuilder {
-	if builder.bindings != nil {
-		panic("cannot mix SetBindingsString() with SetBindings()")
-	}
-	builder.bindingsString = bindingsString
+	builder.parametersString = parametersString
 	return builder
 }
 
@@ -79,31 +76,43 @@ func (builder *RequestOptionsBuilder) SetBulkResults(bulkResults bool) *RequestO
 	return builder
 }
 
-func (builder *RequestOptionsBuilder) AddBinding(key string, binding interface{}) *RequestOptionsBuilder {
-	if builder.bindingsString != "" {
-		panic("cannot mix AddBinding() with SetBindingsString()")
+func (builder *RequestOptionsBuilder) SetTransactionId(transactionId string) *RequestOptionsBuilder {
+	builder.transactionId = transactionId
+	return builder
+}
+
+// SetLanguage sets the language (ScriptEngine) used to process the request. Defaults to "gremlin-lang" when unset.
+func (builder *RequestOptionsBuilder) SetLanguage(language string) *RequestOptionsBuilder {
+	builder.language = language
+	return builder
+}
+
+func (builder *RequestOptionsBuilder) AddParameter(key string, parameter interface{}) *RequestOptionsBuilder {
+	if builder.parametersString != "" {
+		panic("cannot mix AddParameter() with SetParametersString()")
 	}
-	if builder.bindings == nil {
-		builder.bindings = make(map[string]interface{})
+	if builder.parameters == nil {
+		builder.parameters = make(map[string]interface{})
 	}
-	builder.bindings[key] = binding
+	builder.parameters[key] = parameter
 	return builder
 }
 
 func (builder *RequestOptionsBuilder) Create() RequestOptions {
 	requestOptions := new(RequestOptions)
 
-	requestOptions.evaluationTimeout = builder.evaluationTimeout
+	requestOptions.timeoutMillis = builder.timeoutMillis
 	requestOptions.batchSize = builder.batchSize
-	requestOptions.userAgent = builder.userAgent
 	requestOptions.materializeProperties = builder.materializeProperties
 	requestOptions.bulkResults = builder.bulkResults
+	requestOptions.transactionId = builder.transactionId
+	requestOptions.language = builder.language
 
-	// convert map bindings to string at creation time, matching Java's RequestOptions.Builder.create()
-	if builder.bindingsString != "" {
-		requestOptions.bindingsString = builder.bindingsString
-	} else if builder.bindings != nil {
-		requestOptions.bindingsString = ConvertParametersToString(builder.bindings)
+	// convert map parameters to string at creation time, matching Java's RequestOptions.Builder.create()
+	if builder.parametersString != "" {
+		requestOptions.parametersString = builder.parametersString
+	} else if builder.parameters != nil {
+		requestOptions.parametersString = ConvertParametersToString(builder.parameters)
 	}
 
 	return *requestOptions

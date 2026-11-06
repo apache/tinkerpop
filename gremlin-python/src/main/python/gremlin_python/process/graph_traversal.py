@@ -46,6 +46,8 @@ class GraphTraversalSource(object):
         self.graph_traversal = GraphTraversal
         if remote_connection:
             self.traversal_strategies.add_strategies([RemoteStrategy(remote_connection)])
+            if hasattr(remote_connection, 'pdt_registry') and remote_connection.pdt_registry is not None:
+                self.gremlin_lang.pdt_registry = remote_connection.pdt_registry
         self.remote_connection = remote_connection
 
     def __repr__(self):
@@ -141,26 +143,83 @@ class GraphTraversalSource(object):
         else:
             options_strategy[1].configuration[k] = val
 
+        # Render multilabel/singlelabel in gremlin text (temporary until these options are removed)
+        if k == 'multilabel' or k == 'singlelabel':
+            source.gremlin_lang.gremlin.extend(['.', 'with', '(', f'"{k}"', ')'])
+
         return source
 
-    # TODO remove or update once HTTP transaction is implemented
-    # def tx(self):
-    #     # In order to keep the constructor unchanged within 3.5.x we can try to pop the RemoteConnection out of the
-    #     # TraversalStrategies. keeping this unchanged will allow user DSLs to not take a break.
-    #     # This is the same strategy as gremlin-javascript.
-    #     # TODO https://issues.apache.org/jira/browse/TINKERPOP-2664: refactor this to be nicer in 3.6.0 when
-    #     #  we can take a breaking change
-    #     remote_connection = next((x.remote_connection for x in self.traversal_strategies.traversal_strategies if
-    #                               x.fqcn == "py:RemoteStrategy"), None)
-    #
-    #     if remote_connection is None:
-    #         raise Exception("Error, remote connection is required for transaction.")
-    #
-    #     # You can't do g.tx().begin().tx() i.e child transactions are not supported.
-    #     if remote_connection and remote_connection.is_session_bound():
-    #         raise Exception("This TraversalSource is already bound to a transaction - child transactions are not "
-    #                         "supported")
-    #     return Transaction(self, remote_connection)
+    def tx(self):
+        """Spawns a Transaction or returns the existing one if this GTS is
+        already bound to a transaction. Requires a RemoteConnection backed by a Client.
+        """
+        from gremlin_python.driver.remote_connection import RemoteStrategy
+        remote_connection = next((x.remote_connection for x in self.traversal_strategies.traversal_strategies if
+                                  x.fqcn == "py:RemoteStrategy"), None)
+
+        if remote_connection is None:
+            raise Exception("Remote connection is required for transactions")
+
+        # If this GTS is already bound to a transaction, return that transaction.
+        from gremlin_python.driver.transaction import TransactionRemoteConnection
+        if isinstance(remote_connection, TransactionRemoteConnection):
+            return remote_connection._transaction
+
+        from gremlin_python.driver.transaction import Transaction
+        return Transaction(remote_connection._client)
+
+    def execute_in_tx(self, tx_work):
+        """Runs a unit of work inside a transaction, managing its lifecycle.
+
+        The transaction is started automatically via tx().begin() and the
+        transaction-bound GraphTraversalSource (gtx) is passed to tx_work as its
+        sole argument. Only gtx should be used inside the body; the
+        non-transactional g is not in scope. On normal completion the
+        transaction is committed and the body's return value is returned
+        (None if the body returns nothing). If the body raises, the
+        transaction is rolled back and the exact original exception is
+        re-raised unchanged.
+
+        This is single-shot: exactly one begin -> run -> commit/rollback
+        attempt is made; there is no automatic retry. If the body raises and
+        the follow-up rollback also fails, a warning is logged and the original
+        body exception still propagates. If commit() fails (e.g. the server
+        already rolled the transaction back), a rollback is attempted for
+        server-side hygiene and the commit error propagates as the primary
+        error.
+
+        For example, g.execute_in_tx(lambda gtx: gtx.addV('person').iterate())
+        runs the body and commits, while
+        count = g.execute_in_tx(lambda gtx: gtx.V().count().next()) returns the
+        body's value.
+        """
+        tx = self.tx()
+        gtx = tx.begin()
+        # Phase 1: run the user's work. If it raises, roll back and re-raise the body error - the
+        # bare `raise` exits the method, so a failed body never reaches the commit in phase 2.
+        try:
+            result = tx_work(gtx)
+        except BaseException:
+            # Catch BaseException so any abnormal exit (including KeyboardInterrupt) rolls back.
+            try:
+                tx.rollback()
+            except BaseException as rollback_error:
+                # The cleanup rollback failure is only logged - the bare `raise` below re-raises
+                # the original body error unchanged so it always stays the primary error.
+                log.warning("Rollback failed after transaction body error: %s", rollback_error)
+            raise
+        # Phase 2: the body succeeded, so commit. A separate try because this failure mode is
+        # distinct (commit, not body): we still roll back for server-side hygiene, then re-raise
+        # the commit error as the primary error.
+        try:
+            tx.commit()
+        except Exception:
+            try:
+                tx.rollback()
+            except BaseException as rollback_error:
+                log.warning("Rollback failed after commit failure: %s", rollback_error)
+            raise
+        return result
 
     def withComputer(self, graph_computer=None, workers=None, result=None, persist=None, vertices=None,
                      edges=None, configuration=None):
@@ -234,6 +293,14 @@ class GraphTraversalSource(object):
         traversal.gremlin_lang.add_step("call", *args)
         return traversal
 
+    def match(self, match_query, params=None):
+        traversal = self.get_graph_traversal()
+        if params is not None:
+            traversal.gremlin_lang.add_step("match", match_query, params)
+        else:
+            traversal.gremlin_lang.add_step("match", match_query)
+        return traversal
+
     def union(self, *args):
         traversal = self.get_graph_traversal()
         traversal.gremlin_lang.add_step("union", *args)
@@ -294,6 +361,17 @@ class GraphTraversal(Traversal):
 
     def add_v(self, *args):
         self.gremlin_lang.add_step("addV", *args)
+        return self
+
+    def addLabel(self, *args):
+        warnings.warn(
+            "gremlin_python.process.GraphTraversal.addLabel will be replaced by "
+            "gremlin_python.process.GraphTraversal.add_label.",
+            DeprecationWarning)
+        return self.add_label(*args)
+
+    def add_label(self, *args):
+        self.gremlin_lang.add_step("addLabel", *args)
         return self
 
     def aggregate(self, *args):
@@ -458,6 +536,28 @@ class GraphTraversal(Traversal):
 
     def drop(self, *args):
         self.gremlin_lang.add_step("drop", *args)
+        return self
+
+    def dropLabel(self, *args):
+        warnings.warn(
+            "gremlin_python.process.GraphTraversal.dropLabel will be replaced by "
+            "gremlin_python.process.GraphTraversal.drop_label.",
+            DeprecationWarning)
+        return self.drop_label(*args)
+
+    def drop_label(self, *args):
+        self.gremlin_lang.add_step("dropLabel", *args)
+        return self
+
+    def dropLabels(self, *args):
+        warnings.warn(
+            "gremlin_python.process.GraphTraversal.dropLabels will be replaced by "
+            "gremlin_python.process.GraphTraversal.drop_labels.",
+            DeprecationWarning)
+        return self.drop_labels(*args)
+
+    def drop_labels(self, *args):
+        self.gremlin_lang.add_step("dropLabels", *args)
         return self
 
     def element(self, *args):
@@ -652,6 +752,10 @@ class GraphTraversal(Traversal):
         self.gremlin_lang.add_step("label", *args)
         return self
 
+    def labels(self, *args):
+        self.gremlin_lang.add_step("labels", *args)
+        return self
+
     def length(self, *args):
         self.gremlin_lang.add_step("length", *args)
         return self
@@ -681,6 +785,12 @@ class GraphTraversal(Traversal):
         return self
 
     def match(self, *args):
+        if len(args) > 0 and not isinstance(args[0], str):
+            warnings.warn(
+                "Passing Traversal objects to match() is deprecated as of TinkerPop 4.0.0 "
+                "and will be removed in a future release. Use match(str) for declarative "
+                "pattern matching instead.",
+                DeprecationWarning, stacklevel=2)
         self.gremlin_lang.add_step("match", *args)
         return self
 
@@ -1088,6 +1198,18 @@ class __(object, metaclass=MagicType):
         return cls.graph_traversal(None, None, GremlinLang()).add_v(*args)
 
     @classmethod
+    def addLabel(cls, *args):
+        warnings.warn(
+            "gremlin_python.process.__.addLabel will be replaced by "
+            "gremlin_python.process.__.add_label.",
+            DeprecationWarning)
+        return cls.add_label(*args)
+
+    @classmethod
+    def add_label(cls, *args):
+        return cls.graph_traversal(None, None, GremlinLang()).add_label(*args)
+
+    @classmethod
     def aggregate(cls, *args):
         return cls.graph_traversal(None, None, GremlinLang()).aggregate(*args)
 
@@ -1238,6 +1360,30 @@ class __(object, metaclass=MagicType):
     @classmethod
     def drop(cls, *args):
         return cls.graph_traversal(None, None, GremlinLang()).drop(*args)
+
+    @classmethod
+    def dropLabel(cls, *args):
+        warnings.warn(
+            "gremlin_python.process.__.dropLabel will be replaced by "
+            "gremlin_python.process.__.drop_label.",
+            DeprecationWarning)
+        return cls.drop_label(*args)
+
+    @classmethod
+    def drop_label(cls, *args):
+        return cls.graph_traversal(None, None, GremlinLang()).drop_label(*args)
+
+    @classmethod
+    def dropLabels(cls, *args):
+        warnings.warn(
+            "gremlin_python.process.__.dropLabels will be replaced by "
+            "gremlin_python.process.__.drop_labels.",
+            DeprecationWarning)
+        return cls.drop_labels(*args)
+
+    @classmethod
+    def drop_labels(cls, *args):
+        return cls.graph_traversal(None, None, GremlinLang()).drop_labels(*args)
 
     @classmethod
     def element(cls, *args):
@@ -1434,6 +1580,10 @@ class __(object, metaclass=MagicType):
     @classmethod
     def label(cls, *args):
         return cls.graph_traversal(None, None, GremlinLang()).label(*args)
+
+    @classmethod
+    def labels(cls, *args):
+        return cls.graph_traversal(None, None, GremlinLang()).labels(*args)
 
     @classmethod
     def length(cls, *args):
@@ -1776,81 +1926,6 @@ class __(object, metaclass=MagicType):
         return cls.graph_traversal(None, None, GremlinLang()).where(*args)
 
 
-# Class to handle transactions.
-# class Transaction:
-#
-#     def __init__(self, g, remote_connection):
-#         self._g = g
-#         self._session_based_connection = None
-#         self._remote_connection = remote_connection
-#         self.__is_open = False
-#         self.__mutex = Lock()
-#
-#     # Begins transaction.
-#     def begin(self):
-#         with self.__mutex:
-#             # Verify transaction is not open.
-#             self.__verify_transaction_state(False, "Transaction already started on this object")
-#
-#             # Create new session using the remote connection.
-#             self._session_based_connection = self._remote_connection.create_session()
-#             self.__is_open = True
-#
-#             # Set the session as a remote strategy within the traversal strategy.
-#             traversal_strategy.py = TraversalStrategies()
-#             traversal_strategy.py.add_strategies([RemoteStrategy(self._session_based_connection)])
-#
-#             # Return new GraphTraversalSource.
-#             return GraphTraversalSource(self._g.graph, traversal_strategy.py, self._g.bytecode)
-#
-#     # Rolls transaction back.
-#     def rollback(self):
-#         with self.__mutex:
-#             # Verify transaction is open, close session and return result of transaction's rollback.
-#             self.__verify_transaction_state(True, "Cannot rollback a transaction that is not started.")
-#             return self.__close_session(self._session_based_connection.rollback())
-#
-#     # Commits the current transaction.
-#     def commit(self):
-#         with self.__mutex:
-#             # Verify transaction is open, close session and return result of transaction's commit.
-#             self.__verify_transaction_state(True, "Cannot commit a transaction that is not started.")
-#             return self.__close_session(self._session_based_connection.commit())
-#
-#     # Closes session.
-#     def close(self):
-#         with self.__mutex:
-#             # Verify transaction is open.
-#             self.__verify_transaction_state(True, "Cannot close a transaction that has previously been closed.")
-#             self.__close_session(None)
-#
-#     # Return whether or not transaction is open.
-#     # Allow camelcase function here to keep api consistent with other languages.
-#     def isOpen(self):
-#         warnings.warn(
-#             "gremlin_python.process.Transaction.isOpen will be replaced by "
-#             "gremlin_python.process.Transaction.is_open.",
-#             DeprecationWarning)
-#         return self.is_open()
-#
-#     def is_open(self):
-#         # if the underlying DriverRemoteConnection is closed then the Transaction can't be open
-#         if (self._session_based_connection and self._session_based_connection.is_closed()) or \
-#                 self._remote_connection.is_closed():
-#             self.__is_open = False
-#
-#         return self.__is_open
-#
-#     def __verify_transaction_state(self, state, error_message):
-#         if self.__is_open != state:
-#             raise Exception(error_message)
-#
-#     def __close_session(self, session):
-#         self.__is_open = False
-#         self._remote_connection.remove_session(self._session_based_connection)
-#         return session
-
-
 def E(*args):
     return __.E(*args)
 
@@ -1873,6 +1948,14 @@ def addV(*args):
 
 def add_v(*args):
     return __.add_v(*args)
+
+
+def addLabel(*args):
+    return __.add_label(*args)
+
+
+def add_label(*args):
+    return __.add_label(*args)
 
 
 def aggregate(*args):
@@ -2013,6 +2096,22 @@ def disjunct(*args):
 
 def drop(*args):
     return __.drop(*args)
+
+
+def dropLabel(*args):
+    return __.drop_label(*args)
+
+
+def drop_label(*args):
+    return __.drop_label(*args)
+
+
+def dropLabels(*args):
+    return __.drop_labels(*args)
+
+
+def drop_labels(*args):
+    return __.drop_labels(*args)
 
 
 def element(*args):
@@ -2163,6 +2262,10 @@ def key(*args):
 
 def label(*args):
     return __.label(*args)
+
+
+def labels(*args):
+    return __.labels(*args)
 
 
 def length(*args):
@@ -2468,6 +2571,10 @@ statics.add_static('addV', addV)
 
 statics.add_static('add_v', add_v)
 
+statics.add_static('addLabel', addLabel)
+
+statics.add_static('add_label', add_label)
+
 statics.add_static('aggregate', aggregate)
 
 statics.add_static('all_', all_)
@@ -2537,6 +2644,14 @@ statics.add_static('discard', discard)
 statics.add_static('disjunct', disjunct)
 
 statics.add_static('drop', drop)
+
+statics.add_static('dropLabel', dropLabel)
+
+statics.add_static('drop_label', drop_label)
+
+statics.add_static('dropLabels', dropLabels)
+
+statics.add_static('drop_labels', drop_labels)
 
 statics.add_static('element', element)
 
@@ -2609,6 +2724,8 @@ statics.add_static('is_', is_)
 statics.add_static('key', key)
 
 statics.add_static('label', label)
+
+statics.add_static('labels', labels)
 
 statics.add_static('length', length)
 

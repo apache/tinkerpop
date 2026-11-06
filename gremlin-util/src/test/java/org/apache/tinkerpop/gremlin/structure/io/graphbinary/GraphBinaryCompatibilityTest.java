@@ -21,11 +21,13 @@ package org.apache.tinkerpop.gremlin.structure.io.graphbinary;
 import io.netty.buffer.ByteBufAllocator;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.ByteArrayOutputStream;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.Tree;
 import org.apache.tinkerpop.gremlin.structure.io.AbstractTypedCompatibilityTest;
 import org.apache.tinkerpop.gremlin.structure.io.Buffer;
 import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryReader;
 import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryWriter;
 import org.apache.tinkerpop.gremlin.util.ser.NettyBufferFactory;
+import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
@@ -33,6 +35,12 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -105,6 +113,102 @@ public class GraphBinaryCompatibilityTest extends AbstractTypedCompatibilityTest
 
             return bytes;
         }
+    }
+
+    @Test
+    public void shouldReadNullInt() throws Exception {
+        final String resourceName = "null-int";
+
+        final Integer fromStatic = read(readFromResource(resourceName), Integer.class);
+        assertNull(fromStatic);
+    }
+
+    @Test
+    public void shouldReadNullLong() throws Exception {
+        final String resourceName = "null-long";
+
+        final Long fromStatic = read(readFromResource(resourceName), Long.class);
+        assertNull(fromStatic);
+    }
+
+    @Test
+    public void shouldReadNullString() throws Exception {
+        final String resourceName = "null-string";
+
+        final String fromStatic = read(readFromResource(resourceName), String.class);
+        assertNull(fromStatic);
+    }
+
+    @Test
+    public void shouldReadNullList() throws Exception {
+        final String resourceName = "null-list";
+
+        final List fromStatic = read(readFromResource(resourceName), List.class);
+        assertNull(fromStatic);
+    }
+
+    @Test
+    public void shouldReadNullMap() throws Exception {
+        final String resourceName = "null-map";
+
+        final Map fromStatic = read(readFromResource(resourceName), Map.class);
+        assertNull(fromStatic);
+    }
+
+    @Test
+    public void shouldReadNullSet() throws Exception {
+        final String resourceName = "null-set";
+
+        final Set fromStatic = read(readFromResource(resourceName), Set.class);
+        assertNull(fromStatic);
+    }
+
+    @Test
+    public void shouldReadWriteEmptyTree() throws Exception {
+        final String resourceName = "empty-tree";
+
+        final Tree resource = findModelEntryObject(resourceName);
+        final Tree fromStatic = read(readFromResource(resourceName), Tree.class);
+        final Tree recycled = read(write(fromStatic, Tree.class, resourceName), Tree.class);
+        assertEquals(fromStatic, recycled);
+        assertEquals(resource, fromStatic);
+        assertEquals(resource, recycled);
+    }
+
+    @Test
+    public void shouldReadWriteTreeWithNullKey() throws Exception {
+        final String resourceName = "tree-null-key";
+
+        final Tree resource = findModelEntryObject(resourceName);
+        final Tree fromStatic = read(readFromResource(resourceName), Tree.class);
+        final Tree recycled = read(write(fromStatic, Tree.class, resourceName), Tree.class);
+        assertEquals(fromStatic, recycled);
+        assertEquals(resource, fromStatic);
+        assertEquals(resource, recycled);
+    }
+
+    @Test
+    public void shouldReadWriteTreeWithMixedKeyTypes() throws Exception {
+        final String resourceName = "tree-mixed-key-types";
+
+        final Tree resource = findModelEntryObject(resourceName);
+        final Tree fromStatic = read(readFromResource(resourceName), Tree.class);
+        final Tree recycled = read(write(fromStatic, Tree.class, resourceName), Tree.class);
+        assertEquals(fromStatic, recycled);
+        assertEquals(resource, fromStatic);
+        assertEquals(resource, recycled);
+    }
+
+    @Test
+    public void shouldReadWriteTreeWithDeepNesting() throws Exception {
+        final String resourceName = "tree-deep-nesting";
+
+        final Tree resource = findModelEntryObject(resourceName);
+        final Tree fromStatic = read(readFromResource(resourceName), Tree.class);
+        final Tree recycled = read(write(fromStatic, Tree.class, resourceName), Tree.class);
+        assertEquals(fromStatic, recycled);
+        assertEquals(resource, fromStatic);
+        assertEquals(resource, recycled);
     }
 
 //    TODO: revisit

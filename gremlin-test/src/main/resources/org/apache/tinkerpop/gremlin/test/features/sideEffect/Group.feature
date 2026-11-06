@@ -224,6 +224,7 @@ Feature: Step - group()
       | m[{"software":"d[2].l", "person":"d[4].l"}] |
 
   # validates that a reducing barrier in the value traversal produces an output when a collecting barrier does not.
+
   Scenario: g_V_hasXperson_name_withinXvadas_peterXX_group_by_byXout_order_foldX
     Given the modern graph
     And the traversal of
@@ -247,6 +248,7 @@ Feature: Step - group()
       | m[{"v[vadas]":"l[]", "v[peter]":"l[v[lop]]"}] |
 
   # validates that a collecting barrier produces a filtering effect if it is unproductive.
+
   Scenario: g_V_hasXperson_name_withinXvadas_peterXX_group_by_byXout_orderX
     Given the modern graph
     And the traversal of
@@ -257,6 +259,28 @@ Feature: Step - group()
     Then the result should be unordered
       | result |
       | m[{"v[peter]":"v[lop]"}] |
+
+  Scenario: g_V_group_byXvaluesXnameXX_byXvaluesXageX_fold_unfoldX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().group().by(values("name")).by(values("age").fold().unfold())
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | m[{"marko":"d[29].i", "vadas":"d[27].i", "josh":"d[32].i", "peter":"d[35].i"}] |
+
+  Scenario: g_V_group_byXvaluesXnameXX_byXout_fold_countXlocalX_isXgtX0XXX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().group().by(values("name")).by(__.out().fold().count(local).is(P.gt(0)))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | m[{"marko":"d[3].l", "josh":"d[2].l", "peter":"d[1].l"}] |
 
   Scenario: g_V_hasXperson_name_withinXvadas_peterXX_group_by_byXout_order_countX
     Given the modern graph
@@ -399,6 +423,10 @@ Feature: Step - group()
 
   Scenario: g_V_group_byXvaluesXnameXX_byXboth_countX
     Given the modern graph
+    And the intent
+      """
+      How many neighbours does each vertex have in either direction? Return one map from each vertex name to its count.
+      """
     And the traversal of
       """
       g.V().group().by(values('name')).by(both().count())
@@ -407,3 +435,45 @@ Feature: Step - group()
     Then the result should be unordered
       | result |
       | m[{"marko":"d[3].l", "vadas":"d[1].l", "lop":"d[3].l", "josh":"d[3].l", "ripple":"d[1].l", "peter":"d[1].l"}] |
+
+  @MultiLabel
+  Scenario: g_V_hasLabelXhabitatX_group_byXlabelX_byXcountX
+    Given the zoo graph
+    And the traversal of
+      """
+      g.V().hasLabel("habitat").group().by(T.label).by(__.count())
+      """
+    When iterated to list
+    Then the result should be of
+      | result |
+      | m[{"habitat":"d[2].l"}] |
+      | m[{"aquatic":"d[1].l","habitat":"d[1].l"}] |
+    And the result should have a count of 1
+
+  @MultiLabel
+  Scenario: g_V_hasXname_tuxX_group_byXlabelX_byXcountX
+    Given the zoo graph
+    And the traversal of
+      """
+      g.V().has("name", "tux").group().by(__.label()).by(__.count())
+      """
+    When iterated to list
+    Then the result should be of
+      | result |
+      | m[{"animal":"d[1].l"}] |
+      | m[{"bird":"d[1].l"}] |
+      | m[{"aquatic":"d[1].l"}] |
+      | m[{"endangered":"d[1].l"}] |
+    And the result should have a count of 1
+
+  @MultiLabel
+  Scenario: g_V_hasLabelXreptileX_group_byXlabels_order_foldX_byXname_foldX
+    Given the zoo graph
+    And the traversal of
+      """
+      g.V().hasLabel("reptile").group().by(__.labels().order().fold()).by(__.values("name").fold())
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | m[{"l[animal,aquatic,endangered,reptile]":["atlas"],"l[animal,nocturnal,reptile]":["monty"]}] |

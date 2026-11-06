@@ -57,7 +57,7 @@ public class IoDataGenerationTest {
 
     @Before
     public void before() throws IOException {
-        tempPath = TestHelper.makeTestDataPath(TinkerGraphTest.class, "tinkerpop-io");
+        tempPath = TestHelper.makeTestDataPath(TinkerMemoryGraphTest.class, "tinkerpop-io");
 
         FileUtils.deleteDirectory(tempPath);
         if (!tempPath.mkdirs()) throw new IOException(String.format("Could not create %s", tempPath));
@@ -140,6 +140,16 @@ public class IoDataGenerationTest {
     public void shouldWriteSinkGraphAsGryoV3() throws IOException {
         final OutputStream os = new FileOutputStream(new File(tempPath, "tinkerpop-sink-v3.kryo"));
         GryoWriter.build().mapper(GryoMapper.build().version(GryoVersion.V3_0).create()).create().writeGraph(os, TinkerFactory.createKitchenSink());
+        os.close();
+    }
+
+    /**
+     * No assertions.  Just write out the graph for convenience.
+     */
+    @Test
+    public void shouldWriteTheZooGraphAsGryoV3() throws IOException {
+        final OutputStream os = new FileOutputStream(new File(tempPath, "tinkerpop-zoo-v3.kryo"));
+        GryoWriter.build().mapper(GryoMapper.build().version(GryoVersion.V3_0).create()).create().writeGraph(os, TinkerFactory.createTheZoo());
         os.close();
     }
 
@@ -524,6 +534,17 @@ public class IoDataGenerationTest {
         final OutputStream os = new FileOutputStream(new File(tempPath, "tinkerpop-modern-normalized-v3.json"));
         GraphSONWriter.build().mapper(GraphSONMapper.build().version(GraphSONVersion.V3_0).normalize(true).create()).create()
                 .writeGraph(os, TinkerFactory.createModern());
+        os.close();
+    }
+
+    /**
+     * No assertions.  Just write out the graph for convenience.
+     */
+    @Test
+    public void shouldWriteDEFAULTTheZooGraphAsGraphSONV4() throws IOException {
+        final OutputStream os = new FileOutputStream(new File(tempPath, "tinkerpop-zoo.json"));
+        GraphSONWriter.build().mapper(GraphSONMapper.build().version(GraphSONVersion.V4_0).create()).create()
+                .writeGraph(os, TinkerFactory.createTheZoo());
         os.close();
     }
 

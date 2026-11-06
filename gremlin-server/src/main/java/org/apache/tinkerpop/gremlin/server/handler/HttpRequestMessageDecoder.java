@@ -82,7 +82,7 @@ public class HttpRequestMessageDecoder extends MessageToMessageDecoder<FullHttpR
         final Pair<String, MessageSerializer<?>> serializer = chooseSerializer(acceptMime);
 
         if (req.method() != POST) {
-            sendError(ctx, METHOD_NOT_ALLOWED, METHOD_NOT_ALLOWED.toString());
+            sendError(ctx, METHOD_NOT_ALLOWED, METHOD_NOT_ALLOWED.toString(), HttpHeaderNames.ALLOW, POST.name());
             return;
         }
 
@@ -189,8 +189,8 @@ public class HttpRequestMessageDecoder extends MessageToMessageDecoder<FullHttpR
 
         final RequestMessage.Builder builder = RequestMessage.build(scriptNode.asText());
 
-        final JsonNode bindingsNode = body.get(Tokens.ARGS_BINDINGS);
-        if (bindingsNode != null) builder.addBindings(bindingsNode.asText());
+        final JsonNode parametersNode = body.get(Tokens.ARGS_PARAMETERS);
+        if (parametersNode != null) builder.addParameters(parametersNode.asText());
 
         final JsonNode gNode = body.get(Tokens.ARGS_G);
         if (null != gNode) builder.addG(gNode.asText());
@@ -201,14 +201,20 @@ public class HttpRequestMessageDecoder extends MessageToMessageDecoder<FullHttpR
         final JsonNode chunkSizeNode = body.get(Tokens.ARGS_BATCH_SIZE);
         if (null != chunkSizeNode) builder.addChunkSize(chunkSizeNode.asInt());
 
-        final JsonNode timeoutMsNode = body.get(Tokens.TIMEOUT_MS);
-        if (null != timeoutMsNode) builder.addTimeoutMillis(timeoutMsNode.asLong());
+        final JsonNode timeoutMillisNode = body.get(Tokens.TIMEOUT_MILLIS);
+        if (null != timeoutMillisNode) builder.addTimeoutMillis(timeoutMillisNode.asLong());
 
         final JsonNode matPropsNode = body.get(Tokens.ARGS_MATERIALIZE_PROPERTIES);
         if (null != matPropsNode) builder.addMaterializeProperties(matPropsNode.asText());
 
         final JsonNode txIdNode = body.get(Tokens.ARGS_TRANSACTION_ID);
         if (null != txIdNode) builder.addTransactionId(txIdNode.asText());
+
+        // bulkResults was previously only sent as an HTTP header by GLV drivers using
+        // GraphBinary. With the move to JSON requests in 4.x, drivers may include it in
+        // the body instead.
+        final JsonNode bulkResultsNode = body.get(Tokens.BULK_RESULTS);
+        if (null != bulkResultsNode) builder.addBulkResults(bulkResultsNode.asBoolean());
 
         return builder.create();
     }

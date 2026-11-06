@@ -54,6 +54,7 @@ Feature: Step - flatMap()
       | peter |
 
   # Objects from flatMap traversal should be hidden from path()
+
   @GraphComputerVerificationStarGraphExceeded
   Scenario: g_V_flatMapXout_outX_path
     Given the modern graph
@@ -66,3 +67,20 @@ Feature: Step - flatMap()
       | result |
       | p[v[marko],v[ripple]] |
       | p[v[marko],v[lop]] |
+
+  Scenario: g_V_hasLabelXpersonX_flatMapXoutEXcreatedX_order_byXweight_descX_limitX1X_inVX_name
+    Given the modern graph
+    And the intent
+      """
+      For each person who created something, what is the name of the thing they created with the highest edge weight?
+      """
+    And the traversal of
+      """
+      g.V().hasLabel("person").flatMap(outE("created").order().by("weight",Order.desc).limit(1).inV()).values("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | lop |
+      | ripple |
+      | lop |

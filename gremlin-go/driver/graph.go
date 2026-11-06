@@ -26,7 +26,24 @@ import (
 )
 
 // Graph is used to store the graph.
+// In-memory collections of vertices and edges, typically produced by a subgraph()
+// traversal. Maps are keyed by element id.
 type Graph struct {
+	Vertices map[interface{}]*Vertex
+	Edges    map[interface{}]*Edge
+}
+
+// NewGraph creates a new empty Graph with initialized Vertices and Edges maps.
+func NewGraph() *Graph {
+	return &Graph{
+		Vertices: make(map[interface{}]*Vertex),
+		Edges:    make(map[interface{}]*Edge),
+	}
+}
+
+// String returns the string representation of the graph.
+func (g *Graph) String() string {
+	return fmt.Sprintf("graph[vertices:%d edges:%d]", len(g.Vertices), len(g.Edges))
 }
 
 // Element is the base structure for both Vertex and Edge.
@@ -40,13 +57,15 @@ type Element struct {
 // Vertex contains a single Vertex which has a Label and an Id.
 type Vertex struct {
 	Element
+	Labels []string // All labels; Element.Label still holds first label for compat
 }
 
 // Edge links two Vertex structs along with its Property Objects. An edge has both a direction and a Label.
 type Edge struct {
 	Element
-	OutV Vertex
-	InV  Vertex
+	OutV   Vertex
+	InV    Vertex
+	Labels []string // All labels
 }
 
 // VertexProperty is similar to property in that it denotes a key/value pair associated with a Vertex, but is different
@@ -78,14 +97,68 @@ func (v *Vertex) String() string {
 	return fmt.Sprintf("v[%v]", v.Id)
 }
 
+// PropertyMap groups the properties of this Vertex by their Key. The Properties field is expected to hold a
+// []interface{} of *VertexProperty as produced during deserialization. Multi-valued properties are returned as
+// multiple entries in the slice associated with a Key. An empty (non-nil) map is returned when there are no
+// properties or when Properties is not of the expected type.
+func (v *Vertex) PropertyMap() map[string][]*VertexProperty {
+	propertyMap := make(map[string][]*VertexProperty)
+	properties, ok := v.Properties.([]interface{})
+	if !ok {
+		return propertyMap
+	}
+	for _, p := range properties {
+		if vp, ok := p.(*VertexProperty); ok {
+			propertyMap[vp.Key] = append(propertyMap[vp.Key], vp)
+		}
+	}
+	return propertyMap
+}
+
 // String returns the string representation of the edge.
 func (e *Edge) String() string {
 	return fmt.Sprintf("e[%v][%v-%s->%v]", e.Id, e.OutV.Id, e.Label, e.InV.Id)
 }
 
+// PropertyMap groups the properties of this Edge by their Key. The Properties field is expected to hold a
+// []interface{} of *Property as produced during deserialization. Multi-valued properties are returned as
+// multiple entries in the slice associated with a Key. An empty (non-nil) map is returned when there are no
+// properties or when Properties is not of the expected type.
+func (e *Edge) PropertyMap() map[string][]*Property {
+	propertyMap := make(map[string][]*Property)
+	properties, ok := e.Properties.([]interface{})
+	if !ok {
+		return propertyMap
+	}
+	for _, p := range properties {
+		if prop, ok := p.(*Property); ok {
+			propertyMap[prop.Key] = append(propertyMap[prop.Key], prop)
+		}
+	}
+	return propertyMap
+}
+
 // String returns the string representation of the vertex property.
 func (vp *VertexProperty) String() string {
 	return fmt.Sprintf("vp[%s->%v]", vp.Label, vp.Value)
+}
+
+// PropertyMap groups the meta-properties of this VertexProperty by their Key. The Properties field is expected to
+// hold a []interface{} of *Property as produced during deserialization. Multi-valued properties are returned as
+// multiple entries in the slice associated with a Key. An empty (non-nil) map is returned when there are no
+// properties or when Properties is not of the expected type.
+func (vp *VertexProperty) PropertyMap() map[string][]*Property {
+	propertyMap := make(map[string][]*Property)
+	properties, ok := vp.Properties.([]interface{})
+	if !ok {
+		return propertyMap
+	}
+	for _, p := range properties {
+		if prop, ok := p.(*Property); ok {
+			propertyMap[prop.Key] = append(propertyMap[prop.Key], prop)
+		}
+	}
+	return propertyMap
 }
 
 // String returns the string representation of the property.

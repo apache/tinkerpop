@@ -21,9 +21,12 @@ package gremlingo
 
 import (
 	"crypto/tls"
+	"errors"
+	"math"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestClient(t *testing.T) {
@@ -36,7 +39,7 @@ func TestClient(t *testing.T) {
 		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
 		client, err := NewClient(testNoAuthUrl,
 			func(settings *ClientSettings) {
-				settings.TlsConfig = testNoAuthTlsConfig
+				settings.Ssl = testNoAuthTlsConfig
 			})
 		assert.NoError(t, err)
 		assert.NotNil(t, client)
@@ -55,7 +58,7 @@ func TestClient(t *testing.T) {
 		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
 		client, err := NewClient(testNoAuthUrl,
 			func(settings *ClientSettings) {
-				settings.TlsConfig = testNoAuthTlsConfig
+				settings.Ssl = testNoAuthTlsConfig
 			})
 		assert.NoError(t, err)
 		assert.NotNil(t, client)
@@ -70,7 +73,7 @@ func TestClient(t *testing.T) {
 		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
 		client, err := NewClient(testNoAuthUrl,
 			func(settings *ClientSettings) {
-				settings.TlsConfig = testNoAuthTlsConfig
+				settings.Ssl = testNoAuthTlsConfig
 				settings.TraversalSource = testServerModernGraphAlias
 			})
 		assert.NoError(t, err)
@@ -88,20 +91,20 @@ func TestClient(t *testing.T) {
 		AssertMarkoVertexWithProperties(t, result)
 	})
 
-	t.Run("Test client.Submit() with bindings", func(t *testing.T) {
+	t.Run("Test client.Submit() with parameters", func(t *testing.T) {
 		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
 		client, err := NewClient(testNoAuthUrl,
 			func(settings *ClientSettings) {
-				settings.TlsConfig = testNoAuthTlsConfig
+				settings.Ssl = testNoAuthTlsConfig
 				settings.TraversalSource = testServerModernGraphAlias
 			})
 		assert.NoError(t, err)
 		assert.NotNil(t, client)
 		defer client.Close()
 
-		bindings := map[string]interface{}{"x": 1}
+		parameters := map[string]interface{}{"x": 1}
 
-		resultSet, err := client.Submit("g.V(x).values(\"name\")", bindings)
+		resultSet, err := client.Submit("g.V(x).values(\"name\")", parameters)
 		assert.NoError(t, err)
 		assert.NotNil(t, resultSet)
 
@@ -112,20 +115,20 @@ func TestClient(t *testing.T) {
 		assert.Equal(t, "marko", result.Data)
 	})
 
-	t.Run("Test client.SubmitWithOptions() with bindings", func(t *testing.T) {
+	t.Run("Test client.SubmitWithOptions() with parameters", func(t *testing.T) {
 		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
 		client, err := NewClient(testNoAuthUrl,
 			func(settings *ClientSettings) {
-				settings.TlsConfig = testNoAuthTlsConfig
+				settings.Ssl = testNoAuthTlsConfig
 				settings.TraversalSource = testServerModernGraphAlias
 			})
 		assert.NoError(t, err)
 		assert.NotNil(t, client)
 		defer client.Close()
 
-		bindings := map[string]interface{}{"x": 1}
+		parameters := map[string]interface{}{"x": 1}
 
-		resultSet, err := client.SubmitWithOptions("g.V(x).values(\"name\")", new(RequestOptionsBuilder).SetBindings(bindings).Create())
+		resultSet, err := client.SubmitWithOptions("g.V(x).values(\"name\")", new(RequestOptionsBuilder).SetParameters(parameters).Create())
 		assert.NoError(t, err)
 		assert.NotNil(t, resultSet)
 
@@ -140,7 +143,7 @@ func TestClient(t *testing.T) {
 		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
 		client, err := NewClient(testNoAuthUrl,
 			func(settings *ClientSettings) {
-				settings.TlsConfig = testNoAuthTlsConfig
+				settings.Ssl = testNoAuthTlsConfig
 				settings.TraversalSource = testServerModernGraphAlias
 			})
 
@@ -162,7 +165,7 @@ func TestClient(t *testing.T) {
 		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
 		client, err := NewClient(testNoAuthUrl,
 			func(settings *ClientSettings) {
-				settings.TlsConfig = testNoAuthTlsConfig
+				settings.Ssl = testNoAuthTlsConfig
 			})
 		assert.NoError(t, err)
 		assert.NotNil(t, client)
@@ -192,7 +195,7 @@ func TestClient(t *testing.T) {
 		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
 		client, err := NewClient(testNoAuthUrl,
 			func(settings *ClientSettings) {
-				settings.TlsConfig = testNoAuthTlsConfig
+				settings.Ssl = testNoAuthTlsConfig
 			})
 		assert.NoError(t, err)
 		assert.NotNil(t, client)
@@ -216,7 +219,7 @@ func TestClient(t *testing.T) {
 		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
 		client, err := NewClient(testNoAuthUrl,
 			func(settings *ClientSettings) {
-				settings.TlsConfig = testNoAuthTlsConfig
+				settings.Ssl = testNoAuthTlsConfig
 				settings.TraversalSource = testServerCrewGraphAlias
 			})
 
@@ -292,4 +295,168 @@ func AssertMarkoVertexWithoutProperties(t *testing.T, result *Result) {
 	properties, ok := vertex.Properties.([]interface{})
 	assert.True(t, ok)
 	assert.Equal(t, 0, len(properties))
+}
+
+func TestCompositePDTIntegration(t *testing.T) {
+	testNoAuthUrl := getEnvOrDefaultString("GREMLIN_SERVER_URL", noAuthUrl)
+	testNoAuthEnable := getEnvOrDefaultBool("RUN_INTEGRATION_TESTS", true)
+
+	t.Run("simple Point PDT round-trip", func(t *testing.T) {
+		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
+		client, err := NewClient(testNoAuthUrl, func(settings *ClientSettings) {
+			settings.Ssl = &tls.Config{}
+			settings.TraversalSource = testServerModernGraphAlias
+		})
+		require.NoError(t, err)
+		defer client.Close()
+
+		rs, err := client.Submit("g.inject(PDT(\"Point\", [\"x\":1, \"y\":2]))")
+		require.NoError(t, err)
+
+		result, ok, err := rs.One()
+		require.NoError(t, err)
+		require.True(t, ok)
+
+		pdt, ok := result.Data.(*CompositePDT)
+		require.True(t, ok, "expected *CompositePDT, got %T", result.Data)
+		assert.Equal(t, "Point", pdt.Name)
+		assert.Equal(t, int32(1), pdt.Fields["x"])
+		assert.Equal(t, int32(2), pdt.Fields["y"])
+	})
+
+	t.Run("nested PDT (Person with Address)", func(t *testing.T) {
+		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
+		client, err := NewClient(testNoAuthUrl, func(settings *ClientSettings) {
+			settings.Ssl = &tls.Config{}
+			settings.TraversalSource = testServerModernGraphAlias
+		})
+		require.NoError(t, err)
+		defer client.Close()
+
+		rs, err := client.Submit(
+			"g.inject(PDT(\"Person\", [\"name\":\"Alice\", \"age\":30, " +
+				"\"address\":PDT(\"Address\", [\"street\":\"123 Main St\", \"city\":\"Springfield\", \"zip\":\"12345\"])]))")
+		require.NoError(t, err)
+
+		result, ok, err := rs.One()
+		require.NoError(t, err)
+		require.True(t, ok)
+
+		pdt, ok := result.Data.(*CompositePDT)
+		require.True(t, ok, "expected *CompositePDT, got %T", result.Data)
+		assert.Equal(t, "Person", pdt.Name)
+		assert.Equal(t, "Alice", pdt.Fields["name"])
+		assert.Equal(t, int32(30), pdt.Fields["age"])
+
+		address, ok := pdt.Fields["address"].(*CompositePDT)
+		require.True(t, ok, "expected nested *CompositePDT for address")
+		assert.Equal(t, "Address", address.Name)
+		assert.Equal(t, "123 Main St", address.Fields["street"])
+		assert.Equal(t, "Springfield", address.Fields["city"])
+		assert.Equal(t, "12345", address.Fields["zip"])
+	})
+
+	t.Run("PDT in collection", func(t *testing.T) {
+		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
+		client, err := NewClient(testNoAuthUrl, func(settings *ClientSettings) {
+			settings.Ssl = &tls.Config{}
+			settings.TraversalSource = testServerModernGraphAlias
+		})
+		require.NoError(t, err)
+		defer client.Close()
+
+		rs, err := client.Submit(
+			"g.inject([PDT(\"Point\", [\"x\":1, \"y\":2]), PDT(\"Point\", [\"x\":3, \"y\":4])])")
+		require.NoError(t, err)
+
+		result, ok, err := rs.One()
+		require.NoError(t, err)
+		require.True(t, ok)
+
+		list, ok := result.Data.([]interface{})
+		require.True(t, ok, "expected []interface{}, got %T", result.Data)
+		require.Len(t, list, 2)
+
+		p1, ok := list[0].(*CompositePDT)
+		require.True(t, ok)
+		assert.Equal(t, "Point", p1.Name)
+		assert.Equal(t, int32(1), p1.Fields["x"])
+		assert.Equal(t, int32(2), p1.Fields["y"])
+
+		p2, ok := list[1].(*CompositePDT)
+		require.True(t, ok)
+		assert.Equal(t, "Point", p2.Name)
+		assert.Equal(t, int32(3), p2.Fields["x"])
+		assert.Equal(t, int32(4), p2.Fields["y"])
+	})
+}
+
+// captureRequest returns a client whose interceptor records the outgoing RequestMessage and then aborts the
+// request, so request-shaping can be asserted without a server.
+func captureRequest(t *testing.T) (*Client, *RequestMessage) {
+	captured := &RequestMessage{}
+	client, err := NewClient("http://localhost:1/gremlin", func(settings *ClientSettings) {
+		settings.Interceptors = []RequestInterceptor{func(req *HttpRequest) error {
+			*captured = *req.Body.(*RequestMessage)
+			return errors.New("captured")
+		}}
+	})
+	require.NoError(t, err)
+	t.Cleanup(client.Close)
+	return client, captured
+}
+
+func TestRequestOptionsLanguage(t *testing.T) {
+	t.Run("SubmitWithOptions sends the per-request language", func(t *testing.T) {
+		client, captured := captureRequest(t)
+		_, _ = client.SubmitWithOptions("g.V()", new(RequestOptionsBuilder).SetLanguage("gremlin-groovy").Create())
+		assert.Equal(t, "gremlin-groovy", captured.Fields["language"])
+	})
+}
+
+func TestApplyOptionsConfig(t *testing.T) {
+	t.Run("applies each supported option from a traversal's with()", func(t *testing.T) {
+		opts := applyOptionsConfig(new(RequestOptionsBuilder), map[string]interface{}{
+			"timeoutMillis":         1234,
+			"batchSize":             10,
+			"materializeProperties": "tokens",
+			"bulkResults":           false,
+			"language":              "gremlin-groovy",
+		}).Create()
+		assert.Equal(t, 1234, opts.timeoutMillis)
+		assert.Equal(t, 10, opts.batchSize)
+		assert.Equal(t, "tokens", opts.materializeProperties)
+		assert.Equal(t, false, *opts.bulkResults)
+		assert.Equal(t, "gremlin-groovy", opts.language)
+	})
+
+	t.Run("ignores a value whose type does not match the option", func(t *testing.T) {
+		// a mistyped with() value is dropped rather than panicking; the server applies its own default
+		opts := applyOptionsConfig(new(RequestOptionsBuilder), map[string]interface{}{
+			"timeoutMillis": "not-a-number",
+			"language":      42,
+		}).Create()
+		assert.Equal(t, 0, opts.timeoutMillis)
+		assert.Equal(t, "", opts.language)
+	})
+
+	t.Run("coerces non-int numeric values for numeric options", func(t *testing.T) {
+		// with() carries raw interface{} values, so a numeric option may arrive as int64 or float64;
+		// these are converted to int rather than dropped
+		for _, value := range []interface{}{500, int32(500), int64(500), float64(500)} {
+			opts := applyOptionsConfig(new(RequestOptionsBuilder),
+				map[string]interface{}{"timeoutMillis": value, "batchSize": value}).Create()
+			assert.Equal(t, 500, opts.timeoutMillis)
+			assert.Equal(t, 500, opts.batchSize)
+		}
+	})
+
+	t.Run("ignores numeric values that are not exact integers", func(t *testing.T) {
+		// fractional, non-finite and out-of-range values cannot be represented exactly as an int
+		for _, value := range []interface{}{500.5, math.NaN(), math.Inf(1), uint64(math.MaxUint64)} {
+			opts := applyOptionsConfig(new(RequestOptionsBuilder),
+				map[string]interface{}{"timeoutMillis": value}).Create()
+			assert.Equal(t, 0, opts.timeoutMillis, "value %v", value)
+		}
+	})
 }

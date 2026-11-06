@@ -16,6 +16,7 @@ KIND, either express or implied.  See the License for the
 specific language governing permissions and limitations
 under the License.
 ////
+[llms-summary="Recipe: One common scenario that happens when dropping elements using a traversal is the desire to perform some sort of operation on the elements being removed."]
 [[operating-on-dropped-elements]]
 == Operating on Dropped Elements
 

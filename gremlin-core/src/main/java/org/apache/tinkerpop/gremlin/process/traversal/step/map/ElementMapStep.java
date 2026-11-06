@@ -22,6 +22,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GraphComputing;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
@@ -50,6 +51,7 @@ public class ElementMapStep<K,E> extends ScalarMapStep<Element, Map<K, E>> imple
 
     protected final String[] propertyKeys;
     private boolean onGraphComputer = false;
+    private Boolean multilabelEnabled;
 
     public ElementMapStep(final Traversal.Admin traversal, final String... propertyKeys) {
         super(traversal);
@@ -65,7 +67,14 @@ public class ElementMapStep<K,E> extends ScalarMapStep<Element, Map<K, E>> imple
             map.put(T.key, ((VertexProperty<?>) element).key());
             map.put(T.value, ((VertexProperty<?>) element).value());
         } else {
-            map.put(T.label, element.label());
+            if (isMultilabelEnabled()) {
+                map.put(T.label, element.labels());
+            } else {
+                final String label = element.label();
+                if (!label.isEmpty()) {
+                    map.put(T.label, label);
+                }
+            }
         }
 
         if (element instanceof Edge) {
@@ -88,7 +97,14 @@ public class ElementMapStep<K,E> extends ScalarMapStep<Element, Map<K, E>> imple
         m.put(T.id, v.id());
 
         // can't add label if doing GraphComputer stuff as there is no access to the label of the adjacent vertex
-        if (!onGraphComputer) m.put(T.label, v.label());
+        if (!onGraphComputer) {
+            if (isMultilabelEnabled()) {
+                m.put(T.label, v.labels());
+            } else {
+                final String label = v.label();
+                if (!label.isEmpty()) m.put(T.label, label);
+            }
+        }
 
         return m;
     }
@@ -100,6 +116,17 @@ public class ElementMapStep<K,E> extends ScalarMapStep<Element, Map<K, E>> imple
 
     public boolean isOnGraphComputer() {
         return onGraphComputer;
+    }
+
+    /**
+     * Checks if multilabel mode is enabled via source-level {@code g.with("multilabel")}.
+     * Result is cached since strategies are immutable after traversal compilation.
+     */
+    private boolean isMultilabelEnabled() {
+        if (multilabelEnabled == null) {
+            multilabelEnabled = TraversalHelper.isMultilabelEnabled(getTraversal());
+        }
+        return multilabelEnabled;
     }
 
     public String[] getPropertyKeys() {

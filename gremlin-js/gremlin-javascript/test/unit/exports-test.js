@@ -29,6 +29,7 @@ describe('API', function () {
     assert.ok(glvModule);
     assert.ok(glvModule.process);
     assert.strictEqual(typeof glvModule.process.GremlinLang, 'function');
+    assert.strictEqual(typeof glvModule.process.GValue, 'function');
     assert.strictEqual(typeof glvModule.process.EnumValue, 'function');
     assert.strictEqual(typeof glvModule.process.P, 'function');
     assert.strictEqual(typeof glvModule.process.Traversal, 'function');
@@ -38,6 +39,10 @@ describe('API', function () {
     assert.strictEqual(typeof glvModule.process.Traverser, 'function');
     assert.strictEqual(typeof glvModule.process.GraphTraversal, 'function');
     assert.strictEqual(typeof glvModule.process.GraphTraversalSource, 'function');
+    validateConstructor(glvModule.process, 'CardinalityValue');
+    assert.strictEqual(typeof glvModule.process.CardinalityValue.single, 'function');
+    assert.strictEqual(typeof glvModule.process.CardinalityValue.list, 'function');
+    assert.strictEqual(typeof glvModule.process.CardinalityValue.set, 'function');
     assert.strictEqual(typeof glvModule.process.barrier, 'object');
     assert.strictEqual(typeof glvModule.process.cardinality, 'object');
     assert.strictEqual(typeof glvModule.process.column, 'object');

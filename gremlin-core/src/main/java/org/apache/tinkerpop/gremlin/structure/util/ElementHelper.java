@@ -30,9 +30,11 @@ import org.javatuples.Pair;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -243,6 +245,63 @@ public final class ElementHelper {
             }
         }
         return Optional.empty();
+    }
+
+    /**
+     * Extracts the value of the {@link T#label} key from the list of arguments as a {@link Set} of labels.
+     * Supports both single {@link String} values and {@link java.util.Collection} values for multi-label vertices.
+     *
+     * @param keyValues a list of key/value pairs
+     * @return the labels associated with {@link T#label}, or empty if not present
+     * @since 4.0.0
+     */
+    public static Optional<Set<String>> getLabelsValue(final Object... keyValues) {
+        for (int i = 0; i < keyValues.length; i = i + 2) {
+            if (keyValues[i].equals(T.label)) {
+                final Object labelValue = keyValues[i + 1];
+                if (labelValue instanceof String) {
+                    ElementHelper.validateLabel((String) labelValue);
+                    final Set<String> labels = new LinkedHashSet<>();
+                    labels.add((String) labelValue);
+                    return Optional.of(labels);
+                } else if (labelValue instanceof Collection) {
+                    final Set<String> labels = new LinkedHashSet<>();
+                    for (final Object l : (Collection<?>) labelValue) {
+                        if (!(l instanceof String)) {
+                            throw new IllegalArgumentException("T.label collection must contain only Strings");
+                        }
+                        ElementHelper.validateLabel((String) l);
+                        labels.add((String) l);
+                    }
+                    return Optional.of(labels);
+                } else {
+                    throw new IllegalArgumentException("T.label value must be String or Collection<String>");
+                }
+            }
+        }
+        return Optional.empty();
+    }
+
+    /**
+     * Applies label value(s) to a vertex using addLabel semantics. Handles both single String
+     * and Collection&lt;String&gt; label values as used in mergeV onMatch maps.
+     *
+     * @param vertex the vertex to add labels to
+     * @param labelValue the label value (String or Collection&lt;String&gt;)
+     * @since 4.0.0
+     */
+    public static void applyLabelsToVertex(final Vertex vertex, final Object labelValue) {
+        if (labelValue instanceof String) {
+            vertex.addLabel((String) labelValue);
+        } else if (labelValue instanceof Collection) {
+            final Collection<?> labels = (Collection<?>) labelValue;
+            if (!labels.isEmpty()) {
+                final String[] labelArray = labels.stream()
+                        .map(l -> (String) l)
+                        .toArray(String[]::new);
+                vertex.addLabel(labelArray[0], Arrays.copyOfRange(labelArray, 1, labelArray.length));
+            }
+        }
     }
 
     /**

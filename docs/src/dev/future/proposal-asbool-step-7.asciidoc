@@ -19,7 +19,7 @@ under the License.
 
 image::apache-tinkerpop-logo.png[width=500,link="https://tinkerpop.apache.org"]
 
-*x.y.z - Proposal 7*
+*Proposal 7*
 
 == asBool() Step
 

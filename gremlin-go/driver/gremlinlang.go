@@ -22,13 +22,14 @@ package gremlingo
 import (
 	"encoding/base64"
 	"fmt"
-	"go/token"
 	"math"
 	"math/big"
 	"reflect"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
+	"unicode"
 
 	"github.com/google/uuid"
 )
@@ -38,6 +39,7 @@ type GremlinLang struct {
 	gremlin           []string
 	parameters        map[string]interface{}
 	optionsStrategies []*traversalStrategy
+	pdtRegistry       *PDTRegistry
 }
 
 // NewGremlinLang creates a new GremlinLang to be used in traversals.
@@ -45,6 +47,7 @@ func NewGremlinLang(gl *GremlinLang) *GremlinLang {
 	gremlin := make([]string, 0)
 	parameters := make(map[string]interface{})
 	optionsStrategies := make([]*traversalStrategy, 0)
+	var registry *PDTRegistry
 	if gl != nil {
 		gremlin = make([]string, len(gl.gremlin))
 		copy(gremlin, gl.gremlin)
@@ -56,12 +59,14 @@ func NewGremlinLang(gl *GremlinLang) *GremlinLang {
 
 		optionsStrategies = make([]*traversalStrategy, len(gl.optionsStrategies))
 		copy(optionsStrategies, gl.optionsStrategies)
+		registry = gl.pdtRegistry
 	}
 
 	return &GremlinLang{
 		gremlin:           gremlin,
 		parameters:        parameters,
 		optionsStrategies: optionsStrategies,
+		pdtRegistry:       registry,
 	}
 }
 
@@ -131,6 +136,21 @@ func escapeString(s string) string {
 	return sb.String()
 }
 
+func isValidParameterName(name string) bool {
+	runes := []rune(name)
+	if len(runes) == 0 {
+		return false
+	}
+	if !unicode.IsLetter(runes[0]) && runes[0] != '_' && runes[0] != '$' {
+		return false
+	}
+	for _, r := range runes[1:] {
+		if !unicode.IsLetter(r) && !unicode.IsDigit(r) && r != '_' && r != '$' {
+			return false
+		}
+	}
+	return true
+}
 
 func (gl *GremlinLang) argAsString(arg interface{}) (string, error) {
 	if arg == nil {
@@ -200,6 +220,18 @@ func (gl *GremlinLang) argAsString(arg interface{}) (string, error) {
 	case dt:
 		name := reflect.ValueOf(v).Type().Name()
 		return fmt.Sprintf("%s.%s", strings.ToUpper(name), v), nil
+	case *CompositePDT:
+		fields := v.Fields
+		if fields == nil {
+			fields = map[string]interface{}{}
+		}
+		mapStr, err := gl.translateMap(fields)
+		if err != nil {
+			return "", err
+		}
+		return fmt.Sprintf("PDT(\"%s\",%s)", escapeString(v.Name), mapStr), nil
+	case *PrimitivePDT:
+		return fmt.Sprintf("PDT(\"%s\",\"%s\")", escapeString(v.Name), escapeString(v.Value)), nil
 	case *Vertex:
 		return gl.argAsString(v.Id)
 	case textP:
@@ -245,22 +277,17 @@ func (gl *GremlinLang) argAsString(arg interface{}) (string, error) {
 		}
 		return v.GetGremlin("__"), nil
 	case GValue:
-		key := v.Name()
-		if !token.IsIdentifier(key) {
-			panic(fmt.Sprintf("invalid parameter name '%v'.", key))
+		key := v.Name
+		if !isValidParameterName(key) {
+			panic(fmt.Sprintf("invalid parameter name [%v]", key))
 		}
-		value := v.Value()
+		value := v.Value
 		if val, ok := gl.parameters[key]; ok {
-			if reflect.TypeOf(val).Kind() == reflect.Slice || reflect.TypeOf(value).Kind() == reflect.Slice ||
-				reflect.TypeOf(val).Kind() == reflect.Map || reflect.TypeOf(value).Kind() == reflect.Map {
-				if !reflect.DeepEqual(val, value) {
-					panic(fmt.Sprintf("parameter with name '%v' already exists.", key))
-				}
-			} else if val != value {
+			if !reflect.DeepEqual(val, value) {
 				panic(fmt.Sprintf("parameter with name '%v' already exists.", key))
 			}
 		} else {
-			gl.parameters[key] = v.Value()
+			gl.parameters[key] = v.Value
 		}
 		return key, nil
 	case uuid.UUID:
@@ -283,7 +310,31 @@ func (gl *GremlinLang) argAsString(arg interface{}) (string, error) {
 		return fmt.Sprintf("Binary(\"%s\")", base64.StdEncoding.EncodeToString(v.Data)), nil
 	case []byte:
 		return fmt.Sprintf("Binary(\"%s\")", base64.StdEncoding.EncodeToString(v)), nil
+	case Char:
+		return fmt.Sprintf("\"%s\"c", escapeString(string(rune(v)))), nil
 	default:
+		// Registry-based dehydration: a registered adapter intentionally takes precedence
+		// over any reflection/struct-based fallback, allowing explicit adapters to override
+		// default behavior for a given Go type.
+		if gl.pdtRegistry != nil {
+			// Check primitive adapter before composite (mandatory per Python review lesson).
+			primitiveAdapter := gl.pdtRegistry.GetPrimitiveAdapterByType(reflect.TypeOf(arg))
+			if primitiveAdapter != nil && primitiveAdapter.ToString != nil {
+				s, err := primitiveAdapter.ToString(arg)
+				if err == nil {
+					pdt := &PrimitivePDT{Name: primitiveAdapter.TypeName, Value: s}
+					return gl.argAsString(pdt)
+				}
+			}
+			adapter := gl.pdtRegistry.GetAdapterByType(reflect.TypeOf(arg))
+			if adapter != nil && adapter.ToFields != nil {
+				fields, err := adapter.ToFields(arg)
+				if err == nil {
+					pdt := &CompositePDT{Name: adapter.TypeName, Fields: fields}
+					return gl.argAsString(pdt)
+				}
+			}
+		}
 		switch reflect.TypeOf(arg).Kind() {
 		case reflect.Map:
 			return gl.translateMap(arg)
@@ -308,14 +359,19 @@ func (gl *GremlinLang) translateMap(arg interface{}) (string, error) {
 	if size == 0 {
 		sb.WriteString(":")
 	} else {
-		iter := reflect.ValueOf(arg).MapRange()
-		for iter.Next() {
-			k := iter.Key().Interface()
+		mapVal := reflect.ValueOf(arg)
+		keys := mapVal.MapKeys()
+		// Sort keys for deterministic output (not semantic ordering)
+		sort.Slice(keys, func(i, j int) bool {
+			return fmt.Sprintf("%v", keys[i].Interface()) < fmt.Sprintf("%v", keys[j].Interface())
+		})
+		for idx, key := range keys {
+			k := key.Interface()
 			kString, err := gl.argAsString(k)
 			if err != nil {
 				return "", err
 			}
-			v := iter.Value().Interface()
+			v := mapVal.MapIndex(key).Interface()
 			vString, err := gl.argAsString(v)
 			if err != nil {
 				return "", err
@@ -323,8 +379,7 @@ func (gl *GremlinLang) translateMap(arg interface{}) (string, error) {
 			sb.WriteString(kString)
 			sb.WriteByte(':')
 			sb.WriteString(vString)
-			size--
-			if size > 0 {
+			if idx < len(keys)-1 {
 				sb.WriteString(",")
 			}
 		}
@@ -412,7 +467,22 @@ func (gl *GremlinLang) translatePValue(operator string, values []interface{}) (s
 	sb := strings.Builder{}
 	sb.WriteString(operator + "(")
 
-	if len(values) > 1 && operator != "between" && operator != "inside" {
+	// Check if all values are traversals - if so, serialize as comma-separated args (no brackets)
+	// This matches the server grammar: within(trav1, trav2) via genericArgumentVarargs
+	allTraversals := len(values) > 1
+	if allTraversals {
+		for _, v := range values {
+			switch v.(type) {
+			case *Traversal, Traversal, *GraphTraversal, GraphTraversal:
+				// ok, it's a traversal
+			default:
+				allTraversals = false
+				break
+			}
+		}
+	}
+
+	if len(values) > 1 && !allTraversals && operator != "between" && operator != "inside" && operator != "outside" {
 		sb.WriteString("[")
 	}
 
@@ -427,7 +497,7 @@ func (gl *GremlinLang) translatePValue(operator string, values []interface{}) (s
 		}
 	}
 
-	if len(values) > 1 && operator != "between" && operator != "inside" {
+	if len(values) > 1 && !allTraversals && operator != "between" && operator != "inside" && operator != "outside" {
 		sb.WriteString("]")
 	}
 	sb.WriteString(")")
@@ -485,10 +555,6 @@ func ConvertParametersToString(params map[string]interface{}) string {
 	return sb.String()
 }
 
-func (gl *GremlinLang) AddG(g string) {
-	gl.parameters["g"] = g
-}
-
 func (gl *GremlinLang) AddSource(name string, arguments ...interface{}) {
 	if (name == "withStrategies" || name == "withoutStrategies") && len(arguments) != 0 {
 		args := gl.buildStrategyArgs(arguments...)
@@ -522,6 +588,13 @@ func (gl *GremlinLang) buildStrategyArgs(args ...interface{}) string {
 		// special handling for OptionsStrategy
 		if strategy.name == "OptionsStrategy" {
 			gl.optionsStrategies = append(gl.optionsStrategies, strategy)
+			// Render multilabel/singlelabel in gremlin text (temporary until these options are removed)
+			if _, ok := strategy.configuration["multilabel"]; ok {
+				gl.gremlin = append(gl.gremlin, ".with(\"multilabel\")")
+			}
+			if _, ok := strategy.configuration["singlelabel"]; ok {
+				gl.gremlin = append(gl.gremlin, ".with(\"singlelabel\")")
+			}
 			continue
 		}
 		if len(strategy.configuration) == 0 {

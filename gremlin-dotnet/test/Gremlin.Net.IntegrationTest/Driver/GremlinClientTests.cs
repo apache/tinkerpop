@@ -23,11 +23,14 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Gremlin.Net.Driver;
 using Gremlin.Net.Driver.Exceptions;
 using Gremlin.Net.Driver.Messages;
 using Gremlin.Net.IntegrationTest.Util;
+using Gremlin.Net.Process.Traversal;
+using Gremlin.Net.Structure;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
 using Xunit;
@@ -135,6 +138,43 @@ namespace Gremlin.Net.IntegrationTest.Driver
         }
 
         [Fact]
+        public async Task ShouldReturnRawValuesWithBulkResultsFalse()
+        {
+            var gremlinServer = new GremlinServer(TestHost, TestPort);
+            using (var gremlinClient = new GremlinClient(gremlinServer))
+            {
+                // bulkResults=false: the ResultSet contains raw values (no Traverser wrapping).
+                var requestMessage = RequestMessage.Build("g.inject(1,2,3,2,1)")
+                    .AddBulkResults(false).Create();
+
+                var response = await gremlinClient.SubmitAsync<object>(requestMessage);
+                var results = await response.ToListAsync();
+
+                Assert.Equal(5, results.Count);
+                Assert.All(results, r => Assert.IsNotType<Traverser>(r));
+            }
+        }
+
+        [Fact]
+        public async Task ShouldReturnTraversersWithBulkResultsTrue()
+        {
+            var gremlinServer = new GremlinServer(TestHost, TestPort);
+            using (var gremlinClient = new GremlinClient(gremlinServer))
+            {
+                // bulkResults=true: values are bulked into Traversers, read as Traverser.
+                var requestMessage = RequestMessage.Build("g.inject(1,2,3,2,1)")
+                    .AddBulkResults(true).Create();
+
+                var response = await gremlinClient.SubmitAsync<Traverser>(requestMessage);
+                var results = await response.ToListAsync();
+
+                // 3 unique values with bulk counts summing to the 5 injected.
+                Assert.Equal(3, results.Count);
+                Assert.Equal(5L, results.Sum(t => t.Bulk));
+            }
+        }
+
+        [Fact]
         public async Task ShouldThrowOnExecutionOfSimpleInvalidScript()
         {
             var gremlinServer = new GremlinServer(TestHost, TestPort);
@@ -163,7 +203,7 @@ namespace Gremlin.Net.IntegrationTest.Driver
         }
 
         [Fact]
-        public async Task ShouldUseBindingsForScript()
+        public async Task ShouldUseParametersForScript()
         {
             var gremlinServer = new GremlinServer(TestHost, TestPort);
             using (var gremlinClient = new GremlinClient(gremlinServer))
@@ -203,6 +243,234 @@ namespace Gremlin.Net.IntegrationTest.Driver
             using var gremlinClient = new GremlinClient(gremlinServer, loggerFactory: loggerFactory);
             
             logger.VerifyNothingWasLogged();
+        }
+
+        [Fact]
+        public async Task ShouldRoundTripSimplePointPdt()
+        {
+            var gremlinServer = new GremlinServer(TestHost, TestPort);
+            using var gremlinClient = new GremlinClient(gremlinServer);
+
+            var response = await gremlinClient.SubmitAsync<object>(
+                "g.inject(PDT(\"Point\", [\"x\":1, \"y\":2]))");
+            var results = await response.ToListAsync();
+
+            Assert.Single(results);
+            var pdt = Assert.IsType<CompositePDT>(results[0]);
+            Assert.Equal("Point", pdt.Name);
+            Assert.Equal(2, pdt.Fields.Count);
+            Assert.Equal(1, pdt.Fields["x"]);
+            Assert.Equal(2, pdt.Fields["y"]);
+        }
+
+        [Fact]
+        public async Task ShouldRoundTripNestedPdt()
+        {
+            var gremlinServer = new GremlinServer(TestHost, TestPort);
+            using var gremlinClient = new GremlinClient(gremlinServer);
+
+            var response = await gremlinClient.SubmitAsync<object>(
+                "g.inject(PDT(\"Person\", [\"name\":\"Alice\", \"age\":30, " +
+                "\"address\":PDT(\"Address\", [\"street\":\"123 Main St\", \"city\":\"Springfield\", \"zip\":\"12345\"])]))");
+            var results = await response.ToListAsync();
+
+            Assert.Single(results);
+            var pdt = Assert.IsType<CompositePDT>(results[0]);
+            Assert.Equal("Person", pdt.Name);
+            Assert.Equal("Alice", pdt.Fields["name"]);
+            Assert.Equal(30, pdt.Fields["age"]);
+
+            var address = Assert.IsType<CompositePDT>(pdt.Fields["address"]);
+            Assert.Equal("Address", address.Name);
+            Assert.Equal("123 Main St", address.Fields["street"]);
+            Assert.Equal("Springfield", address.Fields["city"]);
+            Assert.Equal("12345", address.Fields["zip"]);
+        }
+
+        [Fact]
+        public async Task ShouldHandlePdtInCollection()
+        {
+            var gremlinServer = new GremlinServer(TestHost, TestPort);
+            using var gremlinClient = new GremlinClient(gremlinServer);
+
+            var response = await gremlinClient.SubmitAsync<object>(
+                "g.inject([PDT(\"Point\", [\"x\":1, \"y\":2]), PDT(\"Point\", [\"x\":3, \"y\":4])])");
+            var results = await response.ToListAsync();
+
+            Assert.Single(results);
+            var list = Assert.IsType<List<object>>(results[0]);
+            Assert.Equal(2, list.Count);
+
+            var p1 = Assert.IsType<CompositePDT>(list[0]);
+            Assert.Equal("Point", p1.Name);
+            Assert.Equal(1, p1.Fields["x"]);
+            Assert.Equal(2, p1.Fields["y"]);
+
+            var p2 = Assert.IsType<CompositePDT>(list[1]);
+            Assert.Equal("Point", p2.Name);
+            Assert.Equal(3, p2.Fields["x"]);
+            Assert.Equal(4, p2.Fields["y"]);
+        }
+
+        [Fact]
+        public async Task ShouldAutoSerializeRequestMessageWithInterceptorMutation()
+        {
+            var gremlinServer = new GremlinServer(TestHost, TestPort);
+            var interceptors = new List<Func<HttpRequestContext, Task>>
+            {
+                ctx =>
+                {
+                    if (ctx.Body is RequestMessage msg)
+                    {
+                        var g = msg.Fields.ContainsKey("g") ? (string)msg.Fields["g"] : "g";
+                        ctx.Body = RequestMessage.Build("g.inject(99)").AddG(g).Create();
+                    }
+                    return Task.CompletedTask;
+                }
+            };
+
+            using var gremlinClient = new GremlinClient(gremlinServer, interceptors: interceptors);
+
+            var response = await gremlinClient.SubmitWithSingleResultAsync<int>("g.inject(1)");
+            Assert.Equal(99, response);
+        }
+
+        [Fact]
+        public async Task ShouldPropagateExceptionThrownDuringInterceptor()
+        {
+            var gremlinServer = new GremlinServer(TestHost, TestPort);
+            var callCount = 0;
+            var interceptors = new List<Func<HttpRequestContext, Task>>
+            {
+                ctx =>
+                {
+                    callCount++;
+                    if (callCount == 1)
+                    {
+                        throw new InvalidOperationException("interceptor broke");
+                    }
+                    return Task.CompletedTask;
+                }
+            };
+
+            using var gremlinClient = new GremlinClient(gremlinServer, interceptors: interceptors);
+
+            // First request should fail with interceptor error
+            var ex = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+            {
+                var resultSet = await gremlinClient.SubmitAsync<int>("g.inject(1)");
+                await resultSet.ToListAsync();
+            });
+            Assert.Contains("interceptor broke", ex.Message);
+
+            // Subsequent request should succeed, proving connection recovery
+            var response = await gremlinClient.SubmitWithSingleResultAsync<int>("g.inject(2)");
+            Assert.Equal(2, response);
+        }
+
+        [Fact]
+        public async Task ShouldPropagateErrorWhenInterceptorSetsUnsupportedBodyType()
+        {
+            var gremlinServer = new GremlinServer(TestHost, TestPort);
+            var callCount = 0;
+            var interceptors = new List<Func<HttpRequestContext, Task>>
+            {
+                ctx =>
+                {
+                    callCount++;
+                    if (callCount == 1)
+                    {
+                        ctx.Body = 42;
+                    }
+                    return Task.CompletedTask;
+                }
+            };
+
+            using var gremlinClient = new GremlinClient(gremlinServer, interceptors: interceptors);
+
+            // First request should fail with serialization error
+            var ex = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+            {
+                var resultSet = await gremlinClient.SubmitAsync<int>("g.inject(1)");
+                await resultSet.ToListAsync();
+            });
+            Assert.Contains("Cannot serialize body", ex.Message);
+
+            // Subsequent request should succeed, proving connection recovery
+            var response = await gremlinClient.SubmitWithSingleResultAsync<int>("g.inject(2)");
+            Assert.Equal(2, response);
+        }
+
+        [Fact]
+        public async Task ShouldRoundTripSimplePrimitivePdt()
+        {
+            var gremlinServer = new GremlinServer(TestHost, TestPort);
+            using var gremlinClient = new GremlinClient(gremlinServer);
+
+            var response = await gremlinClient.SubmitAsync<object>(
+                "g.inject(PDT(\"Uint32\", \"42\"))");
+            var results = await response.ToListAsync();
+
+            Assert.Single(results);
+            var pdt = Assert.IsType<PrimitivePDT>(results[0]);
+            Assert.Equal("Uint32", pdt.Name);
+            Assert.Equal("42", pdt.Value);
+        }
+
+        [Fact]
+        public async Task ShouldRoundTripPrimitivePdtWithOpaqueValue()
+        {
+            var gremlinServer = new GremlinServer(TestHost, TestPort);
+            using var gremlinClient = new GremlinClient(gremlinServer);
+
+            var response = await gremlinClient.SubmitAsync<object>(
+                "g.inject(PDT(\"Token\", \"007-abc\"))");
+            var results = await response.ToListAsync();
+
+            Assert.Single(results);
+            var pdt = Assert.IsType<PrimitivePDT>(results[0]);
+            Assert.Equal("Token", pdt.Name);
+            Assert.Equal("007-abc", pdt.Value);
+        }
+
+        [Fact]
+        public async Task ShouldHandlePrimitivePdtInCollection()
+        {
+            var gremlinServer = new GremlinServer(TestHost, TestPort);
+            using var gremlinClient = new GremlinClient(gremlinServer);
+
+            var response = await gremlinClient.SubmitAsync<object>(
+                "g.inject([PDT(\"Uint32\", \"1\"), PDT(\"Uint32\", \"2\")])");
+            var results = await response.ToListAsync();
+
+            Assert.Single(results);
+            var list = Assert.IsType<List<object>>(results[0]);
+            Assert.Equal(2, list.Count);
+
+            var p1 = Assert.IsType<PrimitivePDT>(list[0]);
+            Assert.Equal("1", p1.Value);
+
+            var p2 = Assert.IsType<PrimitivePDT>(list[1]);
+            Assert.Equal("2", p2.Value);
+        }
+
+        [Fact]
+        public async Task ShouldRoundTripPrimitivePdtNestedInComposite()
+        {
+            var gremlinServer = new GremlinServer(TestHost, TestPort);
+            using var gremlinClient = new GremlinClient(gremlinServer);
+
+            var response = await gremlinClient.SubmitAsync<object>(
+                "g.inject(PDT(\"Measurement\", [\"unit\":\"kg\", \"value\":PDT(\"Uint32\", \"100\")]))");
+            var results = await response.ToListAsync();
+
+            Assert.Single(results);
+            var pdt = Assert.IsType<CompositePDT>(results[0]);
+            Assert.Equal("Measurement", pdt.Name);
+            Assert.Equal("kg", pdt.Fields["unit"]);
+            var inner = Assert.IsType<PrimitivePDT>(pdt.Fields["value"]);
+            Assert.Equal("Uint32", inner.Name);
+            Assert.Equal("100", inner.Value);
         }
     }
 }

@@ -54,7 +54,7 @@ const (
 	err0406EnumReaderInvalidTypeError                errorCode = "E0406_GRAPH_BINARY_ENUMREADER_INVALID_TYPE_ERROR"
 	err0407GetSerializerToWriteUnknownTypeError      errorCode = "E0407_GRAPH_BINARY_GETSERIALIZERTOWRITE_UNKNOWN_TYPE_ERROR"
 	err0408GetSerializerToReadUnknownTypeError       errorCode = "E0408_GRAPH_BINARY_GETSERIALIZERTOREAD_UNKNOWN_TYPE_ERROR"
-	err0409GetSerializerToReadUnknownCustomTypeError errorCode = "E0409_GRAPH_BINARY_GETSERIALIZERTOREAD_UNKNOWN_CUSTOM_TYPE_ERROR"
+	err0410UnexpectedMarkerValueError                errorCode = "E0410_GRAPH_BINARY_UNEXPECTED_MARKER_VALUE_ERROR"
 
 	// response handling errors
 	err0501ResponseResultSetNotCreatedError errorCode = "E0501_RESPONSE_NO_RESULTSET_ON_DATA_RECEIVE"
@@ -85,11 +85,13 @@ const (
 	// Bytecode.go errors
 	err1001ConvertArgumentChildTraversalNotFromAnonError errorCode = "E1001_BYTECODE_CHILD_T_NOT_ANON_ERROR"
 
-	// graphTraversal.go errors
-	err1101TransactionRepeatedOpenError      errorCode = "E1101_TRANSACTION_REPEATED_OPEN_ERROR"
+	// transaction.go errors
+	err1101TransactionClosedCannotReuseError errorCode = "E1101_TRANSACTION_CLOSED_CANNOT_REUSE_ERROR"
 	err1102TransactionRollbackNotOpenedError errorCode = "E1102_TRANSACTION_ROLLBACK_NOT_OPENED_ERROR"
 	err1103TransactionCommitNotOpenedError   errorCode = "E1103_TRANSACTION_COMMIT_NOT_OPENED_ERROR"
 	err1104TransactionRepeatedCloseError     errorCode = "E1104_TRANSACTION_REPEATED_CLOSE_ERROR"
+	err1105TransactionBeginFailedError       errorCode = "E1105_TRANSACTION_BEGIN_FAILED_ERROR"
+	err1106TransactionNotOpenError           errorCode = "E1106_TRANSACTION_NOT_OPEN_ERROR"
 )
 
 var localizer *i18n.Localizer

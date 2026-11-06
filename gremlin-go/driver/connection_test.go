@@ -22,11 +22,13 @@ package gremlingo
 import (
 	"bytes"
 	"crypto/tls"
+	"encoding/base64"
 	"fmt"
 	"io"
 	"math/big"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"os"
 	"reflect"
 	"sort"
@@ -60,11 +62,22 @@ const basicAuthWithSsl = "https://localhost:45941/gremlin"
 
 var testNames = []string{"Lyndon", "Yang", "Simon", "Rithin", "Alexey", "Valentyn"}
 
+// testBasicAuthInterceptor builds a Basic authentication interceptor inline, mirroring
+// auth.Basic. The auth sub-package cannot be imported from package gremlingo tests
+// because it imports gremlingo (one-directional dependency).
+func testBasicAuthInterceptor(username, password string) RequestInterceptor {
+	encoded := base64.StdEncoding.EncodeToString([]byte(username + ":" + password))
+	return func(req *HttpRequest) error {
+		req.Headers.Set(HeaderAuthorization, "Basic "+encoded)
+		return nil
+	}
+}
+
 func newDefaultConnectionSettings() *connectionSettings {
 	return &connectionSettings{
-		tlsConfig:                &tls.Config{},
-		connectionTimeout:        connectionTimeoutDefault,
-		enableCompression:        false,
+		ssl:                      &tls.Config{},
+		connectTimeout:           defaultConnectTimeout,
+		compression:              CompressionDeflate,
 		enableUserAgentOnConnect: true,
 	}
 }
@@ -95,7 +108,7 @@ func addTestData(t *testing.T, g *GraphTraversalSource) {
 func getTestGraph(t *testing.T, url string, tls *tls.Config) *GraphTraversalSource {
 	remote, err := NewDriverRemoteConnection(url,
 		func(settings *DriverRemoteConnectionSettings) {
-			settings.TlsConfig = tls
+			settings.Ssl = tls
 			settings.TraversalSource = testServerGraphAlias
 		})
 	assert.Nil(t, err)
@@ -124,9 +137,9 @@ func initializeGraph(t *testing.T, url string, tls *tls.Config) *GraphTraversalS
 }
 
 func resetGraph(t *testing.T, g *GraphTraversalSource) {
-	defer func(remoteConnection *DriverRemoteConnection) {
-		remoteConnection.Close()
-	}(g.remoteConnection)
+	defer func() {
+		g.remoteConnection.Close()
+	}()
 	// Drop the graph and check that it is empty.
 	dropGraph(t, g)
 	readCount(t, g, "", 0)
@@ -280,8 +293,8 @@ func TestConnection(t *testing.T) {
 		client, err := NewClient(testNoAuthUrl,
 			//client, err := NewClient(noAuthSslUrl,
 			func(settings *ClientSettings) {
-				settings.TlsConfig = &tlsConf
-				settings.EnableCompression = true
+				settings.Ssl = &tlsConf
+				settings.Compression = CompressionDeflate
 				settings.TraversalSource = testServerModernGraphAlias
 			})
 		assert.Nil(t, err)
@@ -310,8 +323,8 @@ func TestConnection(t *testing.T) {
 
 		client, err := NewClient(testNoAuthUrl,
 			func(settings *ClientSettings) {
-				settings.TlsConfig = testNoAuthTlsConfig
-				settings.EnableCompression = true
+				settings.Ssl = testNoAuthTlsConfig
+				settings.Compression = CompressionDeflate
 				settings.TraversalSource = testServerModernGraphAlias
 			})
 		assert.Nil(t, err)
@@ -507,9 +520,9 @@ func TestConnection(t *testing.T) {
 		skipTestsIfNotEnabled(t, basicAuthIntegrationTestSuite, testBasicAuthEnable)
 		remote, err := NewDriverRemoteConnection(testBasicAuthUrl,
 			func(settings *DriverRemoteConnectionSettings) {
-				settings.TlsConfig = testBasicAuthTlsConfig
-				settings.RequestInterceptors = []RequestInterceptor{
-					BasicAuth(testBasicAuthUsername, testBasicAuthPassword),
+				settings.Ssl = testBasicAuthTlsConfig
+				settings.Interceptors = []RequestInterceptor{
+					testBasicAuthInterceptor(testBasicAuthUsername, testBasicAuthPassword),
 				}
 			})
 		assert.Nil(t, err)
@@ -612,7 +625,7 @@ func TestConnection(t *testing.T) {
 		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthWithAliasEnable)
 		remote, err := NewDriverRemoteConnection(testNoAuthWithAliasUrl,
 			func(settings *DriverRemoteConnectionSettings) {
-				settings.TlsConfig = testNoAuthWithAliasTlsConfig
+				settings.Ssl = testNoAuthWithAliasTlsConfig
 				settings.TraversalSource = testServerModernGraphAlias
 			})
 		assert.Nil(t, err)
@@ -827,7 +840,7 @@ func TestStreamingResultDelivery(t *testing.T) {
 	skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthWithAliasEnable)
 	remote, err := NewDriverRemoteConnection(getEnvOrDefaultString("GREMLIN_SERVER_URL", noAuthUrl),
 		func(settings *DriverRemoteConnectionSettings) {
-			settings.TlsConfig = &tls.Config{}
+			settings.Ssl = &tls.Config{}
 			settings.TraversalSource = "ggrateful"
 		})
 	assert.Nil(t, err)
@@ -898,7 +911,7 @@ func TestNewConnection(t *testing.T) {
 	t.Run("applies TLS config", func(t *testing.T) {
 		tlsConfig := &tls.Config{InsecureSkipVerify: true}
 		conn := newConnection(newTestLogHandler(), "https://localhost:8182/gremlin", &connectionSettings{
-			tlsConfig: tlsConfig,
+			ssl: tlsConfig,
 		})
 
 		transport := conn.httpClient.Transport.(*http.Transport)
@@ -907,13 +920,12 @@ func TestNewConnection(t *testing.T) {
 }
 
 func TestSetHttpRequestHeaders(t *testing.T) {
-	t.Run("sets content type and accept headers", func(t *testing.T) {
+	t.Run("sets accept header", func(t *testing.T) {
 		conn := newConnection(newTestLogHandler(), "http://localhost/gremlin", &connectionSettings{})
 		req, _ := NewHttpRequest(http.MethodPost, "http://localhost/gremlin")
 
 		conn.setHttpRequestHeaders(req)
 
-		assert.Equal(t, graphBinaryMimeType, req.Headers.Get("Content-Type"))
 		assert.Equal(t, graphBinaryMimeType, req.Headers.Get("Accept"))
 	})
 
@@ -930,13 +942,38 @@ func TestSetHttpRequestHeaders(t *testing.T) {
 
 	t.Run("sets compression header when enabled", func(t *testing.T) {
 		conn := newConnection(newTestLogHandler(), "http://localhost/gremlin", &connectionSettings{
-			enableCompression: true,
+			compression: CompressionDeflate,
 		})
 		req, _ := NewHttpRequest(http.MethodPost, "http://localhost/gremlin")
 
 		conn.setHttpRequestHeaders(req)
 
 		assert.Equal(t, "deflate", req.Headers.Get("Accept-Encoding"))
+	})
+}
+
+func TestCompressionDefaults(t *testing.T) {
+	t.Run("NewClient defaults compression to deflate", func(t *testing.T) {
+		client, err := NewClient("http://localhost/gremlin")
+		assert.Nil(t, err)
+		defer client.Close()
+		assert.Equal(t, CompressionDeflate, client.connectionSettings.compression)
+	})
+
+	t.Run("NewDriverRemoteConnection defaults compression to deflate", func(t *testing.T) {
+		drc, err := NewDriverRemoteConnection("http://localhost/gremlin")
+		assert.Nil(t, err)
+		defer drc.Close()
+		assert.Equal(t, CompressionDeflate, drc.client.connectionSettings.compression)
+	})
+
+	t.Run("default connection sends Accept-Encoding deflate", func(t *testing.T) {
+		conn := newConnection(newTestLogHandler(), "http://localhost/gremlin", newDefaultConnectionSettings())
+		req, _ := NewHttpRequest(http.MethodPost, "http://localhost/gremlin")
+
+		conn.setHttpRequestHeaders(req)
+
+		assert.Equal(t, "deflate", req.Headers.Get(HeaderAcceptEncoding))
 	})
 }
 
@@ -987,15 +1024,11 @@ func TestGetReader(t *testing.T) {
 func TestConnectionWithMockServer(t *testing.T) {
 	t.Run("handles connection error", func(t *testing.T) {
 		conn := newConnection(newTestLogHandler(), "http://localhost:99999/gremlin", &connectionSettings{
-			connectionTimeout: 100 * time.Millisecond,
+			connectTimeout: 100 * time.Millisecond,
 		})
 
-		rs, err := conn.submit(&RequestMessage{Gremlin: "g.V()", Fields: map[string]interface{}{}})
-		assert.NoError(t, err) // submit returns nil, error goes to ResultSet
-
-		// All() blocks until stream closes, then we can check error
-		_, _ = rs.All()
-		assert.Error(t, rs.GetError())
+		_, err := conn.submit(&RequestMessage{Gremlin: "g.V()", Fields: map[string]interface{}{}})
+		assert.Error(t, err) // connection errors are now returned directly
 	})
 
 	t.Run("receives headers from request", func(t *testing.T) {
@@ -1008,7 +1041,7 @@ func TestConnectionWithMockServer(t *testing.T) {
 
 		conn := newConnection(newTestLogHandler(), server.URL, &connectionSettings{
 			enableUserAgentOnConnect: true,
-			enableCompression:        true,
+			compression:              CompressionDeflate,
 		})
 
 		rs, err := conn.submit(&RequestMessage{Gremlin: "g.V()", Fields: map[string]interface{}{}})
@@ -1016,7 +1049,7 @@ func TestConnectionWithMockServer(t *testing.T) {
 
 		select {
 		case receivedHeaders := <-headersCh:
-			assert.Equal(t, graphBinaryMimeType, receivedHeaders.Get("Content-Type"))
+			assert.Equal(t, "application/json", receivedHeaders.Get("Content-Type"))
 			assert.Equal(t, "deflate", receivedHeaders.Get("Accept-Encoding"))
 			assert.NotEmpty(t, receivedHeaders.Get(userAgentHeader))
 		case <-time.After(time.Second):
@@ -1035,14 +1068,10 @@ func TestConnectionWithMockServer(t *testing.T) {
 		defer server.Close()
 
 		conn := newConnection(newTestLogHandler(), server.URL, &connectionSettings{})
-		rs, err := conn.submit(&RequestMessage{Gremlin: "g.V()", Fields: map[string]interface{}{}})
-		require.NoError(t, err)
-
-		_, _ = rs.All()
-		rsErr := rs.GetError()
-		require.Error(t, rsErr)
-		assert.Contains(t, rsErr.Error(), "HTTP 500")
-		assert.Contains(t, rsErr.Error(), "Internal Server Error")
+		_, err := conn.submit(&RequestMessage{Gremlin: "g.V()", Fields: map[string]interface{}{}})
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "HTTP 500")
+		assert.Contains(t, err.Error(), "Internal Server Error")
 	})
 
 	t.Run("extracts message from JSON error response", func(t *testing.T) {
@@ -1054,13 +1083,9 @@ func TestConnectionWithMockServer(t *testing.T) {
 		defer server.Close()
 
 		conn := newConnection(newTestLogHandler(), server.URL, &connectionSettings{})
-		rs, err := conn.submit(&RequestMessage{Gremlin: "g.V()", Fields: map[string]interface{}{}})
-		require.NoError(t, err)
-
-		_, _ = rs.All()
-		rsErr := rs.GetError()
-		require.Error(t, rsErr)
-		assert.Equal(t, "Authentication required", rsErr.Error())
+		_, err := conn.submit(&RequestMessage{Gremlin: "g.V()", Fields: map[string]interface{}{}})
+		require.Error(t, err)
+		assert.Equal(t, "Authentication required", err.Error())
 	})
 
 	t.Run("falls back to raw body for non-JSON error response", func(t *testing.T) {
@@ -1072,14 +1097,10 @@ func TestConnectionWithMockServer(t *testing.T) {
 		defer server.Close()
 
 		conn := newConnection(newTestLogHandler(), server.URL, &connectionSettings{})
-		rs, err := conn.submit(&RequestMessage{Gremlin: "g.V()", Fields: map[string]interface{}{}})
-		require.NoError(t, err)
-
-		_, _ = rs.All()
-		rsErr := rs.GetError()
-		require.Error(t, rsErr)
-		assert.Contains(t, rsErr.Error(), "HTTP 502")
-		assert.Contains(t, rsErr.Error(), "<html>Bad Gateway</html>")
+		_, err := conn.submit(&RequestMessage{Gremlin: "g.V()", Fields: map[string]interface{}{}})
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "HTTP 502")
+		assert.Contains(t, err.Error(), "<html>Bad Gateway</html>")
 	})
 
 	t.Run("falls through to GraphBinary deserialization for GraphBinary error responses", func(t *testing.T) {
@@ -1121,15 +1142,23 @@ func TestConnectionWithMockServer(t *testing.T) {
 		require.NoError(t, err)
 		_, _ = rs.All()
 
-		// Interceptor should see the default headers
-		assert.Equal(t, graphBinaryMimeType, interceptorHeaders.Get("Content-Type"))
+		// Interceptor should see the default headers (Content-Type is not set until SerializeBody runs)
 		assert.Equal(t, graphBinaryMimeType, interceptorHeaders.Get("Accept"))
 	})
 
 	t.Run("close waits for in-flight requests", func(t *testing.T) {
+		// Server responds with headers immediately but streams body slowly.
+		// This tests that close() waits for the body-streaming goroutine.
 		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			time.Sleep(200 * time.Millisecond)
+			w.Header().Set("Content-Type", graphBinaryMimeType)
 			w.WriteHeader(http.StatusOK)
+			if f, ok := w.(http.Flusher); ok {
+				f.Flush()
+			}
+			// Delay before writing body so the streaming goroutine is still active
+			time.Sleep(200 * time.Millisecond)
+			// Write a minimal valid GraphBinary response (version + no-bulking flag)
+			w.Write([]byte{0x84, 0x00})
 		}))
 		defer server.Close()
 
@@ -1142,7 +1171,7 @@ func TestConnectionWithMockServer(t *testing.T) {
 		conn.close()
 		elapsed := time.Since(start)
 
-		// close() should have waited for the in-flight goroutine
+		// close() should have waited for the body-streaming goroutine to finish
 		assert.GreaterOrEqual(t, elapsed.Milliseconds(), int64(150),
 			"close() should wait for in-flight requests to complete")
 
@@ -1197,9 +1226,9 @@ func TestConnectionPoolSettings(t *testing.T) {
 		customSettings := &connectionSettings{
 			maxConnsPerHost:     256,
 			maxIdleConnsPerHost: 16,
-			idleConnTimeout:     300 * time.Second,
-			keepAliveInterval:   60 * time.Second,
-			connectionTimeout:   30 * time.Second,
+			idleTimeout:         300 * time.Second,
+			keepAliveTime:       60 * time.Second,
+			connectTimeout:      30 * time.Second,
 		}
 
 		conn := newConnection(newTestLogHandler(), "http://localhost:8182/gremlin", customSettings)
@@ -1230,14 +1259,107 @@ func TestConnectionPoolSettings(t *testing.T) {
 	})
 }
 
+func TestConnectionNewOptions(t *testing.T) {
+	t.Run("proxy defaults to environment when unset", func(t *testing.T) {
+		conn := newConnection(newTestLogHandler(), "http://localhost:8182/gremlin", &connectionSettings{})
+		transport := conn.httpClient.Transport.(*http.Transport)
+		assert.NotNil(t, transport.Proxy, "Proxy should default to http.ProxyFromEnvironment")
+	})
+
+	t.Run("explicit proxy override is used", func(t *testing.T) {
+		proxyURL, _ := url.Parse("http://proxy.example.com:3128")
+		conn := newConnection(newTestLogHandler(), "http://localhost:8182/gremlin", &connectionSettings{
+			proxy: func(*http.Request) (*url.URL, error) { return proxyURL, nil },
+		})
+		transport := conn.httpClient.Transport.(*http.Transport)
+		req, _ := http.NewRequest(http.MethodGet, "http://localhost:8182/gremlin", nil)
+		got, err := transport.Proxy(req)
+		assert.NoError(t, err)
+		assert.Equal(t, proxyURL, got)
+	})
+
+	t.Run("max response header bytes is wired to transport", func(t *testing.T) {
+		conn := newConnection(newTestLogHandler(), "http://localhost:8182/gremlin", &connectionSettings{
+			maxResponseHeaderBytes: 16384,
+		})
+		transport := conn.httpClient.Transport.(*http.Transport)
+		assert.Equal(t, int64(16384), transport.MaxResponseHeaderBytes)
+	})
+
+	t.Run("compression disabled means no Accept-Encoding header", func(t *testing.T) {
+		conn := newConnection(newTestLogHandler(), "http://localhost/gremlin", &connectionSettings{
+			compression: CompressionNone,
+		})
+		req, _ := NewHttpRequest(http.MethodPost, "http://localhost/gremlin")
+		conn.setHttpRequestHeaders(req)
+		assert.Empty(t, req.Headers.Get(HeaderAcceptEncoding))
+	})
+
+	t.Run("default batch size fills unset request batchSize", func(t *testing.T) {
+		conn := newConnection(newTestLogHandler(), "http://localhost/gremlin", &connectionSettings{})
+		msg := &RequestMessage{Gremlin: "g.V()", Fields: map[string]interface{}{}}
+		conn.applyDefaultBatchSize(msg)
+		assert.Equal(t, defaultBatchSizeValue, msg.Fields["batchSize"])
+	})
+
+	t.Run("custom default batch size fills unset request batchSize", func(t *testing.T) {
+		conn := newConnection(newTestLogHandler(), "http://localhost/gremlin", &connectionSettings{
+			batchSize: 256,
+		})
+		msg := &RequestMessage{Gremlin: "g.V()", Fields: map[string]interface{}{}}
+		conn.applyDefaultBatchSize(msg)
+		assert.Equal(t, 256, msg.Fields["batchSize"])
+	})
+
+	t.Run("default batch size does not override an explicit request batchSize", func(t *testing.T) {
+		conn := newConnection(newTestLogHandler(), "http://localhost/gremlin", &connectionSettings{
+			batchSize: 256,
+		})
+		msg := &RequestMessage{Gremlin: "g.V()", Fields: map[string]interface{}{"batchSize": 10}}
+		conn.applyDefaultBatchSize(msg)
+		assert.Equal(t, 10, msg.Fields["batchSize"])
+	})
+
+	t.Run("read timeout wraps dialed connections and resets per read", func(t *testing.T) {
+		// A slow server that writes the response body in two chunks with a gap
+		// shorter than the read timeout should succeed because the deadline is
+		// reset on each read.
+		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			flusher, _ := w.(http.Flusher)
+			w.WriteHeader(http.StatusOK)
+			w.Write([]byte("part1"))
+			if flusher != nil {
+				flusher.Flush()
+			}
+			time.Sleep(50 * time.Millisecond)
+			w.Write([]byte("part2"))
+		}))
+		defer server.Close()
+
+		conn := newConnection(newTestLogHandler(), server.URL, &connectionSettings{
+			readTimeout: 500 * time.Millisecond,
+		})
+
+		// The read-timeout wrapping is applied at dial time; assert the request
+		// completes without the deadline firing between chunks.
+		httpReq, _ := http.NewRequest(http.MethodGet, server.URL, nil)
+		resp, err := conn.httpClient.Do(httpReq)
+		require.NoError(t, err)
+		defer resp.Body.Close()
+		body, err := io.ReadAll(resp.Body)
+		require.NoError(t, err)
+		assert.Equal(t, "part1part2", string(body))
+	})
+}
+
 func TestClientSettingsWiring(t *testing.T) {
 	t.Run("ClientSettings wires connection pool settings", func(t *testing.T) {
 		client, err := NewClient("http://localhost:8182/gremlin",
 			func(settings *ClientSettings) {
-				settings.MaximumConcurrentConnections = 200
+				settings.MaxConnections = 200
 				settings.MaxIdleConnections = 20
-				settings.IdleConnectionTimeout = 240 * time.Second
-				settings.KeepAliveInterval = 45 * time.Second
+				settings.IdleTimeout = 240 * time.Second
+				settings.KeepAliveTime = 45 * time.Second
 			})
 		require.NoError(t, err)
 		defer client.Close()
@@ -1245,8 +1367,8 @@ func TestClientSettingsWiring(t *testing.T) {
 		// Verify settings were wired to connectionSettings
 		assert.Equal(t, 200, client.connectionSettings.maxConnsPerHost)
 		assert.Equal(t, 20, client.connectionSettings.maxIdleConnsPerHost)
-		assert.Equal(t, 240*time.Second, client.connectionSettings.idleConnTimeout)
-		assert.Equal(t, 45*time.Second, client.connectionSettings.keepAliveInterval)
+		assert.Equal(t, 240*time.Second, client.connectionSettings.idleTimeout)
+		assert.Equal(t, 45*time.Second, client.connectionSettings.keepAliveTime)
 
 		// Verify settings were applied to http.Transport
 		transport := client.conn.httpClient.Transport.(*http.Transport)
@@ -1263,8 +1385,8 @@ func TestClientSettingsWiring(t *testing.T) {
 		// Verify defaults are used (0 in settings means use default)
 		assert.Equal(t, 0, client.connectionSettings.maxConnsPerHost)
 		assert.Equal(t, 0, client.connectionSettings.maxIdleConnsPerHost)
-		assert.Equal(t, time.Duration(0), client.connectionSettings.idleConnTimeout)
-		assert.Equal(t, time.Duration(0), client.connectionSettings.keepAliveInterval)
+		assert.Equal(t, time.Duration(0), client.connectionSettings.idleTimeout)
+		assert.Equal(t, time.Duration(0), client.connectionSettings.keepAliveTime)
 
 		// Verify defaults were applied to http.Transport
 		transport := client.conn.httpClient.Transport.(*http.Transport)
@@ -1278,10 +1400,10 @@ func TestDriverRemoteConnectionSettingsWiring(t *testing.T) {
 	t.Run("DriverRemoteConnectionSettings wires connection pool settings", func(t *testing.T) {
 		drc, err := NewDriverRemoteConnection("http://localhost:8182/gremlin",
 			func(settings *DriverRemoteConnectionSettings) {
-				settings.MaximumConcurrentConnections = 150
+				settings.MaxConnections = 150
 				settings.MaxIdleConnections = 15
-				settings.IdleConnectionTimeout = 200 * time.Second
-				settings.KeepAliveInterval = 40 * time.Second
+				settings.IdleTimeout = 200 * time.Second
+				settings.KeepAliveTime = 40 * time.Second
 			})
 		require.NoError(t, err)
 		defer drc.Close()
@@ -1289,8 +1411,8 @@ func TestDriverRemoteConnectionSettingsWiring(t *testing.T) {
 		// Verify settings were wired to connectionSettings
 		assert.Equal(t, 150, drc.client.connectionSettings.maxConnsPerHost)
 		assert.Equal(t, 15, drc.client.connectionSettings.maxIdleConnsPerHost)
-		assert.Equal(t, 200*time.Second, drc.client.connectionSettings.idleConnTimeout)
-		assert.Equal(t, 40*time.Second, drc.client.connectionSettings.keepAliveInterval)
+		assert.Equal(t, 200*time.Second, drc.client.connectionSettings.idleTimeout)
+		assert.Equal(t, 40*time.Second, drc.client.connectionSettings.keepAliveTime)
 
 		// Verify settings were applied to http.Transport
 		transport := drc.client.conn.httpClient.Transport.(*http.Transport)
@@ -1307,14 +1429,198 @@ func TestDriverRemoteConnectionSettingsWiring(t *testing.T) {
 		// Verify defaults are used (0 in settings means use default)
 		assert.Equal(t, 0, drc.client.connectionSettings.maxConnsPerHost)
 		assert.Equal(t, 0, drc.client.connectionSettings.maxIdleConnsPerHost)
-		assert.Equal(t, time.Duration(0), drc.client.connectionSettings.idleConnTimeout)
-		assert.Equal(t, time.Duration(0), drc.client.connectionSettings.keepAliveInterval)
+		assert.Equal(t, time.Duration(0), drc.client.connectionSettings.idleTimeout)
+		assert.Equal(t, time.Duration(0), drc.client.connectionSettings.keepAliveTime)
 
 		// Verify defaults were applied to http.Transport
 		transport := drc.client.conn.httpClient.Transport.(*http.Transport)
 		assert.Equal(t, 128, transport.MaxConnsPerHost)
 		assert.Equal(t, 8, transport.MaxIdleConnsPerHost)
 		assert.Equal(t, 180*time.Second, transport.IdleConnTimeout)
+	})
+}
+
+func TestTimeoutMillisOptions(t *testing.T) {
+	t.Run("Millis companions map to the duration connection settings", func(t *testing.T) {
+		client, err := NewClient("http://localhost:8182/gremlin",
+			func(settings *ClientSettings) {
+				settings.ConnectTimeoutMillis = 1500
+				settings.ReadTimeoutMillis = 2500
+				settings.IdleTimeoutMillis = 90000
+				settings.KeepAliveTimeMillis = 15000
+			})
+		require.NoError(t, err)
+		defer client.Close()
+
+		assert.Equal(t, 1500*time.Millisecond, client.connectionSettings.connectTimeout)
+		assert.Equal(t, 2500*time.Millisecond, client.connectionSettings.readTimeout)
+		assert.Equal(t, 90*time.Second, client.connectionSettings.idleTimeout)
+		assert.Equal(t, 15*time.Second, client.connectionSettings.keepAliveTime)
+	})
+
+	t.Run("Duration companions are honored when Millis is unset", func(t *testing.T) {
+		client, err := NewClient("http://localhost:8182/gremlin",
+			func(settings *ClientSettings) {
+				settings.ReadTimeout = 7 * time.Second
+			})
+		require.NoError(t, err)
+		defer client.Close()
+
+		assert.Equal(t, 7*time.Second, client.connectionSettings.readTimeout)
+	})
+
+	t.Run("setting both Millis and Duration for the same option is an error", func(t *testing.T) {
+		_, err := NewClient("http://localhost:8182/gremlin",
+			func(settings *ClientSettings) {
+				settings.ReadTimeoutMillis = 2500
+				settings.ReadTimeout = 7 * time.Second
+			})
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "ReadTimeout")
+
+		_, err = NewDriverRemoteConnection("http://localhost:8182/gremlin",
+			func(settings *DriverRemoteConnectionSettings) {
+				settings.IdleTimeoutMillis = 90000
+				settings.IdleTimeout = 90 * time.Second
+			})
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "IdleTimeout")
+	})
+}
+
+func TestInterceptorIntegration(t *testing.T) {
+	testNoAuthUrl := getEnvOrDefaultString("GREMLIN_SERVER_URL", noAuthUrl)
+	testNoAuthEnable := getEnvOrDefaultBool("RUN_INTEGRATION_TESTS", true)
+
+	t.Run("should auto serialize request message with interceptor mutation", func(t *testing.T) {
+		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
+
+		// Interceptor replaces the RequestMessage body with a different query.
+		// The driver should auto-serialize the modified RequestMessage and the server
+		// should execute the modified query.
+		client, err := NewClient(testNoAuthUrl,
+			func(settings *ClientSettings) {
+				settings.TraversalSource = testServerModernGraphAlias
+				settings.Interceptors = []RequestInterceptor{
+					func(req *HttpRequest) error {
+						if msg, ok := req.Body.(*RequestMessage); ok {
+							req.Body = &RequestMessage{
+								Gremlin: "g.inject(99)",
+								Fields:  map[string]interface{}{"g": msg.Fields["g"], "language": "gremlin-lang"},
+							}
+						}
+						return nil
+					},
+				}
+			})
+		assert.Nil(t, err)
+		assert.NotNil(t, client)
+		defer client.Close()
+
+		rs, err := client.Submit("g.inject(1)")
+		assert.Nil(t, err)
+		result, ok, err := rs.One()
+		assert.Nil(t, err)
+		assert.True(t, ok)
+		val, err := result.GetInt()
+		assert.Nil(t, err)
+		assert.Equal(t, 99, val)
+	})
+
+	t.Run("should propagate exception thrown during interceptor", func(t *testing.T) {
+		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
+
+		// Only throw on the first request to verify recovery.
+		var callCount int
+		var mu sync.Mutex
+
+		client, err := NewClient(testNoAuthUrl,
+			func(settings *ClientSettings) {
+				settings.TraversalSource = testServerModernGraphAlias
+				settings.Interceptors = []RequestInterceptor{
+					func(req *HttpRequest) error {
+						mu.Lock()
+						callCount++
+						count := callCount
+						mu.Unlock()
+						if count == 1 {
+							return fmt.Errorf("interceptor broke")
+						}
+						return nil
+					},
+				}
+			})
+		assert.Nil(t, err)
+		assert.NotNil(t, client)
+		defer client.Close()
+
+		// First request should fail with interceptor error
+		rs, err := client.Submit("g.inject(1)")
+		if err != nil {
+			assert.Contains(t, err.Error(), "interceptor broke")
+		} else {
+			_, err = rs.All()
+			assert.NotNil(t, err)
+			assert.Contains(t, err.Error(), "interceptor broke")
+		}
+
+		// Subsequent request should succeed, proving connection recovery
+		rs, err = client.Submit("g.inject(2)")
+		assert.Nil(t, err)
+		result, ok, err := rs.One()
+		assert.Nil(t, err)
+		assert.True(t, ok)
+		val, err := result.GetInt()
+		assert.Nil(t, err)
+		assert.Equal(t, 2, val)
+	})
+
+	t.Run("should propagate error when interceptor sets unsupported body type", func(t *testing.T) {
+		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
+
+		// Only set invalid body on the first request to verify recovery.
+		var callCount int
+		var mu sync.Mutex
+
+		client, err := NewClient(testNoAuthUrl,
+			func(settings *ClientSettings) {
+				settings.TraversalSource = testServerModernGraphAlias
+				settings.Interceptors = []RequestInterceptor{
+					func(req *HttpRequest) error {
+						mu.Lock()
+						callCount++
+						count := callCount
+						mu.Unlock()
+						if count == 1 {
+							req.Body = 42
+						}
+						return nil
+					},
+				}
+			})
+		assert.Nil(t, err)
+		assert.NotNil(t, client)
+		defer client.Close()
+
+		// First request should fail with serialization error
+		rs, err := client.Submit("g.inject(1)")
+		if err != nil {
+			assert.Contains(t, err.Error(), "unsupported body type")
+		} else {
+			_, err = rs.All()
+			assert.NotNil(t, err)
+			assert.Contains(t, err.Error(), "unsupported body type")
+		}
+
+		// Subsequent request should succeed, proving connection recovery
+		rs, err = client.Submit("g.inject(2)")
+		assert.Nil(t, err)
+		result, ok, err := rs.One()
+		assert.Nil(t, err)
+		assert.True(t, ok)
+		val, err := result.GetInt()
+		assert.Nil(t, err)
+		assert.Equal(t, 2, val)
 	})
 }
 
@@ -1335,7 +1641,7 @@ func TestConnectionWithMockServer_BasicAuth(t *testing.T) {
 	defer server.Close()
 
 	conn := newConnection(newTestLogHandler(), server.URL, &connectionSettings{})
-	conn.AddInterceptor(BasicAuth("testuser", "testpass"))
+	conn.AddInterceptor(testBasicAuthInterceptor("testuser", "testpass"))
 
 	rs, err := conn.submit(&RequestMessage{Gremlin: "g.V()", Fields: map[string]interface{}{}})
 	require.NoError(t, err)
@@ -1347,6 +1653,6 @@ func TestConnectionWithMockServer_BasicAuth(t *testing.T) {
 
 	// Body should still be valid serialized bytes
 	assert.NotEmpty(t, capturedBody, "serialized body should be non-empty with BasicAuth")
-	assert.Equal(t, byte(0x84), capturedBody[0],
-		"body should start with GraphBinary version byte 0x84")
+	assert.Equal(t, byte('{'), capturedBody[0],
+		"body should start with '{' (JSON)")
 }

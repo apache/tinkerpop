@@ -16,6 +16,7 @@ KIND, either express or implied.  See the License for the
 specific language governing permissions and limitations
 under the License.
 ////
+[llms-summary="Recipe: There are many measures of centrality which are meant to help identify the most important vertices in a graph."]
 [[centrality]]
 == Centrality
 
@@ -64,8 +65,10 @@ graph for demonstration purposes:
 
 image:betweeness-example.png[width=600]
 
-[gremlin-groovy ]
+[gremlin-groovy]
 ----
+graph = TinkerGraph.open()
+g = traversal().with(graph)
 g.addV().property(id,'A').as('a').
   addV().property(id,'B').as('b').
   addV().property(id,'C').as('c').
@@ -105,7 +108,7 @@ g.V().as("v").                                                                  
 
 WARNING: Since the betweeness centrality algorithm requires the shortest path between any pair of vertices in the graph,
 its practical applications are very limited. It's recommended to use this algorithm only on small subgraphs (graphs like
-the link:https://tinkerpop.apache.org/docs/x.y.z/reference/#grateful-dead[Grateful Dead graph] with only 808 vertices
+the link:https://tinkerpop.apache.org/docs/x.y.z/data/#grateful-dead[Grateful Dead graph] with only 808 vertices
 and 8049 edges already require a massive amount of compute resources to determine the shortest paths between all vertex
 pairs).
 
@@ -139,11 +142,11 @@ g.withSack(1f).V().as("v").                                                     
 <4> Determine whether a path between those two vertices was already found.
 <5> If this is the first path between the two vertices, store the triple in an internal collection named "triples".
 <6> Keep only those paths between a pair of vertices that have the same length as the first path that was found between them.
-<7> For each vertex divide 1 by the product of the lengths of all shortest paths that start with this particular vertex.
+<7> For each vertex, sum the reciprocals of the lengths of all shortest paths that start with this particular vertex, where the length of a path is the number of vertices it contains as produced by `count(local)`.
 
 WARNING: Since the closeness centrality algorithm requires the shortest path between any pair of vertices in the graph,
 its practical applications are very limited. It's recommended to use this algorithm only on small subgraphs (graphs like
-the link:https://tinkerpop.apache.org/docs/x.y.z/reference/#grateful-dead[Grateful Dead graph] with only 808 vertices
+the link:https://tinkerpop.apache.org/docs/x.y.z/data/#grateful-dead[Grateful Dead graph] with only 808 vertices
 and 8049 edges already require a massive amount of compute resources to determine the shortest paths between all vertex
 pairs).
 
@@ -166,7 +169,7 @@ g.V().repeat(groupCount('m').by('name').out().timeLimit(100)).times(5).cap('m').
 
 <1> The traversal iterates through each vertex in the graph and for each one repeatedly group counts each vertex that
 passes through using the vertex as the key. The `Map` of this group count is stored in a variable named "m". The
-`out()` traversal is repeated thirty times or until the paths are exhausted. Five iterations should provide enough
+`out()` traversal is repeated five times or until the paths are exhausted. Five iterations should provide enough
 time to converge on a solution. Calling `cap('m')` at the end simply extracts the `Map` side-effect stored in "m".
 <2> The entries in the `Map` are then iterated and sorted with the top ten most central vertices presented as output.
 <3> The previous examples can be expanded on a little bit by including a

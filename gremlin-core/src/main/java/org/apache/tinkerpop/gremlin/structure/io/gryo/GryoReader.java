@@ -274,9 +274,10 @@ public final class GryoReader implements GraphReader {
 
         private long batchSize = 10000;
         /**
-         * Always use the most recent gryo version by default
+         * Always use the most recent gryo version by default. Graph documents read here may come from an untrusted
+         * source, so native Java serialization is disabled. Supply a mapper explicitly to opt back in.
          */
-        private Mapper<Kryo> gryoMapper = GryoMapper.build().create();
+        private Mapper<Kryo> gryoMapper = GryoMapper.build().javaSerializationAllowed(false).create();
 
         private Builder() {
         }

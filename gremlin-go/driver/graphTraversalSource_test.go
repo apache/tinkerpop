@@ -21,6 +21,7 @@ package gremlingo
 
 import (
 	"github.com/stretchr/testify/assert"
+	"strings"
 	"testing"
 )
 
@@ -52,6 +53,31 @@ func TestGraphTraversalSource(t *testing.T) {
 			assert.Equal(t, 1, len(traversal.gremlinLang.optionsStrategies))
 			config := traversal.gremlinLang.optionsStrategies[0].configuration
 			assert.Equal(t, map[string]interface{}{"foo": "not bar"}, config)
+		})
+	})
+
+	t.Run("GraphTraversalSource.WithComputer tests", func(t *testing.T) {
+		t.Run("Test for no configuration", func(t *testing.T) {
+			g := &GraphTraversalSource{graph: &Graph{}, gremlinLang: NewGremlinLang(nil), remoteConnection: nil}
+			source := g.WithComputer()
+			assert.NotNil(t, source)
+			// An empty configuration renders without arguments, causing the server to fall back to its
+			// default GraphComputer via instance().
+			assert.True(t, strings.Contains(source.gremlinLang.GetGremlin(), "withStrategies(VertexProgramStrategy)"))
+		})
+
+		t.Run("Test for configured computer", func(t *testing.T) {
+			g := &GraphTraversalSource{graph: &Graph{}, gremlinLang: NewGremlinLang(nil), remoteConnection: nil}
+			source := g.WithComputer(VertexProgramStrategyConfig{
+				GraphComputer: "org.apache.tinkerpop.gremlin.tinkergraph.process.computer.TinkerGraphComputer",
+				Workers:       4,
+			})
+			assert.NotNil(t, source)
+			gremlin := source.gremlinLang.GetGremlin()
+			// Note that config map doesn't guarantee order, so assert individually
+			assert.True(t, strings.Contains(gremlin, "withStrategies(new VertexProgramStrategy("))
+			assert.True(t, strings.Contains(gremlin, "graphComputer:\"org.apache.tinkerpop.gremlin.tinkergraph.process.computer.TinkerGraphComputer\""))
+			assert.True(t, strings.Contains(gremlin, "workers:4"))
 		})
 	})
 }

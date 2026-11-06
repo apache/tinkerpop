@@ -116,4 +116,5 @@ const (
 	closeClient                  errorKey = "CLOSE_CLIENT"
 	failedToCloseResponseBody    errorKey = "FAILED_TO_CLOSE_RESPONSE_BODY"
 	failedToCloseDecompReader    errorKey = "FAILED_TO_CLOSE_DECOMPRESSION_READER"
+	rollbackFailedDuringCleanup  errorKey = "ROLLBACK_FAILED_DURING_CLEANUP"
 )

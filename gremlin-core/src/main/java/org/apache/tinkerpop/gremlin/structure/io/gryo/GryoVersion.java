@@ -381,7 +381,7 @@ public enum GryoVersion {
             add(GryoTypeReg.of(ReservedKeysVerificationStrategy.class, 190));
 
             add(GryoTypeReg.of(TraverserSet.class, 58));
-            add(GryoTypeReg.of(Tree.class, 61));
+            add(GryoTypeReg.of(Tree.class, 61, new GryoSerializersV3.TreeSerializer()));
             add(GryoTypeReg.of(HashSet.class, 62));
             add(GryoTypeReg.of(BulkSet.class, 64));
             add(GryoTypeReg.of(Metrics.class, 69, new GryoSerializersV3.MetricsSerializer()));
@@ -560,7 +560,7 @@ public enum GryoVersion {
 
             add(GryoTypeReg.of(TraverserSet.class, 58));
 
-            add(GryoTypeReg.of(Tree.class, 61));
+            add(GryoTypeReg.of(Tree.class, 61, new GryoSerializersV1.TreeSerializer()));
             add(GryoTypeReg.of(HashSet.class, 62));
             add(GryoTypeReg.of(BulkSet.class, 64));
             add(GryoTypeReg.of(MutableMetrics.class, 69));

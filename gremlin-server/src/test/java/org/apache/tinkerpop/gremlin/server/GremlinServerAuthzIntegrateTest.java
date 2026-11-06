@@ -128,8 +128,8 @@ public class GremlinServerAuthzIntegrateTest extends AbstractGremlinServerIntegr
         final Cluster cluster = TestClientFactory.build().auth(basic("marko", "rainbow-dash")).create();
         final Client client = cluster.connect();
 
-        RequestOptions modern = RequestOptions.build().addG("gmodern").create();
-        RequestOptions classic = RequestOptions.build().addG("gclassic").create();
+        RequestOptions modern = RequestOptions.build().traversalSource("gmodern").create();
+        RequestOptions classic = RequestOptions.build().traversalSource("gclassic").create();
 
         try {
             assertEquals(2, client.submit("g.inject(2)").all().get().get(0).getInt());

@@ -105,9 +105,13 @@ public class MergeVertexStepPlaceholder<S> extends AbstractMergeElementStepPlace
     @Override
     public void addChildOption(final Merge token, final Traversal.Admin traversalOption) {
         if (token == Merge.onCreate) {
+            if (onCreateTraversal != null)
+                throw new IllegalArgumentException("option(onCreate) can only be specified once per merge step");
             validateStaticNoOverrides(mergeTraversal, traversalOption);
             setOnCreate(traversalOption);
         } else if (token == Merge.onMatch) {
+            if (onMatchTraversal != null)
+                throw new IllegalArgumentException("option(onMatch) can only be specified once per merge step");
             setOnMatch(traversalOption);
         } else {
             throw new UnsupportedOperationException(String.format("Option %s for Merge is not supported", token.name()));

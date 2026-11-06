@@ -31,7 +31,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.apache.tinkerpop.gremlin.server.channel.HttpChannelizer;
-import org.apache.tinkerpop.gremlin.server.handler.TransactionManager;
+import org.apache.tinkerpop.gremlin.server.transaction.TransactionManager;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONTokens;
 import org.apache.tinkerpop.gremlin.util.Tokens;
 import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
@@ -93,18 +93,42 @@ public class GremlinServerHttpTransactionIntegrateTest extends AbstractGremlinSe
                 break;
             case "shouldTimeoutFreeSlotUnderMaxConcurrentTransactions":
                 settings.maxConcurrentTransactions = 1;
-                settings.transactionTimeout = 1000;
+                settings.idleTransactionTimeoutMillis = 1000;
                 break;
             case "shouldTimeoutIdleTransactionWithNoOperations":
-                settings.transactionTimeout = 500;
+                settings.idleTransactionTimeoutMillis = 500;
                 break;
             case "shouldTimeoutAndRejectLateCommit":
             case "shouldTrackTransactionCountAccurately":
-                settings.transactionTimeout = 1000;
+                settings.idleTransactionTimeoutMillis = 1000;
                 break;
             case "shouldRollbackAbandonedTransaction":
-                settings.transactionTimeout = 300;
+                settings.idleTransactionTimeoutMillis = 300;
                 break;
+            case "shouldNotIdleTimeoutLongRunningOperation":
+                // Short idle timeout, but a single long operation must NOT trip it (idle suspended while busy).
+                settings.idleTransactionTimeoutMillis = 500;
+                break;
+            case "shouldReclaimTransactionExceedingMaxLifetime":
+                // Short absolute cap with the idle timer disabled, so only the lifetime cap can reclaim the transaction.
+                settings.idleTransactionTimeoutMillis = 0;
+                settings.maxTransactionLifetimeMillis = 800;
+                break;
+            case "shouldHonorPerRequestTimeoutMillisZeroInTransaction":
+                // Both transaction timers disabled: a per-request timeoutMillis of 0 is honored (not silently overridden),
+                // so the operation is bounded only by its own request, exactly as on the non-transactional path.
+                settings.idleTransactionTimeoutMillis = 0;
+                settings.maxTransactionLifetimeMillis = 0;
+                break;
+            case "shouldRejectMismatchedGraphAliasInTransaction": {
+                final Settings.GraphSettings gs = new Settings.GraphSettings();
+                gs.configuration = "conf/tinkerstoragegraph-empty.properties";
+                final Settings.TraversalSourceSettings ts = new Settings.TraversalSourceSettings();
+                ts.name = "gTxEmpty";
+                gs.traversalSources.add(ts);
+                settings.graphs.put("tx2", gs);
+                break;
+            }
         }
         return settings;
     }
@@ -330,6 +354,25 @@ public class GremlinServerHttpTransactionIntegrateTest extends AbstractGremlinSe
     }
 
     @Test
+    public void shouldNotCreateTransactionWhenBeginRequestValidationFails() throws Exception {
+        final TransactionManager txManager = server.getServerGremlinExecutor().getTransactionManager();
+
+        try (final CloseableHttpResponse r = postJson(client,
+                "{\"gremlin\":\"g.tx().begin()\",\"g\":\"" + GTX + "\",\"language\":\"not-an-engine\"}")) {
+            assertEquals(400, r.getStatusLine().getStatusCode());
+            assertTrue(extractStatusMessage(r).contains("Script engine [not-an-engine] is not available"));
+        }
+        assertEquals(0, txManager.getActiveTransactionCount());
+
+        try (final CloseableHttpResponse r = postJson(client,
+                "{\"gremlin\":\"g.tx().begin()\",\"g\":\"" + GTX + "\",\"parameters\":\"[x:]\"}")) {
+            assertEquals(400, r.getStatusLine().getStatusCode());
+            assertTrue(extractStatusMessage(r).contains("could not be converted into a Map"));
+        }
+        assertEquals(0, txManager.getActiveTransactionCount());
+    }
+
+    @Test
     public void shouldTimeoutIdleTransactionWithNoOperations() throws Exception {
         final String txId = beginTx(client, GTX);
 
@@ -458,11 +501,17 @@ public class GremlinServerHttpTransactionIntegrateTest extends AbstractGremlinSe
     public void shouldNotLeakDataWhenTraversalQueuedBehindCommit() throws Exception {
         final String txId = beginTx(client, GTX);
 
-        // add vertices and an edge in the transaction
+        // add two vertices and an edge between them in the transaction. the edge is required so that the
+        // "long traversal" below (repeat(both())) actually has something to traverse and keeps the single
+        // transaction executor occupied while the commit and short query queue behind it. without an edge,
+        // both() yields nothing and the traversal returns immediately, defeating the ordering this test relies on.
         try (final CloseableHttpResponse r = submitInTx(client, txId, "g.addV().property(T.id, 1)", GTX)) {
             assertEquals(200, r.getStatusLine().getStatusCode());
         }
         try (final CloseableHttpResponse r = submitInTx(client, txId, "g.addV().property(T.id, 2)", GTX)) {
+            assertEquals(200, r.getStatusLine().getStatusCode());
+        }
+        try (final CloseableHttpResponse r = submitInTx(client, txId, "g.V(1).addE('self').to(__.V(2))", GTX)) {
             assertEquals(200, r.getStatusLine().getStatusCode());
         }
 
@@ -514,14 +563,106 @@ public class GremlinServerHttpTransactionIntegrateTest extends AbstractGremlinSe
     }
 
     @Test
+    public void shouldNotIdleTimeoutLongRunningOperation() throws Exception {
+        // With a short idle timeout (500ms), a single operation that runs LONGER than the idle timeout must still
+        // succeed -- the idle timer is suspended while an operation is in progress, so a long-running op is not
+        // reclaimed mid-execution (it is instead bounded by timeoutMillis, left at its default here).
+        final String txId = beginTx(client, GTX);
+
+        // Seed two vertices and an edge so repeat(both()) has something to traverse and keeps the executor busy. Each
+        // response body is fully consumed before the next request is sent: the chunked stream is only complete once the
+        // server has finished processing, so consuming guarantees these requests are strictly ordered.
+        try (final CloseableHttpResponse r = submitInTx(client, txId, "g.addV().property(T.id, 1)", GTX)) {
+            assertEquals(200, r.getStatusLine().getStatusCode());
+            EntityUtils.consume(r.getEntity());
+        }
+        try (final CloseableHttpResponse r = submitInTx(client, txId, "g.addV().property(T.id, 2)", GTX)) {
+            assertEquals(200, r.getStatusLine().getStatusCode());
+            EntityUtils.consume(r.getEntity());
+        }
+        try (final CloseableHttpResponse r = submitInTx(client, txId, "g.V(1).addE('self').to(__.V(2))", GTX)) {
+            assertEquals(200, r.getStatusLine().getStatusCode());
+            EntityUtils.consume(r.getEntity());
+        }
+
+        // A traversal that runs well past the 500ms idle timeout. Under the old arm-on-arrival behavior the idle timer
+        // would have fired mid-execution; under suspend-while-busy it does not.
+        try (final CloseableHttpResponse r = submitInTx(client, txId, "g.V().repeat(both()).times(2000)", GTX)) {
+            assertEquals(200, r.getStatusLine().getStatusCode());
+            EntityUtils.consume(r.getEntity());
+        }
+
+        // The transaction is still alive and usable after the long op (it was not reclaimed mid-flight).
+        try (final CloseableHttpResponse r = submitInTx(client, txId, "g.V().count()", GTX)) {
+            assertEquals(200, r.getStatusLine().getStatusCode());
+            assertEquals(2, extractCount(r)); // extractCount fully reads the body
+        }
+        try (final CloseableHttpResponse r = commitTx(client, txId, GTX)) {
+            assertEquals(200, r.getStatusLine().getStatusCode());
+            EntityUtils.consume(r.getEntity());
+        }
+    }
+
+    @Test
+    public void shouldReclaimTransactionExceedingMaxLifetime() throws Exception {
+        // With a short absolute cap (800ms) and the idle timer disabled, a transaction that simply stays open past the
+        // cap must be reclaimed: the lifetime cap rolls it back and removes it, so a later request gets a 404. The
+        // deterministic mid-operation interrupt and the 504 it yields are covered by the unit tests; here we assert the
+        // guarantee we actually make end-to-end -- the transaction (and its slot) is reclaimed on time.
+        final String txId = beginTx(client, GTX);
+        try (final CloseableHttpResponse r = submitInTx(client, txId, "g.addV()", GTX)) {
+            assertEquals(200, r.getStatusLine().getStatusCode());
+            EntityUtils.consume(r.getEntity());
+        }
+
+        // wait for the absolute cap to fire
+        Thread.sleep(1500);
+
+        // The transaction is gone: a subsequent request on it is rejected as not found.
+        try (final CloseableHttpResponse r = submitInTx(client, txId, "g.V().count()", GTX)) {
+            assertEquals(404, r.getStatusLine().getStatusCode());
+            assertTrue(extractStatusMessage(r).contains("Transaction not found"));
+        }
+
+        // and the addV was rolled back, not persisted.
+        try (final CloseableHttpResponse r = submitNonTx(client, "g.V().count()", GTX)) {
+            assertEquals(0, extractCount(r));
+        }
+    }
+
+    @Test
+    public void shouldHonorPerRequestTimeoutMillisZeroInTransaction() throws Exception {
+        // With both transaction timers disabled, a per-request timeoutMillis of 0 is honored rather than overridden: the
+        // server does not reject the begin or silently substitute another timeout - the operation runs as requested.
+        // (Server-side defaults keep transactions bounded out of the box; disabling them is a deliberate operator
+        // choice and must not turn into a client-facing failure.)
+        final String txId = beginTx(client, GTX);
+
+        try (final CloseableHttpResponse r = postJson(client,
+                "{\"gremlin\":\"g.addV()\",\"g\":\"" + GTX +
+                "\",\"transactionId\":\"" + txId + "\",\"timeoutMillis\":\"0\"}")) {
+            assertEquals(200, r.getStatusLine().getStatusCode());
+            // The operation runs and returns a normal result body, with no timeout error: the request was honored, not
+            // bounded by a substituted timeout or rejected at begin.
+            final String body = EntityUtils.toString(r.getEntity());
+            assertFalse(body.toLowerCase().contains("timeout"));
+        }
+
+        try (final CloseableHttpResponse r = commitTx(client, txId, GTX)) {
+            assertEquals(200, r.getStatusLine().getStatusCode());
+            EntityUtils.consume(r.getEntity());
+        }
+    }
+
+    @Test
     public void shouldRejectMismatchedGraphAliasInTransaction() throws Exception {
         final String txId = beginTx(client, GTX);
 
-        // send a request with the same txId but a different graph alias
-        try (final CloseableHttpResponse r = submitInTx(client, txId, "g.V().count()", "gclassic")) {
-            final int status = r.getStatusLine().getStatusCode();
-            assertTrue("Expected error status for alias mismatch, got " + status,
-                    status == 400 || status == 404 || status == 500);
+        // send a request with the same txId but a different transactional graph alias
+        try (final CloseableHttpResponse r = submitInTx(client, txId, "g.V().count()", "gTxEmpty")) {
+            assertEquals(400, r.getStatusLine().getStatusCode());
+            final String msg = extractStatusMessage(r);
+            assertTrue(msg.contains("alias"));
         }
     }
 
@@ -646,6 +787,56 @@ public class GremlinServerHttpTransactionIntegrateTest extends AbstractGremlinSe
     private static ByteBuf toByteBuf(final org.apache.http.HttpEntity httpEntity) throws java.io.IOException {
         final byte[] asArray = EntityUtils.toByteArray(httpEntity);
         return Unpooled.wrappedBuffer(asArray);
+    }
+
+    @Test
+    public void shouldNotLeakTransactionExecutorThreadOnCommit() throws Exception {
+        final long txThreadsBefore = Thread.getAllStackTraces().keySet().stream()
+                .filter(t -> t.getName().startsWith("tx-")).count();
+
+        for (int i = 0; i < 3; i++) {
+            final String txId = beginTx(client, GTX);
+            try (final CloseableHttpResponse r = submitInTx(client, txId, "g.addV('leak_test')", GTX)) {
+                assertEquals(200, r.getStatusLine().getStatusCode());
+            }
+            try (final CloseableHttpResponse r = commitTx(client, txId, GTX)) {
+                assertEquals(200, r.getStatusLine().getStatusCode());
+            }
+        }
+
+        // allow time for executor threads to terminate after shutdown
+        Thread.sleep(500);
+
+        final long txThreadsAfter = Thread.getAllStackTraces().keySet().stream()
+                .filter(t -> t.getName().startsWith("tx-")).count();
+
+        assertEquals("Transaction executor threads should be cleaned up after commit",
+                txThreadsBefore, txThreadsAfter);
+    }
+
+    @Test
+    public void shouldNotLeakTransactionExecutorThreadOnRollback() throws Exception {
+        final long txThreadsBefore = Thread.getAllStackTraces().keySet().stream()
+                .filter(t -> t.getName().startsWith("tx-")).count();
+
+        for (int i = 0; i < 3; i++) {
+            final String txId = beginTx(client, GTX);
+            try (final CloseableHttpResponse r = submitInTx(client, txId, "g.addV('leak_test')", GTX)) {
+                assertEquals(200, r.getStatusLine().getStatusCode());
+            }
+            try (final CloseableHttpResponse r = rollbackTx(client, txId, GTX)) {
+                assertEquals(200, r.getStatusLine().getStatusCode());
+            }
+        }
+
+        // allow time for executor threads to terminate after shutdown
+        Thread.sleep(500);
+
+        final long txThreadsAfter = Thread.getAllStackTraces().keySet().stream()
+                .filter(t -> t.getName().startsWith("tx-")).count();
+
+        assertEquals("Transaction executor threads should be cleaned up after rollback",
+                txThreadsBefore, txThreadsAfter);
     }
     @Test
     public void shouldRoundTripTransactionIdWithGraphSON() throws Exception {

@@ -70,6 +70,11 @@ func TestGraphBinaryV4(t *testing.T) {
 			assert.Nil(t, err)
 			assert.Equal(t, listType, res)
 		})
+		t.Run("getType should return charType for Char", func(t *testing.T) {
+			res, err := serializer.getType(Char('a'))
+			assert.Nil(t, err)
+			assert.Equal(t, charType, res)
+		})
 		t.Run("getType should return error for missing type", func(t *testing.T) {
 			_, err := serializer.getType(Error)
 			assert.NotNil(t, err)
@@ -94,6 +99,17 @@ func TestGraphBinaryV4(t *testing.T) {
 		t.Run("getSerializerToWrite should return error for missing dataType", func(t *testing.T) {
 			_, _, err := serializer.getSerializerToWrite(nullType)
 			assert.NotNil(t, err)
+		})
+
+		t.Run("getType returns graphType for *Graph", func(t *testing.T) {
+			res, err := serializer.getType(NewGraph())
+			assert.Nil(t, err)
+			assert.Equal(t, graphType, res)
+		})
+
+		t.Run("getWriter returns graphWriter for graphType", func(t *testing.T) {
+			_, err := serializer.getWriter(graphType)
+			assert.Nil(t, err)
 		})
 	})
 
@@ -210,6 +226,56 @@ func TestGraphBinaryV4(t *testing.T) {
 			assert.Nil(t, err)
 			assert.Equal(t, new(big.Int).SetUint64(uint64(source)), res)
 		})
+		t.Run("write bigInt zero exact bytes", func(t *testing.T) {
+			var buffer bytes.Buffer
+			err := bigIntWriter(*big.NewInt(0), &buffer, nil)
+			assert.Nil(t, err)
+			assert.Equal(t, []byte{0x00, 0x00, 0x00, 0x01, 0x00}, buffer.Bytes())
+		})
+		t.Run("read-write bigInt zero", func(t *testing.T) {
+			var buffer bytes.Buffer
+			source := big.NewInt(0)
+			err := bigIntWriter(*source, &buffer, nil)
+			assert.Nil(t, err)
+			d := NewGraphBinaryDeserializer(bytes.NewReader(buffer.Bytes()))
+			res, err := d.readBigInt()
+			assert.Nil(t, err)
+			assert.Equal(t, 0, source.Cmp(res))
+		})
+		t.Run("read-write bigDecimal zero unscaled", func(t *testing.T) {
+			var buffer bytes.Buffer
+			source := &BigDecimal{0, big.NewInt(0)}
+			err := bigDecimalWriter(source, &buffer, nil)
+			assert.Nil(t, err)
+			d := NewGraphBinaryDeserializer(bytes.NewReader(buffer.Bytes()))
+			res, err := d.readBigDecimal()
+			assert.Nil(t, err)
+			assert.Equal(t, source.Scale, res.Scale)
+			assert.Equal(t, 0, source.UnscaledValue.Cmp(res.UnscaledValue))
+		})
+		t.Run("read-write bigInt negative", func(t *testing.T) {
+			large, _ := new(big.Int).SetString("-1606938044258990275541962092341162602522202993782792835301376", 10)
+			for _, source := range []*big.Int{big.NewInt(-1), big.NewInt(-128), big.NewInt(-129), big.NewInt(-256), big.NewInt(-65535), large} {
+				var buffer bytes.Buffer
+				err := bigIntWriter(*source, &buffer, nil)
+				assert.Nil(t, err)
+				d := NewGraphBinaryDeserializer(bytes.NewReader(buffer.Bytes()))
+				res, err := d.readBigInt()
+				assert.Nil(t, err)
+				assert.Equal(t, source, res)
+			}
+		})
+		t.Run("read-write BigDecimal negative", func(t *testing.T) {
+			for _, source := range []*BigDecimal{{2, big.NewInt(-1234)}, {0, big.NewInt(-1)}, {4, big.NewInt(-256)}} {
+				var buffer bytes.Buffer
+				err := bigDecimalWriter(source, &buffer, nil)
+				assert.Nil(t, err)
+				d := NewGraphBinaryDeserializer(bytes.NewReader(buffer.Bytes()))
+				res, err := d.readBigDecimal()
+				assert.Nil(t, err)
+				assert.Equal(t, source, res)
+			}
+		})
 		t.Run("read-write list", func(t *testing.T) {
 			var buffer bytes.Buffer
 			source := []interface{}{int32(111), "str"}
@@ -230,6 +296,17 @@ func TestGraphBinaryV4(t *testing.T) {
 			res, err := d.readByteBuffer()
 			assert.Nil(t, err)
 			assert.Equal(t, source, res)
+		})
+		t.Run("read-write char", func(t *testing.T) {
+			for _, source := range []Char{'a', '"', '\'', 'é', '€', '😀'} {
+				var buffer bytes.Buffer
+				err := charWriter(source, &buffer, nil)
+				assert.Nil(t, err)
+				d := NewGraphBinaryDeserializer(bytes.NewReader(buffer.Bytes()))
+				res, err := d.readChar()
+				assert.Nil(t, err)
+				assert.Equal(t, source, res)
+			}
 		})
 		t.Run("read-write set", func(t *testing.T) {
 			var buffer bytes.Buffer
@@ -383,6 +460,277 @@ func TestGraphBinaryV4(t *testing.T) {
 
 }
 
+// TestGraphSerializerRoundTrip verifies that GraphBinary serialization and
+// deserialization round-trips a *Graph while preserving its vertices, edges,
+// vertex-properties and properties.
+func TestGraphSerializerRoundTrip(t *testing.T) {
+	t.Run("preserves vertices, edges, vertex-properties and properties", func(t *testing.T) {
+		graph := NewGraph()
+
+		v1 := &Vertex{Element: Element{Id: int32(1), Label: "person"}}
+		v2 := &Vertex{Element: Element{Id: int32(2), Label: "person"}}
+
+		// VertexProperty on v1 with a meta-property
+		vp1 := &VertexProperty{
+			Element: Element{Id: int32(4), Label: "name"},
+			Key:     "name",
+			Value:   "marko",
+			Vertex:  *v1,
+		}
+		vp1.Properties = []interface{}{&Property{Key: "acl", Value: "public"}}
+		v1.Properties = []interface{}{vp1}
+		v2.Properties = []interface{}{}
+
+		graph.Vertices[v1.Id] = v1
+		graph.Vertices[v2.Id] = v2
+
+		// Edge v1 -knows-> v2 with weight property
+		e1 := &Edge{
+			Element: Element{Id: int32(3), Label: "knows"},
+			InV:     *v2,
+			OutV:    *v1,
+		}
+		e1.Properties = []interface{}{&Property{Key: "weight", Value: 0.5}}
+		graph.Edges[e1.Id] = e1
+
+		var buffer bytes.Buffer
+		serializer := graphBinaryTypeSerializer{newLogHandler(&defaultLogger{}, Error, language.English)}
+
+		// Round-trip via fully-qualified write/read.
+		assert.Nil(t, serializer.write(graph, &buffer))
+
+		d := NewGraphBinaryDeserializer(bytes.NewReader(buffer.Bytes()))
+		out, err := d.ReadFullyQualified()
+		assert.Nil(t, err)
+
+		rg, ok := out.(*Graph)
+		assert.True(t, ok, "expected *Graph result, got %T", out)
+		assert.Equal(t, 2, len(rg.Vertices))
+		assert.Equal(t, 1, len(rg.Edges))
+
+		rv1 := rg.Vertices[int32(1)]
+		assert.NotNil(t, rv1)
+		assert.Equal(t, "person", rv1.Label)
+		rv1Props, _ := rv1.Properties.([]interface{})
+		assert.Equal(t, 1, len(rv1Props))
+		rvp1, _ := rv1Props[0].(*VertexProperty)
+		assert.NotNil(t, rvp1)
+		assert.Equal(t, "name", rvp1.Label)
+		assert.Equal(t, "marko", rvp1.Value)
+
+		rvp1Meta, _ := rvp1.Properties.([]interface{})
+		assert.Equal(t, 1, len(rvp1Meta))
+		meta, _ := rvp1Meta[0].(*Property)
+		assert.NotNil(t, meta)
+		assert.Equal(t, "acl", meta.Key)
+		assert.Equal(t, "public", meta.Value)
+
+		rv2 := rg.Vertices[int32(2)]
+		assert.NotNil(t, rv2)
+		assert.Equal(t, "person", rv2.Label)
+
+		re1 := rg.Edges[int32(3)]
+		assert.NotNil(t, re1)
+		assert.Equal(t, "knows", re1.Label)
+		assert.Equal(t, int32(1), re1.OutV.Id)
+		assert.Equal(t, int32(2), re1.InV.Id)
+
+		re1Props, _ := re1.Properties.([]interface{})
+		assert.Equal(t, 1, len(re1Props))
+		w, _ := re1Props[0].(*Property)
+		assert.NotNil(t, w)
+		assert.Equal(t, "weight", w.Key)
+		assert.Equal(t, 0.5, w.Value)
+	})
+
+	t.Run("preserves multi-label and zero-label vertices and edges", func(t *testing.T) {
+		graph := NewGraph()
+
+		// multi-label vertex, zero-label vertex
+		v1 := &Vertex{Element: Element{Id: int32(1)}, Labels: []string{"person", "employee"}}
+		v2 := &Vertex{Element: Element{Id: int32(2)}, Labels: []string{}}
+		v1.Properties = []interface{}{}
+		v2.Properties = []interface{}{}
+		graph.Vertices[v1.Id] = v1
+		graph.Vertices[v2.Id] = v2
+
+		e := &Edge{
+			Element: Element{Id: int32(3)},
+			Labels:  []string{"knows"},
+			InV:     *v2,
+			OutV:    *v1,
+		}
+		e.Properties = []interface{}{}
+		graph.Edges[e.Id] = e
+
+		var buffer bytes.Buffer
+		serializer := graphBinaryTypeSerializer{newLogHandler(&defaultLogger{}, Error, language.English)}
+		assert.Nil(t, serializer.write(graph, &buffer))
+
+		d := NewGraphBinaryDeserializer(bytes.NewReader(buffer.Bytes()))
+		out, err := d.ReadFullyQualified()
+		assert.Nil(t, err)
+
+		rg, ok := out.(*Graph)
+		assert.True(t, ok, "expected *Graph result, got %T", out)
+		assert.Equal(t, 2, len(rg.Vertices))
+		assert.Equal(t, 1, len(rg.Edges))
+
+		rv1 := rg.Vertices[int32(1)]
+		assert.NotNil(t, rv1)
+		assert.Equal(t, []string{"person", "employee"}, rv1.Labels)
+		assert.Equal(t, "person", rv1.Label)
+
+		rv2 := rg.Vertices[int32(2)]
+		assert.NotNil(t, rv2)
+		assert.Equal(t, 0, len(rv2.Labels))
+		assert.Equal(t, "", rv2.Label)
+
+		re := rg.Edges[int32(3)]
+		assert.NotNil(t, re)
+		assert.Equal(t, []string{"knows"}, re.Labels)
+		assert.Equal(t, "knows", re.Label)
+	})
+
+	t.Run("handles empty graph", func(t *testing.T) {
+		graph := NewGraph()
+
+		var buffer bytes.Buffer
+		serializer := graphBinaryTypeSerializer{newLogHandler(&defaultLogger{}, Error, language.English)}
+		assert.Nil(t, serializer.write(graph, &buffer))
+
+		d := NewGraphBinaryDeserializer(bytes.NewReader(buffer.Bytes()))
+		out, err := d.ReadFullyQualified()
+		assert.Nil(t, err)
+
+		rg, ok := out.(*Graph)
+		assert.True(t, ok, "expected *Graph result, got %T", out)
+		assert.Equal(t, 0, len(rg.Vertices))
+		assert.Equal(t, 0, len(rg.Edges))
+	})
+
+	t.Run("handles vertices without properties and edges without properties", func(t *testing.T) {
+		graph := NewGraph()
+
+		v1 := &Vertex{Element: Element{Id: int32(10), Label: "person"}}
+		v2 := &Vertex{Element: Element{Id: int32(20), Label: "software"}}
+		v1.Properties = []interface{}{}
+		v2.Properties = []interface{}{}
+		graph.Vertices[v1.Id] = v1
+		graph.Vertices[v2.Id] = v2
+
+		e := &Edge{
+			Element: Element{Id: int32(30), Label: "created"},
+			InV:     *v2,
+			OutV:    *v1,
+		}
+		e.Properties = []interface{}{}
+		graph.Edges[e.Id] = e
+
+		var buffer bytes.Buffer
+		serializer := graphBinaryTypeSerializer{newLogHandler(&defaultLogger{}, Error, language.English)}
+		assert.Nil(t, serializer.write(graph, &buffer))
+
+		d := NewGraphBinaryDeserializer(bytes.NewReader(buffer.Bytes()))
+		out, err := d.ReadFullyQualified()
+		assert.Nil(t, err)
+
+		rg, _ := out.(*Graph)
+		assert.Equal(t, 2, len(rg.Vertices))
+		assert.Equal(t, 1, len(rg.Edges))
+
+		re := rg.Edges[int32(30)]
+		assert.Equal(t, "created", re.Label)
+		assert.Equal(t, int32(10), re.OutV.Id)
+		assert.Equal(t, int32(20), re.InV.Id)
+	})
+
+	t.Run("handles string ids", func(t *testing.T) {
+		graph := NewGraph()
+
+		v1 := &Vertex{Element: Element{Id: "a", Label: "person"}}
+		v2 := &Vertex{Element: Element{Id: "b", Label: "person"}}
+		v1.Properties = []interface{}{}
+		v2.Properties = []interface{}{}
+		graph.Vertices[v1.Id] = v1
+		graph.Vertices[v2.Id] = v2
+
+		e := &Edge{
+			Element: Element{Id: "e1", Label: "knows"},
+			InV:     *v2,
+			OutV:    *v1,
+		}
+		e.Properties = []interface{}{}
+		graph.Edges[e.Id] = e
+
+		var buffer bytes.Buffer
+		serializer := graphBinaryTypeSerializer{newLogHandler(&defaultLogger{}, Error, language.English)}
+		assert.Nil(t, serializer.write(graph, &buffer))
+
+		d := NewGraphBinaryDeserializer(bytes.NewReader(buffer.Bytes()))
+		out, err := d.ReadFullyQualified()
+		assert.Nil(t, err)
+
+		rg, _ := out.(*Graph)
+		assert.Equal(t, 2, len(rg.Vertices))
+		assert.Equal(t, 1, len(rg.Edges))
+
+		re := rg.Edges["e1"]
+		assert.NotNil(t, re)
+		assert.Equal(t, "a", re.OutV.Id)
+		assert.Equal(t, "b", re.InV.Id)
+	})
+}
+
+// TestVertexEdgeLabelRoundTrip verifies that multi-label and zero-label vertices (and edge
+// endpoints) survive a GraphBinary round-trip. The deprecated singular Label holds the first
+// label, or "" when the element has no labels. See TINKERPOP-3261.
+func TestVertexEdgeLabelRoundTrip(t *testing.T) {
+	serializer := graphBinaryTypeSerializer{newLogHandler(&defaultLogger{}, Error, language.English)}
+
+	roundTrip := func(t *testing.T, in interface{}) interface{} {
+		var buffer bytes.Buffer
+		assert.Nil(t, serializer.write(in, &buffer))
+		d := NewGraphBinaryDeserializer(bytes.NewReader(buffer.Bytes()))
+		out, err := d.ReadFullyQualified()
+		assert.Nil(t, err)
+		return out
+	}
+
+	t.Run("multi-label vertex preserves all labels", func(t *testing.T) {
+		v := &Vertex{Element: Element{Id: int32(1)}, Labels: []string{"person", "employee"}}
+		out := roundTrip(t, v)
+		rv, ok := out.(*Vertex)
+		assert.True(t, ok, "expected *Vertex, got %T", out)
+		assert.Equal(t, []string{"person", "employee"}, rv.Labels)
+		assert.Equal(t, "person", rv.Label)
+	})
+
+	t.Run("zero-label vertex round-trips to empty labels", func(t *testing.T) {
+		v := &Vertex{Element: Element{Id: int32(2)}, Labels: []string{}}
+		out := roundTrip(t, v)
+		rv, ok := out.(*Vertex)
+		assert.True(t, ok, "expected *Vertex, got %T", out)
+		assert.Equal(t, 0, len(rv.Labels))
+		assert.Equal(t, "", rv.Label)
+	})
+
+	t.Run("edge with multi-label and zero-label endpoints", func(t *testing.T) {
+		inV := Vertex{Element: Element{Id: int32(1)}, Labels: []string{"person", "employee"}}
+		outV := Vertex{Element: Element{Id: int32(2)}, Labels: []string{}}
+		e := &Edge{Element: Element{Id: int32(3)}, Labels: []string{"knows"}, InV: inV, OutV: outV}
+		out := roundTrip(t, e)
+		re, ok := out.(*Edge)
+		assert.True(t, ok, "expected *Edge, got %T", out)
+		assert.Equal(t, []string{"knows"}, re.Labels)
+		assert.Equal(t, "knows", re.Label)
+		assert.Equal(t, []string{"person", "employee"}, re.InV.Labels)
+		assert.Equal(t, "person", re.InV.Label)
+		assert.Equal(t, 0, len(re.OutV.Labels))
+		assert.Equal(t, "", re.OutV.Label)
+	})
+}
+
 // TestWriterErrorPropagation tests that errors from io.Writer are properly propagated
 // through the serialization chain.
 // Feature: serializer-writer-refactor, Property 4: Writer Error Propagation
@@ -533,5 +881,226 @@ func TestWriterErrorPropagation(t *testing.T) {
 		// string: type code (1) + value flag (1) + length (4) + "test" (4)
 		// Total = 22 bytes
 		assert.Equal(t, 22, w.written)
+	})
+}
+
+func TestCompositePDTSerialization(t *testing.T) {
+	serializer := graphBinaryTypeSerializer{newLogHandler(&defaultLogger{}, Error, language.English)}
+
+	t.Run("round-trip simple PDT", func(t *testing.T) {
+		source := &CompositePDT{
+			Name:   "com.example.MyType",
+			Fields: map[string]interface{}{"key": "value", "num": int32(42)},
+		}
+		var buf bytes.Buffer
+		err := serializer.write(source, &buf)
+		assert.Nil(t, err)
+
+		d := NewGraphBinaryDeserializer(bytes.NewReader(buf.Bytes()))
+		result, err := d.ReadFullyQualified()
+		assert.Nil(t, err)
+		pdt, ok := result.(*CompositePDT)
+		assert.True(t, ok)
+		assert.Equal(t, source.Name, pdt.Name)
+		assert.Equal(t, source.Fields["key"], pdt.Fields["key"])
+		assert.Equal(t, source.Fields["num"], pdt.Fields["num"])
+	})
+
+	t.Run("round-trip nested PDT", func(t *testing.T) {
+		inner := &CompositePDT{
+			Name:   "com.example.Inner",
+			Fields: map[string]interface{}{"x": int32(1)},
+		}
+		outer := &CompositePDT{
+			Name:   "com.example.Outer",
+			Fields: map[string]interface{}{"child": inner},
+		}
+		var buf bytes.Buffer
+		err := serializer.write(outer, &buf)
+		assert.Nil(t, err)
+
+		d := NewGraphBinaryDeserializer(bytes.NewReader(buf.Bytes()))
+		result, err := d.ReadFullyQualified()
+		assert.Nil(t, err)
+		pdt, ok := result.(*CompositePDT)
+		assert.True(t, ok)
+		assert.Equal(t, "com.example.Outer", pdt.Name)
+		child, ok := pdt.Fields["child"].(*CompositePDT)
+		assert.True(t, ok)
+		assert.Equal(t, "com.example.Inner", child.Name)
+		assert.Equal(t, int32(1), child.Fields["x"])
+	})
+
+	t.Run("empty name produces error", func(t *testing.T) {
+		data := []byte{
+			0xf0, 0x00,
+			0x03, 0x00, 0x00, 0x00, 0x00, 0x00,
+			0x0a, 0x00, 0x00, 0x00, 0x00, 0x00,
+		}
+		d := NewGraphBinaryDeserializer(bytes.NewReader(data))
+		_, err := d.ReadFullyQualified()
+		assert.NotNil(t, err)
+		assert.Contains(t, err.Error(), "non-empty")
+	})
+
+	t.Run("auto-hydrate with registry", func(t *testing.T) {
+		registry := NewPDTRegistry()
+		registry.RegisterFuncs("com.example.MyType",
+			func(fields map[string]interface{}) (interface{}, error) {
+				return map[string]interface{}{"hydrated": true, "key": fields["key"]}, nil
+			}, nil)
+
+		source := &CompositePDT{
+			Name:   "com.example.MyType",
+			Fields: map[string]interface{}{"key": "value"},
+		}
+		var buf bytes.Buffer
+		err := serializer.write(source, &buf)
+		assert.Nil(t, err)
+
+		d := NewGraphBinaryDeserializerWithRegistry(bytes.NewReader(buf.Bytes()), registry)
+		result, err := d.ReadFullyQualified()
+		assert.Nil(t, err)
+		m, ok := result.(map[string]interface{})
+		assert.True(t, ok)
+		assert.Equal(t, true, m["hydrated"])
+		assert.Equal(t, "value", m["key"])
+	})
+
+	t.Run("no hydration without registry", func(t *testing.T) {
+		source := &CompositePDT{
+			Name:   "com.example.MyType",
+			Fields: map[string]interface{}{"key": "value"},
+		}
+		var buf bytes.Buffer
+		err := serializer.write(source, &buf)
+		assert.Nil(t, err)
+
+		d := NewGraphBinaryDeserializer(bytes.NewReader(buf.Bytes()))
+		result, err := d.ReadFullyQualified()
+		assert.Nil(t, err)
+		pdt, ok := result.(*CompositePDT)
+		assert.True(t, ok)
+		assert.Equal(t, "com.example.MyType", pdt.Name)
+	})
+}
+
+func TestPrimitivePDTSerialization(t *testing.T) {
+	serializer := graphBinaryTypeSerializer{newLogHandler(&defaultLogger{}, Error, language.English)}
+
+	t.Run("round-trip simple primitive PDT", func(t *testing.T) {
+		source := &PrimitivePDT{Name: "x:Uint32", Value: "42"}
+		var buf bytes.Buffer
+		err := serializer.write(source, &buf)
+		assert.Nil(t, err)
+
+		d := NewGraphBinaryDeserializer(bytes.NewReader(buf.Bytes()))
+		result, err := d.ReadFullyQualified()
+		assert.Nil(t, err)
+		pdt, ok := result.(*PrimitivePDT)
+		assert.True(t, ok)
+		assert.Equal(t, "x:Uint32", pdt.Name)
+		assert.Equal(t, "42", pdt.Value)
+	})
+
+	t.Run("round-trip leading zeros", func(t *testing.T) {
+		source := &PrimitivePDT{Name: "x:ZipCode", Value: "00123"}
+		var buf bytes.Buffer
+		err := serializer.write(source, &buf)
+		assert.Nil(t, err)
+
+		d := NewGraphBinaryDeserializer(bytes.NewReader(buf.Bytes()))
+		result, err := d.ReadFullyQualified()
+		assert.Nil(t, err)
+		pdt, ok := result.(*PrimitivePDT)
+		assert.True(t, ok)
+		assert.Equal(t, "00123", pdt.Value)
+	})
+
+	t.Run("round-trip large number", func(t *testing.T) {
+		source := &PrimitivePDT{Name: "x:BigNum", Value: "99999999999999999999"}
+		var buf bytes.Buffer
+		err := serializer.write(source, &buf)
+		assert.Nil(t, err)
+
+		d := NewGraphBinaryDeserializer(bytes.NewReader(buf.Bytes()))
+		result, err := d.ReadFullyQualified()
+		assert.Nil(t, err)
+		pdt, ok := result.(*PrimitivePDT)
+		assert.True(t, ok)
+		assert.Equal(t, "99999999999999999999", pdt.Value)
+	})
+
+	t.Run("round-trip non-numeric value", func(t *testing.T) {
+		source := &PrimitivePDT{Name: "x:Label", Value: "hello world!"}
+		var buf bytes.Buffer
+		err := serializer.write(source, &buf)
+		assert.Nil(t, err)
+
+		d := NewGraphBinaryDeserializer(bytes.NewReader(buf.Bytes()))
+		result, err := d.ReadFullyQualified()
+		assert.Nil(t, err)
+		pdt, ok := result.(*PrimitivePDT)
+		assert.True(t, ok)
+		assert.Equal(t, "hello world!", pdt.Value)
+	})
+
+	t.Run("round-trip empty value", func(t *testing.T) {
+		source := &PrimitivePDT{Name: "x:Empty", Value: ""}
+		var buf bytes.Buffer
+		err := serializer.write(source, &buf)
+		assert.Nil(t, err)
+
+		d := NewGraphBinaryDeserializer(bytes.NewReader(buf.Bytes()))
+		result, err := d.ReadFullyQualified()
+		assert.Nil(t, err)
+		pdt, ok := result.(*PrimitivePDT)
+		assert.True(t, ok)
+		assert.Equal(t, "", pdt.Value)
+	})
+
+	t.Run("auto-hydrate with registry", func(t *testing.T) {
+		registry := NewPDTRegistry()
+		registry.RegisterPrimitiveFuncs("x:Uint32",
+			func(s string) (interface{}, error) {
+				return "hydrated:" + s, nil
+			}, nil)
+
+		source := &PrimitivePDT{Name: "x:Uint32", Value: "42"}
+		var buf bytes.Buffer
+		err := serializer.write(source, &buf)
+		assert.Nil(t, err)
+
+		d := NewGraphBinaryDeserializerWithRegistry(bytes.NewReader(buf.Bytes()), registry)
+		result, err := d.ReadFullyQualified()
+		assert.Nil(t, err)
+		assert.Equal(t, "hydrated:42", result)
+	})
+
+	t.Run("no hydration without registry", func(t *testing.T) {
+		source := &PrimitivePDT{Name: "x:Uint32", Value: "42"}
+		var buf bytes.Buffer
+		err := serializer.write(source, &buf)
+		assert.Nil(t, err)
+
+		d := NewGraphBinaryDeserializer(bytes.NewReader(buf.Bytes()))
+		result, err := d.ReadFullyQualified()
+		assert.Nil(t, err)
+		pdt, ok := result.(*PrimitivePDT)
+		assert.True(t, ok)
+		assert.Equal(t, "x:Uint32", pdt.Name)
+		assert.Equal(t, "42", pdt.Value)
+	})
+
+	t.Run("empty name produces error", func(t *testing.T) {
+		data := []byte{
+			0xf1, 0x00,
+			0x03, 0x00, 0x00, 0x00, 0x00, 0x00, // fq string, length 0
+			0x03, 0x00, 0x00, 0x00, 0x00, 0x02, 0x34, 0x32, // fq string "42"
+		}
+		d := NewGraphBinaryDeserializer(bytes.NewReader(data))
+		_, err := d.ReadFullyQualified()
+		assert.NotNil(t, err)
+		assert.Contains(t, err.Error(), "non-empty")
 	})
 }

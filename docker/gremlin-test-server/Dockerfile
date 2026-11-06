@@ -24,6 +24,7 @@ USER root
 RUN mkdir -p /opt
 WORKDIR /opt
 COPY gremlin-server/src/test /opt/test/
+COPY gremlin-server/target/gremlin-server-*-tests.jar /opt/gremlin-server/lib/
 COPY docker/gremlin-server/docker-entrypoint.sh docker/gremlin-server/*.yaml docker/gremlin-server/*.conf /opt/
 RUN chmod 755 /opt/docker-entrypoint.sh
 
@@ -35,7 +36,7 @@ RUN dos2unix /opt/docker-entrypoint.sh /opt/gremlin-server/bin/gremlin-server.sh
 ARG GREMLIN_SERVER
 ENV GREMLIN_SERVER_VERSION=$GREMLIN_SERVER
 
-EXPOSE 45940-45942 4588
+EXPOSE 45940 45941
 
 ENTRYPOINT ["/opt/docker-entrypoint.sh"]
 CMD []

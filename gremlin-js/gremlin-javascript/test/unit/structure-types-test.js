@@ -43,6 +43,25 @@ describe('Edge', () => {
       assert.deepStrictEqual(edge.properties, []);
     });
   });
+
+  describe('#propertyMap()', () => {
+    it('should group properties by key into single-element arrays', () => {
+      const since = new Property('since', 2009);
+      const weight = new Property('weight', 0.5);
+      const edge = new Edge('123', new Vertex(1), 'knows', new Vertex(2), [since, weight]);
+      const pm = edge.propertyMap();
+      // propertyMap() returns a null-prototype object, so compare by keys/values
+      // instead of deep-equal against a plain {} literal.
+      assert.deepStrictEqual(Object.keys(pm), ['since', 'weight']);
+      assert.deepStrictEqual(pm.since, [since]);
+      assert.deepStrictEqual(pm.weight, [weight]);
+    });
+
+    it('should return an empty object when there are no properties', () => {
+      const edge = new Edge('123', new Vertex(1), 'knows', new Vertex(2));
+      assert.deepStrictEqual(Object.keys(edge.propertyMap()), []);
+    });
+  });
 });
 
 describe('Vertex', () => {
@@ -67,6 +86,34 @@ describe('Vertex', () => {
     it('should default to empty array when null', () => {
       const vertex = new Vertex(1, 'person', null);
       assert.deepStrictEqual(vertex.properties, []);
+    });
+  });
+
+  describe('#propertyMap()', () => {
+    it('should group multi-properties of the same key into an array', () => {
+      const nameA = new VertexProperty(0, 'name', 'marko');
+      const nameB = new VertexProperty(1, 'name', 'marko a. rodriguez');
+      const vertex = new Vertex(1, 'person', [nameA, nameB]);
+      const pm = vertex.propertyMap();
+      // propertyMap() returns a null-prototype object, so compare by keys/values
+      // instead of deep-equal against a plain {} literal.
+      assert.deepStrictEqual(Object.keys(pm), ['name']);
+      assert.deepStrictEqual(pm.name, [nameA, nameB]);
+    });
+
+    it('should give single-element arrays for single-valued properties', () => {
+      const name = new VertexProperty(0, 'name', 'marko');
+      const age = new VertexProperty(1, 'age', 29);
+      const vertex = new Vertex(1, 'person', [name, age]);
+      const pm = vertex.propertyMap();
+      assert.deepStrictEqual(Object.keys(pm), ['name', 'age']);
+      assert.deepStrictEqual(pm.name, [name]);
+      assert.deepStrictEqual(pm.age, [age]);
+    });
+
+    it('should return an empty object when there are no properties', () => {
+      const vertex = new Vertex(1, 'person');
+      assert.deepStrictEqual(Object.keys(vertex.propertyMap()), []);
     });
   });
 });
@@ -94,6 +141,25 @@ describe('VertexProperty', () => {
     it('should default to empty array when undefined', () => {
       const vp = new VertexProperty(24, 'name', 'marko', undefined);
       assert.deepStrictEqual(vp.properties, []);
+    });
+  });
+
+  describe('#propertyMap()', () => {
+    it('should group properties by key into single-element arrays', () => {
+      const startTime = new Property('startTime', 2001);
+      const endTime = new Property('endTime', 2004);
+      const vp = new VertexProperty(24, 'name', 'marko', [startTime, endTime]);
+      const pm = vp.propertyMap();
+      // propertyMap() returns a null-prototype object, so compare by keys/values
+      // instead of deep-equal against a plain {} literal.
+      assert.deepStrictEqual(Object.keys(pm), ['startTime', 'endTime']);
+      assert.deepStrictEqual(pm.startTime, [startTime]);
+      assert.deepStrictEqual(pm.endTime, [endTime]);
+    });
+
+    it('should return an empty object when there are no properties', () => {
+      const vp = new VertexProperty(24, 'name', 'marko');
+      assert.deepStrictEqual(Object.keys(vp.propertyMap()), []);
     });
   });
 });

@@ -22,6 +22,7 @@ package gremlingo
 import (
 	"fmt"
 	"math"
+	"reflect"
 	"regexp"
 	"strings"
 	"testing"
@@ -517,6 +518,18 @@ func Test_GremlinLang(t *testing.T) {
 		},
 		{
 			assert: func(g *GraphTraversalSource) *GraphTraversal {
+				return g.V().Has("runways", P.Outside(3, 5))
+			},
+			equals: "g.V().has(\"runways\",outside(3,5))",
+		},
+		{
+			assert: func(g *GraphTraversalSource) *GraphTraversal {
+				return g.V().Has("runways", P.Inside(3, 5))
+			},
+			equals: "g.V().has(\"runways\",inside(3,5))",
+		},
+		{
+			assert: func(g *GraphTraversalSource) *GraphTraversal {
 				return g.V().Has("runways", P.Inside(3, 5))
 			},
 			equals: "g.V().has(\"runways\",inside(3,5))",
@@ -598,7 +611,7 @@ func Test_GremlinLang(t *testing.T) {
 		},
 		{
 			assert: func(g *GraphTraversalSource) *GraphTraversal {
-				return g.WithStrategies(OptionsStrategy(map[string]interface{}{"evaluationTimeout": 500})).V().Count()
+				return g.WithStrategies(OptionsStrategy(map[string]interface{}{"timeoutMillis": 500})).V().Count()
 			},
 			// OptionsStrategy are now extracted into request message and is no longer sent with the script
 			equals: "g.V().count()",
@@ -703,6 +716,76 @@ func Test_GremlinLang(t *testing.T) {
 				return g.Inject([]byte{0})
 			},
 			equals: `g.inject(Binary("AA=="))`,
+		},
+		{
+			name: "g_Inject_Char",
+			assert: func(g *GraphTraversalSource) *GraphTraversal {
+				return g.Inject(Char('a'))
+			},
+			equals: `g.inject("a"c)`,
+		},
+		{
+			name: "g_Inject_Char_EscapedQuote",
+			assert: func(g *GraphTraversalSource) *GraphTraversal {
+				return g.Inject(Char('"'))
+			},
+			equals: `g.inject("\""c)`,
+		},
+		{
+			name: "g_Inject_Char_Backslash",
+			assert: func(g *GraphTraversalSource) *GraphTraversal {
+				return g.Inject(Char('\\'))
+			},
+			equals: `g.inject("\\"c)`,
+		},
+		{
+			name: "g_Inject_Char_SingleQuote",
+			assert: func(g *GraphTraversalSource) *GraphTraversal {
+				return g.Inject(Char('\''))
+			},
+			equals: `g.inject("'"c)`,
+		},
+		{
+			name: "g_Inject_Char_Newline",
+			assert: func(g *GraphTraversalSource) *GraphTraversal {
+				return g.Inject(Char('\n'))
+			},
+			equals: `g.inject("\n"c)`,
+		},
+		{
+			name: "g_Inject_Rune_AsInt",
+			assert: func(g *GraphTraversalSource) *GraphTraversal {
+				return g.Inject('a')
+			},
+			equals: `g.inject(97)`,
+		},
+		{
+			name: "GTS Match with query string spawn step",
+			assert: func(g *GraphTraversalSource) *GraphTraversal {
+				return g.Match("MATCH (p:person)-[e:knows]->(friend:person)")
+			},
+			equals: "g.match(\"MATCH (p:person)-[e:knows]->(friend:person)\")",
+		},
+		{
+			name: "GTS Match with query string and params spawn step",
+			assert: func(g *GraphTraversalSource) *GraphTraversal {
+				return g.Match("MATCH (p:person)-[e:knows]->(friend:person)", map[string]interface{}{"limit": 10})
+			},
+			equals: "g.match(\"MATCH (p:person)-[e:knows]->(friend:person)\",[\"limit\":10])",
+		},
+		{
+			name: "GT Match mid-traversal string step",
+			assert: func(g *GraphTraversalSource) *GraphTraversal {
+				return g.V().Match("MATCH (p:person)-[e:knows]->(friend:person)")
+			},
+			equals: "g.V().match(\"MATCH (p:person)-[e:knows]->(friend:person)\")",
+		},
+		{
+			name: "GT Match mid-traversal string+params step",
+			assert: func(g *GraphTraversalSource) *GraphTraversal {
+				return g.V().Match("MATCH (p:person)", map[string]interface{}{"name": "marko"})
+			},
+			equals: "g.V().match(\"MATCH (p:person)\",[\"name\":\"marko\"])",
 		},
 	}
 
@@ -852,9 +935,211 @@ func Test_ConvertParametersToString(t *testing.T) {
 	t.Run("should panic on unsupported type via RequestOptionsBuilder.Create()", func(t *testing.T) {
 		defer func() {
 			if r := recover(); r == nil {
-				t.Error("expected panic for unsupported type in bindings")
+				t.Error("expected panic for unsupported type in parameters")
 			}
 		}()
-		new(RequestOptionsBuilder).SetBindings(map[string]interface{}{"x": struct{}{}}).Create()
+		new(RequestOptionsBuilder).SetParameters(map[string]interface{}{"x": struct{}{}}).Create()
 	})
+}
+
+func Test_PDT_GremlinLang(t *testing.T) {
+	t.Run("basic PDT", func(t *testing.T) {
+		g := NewGraphTraversalSource(nil, nil)
+		pdt := &CompositePDT{Name: "MyType", Fields: map[string]interface{}{"x": int32(1), "y": "hello"}}
+		gremlin := g.Inject(pdt).GremlinLang.GetGremlin()
+		expected := `g.inject(PDT("MyType",["x":1,"y":"hello"]))`
+		if gremlin != expected {
+			t.Errorf("got %v, expected %v", gremlin, expected)
+		}
+	})
+
+	t.Run("empty PDT", func(t *testing.T) {
+		g := NewGraphTraversalSource(nil, nil)
+		pdt := &CompositePDT{Name: "Empty", Fields: map[string]interface{}{}}
+		gremlin := g.Inject(pdt).GremlinLang.GetGremlin()
+		expected := `g.inject(PDT("Empty",[:]))`
+		if gremlin != expected {
+			t.Errorf("got %v, expected %v", gremlin, expected)
+		}
+	})
+
+	t.Run("PDT with special characters in name", func(t *testing.T) {
+		g := NewGraphTraversalSource(nil, nil)
+		pdt := &CompositePDT{Name: `say"hello"`, Fields: map[string]interface{}{"v": int32(1)}}
+		gremlin := g.Inject(pdt).GremlinLang.GetGremlin()
+		expected := `g.inject(PDT("say\"hello\"",["v":1]))`
+		if gremlin != expected {
+			t.Errorf("got %v, expected %v", gremlin, expected)
+		}
+	})
+
+	t.Run("PDT with backslash in name", func(t *testing.T) {
+		g := NewGraphTraversalSource(nil, nil)
+		pdt := &CompositePDT{Name: `back\slash`, Fields: map[string]interface{}{"v": int32(1)}}
+		gremlin := g.Inject(pdt).GremlinLang.GetGremlin()
+		expected := `g.inject(PDT("back\\slash",["v":1]))`
+		if gremlin != expected {
+			t.Errorf("got %v, expected %v", gremlin, expected)
+		}
+	})
+
+	t.Run("nested PDT", func(t *testing.T) {
+		g := NewGraphTraversalSource(nil, nil)
+		inner := &CompositePDT{Name: "Inner", Fields: map[string]interface{}{"v": int32(1)}}
+		outer := &CompositePDT{Name: "Outer", Fields: map[string]interface{}{"inner": inner}}
+		gremlin := g.Inject(outer).GremlinLang.GetGremlin()
+		expected := `g.inject(PDT("Outer",["inner":PDT("Inner",["v":1])]))`
+		if gremlin != expected {
+			t.Errorf("got %v, expected %v", gremlin, expected)
+		}
+	})
+
+	t.Run("PDT map keys sorted", func(t *testing.T) {
+		g := NewGraphTraversalSource(nil, nil)
+		pdt := &CompositePDT{Name: "T", Fields: map[string]interface{}{"z": int32(3), "a": int32(1), "m": int32(2)}}
+		gremlin := g.Inject(pdt).GremlinLang.GetGremlin()
+		expected := `g.inject(PDT("T",["a":1,"m":2,"z":3]))`
+		if gremlin != expected {
+			t.Errorf("got %v, expected %v", gremlin, expected)
+		}
+	})
+}
+
+// adapterPrecedencePoint is a struct type used to verify that a registered adapter
+// takes precedence over the default handling (which would panic for an unknown struct).
+type adapterPrecedencePoint struct {
+	X int32
+	Y int32
+}
+
+func Test_PDT_AdapterPrecedenceOverDefault(t *testing.T) {
+	registry := NewPDTRegistry()
+	registry.RegisterFuncsWithType("test:Point", reflect.TypeOf(adapterPrecedencePoint{}),
+		nil,
+		func(obj interface{}) (map[string]interface{}, error) {
+			p := obj.(adapterPrecedencePoint)
+			return map[string]interface{}{"x": p.X, "y": p.Y}, nil
+		})
+
+	g := NewGraphTraversalSource(nil, nil)
+	g.GetGremlinLang().pdtRegistry = registry
+
+	gremlin := g.Inject(adapterPrecedencePoint{X: 7, Y: 9}).GremlinLang.GetGremlin()
+	expected := `g.inject(PDT("test:Point",["x":7,"y":9]))`
+	if gremlin != expected {
+		t.Errorf("adapter precedence: got %v, expected %v", gremlin, expected)
+	}
+}
+
+// TestPDT_GremlinLang_NestedRegisteredInUnregisteredOuter asserts that a registered domain
+// object nested inside an unregistered outer *CompositePDT is dehydrated to PDT form.
+func TestPDT_GremlinLang_NestedRegisteredInUnregisteredOuter(t *testing.T) {
+	registry := NewPDTRegistry()
+	registry.RegisterFuncsWithType("test:Point", reflect.TypeOf(adapterPrecedencePoint{}),
+		nil,
+		func(obj interface{}) (map[string]interface{}, error) {
+			p := obj.(adapterPrecedencePoint)
+			return map[string]interface{}{"x": p.X, "y": p.Y}, nil
+		})
+
+	g := NewGraphTraversalSource(nil, nil)
+	g.GetGremlinLang().pdtRegistry = registry
+
+	// Outer is an unregistered raw PDT; its "pt" field is a registered Go domain object.
+	outer := &CompositePDT{
+		Name:   "unregistered:Wrapper",
+		Fields: map[string]interface{}{"pt": adapterPrecedencePoint{X: 3, Y: 4}, "tag": "hello"},
+	}
+
+	gremlin := g.Inject(outer).GremlinLang.GetGremlin()
+	expected := `g.inject(PDT("unregistered:Wrapper",["pt":PDT("test:Point",["x":3,"y":4]),"tag":"hello"]))`
+	if gremlin != expected {
+		t.Errorf("nested dehydration: got %v, expected %v", gremlin, expected)
+	}
+}
+
+func Test_PrimitivePDT_GremlinLang(t *testing.T) {
+	t.Run("basic primitive PDT", func(t *testing.T) {
+		g := NewGraphTraversalSource(nil, nil)
+		pdt := &PrimitivePDT{Name: "x:Uint32", Value: "42"}
+		gremlin := g.Inject(pdt).GremlinLang.GetGremlin()
+		expected := `g.inject(PDT("x:Uint32","42"))`
+		if gremlin != expected {
+			t.Errorf("got %v, expected %v", gremlin, expected)
+		}
+	})
+
+	t.Run("primitive PDT with special chars in value", func(t *testing.T) {
+		g := NewGraphTraversalSource(nil, nil)
+		pdt := &PrimitivePDT{Name: "x:Label", Value: `say"hello"`}
+		gremlin := g.Inject(pdt).GremlinLang.GetGremlin()
+		expected := `g.inject(PDT("x:Label","say\"hello\""))`
+		if gremlin != expected {
+			t.Errorf("got %v, expected %v", gremlin, expected)
+		}
+	})
+
+	t.Run("primitive PDT leading zeros preserved", func(t *testing.T) {
+		g := NewGraphTraversalSource(nil, nil)
+		pdt := &PrimitivePDT{Name: "x:ZipCode", Value: "00123"}
+		gremlin := g.Inject(pdt).GremlinLang.GetGremlin()
+		expected := `g.inject(PDT("x:ZipCode","00123"))`
+		if gremlin != expected {
+			t.Errorf("got %v, expected %v", gremlin, expected)
+		}
+	})
+
+	t.Run("primitive PDT empty value", func(t *testing.T) {
+		g := NewGraphTraversalSource(nil, nil)
+		pdt := &PrimitivePDT{Name: "x:Empty", Value: ""}
+		gremlin := g.Inject(pdt).GremlinLang.GetGremlin()
+		expected := `g.inject(PDT("x:Empty",""))`
+		if gremlin != expected {
+			t.Errorf("got %v, expected %v", gremlin, expected)
+		}
+	})
+}
+
+// primitiveAdapterUint32 is a test type for primitive PDT dehydration.
+type primitiveAdapterUint32 uint32
+
+func Test_PrimitivePDT_AdapterDehydration(t *testing.T) {
+	registry := NewPDTRegistry()
+	registry.RegisterPrimitiveFuncsWithType("x:Uint32", reflect.TypeOf(primitiveAdapterUint32(0)),
+		func(s string) (interface{}, error) {
+			return primitiveAdapterUint32(42), nil
+		},
+		func(obj interface{}) (string, error) {
+			return fmt.Sprintf("%d", obj.(primitiveAdapterUint32)), nil
+		})
+
+	g := NewGraphTraversalSource(nil, nil)
+	g.GetGremlinLang().pdtRegistry = registry
+
+	gremlin := g.Inject(primitiveAdapterUint32(99)).GremlinLang.GetGremlin()
+	expected := `g.inject(PDT("x:Uint32","99"))`
+	if gremlin != expected {
+		t.Errorf("primitive adapter dehydration: got %v, expected %v", gremlin, expected)
+	}
+}
+
+func Test_PrimitivePDT_PrimitiveAdapterTakesPrecedenceOverComposite(t *testing.T) {
+	type dualType struct{ V int }
+	registry := NewPDTRegistry()
+	// Register both primitive and composite for the same Go type — primitive must win.
+	registry.RegisterPrimitiveFuncsWithType("x:Dual", reflect.TypeOf(dualType{}),
+		func(s string) (interface{}, error) { return dualType{V: 1}, nil },
+		func(obj interface{}) (string, error) { return "prim", nil })
+	registry.RegisterFuncsWithType("x:Dual", reflect.TypeOf(dualType{}),
+		nil,
+		func(obj interface{}) (map[string]interface{}, error) { return map[string]interface{}{"v": 1}, nil })
+
+	g := NewGraphTraversalSource(nil, nil)
+	g.GetGremlinLang().pdtRegistry = registry
+
+	gremlin := g.Inject(dualType{V: 1}).GremlinLang.GetGremlin()
+	expected := `g.inject(PDT("x:Dual","prim"))`
+	if gremlin != expected {
+		t.Errorf("primitive adapter should take precedence over composite: got %v, expected %v", gremlin, expected)
+	}
 }

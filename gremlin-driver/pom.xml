@@ -90,6 +90,12 @@ limitations under the License.
         <!-- TEST -->
         <dependency>
             <groupId>org.apache.tinkerpop</groupId>
+            <artifactId>gremlin-socket-server</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.tinkerpop</groupId>
             <artifactId>gremlin-test</artifactId>
             <version>${project.version}</version>
             <scope>test</scope>
@@ -291,11 +297,6 @@ limitations under the License.
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <configuration>
-                    <excludes>
-                        <exclude>examples/**</exclude>
-                    </excludes>
-                </configuration>
             </plugin>
         </plugins>
     </build>

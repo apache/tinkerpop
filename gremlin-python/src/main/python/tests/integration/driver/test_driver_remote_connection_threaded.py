@@ -63,7 +63,7 @@ def _executor(q, conn):
     if not conn:
         # This isn't a fixture so close manually
         close = True
-        conn = DriverRemoteConnection(test_no_auth_url, 'gmodern', pool_size=4)
+        conn = DriverRemoteConnection(test_no_auth_url, 'gmodern', max_connections=4)
     try:
         g = traversal().with_(conn)
         future = g.V().promise()

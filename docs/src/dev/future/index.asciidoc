@@ -25,6 +25,7 @@ image::apache-tinkerpop-logo.png[width=500,link="https://tinkerpop.apache.org"]
 
 *x.y.z*
 
+[llms-summary="Forward-looking design documents and proposals for future directions of Apache TinkerPop and the Gremlin language."]
 = TinkerPop Future
 
 This document offers a rough view at what features can be expected from future releases and catalogs proposals for

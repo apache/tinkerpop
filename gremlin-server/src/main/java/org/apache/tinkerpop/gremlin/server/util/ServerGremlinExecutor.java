@@ -29,7 +29,7 @@ import org.apache.tinkerpop.gremlin.server.Channelizer;
 import org.apache.tinkerpop.gremlin.server.GraphManager;
 import org.apache.tinkerpop.gremlin.server.GremlinServer;
 import org.apache.tinkerpop.gremlin.server.Settings;
-import org.apache.tinkerpop.gremlin.server.handler.TransactionManager;
+import org.apache.tinkerpop.gremlin.server.transaction.TransactionManager;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -143,7 +143,7 @@ public class ServerGremlinExecutor {
         allowedEngines.add("gremlin-lang");
 
         final GremlinExecutor.Builder gremlinExecutorBuilder = GremlinExecutor.build()
-                .evaluationTimeout(settings.getEvaluationTimeout())
+                .timeoutMillis(settings.getTimeoutMillis())
                 .afterFailure((b, e) -> this.graphManager.rollbackAll())
                 .beforeEval(b -> this.graphManager.rollbackAll())
                 .afterTimeout((b, e) -> this.graphManager.rollbackAll())
@@ -173,10 +173,13 @@ public class ServerGremlinExecutor {
             try {
                 // gremlin-lang does not need to be initialized. not so nice, but gremlin-lang is the only exception
                 // and ultimately, gremlin-lang will likely end up the only choice in gremlin-server.
-                if (!engineName.equals("gremlin-lang")) {
+                // groovy-test (used for testing purposes only) also interprets input via the Gremlin grammar, so it
+                // cannot evaluate the "1+1" init probe and likewise does not need init-script priming (its engine
+                // setup happens at construction, which is triggered by registerMetrics below).
+                if (!engineName.equals("gremlin-lang") && !engineName.equals("groovy-test")) {
                     // use no timeout on the engine initialization - perhaps this can be a configuration later
                     final GremlinExecutor.LifeCycle lifeCycle = GremlinExecutor.LifeCycle.build().
-                            evaluationTimeoutOverride(0L).create();
+                            timeoutMillisOverride(0L).create();
                     gremlinExecutor.eval("1+1", engineName, new SimpleBindings(Collections.emptyMap()), lifeCycle).join();
                 }
 
@@ -303,9 +306,10 @@ public class ServerGremlinExecutor {
         transactionManager = new TransactionManager(
                 scheduledExecutorService,
                 graphManager,
-                settings.transactionTimeout,
+                settings.idleTransactionTimeoutMillis,
+                settings.maxTransactionLifetimeMillis,
                 settings.maxConcurrentTransactions,
-                settings.perGraphCloseTimeout
+                settings.perGraphCloseTimeoutMillis
         );
     }
 

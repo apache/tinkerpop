@@ -41,7 +41,7 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphBinary4
 
             var actual = await serializer.SerializeMessageAsync(msg);
 
-            // First byte should be version byte 0x84 — no MIME prefix
+            // First byte should be version byte 0x84, no MIME prefix
             Assert.Equal(0x84, actual[0]);
         }
 

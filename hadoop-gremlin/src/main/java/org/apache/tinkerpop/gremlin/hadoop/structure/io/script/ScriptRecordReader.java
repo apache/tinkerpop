@@ -37,6 +37,7 @@ import org.apache.tinkerpop.gremlin.process.computer.util.VertexProgramHelper;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.hadoop.structure.io.util.OlapClassLoadingPolicy;
 import org.apache.tinkerpop.gremlin.structure.util.star.StarGraph;
 
 import javax.script.Bindings;
@@ -76,10 +77,22 @@ public final class ScriptRecordReader extends RecordReader<NullWritable, VertexW
 
     @Override
     public void initialize(final InputSplit genericSplit, final TaskAttemptContext context) throws IOException {
-        this.lineRecordReader.initialize(genericSplit, context);
         final Configuration configuration = context.getConfiguration();
+        // ScriptInputFormat compiles and executes a script, so it is restricted regardless of how it was selected. It
+        // is permitted when the deployment is trusted, or when the operator has explicitly approved ScriptInputFormat
+        // via gremlin.io.approvedClasses in the graph configuration -- a narrower opt-in than trusting the whole
+        // deployment. Note this honors only the explicit approved-class list, not the configured graphReader (which
+        // would be circular here). This backstops the HadoopIoStep boundary against any other path that reaches this
+        // reader.
+        final org.apache.commons.configuration2.Configuration graphConfiguration = ConfUtil.makeApacheConfiguration(configuration);
+        if (!OlapClassLoadingPolicy.isTrusted(graphConfiguration) &&
+                !OlapClassLoadingPolicy.build().approveFrom(graphConfiguration).create().isApproved(ScriptInputFormat.class.getName()))
+            throw new IllegalStateException(String.format(
+                    "ScriptInputFormat compiles and runs a script and is only permitted for trusted IO; set '%s' to true, or add '%s' to '%s', in trusted graph configuration to enable it.",
+                    OlapClassLoadingPolicy.TRUSTED, ScriptInputFormat.class.getName(), OlapClassLoadingPolicy.APPROVED_CLASSES));
+        this.lineRecordReader.initialize(genericSplit, context);
         if (configuration.get(Constants.GREMLIN_HADOOP_GRAPH_FILTER, null) != null)
-            this.graphFilter = VertexProgramHelper.deserialize(ConfUtil.makeApacheConfiguration(configuration), Constants.GREMLIN_HADOOP_GRAPH_FILTER);
+            this.graphFilter = VertexProgramHelper.deserialize(graphConfiguration, Constants.GREMLIN_HADOOP_GRAPH_FILTER);
         this.engine = manager.getEngineByName(configuration.get(SCRIPT_ENGINE, "gremlin-groovy"));
         final FileSystem fs = FileSystem.get(configuration);
         try (final InputStream stream = fs.open(new Path(configuration.get(SCRIPT_FILE)));

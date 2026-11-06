@@ -23,9 +23,12 @@ import org.junit.Test;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.Constructor;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasKey;
@@ -33,6 +36,7 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class SettingsTest {
 
@@ -143,5 +147,52 @@ public class SettingsTest {
 
         assertThat(settings.lifecycleHooks, is(notNullValue()));
         assertThat(settings.lifecycleHooks.isEmpty(), is(true));
+    }
+
+    @Test
+    public void corsHeadersAndMethodsAreEmptyByDefaultWhenAbsentFromYaml() throws Exception {
+        final Settings settings = Settings.read(getMinimalConfigStream());
+
+        assertEquals(List.of("*"), settings.cors.allowedOrigins);
+        assertTrue(settings.cors.allowedMethods.isEmpty());
+        assertTrue(settings.cors.allowedRequestHeaders.isEmpty());
+        assertTrue(settings.cors.exposedHeaders.isEmpty());
+    }
+
+    @Test
+    public void corsSettingsParsedFromYaml() throws Exception {
+        final String yaml = "cors:\n" +
+                "  allowedOrigins: [\"https://app.example.com\"]\n" +
+                "  allowedMethods: [\"POST\"]\n" +
+                "  allowedRequestHeaders:\n" +
+                "    - \"Content-Type\"\n" +
+                "    - \"X-Custom-Header\"\n" +
+                "  exposedHeaders:\n" +
+                "    - \"X-Custom-Exposed\"\n";
+        final Settings settings = Settings.read(new ByteArrayInputStream(yaml.getBytes(StandardCharsets.UTF_8)));
+
+        assertEquals(List.of("https://app.example.com"), settings.cors.allowedOrigins);
+        assertEquals(List.of("POST"), settings.cors.allowedMethods);
+        assertEquals(List.of("Content-Type", "X-Custom-Header"), settings.cors.allowedRequestHeaders);
+        assertEquals(List.of("X-Custom-Exposed"), settings.cors.exposedHeaders);
+    }
+
+    @Test
+    public void transactionTimeoutsDefaultToReasonableValuesWhenAbsentFromYaml() throws Exception {
+        final Settings settings = Settings.read(getMinimalConfigStream());
+
+        // Out of the box a transaction is bounded without any operator configuration: idle reclamation at 1 minute and
+        // an absolute lifetime cap at 10 minutes.
+        assertEquals(60000L, settings.idleTransactionTimeoutMillis);
+        assertEquals(600000L, settings.maxTransactionLifetimeMillis);
+    }
+
+    @Test
+    public void maxTransactionLifetimeParsedFromYaml() throws Exception {
+        final InputStream stream = SettingsTest.class.getResourceAsStream("gremlin-server-integration.yaml");
+        final Settings settings = Settings.read(stream);
+
+        // Confirms a YAML-provided value overrides the code default (600000); the resource sets it to 480000.
+        assertEquals(480000L, settings.maxTransactionLifetimeMillis);
     }
 }

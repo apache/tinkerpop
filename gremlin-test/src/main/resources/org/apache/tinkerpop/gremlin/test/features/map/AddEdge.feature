@@ -361,6 +361,10 @@ Feature: Step - addE()
 
   Scenario: g_addEXknowsX_fromXVXvid1XX_toXVXvid6XX_propertyXweight_0_1X
     Given the empty graph
+    And the intent
+      """
+      Add a knows edge from vertex <vid1> to vertex <vid6> with a weight of <xx1>.
+      """
     And the graph initializer of
       """
       g.addV("person").property("name", "marko").property("age", 29).as("marko").
@@ -529,3 +533,23 @@ Feature: Step - addE()
       """
     When iterated to list
     Then the traversal will raise an error with message containing text of "must resolve to a Vertex or the ID of a Vertex present in the graph"
+
+  @AllowDateTimePropertyValues @DataBigDecimal @DataDateTime
+  Scenario: g_recordPaymentFromAnaToFreshMart
+    Given the empty graph
+    And the intent
+      """
+      Record that the account held by Ana Ruiz paid 23.45 to FreshMart at 09:15 UTC on April 2, 2024.
+      """
+    And the graph initializer of
+      """
+      g.addV("account").property("holder","Ana Ruiz").addV("merchant").property("name","FreshMart").property("category","grocery")
+      """
+    And the traversal of
+      """
+      g.V().has("account","holder","Ana Ruiz").addE("payment").to(__.V().has("merchant","name","FreshMart")).property("amount",23.45m).property("at",datetime("2024-04-02T09:15:00Z"))
+      """
+    When iterated to list
+    Then the result should have a count of 1
+    And the graph should return 1 for count of "g.E()"
+    And the graph should return 1 for count of "g.V().has(\"account\",\"holder\",\"Ana Ruiz\").outE(\"payment\").has(\"amount\",P.typeOf(GType.BIGDECIMAL)).has(\"amount\",23.45m).has(\"at\",datetime(\"2024-04-02T09:15:00Z\")).inV().has(\"merchant\",\"name\",\"FreshMart\")"

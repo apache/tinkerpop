@@ -1,0 +1,98 @@
+////
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+////
+= Integration Fixture
+:tinkerpop-version: 3.7.7-SNAPSHOT
+
+== Gremlin Block with Modern Graph
+
+[gremlin-groovy,modern]
+----
+g.V(1)
+g.V(1).values('name')
+----
+
+== Gremlin Block with Classic Graph
+
+[gremlin-groovy,classic]
+----
+g.V(1).out()
+----
+
+== Bare Gremlin Block
+
+[gremlin-groovy]
+----
+1+1
+----
+
+== Existing Graph Block
+
+[gremlin-groovy,existing]
+----
+g.V().count()
+----
+
+== Gremlin Block with Manual Tabs
+
+[gremlin-groovy,modern]
+----
+g.V().has('name','marko')
+----
+[source,java]
+----
+g.V().has("name","marko")
+----
+[source,python]
+----
+g.V().has('name','marko')
+----
+
+== Standalone Tab Group
+
+[source,groovy,tab]
+----
+graph.traversal().V()
+----
+[source,java,tab]
+----
+graph.traversal().V();
+----
+[source,csharp,tab]
+----
+graph.Traversal().V();
+----
+
+== Error Handling
+
+[gremlin-groovy,modern]
+----
+invalid_syntax_here()
+----
+
+== Callouts in Code
+
+[source,java]
+----
+int x = 1; // <1>
+int y = 2; // <2>
+----
+<1> Sets x
+<2> Sets y
+
+== Version Replacement
+
+Download TinkerPop x.y.z from the repository.

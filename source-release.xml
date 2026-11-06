@@ -49,6 +49,7 @@
                 -->
 
                 <!-- AI coding agent directories -->
+                <exclude>**/.beads/**</exclude>
                 <exclude>**/.claude/**</exclude>
                 <exclude>**/.codex/**</exclude>
                 <exclude>**/.copilot/**</exclude>
@@ -89,6 +90,10 @@
                 <exclude>docs/gremlint/package-lock.json</exclude>
                 <exclude>docs/gremlint/node_modules/**</exclude>
                 <exclude>docs/gremlint/build/**</exclude>
+                <exclude>docs/gremlint/dist/**</exclude>
+                <exclude>docs/gremlator/package-lock.json</exclude>
+                <exclude>docs/gremlator/node_modules/**</exclude>
+                <exclude>docs/gremlator/dist/**</exclude>
                 <exclude>gremlin-dotnet/.glv</exclude>
                 <exclude>gremlin-dotnet/gremlin-*/**</exclude>
                 <exclude>gremlin-dotnet/src/docfx/**</exclude>

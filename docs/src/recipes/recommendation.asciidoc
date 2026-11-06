@@ -17,6 +17,7 @@ specific language governing permissions and limitations
 under the License.
 ////
 [[recommendation]]
+[llms-summary="Recipe for building recommendations with Gremlin using collaborative-filtering-style traversals over a graph."]
 == Recommendation
 
 image:gremlin-recommendation.png[float=left,width=180]One of the more common use cases for a graph database is the

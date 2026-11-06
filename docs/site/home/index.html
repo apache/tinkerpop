@@ -295,30 +295,30 @@ under the License.
                 <div class="dd-box">
                     <div class="text-center">
                         <h2 class="ft-30 bold black mb-2">Downloads & Documentation</h2>
-                        <p class="mb-3 mb-md-5 medium ">Released: 1-April-2026</p>
+                        <p class="mb-3 mb-md-5 medium ">Released: 1-September-2026</p>
                     </div>
                     <div class="row">
                         <div class="col-lg-6 border-right text-center">
-                            <h3 class="ft-25 bold black mb-6">TinkerPop 3.8.1 Downloads</h3>
+                            <h3 class="ft-25 bold black mb-6">TinkerPop 3.8.2 Downloads</h3>
                             <div class="row">
                                 <div class="col-md-4 mb-3">
                                     <img src="img/group-24.svg" class="img-fluid mb-2" alt="Gremlin Console icon"><br>
                                     <a class="text-blue"
-                                       href="https://www.apache.org/dyn/closer.lua/tinkerpop/3.8.1/apache-tinkerpop-gremlin-console-3.8.1-bin.zip"><img
+                                       href="https://www.apache.org/dyn/closer.lua/tinkerpop/3.8.2/apache-tinkerpop-gremlin-console-3.8.2-bin.zip"><img
                                             src="img/download-cloud-line.svg" class="me-2 img-fluid" alt="Download icon">Gremlin
                                         Console</a>
                                 </div>
                                 <div class="col-md-4 mb-3">
                                     <img src="img/group-25.svg" class="img-fluid mb-2" alt="Gremlin Server icon"><br>
                                     <a class="text-blue"
-                                       href="https://www.apache.org/dyn/closer.lua/tinkerpop/3.8.1/apache-tinkerpop-gremlin-server-3.8.1-bin.zip"><img
+                                       href="https://www.apache.org/dyn/closer.lua/tinkerpop/3.8.2/apache-tinkerpop-gremlin-server-3.8.2-bin.zip"><img
                                             src="img/download-cloud-line.svg" class="me-2 img-fluid" alt="Download icon">Gremlin
                                         Server</a>
                                 </div>
                                 <div class="col-md-4 mb-3">
                                     <img src="img/group-26.svg" class="img-fluid mb-2" alt="Source code icon"><br>
                                     <a class="text-blue"
-                                       href="https://www.apache.org/dyn/closer.lua/tinkerpop/3.8.1/apache-tinkerpop-3.8.1-src.zip"><img
+                                       href="https://www.apache.org/dyn/closer.lua/tinkerpop/3.8.2/apache-tinkerpop-3.8.2-src.zip"><img
                                             src="img/download-cloud-line.svg" class="me-2 img-fluid"
                                             alt="Download icon">Source</a>
                                 </div>
@@ -465,6 +465,15 @@ g.V().has("name","gremlin").
                             <div class="row">
                                 <div class="col-md-12">
                                     <div class="code-box h-100">
+                                        <!-- When TinkerPop 4.0 releases replace with this example
+
+                                        <pre><code class="language-groovy">// What are the names of projects that were created by friends?
+                                        g.match("MATCH (a)-[:knows]->(b), " +
+                                                "(a)-[:created]->(c), " +
+                                                "(b)-[:created]->(c)").
+                                          select("c").by("name")
+                                        </code></pre>
+                                        -->
                                         <pre><code class="language-groovy">// What are the names of projects that were created by two friends?
 g.V().
   match(as("a").out("knows").as("b"),
@@ -885,7 +894,7 @@ g.V().has("name","gremlin").out("bought").aggregate("stash").
                                                target="_blank">Valentyn Kahamlyk </a><span class="medium">(Committer)</span>
                                         </p>
                                         <p class="mb-0"><span class="medium">Year : 2022</span></p>
-                                        <p class="mb-0">GremlinLang, TinkerTransactionGraph, Properties on Elements, some Steps</p>
+                                        <p class="mb-0">GremlinLang, TinkerStorageGraph, Properties on Elements, some Steps</p>
                                     </div>
                                 </div>
                                 <div class="col-lg-6">

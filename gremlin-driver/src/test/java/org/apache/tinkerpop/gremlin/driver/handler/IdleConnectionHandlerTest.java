@@ -22,7 +22,6 @@ package org.apache.tinkerpop.gremlin.driver.handler;
 import io.netty.channel.embedded.EmbeddedChannel;
 import io.netty.handler.timeout.IdleStateEvent;
 import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 
 import static org.junit.Assert.assertFalse;
@@ -31,27 +30,40 @@ import static org.junit.Assert.assertTrue;
 public class IdleConnectionHandlerTest {
     private EmbeddedChannel testChannel;
 
-    @Before
-    public void setup() {
-        testChannel = new EmbeddedChannel(new IdleConnectionHandler());
-    }
-
     @After
     public void teardown() {
         // if any exceptions happened, throw them otherwise the test will only silently fail
-        testChannel.checkException();
+        if (testChannel != null) testChannel.checkException();
     }
-
 
     @Test
     public void userEventTriggered_setsIdleStateEventAttribute() {
+        testChannel = new EmbeddedChannel(new IdleConnectionHandler(() -> false));
         testChannel.pipeline().fireUserEventTriggered(IdleStateEvent.WRITER_IDLE_STATE_EVENT);
         assertTrue(testChannel.hasAttr(IdleConnectionHandler.IDLE_STATE_EVENT));
     }
 
     @Test
     public void userEventTriggered_notIdleStateEvent_doesNotSetAttribute() {
+        testChannel = new EmbeddedChannel(new IdleConnectionHandler(() -> false));
         testChannel.pipeline().fireUserEventTriggered("some other event");
         assertFalse(testChannel.hasAttr(IdleConnectionHandler.IDLE_STATE_EVENT));
+    }
+
+    @Test
+    public void userEventTriggered_requestInFlight_doesNotCloseOrSetAttribute() {
+        testChannel = new EmbeddedChannel(new IdleConnectionHandler(() -> true));
+        testChannel.pipeline().fireUserEventTriggered(IdleStateEvent.READER_IDLE_STATE_EVENT);
+        // an idle event while a request is in flight must be ignored: no close, no attribute set
+        assertFalse(testChannel.hasAttr(IdleConnectionHandler.IDLE_STATE_EVENT));
+        assertTrue(testChannel.isOpen());
+    }
+
+    @Test
+    public void userEventTriggered_noRequestInFlight_closesChannel() {
+        testChannel = new EmbeddedChannel(new IdleConnectionHandler(() -> false));
+        testChannel.pipeline().fireUserEventTriggered(IdleStateEvent.READER_IDLE_STATE_EVENT);
+        assertTrue(testChannel.hasAttr(IdleConnectionHandler.IDLE_STATE_EVENT));
+        assertFalse(testChannel.isOpen());
     }
 }

@@ -1,0 +1,38 @@
+# Apache TinkerPop
+
+> Apache TinkerPop is a graph computing framework and the home of Gremlin, the graph traversal language implemented by many graph databases and graph processors. This file indexes the project site and points to the documentation index for each supported release.
+
+Documentation is published per release under `https://tinkerpop.apache.org/docs/<version>/`, and each release carries its own page-level index at `https://tinkerpop.apache.org/docs/<version>/llms.txt`. The path `https://tinkerpop.apache.org/docs/current/` resolves to the most recent official release and therefore changes as releases are made. Versions 3.7.7 and 3.8.2 are the first to publish an index of this form. Later releases of both lines do the same, while earlier releases are not backfilled, so a version at or above one of those two is required.
+
+Every version's index covers the same body of documentation, pinned to that version by its URL: the reference documentation describing the Gremlin language and every step, the upgrade documentation recording what changed in each release, recipes offering reusable traversal patterns, tutorials introducing the property graph structure and the Gremlin Console, the provider documentation defining the semantics a graph system must implement and the semantics of Gremlin itself, and the IO documentation specifying the GraphBinary, GraphSON, GraphML, and Gryo serialization formats. Selecting a version and reading its index leads to any of them.
+
+## Documentation indices
+
+- [Apache TinkerPop 3.8.2](https://tinkerpop.apache.org/docs/3.8.2/llms.txt): The page-level documentation index for release 3.8.2, the most recent release of the current 3.8 line.
+- [Apache TinkerPop 3.7.7](https://tinkerpop.apache.org/docs/3.7.7/llms.txt): The page-level documentation index for release 3.7.7, the most recent release of the 3.7 maintenance line.
+
+## Examples
+
+Runnable projects for each Gremlin language variant, built against the published driver releases so that they run without building TinkerPop from source.
+
+- [Java](https://github.com/apache/tinkerpop/tree/3.8-dev/gremlin-examples/gremlin-java): Connecting to a remote Gremlin Server and running traversals from Java.
+- [Python](https://github.com/apache/tinkerpop/tree/3.8-dev/gremlin-examples/gremlin-python): The same, using gremlin-python.
+- [JavaScript](https://github.com/apache/tinkerpop/tree/3.8-dev/gremlin-examples/gremlin-javascript): The same, using gremlin-javascript.
+- [.NET](https://github.com/apache/tinkerpop/tree/3.8-dev/gremlin-examples/gremlin-dotnet): The same, using Gremlin.Net.
+- [Go](https://github.com/apache/tinkerpop/tree/3.8-dev/gremlin-examples/gremlin-go): The same, using gremlin-go.
+
+## Site
+
+- [Home](https://tinkerpop.apache.org/): An overview of Apache TinkerPop and of the components that make up the stack.
+- [Gremlin](https://tinkerpop.apache.org/gremlin.html): An introduction to the Gremlin graph traversal language and to its place in the graph computing model.
+- [Benefits and Use Cases](https://tinkerpop.apache.org/benefits-use-cases.html): The problems that graph computing addresses and the situations in which TinkerPop applies.
+- [Providers](https://tinkerpop.apache.org/providers.html): The graph systems, drivers, and language variants that implement TinkerPop.
+- [Downloads](https://tinkerpop.apache.org/download.html): The official Apache source and binary releases, with instructions for verifying them.
+- [Community](https://tinkerpop.apache.org/community.html): The mailing lists, issue tracker, contribution process, and project governance.
+
+## Optional
+
+- [Java API documentation](https://tinkerpop.apache.org/javadocs/3.8.2/full/): Generated Javadoc for the full Java API, published as HTML only. Any release is available at `https://tinkerpop.apache.org/javadocs/<version>/full/`, and the subset covering the public API at `https://tinkerpop.apache.org/javadocs/<version>/core/`.
+- [JavaScript API documentation](https://tinkerpop.apache.org/jsdocs/3.8.2/): Generated documentation for gremlin-javascript, published as HTML only. Any release is available at `https://tinkerpop.apache.org/jsdocs/<version>/`.
+- [.NET API documentation](https://tinkerpop.apache.org/dotnetdocs/3.8.2/): Generated documentation for Gremlin.Net, published as HTML only. Any release is available at `https://tinkerpop.apache.org/dotnetdocs/<version>/`.
+- [Documentation archive](https://tinkerpop.apache.org/docs/): Every published documentation version back to 3.0.0. Releases before 3.7.7 and 3.8.2 are published as HTML only and carry no index of this form.

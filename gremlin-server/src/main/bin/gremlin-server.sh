@@ -94,6 +94,25 @@ if [[ "$JAVA_OPTIONS" = "" ]] ; then
     JAVA_OPTIONS="-Xms512m -Xmx4096m"
 fi
 
+# These options are required for libraries that still rely on deep reflection (notably Kryo, used by Gryo) to work on
+# Java 17 and newer, where such access into java.base is denied by default. They mirror the jdk17JvmArgs used by the
+# build (see the root pom.xml) and are always appended so they apply even when JAVA_OPTIONS is overridden.
+JAVA_OPTIONS="$JAVA_OPTIONS \
+-XX:+IgnoreUnrecognizedVMOptions \
+--add-exports=java.base/sun.nio.ch=ALL-UNNAMED \
+--add-exports=java.base/sun.security.x509=ALL-UNNAMED \
+--add-exports=java.base/sun.security.action=ALL-UNNAMED \
+--add-opens=java.base/java.io=ALL-UNNAMED \
+--add-opens=java.base/java.nio=ALL-UNNAMED \
+--add-opens=java.base/sun.nio.cs=ALL-UNNAMED \
+--add-opens=java.base/java.lang=ALL-UNNAMED \
+--add-opens=java.base/java.lang.invoke=ALL-UNNAMED \
+--add-opens=java.base/java.lang.reflect=ALL-UNNAMED \
+--add-opens=java.base/java.util=ALL-UNNAMED \
+--add-opens=java.base/java.util.concurrent=ALL-UNNAMED \
+--add-opens=java.base/java.util.concurrent.atomic=ALL-UNNAMED \
+--add-opens=java.base/java.net=ALL-UNNAMED"
+
 # Build Java CLASSPATH
 CP="$GREMLIN_HOME/conf/"
 CP="$CP":$( find "$GREMLIN_HOME/lib" -name "*.jar" -print | tr '\n' ':' ).

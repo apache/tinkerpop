@@ -21,7 +21,6 @@ package org.apache.tinkerpop.gremlin.driver.handler;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.channel.embedded.EmbeddedChannel;
-import io.netty.handler.codec.TooLongFrameException;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
 import io.netty.handler.codec.http.DefaultHttpHeaders;
 import io.netty.handler.codec.http.FullHttpResponse;
@@ -46,32 +45,10 @@ import static org.junit.Assert.fail;
 public class HttpGremlinResponseStreamDecoderTest {
 
     @Test
-    public void shouldSucceedIfResponseSizeUnderMaxResponseContentLength() throws SerializationException {
-        final String content = "this response is smaller than the max allowed";
-        final FullHttpResponse httpResponse = createResponse(content);
-        final EmbeddedChannel testChannel = initializeChannel(httpResponse.content().readableBytes() + 1);
-
-        testChannel.writeInbound(httpResponse);
-        final ResponseMessage inbound = testChannel.readInbound();
-        assertEquals(content, inbound.getResult().getData().get(0));
-    }
-
-    @Test
-    public void shouldSucceedIfResponseSizeEqualToMaxResponseContentLength() throws SerializationException {
-        final String content = "this response is equal to the max allowed";
-        final FullHttpResponse httpResponse = createResponse(content);
-        final EmbeddedChannel testChannel = initializeChannel(httpResponse.content().readableBytes());
-
-        testChannel.writeInbound(httpResponse);
-        final ResponseMessage inbound = testChannel.readInbound();
-        assertEquals(content, inbound.getResult().getData().get(0));
-    }
-
-    @Test
-    public void shouldSucceedIfMaxResponseContentLengthZero() throws SerializationException {
+    public void shouldDecodeResponseRegardlessOfSize() throws SerializationException {
         final String largeResponse = RandomStringUtils.random(3000);
         final FullHttpResponse httpResponse = createResponse(largeResponse);
-        final EmbeddedChannel testChannel = initializeChannel(0);
+        final EmbeddedChannel testChannel = initializeChannel();
 
         testChannel.writeInbound(httpResponse);
         final ResponseMessage inbound = testChannel.readInbound();
@@ -79,21 +56,8 @@ public class HttpGremlinResponseStreamDecoderTest {
     }
 
     @Test
-    public void shouldThrowIfResponseSizeLargerThanMaxResponseContentLength() throws SerializationException {
-        final FullHttpResponse httpResponse = createResponse("this response is larger than the max allowed");
-        final EmbeddedChannel testChannel = initializeChannel(httpResponse.content().readableBytes() - 1);
-
-        try {
-            testChannel.writeInbound(httpResponse);
-            fail("Expected TooLongFrameException");
-        } catch (TooLongFrameException e) {
-            assertEquals("Response exceeded 60 bytes.", e.getMessage());
-        }
-    }
-
-    @Test
     public void shouldSetBulkedFlagCtxValueWithEachResponse() throws SerializationException {
-        final EmbeddedChannel testChannel = initializeChannel(Integer.MAX_VALUE);
+        final EmbeddedChannel testChannel = initializeChannel();
 
         final FullHttpResponse httpResponse1 = createBulkedResponse(true);
         testChannel.writeInbound(httpResponse1);
@@ -128,8 +92,8 @@ public class HttpGremlinResponseStreamDecoderTest {
         return new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK, buffer, new DefaultHttpHeaders(), new DefaultHttpHeaders());
     }
 
-    private EmbeddedChannel initializeChannel(final long maxResponseContentLength) {
-        final HttpGremlinResponseStreamDecoder decoder = new HttpGremlinResponseStreamDecoder(Serializers.GRAPHBINARY_V4.simpleInstance(), maxResponseContentLength);
+    private EmbeddedChannel initializeChannel() {
+        final HttpGremlinResponseStreamDecoder decoder = new HttpGremlinResponseStreamDecoder(Serializers.GRAPHBINARY_V4.simpleInstance());
         final EmbeddedChannel testChannel = new EmbeddedChannel(new HttpServerCodec(), new HttpObjectAggregator(Integer.MAX_VALUE), decoder);
         return testChannel;
     }

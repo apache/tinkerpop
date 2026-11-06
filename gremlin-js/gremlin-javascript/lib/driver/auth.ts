@@ -18,12 +18,11 @@
  */
 
 import { Buffer } from 'buffer';
-import type { HttpRequest, RequestInterceptor } from './connection.js';
+import type { HttpRequest, RequestInterceptor } from './http-request.js';
 
 export function basic(username: string, password: string): RequestInterceptor {
   return (request: HttpRequest) => {
     request.headers['authorization'] = 'Basic ' + Buffer.from(`${username}:${password}`).toString('base64');
-    return request;
   };
 }
 
@@ -40,6 +39,10 @@ export function sigv4(region: string, service: string, credentialsProvider?: Aws
   let resolvedProvider: AwsCredentialsProvider;
 
   return async (request: HttpRequest) => {
+    // Ensure body is serialized to JSON bytes before signing.
+    // serializeBody is idempotent: safe to call even if already serialized.
+    request.serializeBody();
+
     // Lazy-initialize signer and credentials provider on first use
     if (!signer) {
       const { SignatureV4 } = await import('@smithy/signature-v4');
@@ -62,6 +65,11 @@ export function sigv4(region: string, service: string, credentialsProvider?: Aws
     }
 
     const url = new URL(request.url);
+    // Sign only the Host header; the signer itself adds (and signs) x-amz-date, the payload hash,
+    // and x-amz-security-token for session credentials. The request's own headers (accept,
+    // content-type, ...) are deliberately NOT fed into the signature: the HTTP stack may add or
+    // rewrite transport-managed headers such as accept-encoding after this interceptor runs, so a
+    // signature covering them would no longer match the bytes actually sent.
     const signed = await signer.sign({
       method: request.method,
       protocol: url.protocol,
@@ -69,13 +77,13 @@ export function sigv4(region: string, service: string, credentialsProvider?: Aws
       port: url.port ? Number(url.port) : undefined,
       path: url.pathname + url.search,
       headers: {
-        ...request.headers,
         host: url.host,
       },
       body: request.body,
     });
 
-    request.headers = signed.headers;
-    return request;
+    // Merge the signed auth headers onto the request; the request's other headers (accept,
+    // content-type, ...) still reach the wire, they are simply not part of the signature.
+    request.headers = { ...request.headers, ...signed.headers };
   };
 }

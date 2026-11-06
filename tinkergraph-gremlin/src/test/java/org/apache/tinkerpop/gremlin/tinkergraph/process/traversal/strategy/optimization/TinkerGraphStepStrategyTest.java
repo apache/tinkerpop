@@ -36,6 +36,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.util.EmptyTraversal;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.tinkergraph.process.traversal.step.sideEffect.TinkerGraphStep;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
+import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerMemoryGraph;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -134,9 +135,9 @@ public class TinkerGraphStepStrategyTest {
                 {__.V().as("a").dedup().has("name", "marko").or(has("age"), has("age", gt(32))).filter(has("name", "bob")).has("lang", "java"),
                         g_V("name", eq("marko"), "lang", eq("java"), "name", eq("bob")).or(has("age"), has("age", gt(32))).dedup().as("a"), Arrays.asList(InlineFilterStrategy.instance(), FilterRankingStrategy.instance())},
                 {__.V().as("a").dedup().has("name", "marko").or(has("age", 10), has("age", gt(32))).filter(has("name", "bob")).has("lang", "java"),
-                        g_V("name", eq("marko"), "lang", eq("java"), "name", eq("bob"), "age", eq(10).or(gt(32))).dedup().as("a"), TraversalStrategies.GlobalCache.getStrategies(TinkerGraph.class).toList()},
+                        g_V("name", eq("marko"), "lang", eq("java"), "name", eq("bob"), "age", eq(10).or(gt(32))).dedup().as("a"), TraversalStrategies.GlobalCache.getStrategies(TinkerMemoryGraph.class).toList()},
                 {__.V().has("name", "marko").or(not(has("age")), has("age", gt(32))).has("name", "bob").has("lang", "java"),
-                        g_V("name", eq("marko"), "name", eq("bob"), "lang", eq("java")).or(not(filter(properties("age"))), has("age", gt(32))), TraversalStrategies.GlobalCache.getStrategies(TinkerGraph.class).toList()},
+                        g_V("name", eq("marko"), "name", eq("bob"), "lang", eq("java")).or(not(filter(properties("age"))), has("age", gt(32))), TraversalStrategies.GlobalCache.getStrategies(TinkerMemoryGraph.class).toList()},
                 {__.V().has("name", P.eq("marko").or(P.eq("bob").and(P.eq("stephen")))).out("knows"),
                         g_V("name", eq("marko").or(P.eq("bob").and(P.eq("stephen")))).out("knows"), Collections.emptyList()},
                 {__.V().has("name", P.eq("marko").and(P.eq("bob").and(P.eq("stephen")))).out("knows"),
@@ -147,7 +148,7 @@ public class TinkerGraphStepStrategyTest {
                 {__.V().out().out().V().has("name", "marko").out(), g_V().out().barrier(LAZY_SIZE).out().barrier(LAZY_SIZE).asAdmin().addStep(V("name", eq("marko"))).barrier(LAZY_SIZE).out(), Arrays.asList(InlineFilterStrategy.instance(), FilterRankingStrategy.instance(), LazyBarrierStrategy.instance())},
                 {__.V().out().out().V().has("name", "marko").as("a").out(), g_V().out().barrier(LAZY_SIZE).out().barrier(LAZY_SIZE).asAdmin().addStep(V("name", eq("marko"))).barrier(LAZY_SIZE).as("a").out(), Arrays.asList(InlineFilterStrategy.instance(), FilterRankingStrategy.instance(), LazyBarrierStrategy.instance())},
                 {__.V().out().V().has("age", gt(32)).barrier(10).has("name", "marko").as("a"), g_V().out().barrier(LAZY_SIZE).asAdmin().addStep(V("age", gt(32), "name", eq("marko"))).barrier(LAZY_SIZE).barrier(10).as("a"), Arrays.asList(InlineFilterStrategy.instance(), FilterRankingStrategy.instance(), LazyBarrierStrategy.instance())},
-                {__.V().out().V().has("age", gt(32)).barrier(10).has("name", "marko").as("a"), g_V().out().barrier(LAZY_SIZE).asAdmin().addStep(V("age", gt(32), "name", eq("marko"))).barrier(LAZY_SIZE).barrier(10).as("a"), TraversalStrategies.GlobalCache.getStrategies(TinkerGraph.class).toList()},
+                {__.V().out().V().has("age", gt(32)).barrier(10).has("name", "marko").as("a"), g_V().out().barrier(LAZY_SIZE).asAdmin().addStep(V("age", gt(32), "name", eq("marko"))).barrier(LAZY_SIZE).barrier(10).as("a"), TraversalStrategies.GlobalCache.getStrategies(TinkerMemoryGraph.class).toList()},
         });
     }
 }

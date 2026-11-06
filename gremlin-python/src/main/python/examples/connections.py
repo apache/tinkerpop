@@ -23,7 +23,6 @@ sys.path.append("..")
 from gremlin_python.process.anonymous_traversal import traversal
 from gremlin_python.driver.driver_remote_connection import DriverRemoteConnection
 from gremlin_python.driver.auth import basic
-from gremlin_python.driver.serializer import GraphBinarySerializersV4
 
 VERTEX_LABEL = os.getenv('VERTEX_LABEL', 'connection')
 
@@ -66,7 +65,7 @@ def with_auth():
         ssl_opts.check_hostname = False
         ssl_opts.verify_mode = ssl.CERT_NONE
         rc = DriverRemoteConnection(server_url, 'g', auth=basic('stephen', 'password'),
-                                    ssl_options=ssl_opts)
+                                    ssl=ssl_opts)
     else:
         rc = DriverRemoteConnection(server_url, 'g', auth=basic('stephen', 'password'))
 
@@ -81,10 +80,19 @@ def with_auth():
 # connecting with customized configurations
 def with_configs():
     server_url = os.getenv('GREMLIN_SERVER_URL', 'http://localhost:8182/gremlin').format(45940)
+    # Custom headers are no longer a connection kwarg; set them via an interceptor.
+    def add_headers(request):
+        request.headers['x-custom-header'] = 'example'
+
     rc = DriverRemoteConnection(
         server_url, 'g',
-        request_serializer=GraphBinarySerializersV4(),
-        headers=None,
+        max_connections=8,
+        connect_timeout_millis=5000,
+        idle_timeout_millis=180000,
+        keep_alive_time_millis=30000,
+        batch_size=64,
+        compression='none',
+        interceptors=[add_headers],
     )
     g = traversal().with_remote(rc)
 

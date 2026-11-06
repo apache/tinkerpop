@@ -36,6 +36,11 @@ limitations under the License.
             <artifactId>commons-lang3</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.apache.tinkerpop</groupId>
+            <artifactId>gql-gremlin</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
             <groupId>com.google.inject</groupId>
             <artifactId>guice</artifactId>
             <scope>test</scope>
@@ -49,6 +54,11 @@ limitations under the License.
             <groupId>org.apache.tinkerpop</groupId>
             <artifactId>gremlin-test</artifactId>
             <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>

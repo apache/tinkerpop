@@ -64,8 +64,8 @@ public class GremlinError {
     }
 
     // script errors
-    public static GremlinError binding() {
-        final String message = String.format("The message is using one or more invalid binding keys - they must be of type String and cannot be null");
+    public static GremlinError parameter() {
+        final String message = String.format("The message is using one or more invalid parameter keys - they must be of type String and cannot be null");
         return new GremlinError(HttpResponseStatus.BAD_REQUEST, message, "InvalidRequestException");
     }
 
@@ -76,15 +76,21 @@ public class GremlinError {
         return new GremlinError(HttpResponseStatus.BAD_REQUEST, message, "InvalidRequestException");
     }
 
-    public static GremlinError binding(final Set<String> badBindings) {
+    public static GremlinError parameter(final Set<String> badParameters) {
         final String message = String.format("The message supplies one or more invalid parameters key of [%s] - these are reserved names.",
-                badBindings);
+                badParameters);
         return new GremlinError(HttpResponseStatus.BAD_REQUEST, message, "InvalidRequestException");
     }
 
-    public static GremlinError binding(final int bindingsCount, final int allowedSize) {
-        final String message = String.format("The message contains %s bindings which is more than is allowed by the server %s configuration",
-                bindingsCount, allowedSize);
+    public static GremlinError parameter(final int parametersCount, final int allowedSize) {
+        final String message = String.format("The message contains %s parameters which is more than is allowed by the server %s configuration",
+                parametersCount, allowedSize);
+        return new GremlinError(HttpResponseStatus.BAD_REQUEST, message, "InvalidRequestException");
+    }
+
+    public static GremlinError batchSize(final String batchSize) {
+        final String message = String.format("The message specifies a batchSize of %s but it must be an integer between 1 and %s",
+                batchSize, Integer.MAX_VALUE);
         return new GremlinError(HttpResponseStatus.BAD_REQUEST, message, "InvalidRequestException");
     }
 
@@ -100,7 +106,7 @@ public class GremlinError {
 
     // execution errors
     public static GremlinError timeout(final RequestMessage requestMessage ) {
-        final String message = String.format("A timeout occurred during traversal evaluation of [%s] - consider increasing the limit given to evaluationTimeout",
+        final String message = String.format("A timeout occurred during traversal evaluation of [%s] - consider increasing the limit given to timeoutMillis (the maximum time in milliseconds a request may execute on the server)",
                 requestMessage);
         return new GremlinError(HttpResponseStatus.INTERNAL_SERVER_ERROR, message, "ServerTimeoutExceededException");
     }
@@ -249,5 +255,20 @@ public class GremlinError {
     public static GremlinError scriptEngineNotAvailable(final String language) {
         final String message = String.format("Script engine [%s] is not available.", language);
         return new GremlinError(HttpResponseStatus.BAD_REQUEST, message, "InvalidRequestException");
+    }
+
+    /**
+     * Creates an error for when a transactional request uses a different traversal source
+     * name than the one bound at begin time.
+     *
+     * @param expected The traversal source name bound at transaction begin
+     * @param actual The traversal source name in the current request
+     * @return A GremlinError with appropriate message and status code
+     */
+    public static GremlinError traversalSourceMismatch(final String expected, final String actual) {
+        final String message = String.format(
+                "Transaction traversal source alias mismatch: transaction bound to '%s' but request used '%s'",
+                expected, actual);
+        return new GremlinError(HttpResponseStatus.BAD_REQUEST, message, "TransactionException");
     }
 }

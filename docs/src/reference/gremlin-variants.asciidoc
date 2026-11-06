@@ -18,7 +18,11 @@ under the License.
 ////
 
 anchor:gremlin-variants[]
+// This book exercises only remote driver connections, but its predecessors leave Spark/Hadoop
+// plugins active. Exclude both to restart the console with a clean classpath.
+[gremlin-docs-plugins-exclude="spark-gremlin,hadoop-gremlin"]
 [[gremlin-drivers-variants]]
+[llms-summary="How Gremlin is embedded in host programming languages (Java, Groovy, Python, JavaScript, .NET, Go) and how language variants and drivers connect to a remote server."]
 = Gremlin Drivers and Variants
 
 image::gremlin-house-of-mirrors.png[width=1024]
@@ -116,9 +120,31 @@ string is valid within the ANTLR grammar:
 
 For example, a string value `say "hello"` would be serialized as `"say \"hello\""` in the canonical Gremlin string.
 
+==== PDT Literals
+
+The gremlin-lang grammar supports Provider Defined Type literals in two forms:
+
+* Composite: `PDT("typeName",[key:"value",...])`  — creates a `CompositePDT` with a map of fields.
+* Primitive: `PDT("typeName","value")` — creates a `PrimitivePDT` with an opaque string value.
+
+Both forms share the `PDT(` prefix. The second argument determines the variant: a map literal produces a composite PDT,
+a string literal produces a primitive PDT.
+
+Examples:
+
+[source,groovy]
+----
+// Composite PDT — a Point with x and y fields
+g.inject(PDT("mygraph:Point",["x":1.0,"y":2.0]))
+
+// Primitive PDT — an unsigned 32-bit integer as a stringified value
+g.inject(PDT("mygraph:Uint32","4294967295"))
+----
+
 The following sections describe each language variant and driver that is officially TinkerPop a part of the project,
 providing more detailed information about usage, configuration and known limitations.
 
+[llms-summary="Using Gremlin from Go: installing gremlin-go, building traversals, Go syntax differences, and connecting to a remote Gremlin Server."]
 [[gremlin-go]]
 == Gremlin-Go
 
@@ -189,17 +215,17 @@ headers, or request signing. Plain text and SigV4 authentication are provided as
 // Plain text authentication
 remote, err := gremlingo.NewDriverRemoteConnection("https://localhost:8182/gremlin",
   func(settings *gremlingo.DriverRemoteConnectionSettings) {
-    settings.TlsConfig = &tls.Config{InsecureSkipVerify: true}
-    settings.RequestInterceptors = []gremlingo.RequestInterceptor{
-      gremlingo.BasicAuth("username", "password"),
+    settings.Ssl = &tls.Config{InsecureSkipVerify: true}
+    settings.Interceptors = []gremlingo.RequestInterceptor{
+      auth.Basic("username", "password"),
     }
   })
 
 // SigV4 authentication
 remote, err := gremlingo.NewDriverRemoteConnection("https://localhost:8182/gremlin",
   func(settings *gremlingo.DriverRemoteConnectionSettings) {
-    settings.RequestInterceptors = []gremlingo.RequestInterceptor{
-      gremlingo.SigV4Auth("service-region", "service-name"),
+    settings.Interceptors = []gremlingo.RequestInterceptor{
+      auth.SigV4("service-region", "service-name"),
     }
   })
 ----
@@ -213,15 +239,15 @@ Some connection options can also be set on individual requests made through the 
 
 [source,go]
 ----
-results, err := g.With("evaluationTimeout", 500).V().Out("knows").ToList()
+results, err := g.With("timeoutMillis", 500).V().Out("knows").ToList()
 ----
 
-The following options are allowed on a per-request basis in this fashion: `batchSize`, `bulkResults`, `userAgent` and
-`evaluationTimeout`.
+The following options are allowed on a per-request basis in this fashion: `batchSize`, `bulkResults`, `language`,
+`materializeProperties` and `timeoutMillis`.
 
 NOTE: When submitting traversals through `DriverRemoteConnection`, `bulkResults` defaults to `true` per-request
-to optimize result transfer. This does not apply to direct `Client.Submit()` calls, where `bulkResults` must be
-set explicitly if desired.
+to optimize result transfer. For direct `Client.Submit()` calls, set the connection-level `BulkResults` option to
+apply a default to every request, or set `bulkResults` per-request to override it.
 
 anchor:go-imports[]
 [[gremlin-go-imports]]
@@ -259,18 +285,102 @@ can be passed to the `NewClient` or `NewDriverRemoteConnection` functions as con
 |LogVerbosity |Log verbosity.|gremlingo.INFO
 |Logger |Instance of logger. |log
 |Language |Language used for logging messages. |language.English
-|TlsConfig |TLS configuration. |empty
-|ConnectionTimeout | Timeout for establishing connection. |15 seconds
-|MaximumConcurrentConnections | Maximum number of concurrent TCP connections to the server. |128
+|Ssl |TLS configuration. |empty
+|ConnectTimeoutMillis | Timeout in milliseconds for establishing the connection (TCP connect plus TLS handshake). Also settable as `ConnectTimeout` (a `time.Duration`); set only one. |5000
+|MaxConnections | Maximum number of concurrent TCP connections to the server. |128
 |MaxIdleConnections | Maximum number of idle (keep-alive) connections in the pool. |8
-|IdleConnectionTimeout | How long idle connections remain in the pool before being closed. |180 seconds
-|KeepAliveInterval | TCP keep-alive probe interval. |30 seconds
-|EnableCompression |Flag to enable compression. |false
+|IdleTimeoutMillis | How long in milliseconds idle connections remain in the pool before being closed. Also settable as `IdleTimeout` (a `time.Duration`); set only one. |180000
+|KeepAliveTimeMillis | Idle time in milliseconds before TCP keep-alive probes begin. Also settable as `KeepAliveTime` (a `time.Duration`); set only one. |30000
+|ReadTimeoutMillis | Idle-read timeout in milliseconds. Bounds the wait for the initial server response and the idle time between response chunks, resetting per chunk. It is not a whole-request deadline. Set to `0` to disable. Also settable as `ReadTimeout` (a `time.Duration`); set only one. |0
+|Compression |The wire compression negotiated with the server (`gremlingo.CompressionNone` or `gremlingo.CompressionDeflate`). |gremlingo.CompressionDeflate
+|BatchSize |The connection-level default batch size used when a request does not specify one. |64
+|BulkResults |Connection-level default for `bulkResults`, applied to every request unless overridden per-request. The `DriverRemoteConnection` traversal path defaults to `true` regardless of this setting. |false
+|MaxResponseHeaderBytes |Limit on the number of response header bytes the client will read. Maps to `http.Transport.MaxResponseHeaderBytes`. |0 (net/http default)
+|Proxy |Function returning the proxy URL to use for a request. When `nil`, uses `http.ProxyFromEnvironment`. |nil
 |EnableUserAgentOnConnect |Enables sending a user agent to the server during connection requests.
 More details can be found in provider docs
 link:https://tinkerpop.apache.org/docs/x.y.z/dev/provider/#_graph_driver_provider_requirements[here].|true
-|RequestInterceptors |Functions that modify HTTP requests before sending. Used for authentication and custom headers. |empty
+|Interceptors |Functions that modify HTTP requests before sending. Used for authentication and custom headers. |empty
+|PDTRegistry |A `*PDTRegistry` for hydrating and dehydrating <<gremlin-go-pdt,Provider Defined Types>>. |`nil`
+|Auth |A single RequestInterceptor for authentication (e.g. `auth.Basic`). Always appended to the end of the interceptor list so it runs last. |nil
 |=========================================================
+
+Serialization is not configurable in Gremlin-Go. Requests are always serialized as JSON and responses are always
+deserialized as GraphBinary. A request body encoding other than JSON can only be produced through a
+<<gremlin-go-interceptors,request interceptor>>.
+
+Note that no driver timeout bounds the *total* duration of a request once it is under way. `ReadTimeout` bounds the
+wait for the initial server response and the gap between response chunks, so a response that keeps producing chunks will not time out no matter how long it
+runs overall, and there is no client-side "overall" request timeout. If you need an absolute deadline, impose it in
+your application around the call. Because `Submit` does not accept a `context.Context`, run it in a goroutine and
+bound it with a `select`:
+
+[source,go]
+----
+// bound the entire request (submit plus full result iteration) to 30 seconds
+type outcome struct {
+	results []*gremlingo.Result
+	err     error
+}
+done := make(chan outcome, 1)
+go func() {
+	rs, err := client.Submit("g.V().out().out()")
+	if err != nil {
+		done <- outcome{nil, err}
+		return
+	}
+	results, err := rs.All()
+	done <- outcome{results, err}
+}()
+
+select {
+case o := <-done:
+	// use o.results / o.err
+case <-time.After(30 * time.Second):
+	// deadline exceeded; stop waiting on the request
+}
+----
+
+[[gremlin-go-interceptors]]
+=== RequestInterceptor
+
+Gremlin-Go allows modification of the underlying HTTP request through `RequestInterceptor` functions. This is
+intended to be an advanced feature which means that you will need to understand how the implementation works in order
+to safely utilize it. Gremlin-Go is written in a way that you should be able to interact with most TinkerPop-enabled
+servers without having to use interceptors. This is intended for cases where the server has special capabilities.
+
+A `RequestInterceptor` is a function with the signature `func(*HttpRequest) error` that mutates the `HttpRequest`
+in place. A slice of these is maintained and will be run sequentially for each request. When creating a
+`DriverRemoteConnection` or `Client`, the `Interceptors` field on the settings struct accepts an ordered
+slice of interceptors. Order matters, so if one interceptor depends on another's output, ensure they are added in
+the correct order. Note that authentication (e.g. `auth.Basic`, `auth.SigV4`) is also implemented using interceptors.
+The `auth` convenience on connection settings appends the auth interceptor to the end of the list so it runs last.
+
+[source,go]
+----
+remote, err := gremlingo.NewDriverRemoteConnection("http://localhost:8182/gremlin",
+  func(settings *gremlingo.DriverRemoteConnectionSettings) {
+    settings.Interceptors = []gremlingo.RequestInterceptor{
+      auth.Basic("username", "password"),
+      func(req *gremlingo.HttpRequest) error {
+        req.Headers.Set("X-Custom-Header", "value")
+        return nil
+      },
+    }
+  })
+----
+
+Each interceptor receives a `*gremlingo.HttpRequest` whose `Body` field initially contains a `*RequestMessage`.
+The `RequestMessage` struct has mutable fields (`Gremlin string` and `Fields map[string]interface{}`), so an
+interceptor can modify them directly or replace the body entirely. By default, the driver serializes the body
+to JSON (`application/json`) by calling `HttpRequest.SerializeBody()` after all interceptors have run. An
+interceptor that needs the serialized bytes (for example, to compute a signature hash) can call
+`SerializeBody()` itself; the method is idempotent. If you require a GraphBinary-encoded request body instead
+of JSON, you can write a custom interceptor that serializes the `RequestMessage` with the GraphBinary serializer
+and sets the resulting `[]byte` as the body.
+
+For an example of a simple `RequestInterceptor` that only modifies the header of the request, see
+link:https://github.com/apache/tinkerpop/blob/x.y.z/gremlin-go/driver/auth.go[basic authentication].
 
 [[gremlin-go-strategies]]
 === Traversal Strategies
@@ -291,8 +401,73 @@ re-construction machine-side.
 [[gremlin-go-transactions]]
 === Transactions
 
-IMPORTANT: Transaction support over HTTP is not yet implemented in Gremlin-Go. This will be addressed by the official
-4.0.0 release.
+Gremlin-Go supports remote transactions over HTTP via two entry points: the Traversal API (`g.Tx()`) and the
+Driver API (`client.Transact()`).
+
+==== Traversal API
+
+[source,go]
+----
+g := gremlingo.Traversal_().With(remote)
+
+tx := g.Tx()
+gtx, err := tx.Begin()
+if err != nil { log.Fatal(err) }
+
+_, err = gtx.AddV("person").Property("name", "alice").Iterate()
+if err != nil { tx.Rollback(); log.Fatal(err) }
+
+err = tx.Commit()
+if err != nil { log.Fatal(err) }
+----
+
+The transaction-bound source retains its owning transaction. Calling `gtx.Tx()` returns the same `Transaction`, so
+lifecycle operations can also be performed from the source with calls such as `gtx.Tx().Commit()`.
+
+==== Managed Transaction Blocks
+
+To avoid the manual begin/commit/rollback boilerplate, `g` provides closure methods that manage the
+lifecycle: the closure receives the transaction-bound `gtx` and the transaction is committed when it returns a `nil`
+error or rolled back if it returns an error (or panics). `ExecuteInTx` is for the common no-result case; `EvaluateInTx`
+returns the value the body produces as `interface{}`, which the caller type-asserts:
+
+[source,go]
+----
+g := gremlingo.Traversal_().With(remote)
+
+// ExecuteInTx: no return value
+err := g.ExecuteInTx(func(gtx *gremlingo.GraphTraversalSource) error {
+    _, e := gtx.AddV("person").Property("name", "alice").Iterate()
+    return <-e
+})
+
+// EvaluateInTx: returns the body's value as interface{}
+v, err := g.EvaluateInTx(func(gtx *gremlingo.GraphTraversalSource) (interface{}, error) {
+    return gtx.V().Count().Next()
+})
+count := v.(int64)
+----
+
+The transaction runs exactly once (no automatic retry). The body's error is returned after the rollback; if the commit
+fails, a rollback is still attempted and the commit error is returned. A panic in the body rolls back and then
+re-panics.
+
+==== Driver API
+
+[source,go]
+----
+client, _ := gremlingo.NewClient(url, func(settings *gremlingo.ClientSettings) {
+    settings.TraversalSource = "g"
+})
+
+tx := client.Transact()
+tx.Begin()
+tx.Submit("g.addV('person').property('name','alice')")
+tx.Commit()
+----
+
+NOTE: Transactions are not thread-safe. All operations within a transaction must be sequential. The default behavior
+of `Close()` is to rollback. Transactions are single-use and cannot be reused after commit or rollback.
 
 [[gremlin-go-gvalue]]
 === GValue Parameterization
@@ -303,7 +478,8 @@ the traversal to utilize a parameter in place of a literal.
 
 [source,go]
 ----
-g.V().Has("name", gremlingo.NewGValue("name", "marko"))
+g.V().Has("name", gremlingo.GValue{Name: "name", Value: "marko"})
+g.MergeV(gremlingo.GValue{Name: "vertexPattern", Value: map[interface{}]interface{}{"name": "marko"}})
 ----
 
 [[gremlin-go-scripts]]
@@ -342,29 +518,29 @@ Both the `Client` and `DriverRemoteConnection` types have a `SubmitWithOptions(t
 of the standard `Submit()` method. These methods allow a `RequestOptions` struct to be passed in which will augment the
 execution on the server. `RequestOptions` can be constructed
 using `RequestOptionsBuilder`. A good use-case for this feature is to set a per-request override to the
-`evaluationTimeout` so that it only applies to the current request.
+`timeoutMillis` so that it only applies to the current request.
 
 [source,go]
 ----
 options := new(RequestOptionsBuilder).
-			SetEvaluationTimeout(5000).
+			SetTimeoutMillis(5000).
 			SetBatchSize(32).
 			SetMaterializeProperties("tokens").
-			AddBinding("x", 100).
+			AddParameter("x", 100).
 			Create()
 resultSet, err := client.SubmitWithOptions("g.V(x).count()", options)
 ----
 
-The following options are allowed on a per-request basis in this fashion: `batchSize`, `bulkResults`, `userAgent`,
-`evaluationTimeout` and `materializeProperties`.
-`RequestOptions` may also contain a map of variable `bindings` to be applied to the supplied
+The following options are allowed on a per-request basis in this fashion: `batchSize`, `bulkResults`, `language`,
+`timeoutMillis` and `materializeProperties`.
+`RequestOptions` may also contain a map of query `parameters` to be applied to the supplied
 traversal string.
 
 [source,go]
 ----
-resultSet, err := client.SubmitWithOptions("g.with('evaluationTimeout', 500).addV().iterate();"+
+resultSet, err := client.SubmitWithOptions("g.with('timeoutMillis', 500).addV().iterate();"+
   "g.addV().iterate();"+
-  "g.with('evaluationTimeout', 500).addV();", new(RequestOptionsBuilder).SetEvaluationTimeout(500).Create())
+  "g.with('timeoutMillis', 500).addV();", new(RequestOptionsBuilder).SetTimeoutMillis(500).Create())
 results, err := resultSet.All()
 ----
 
@@ -506,6 +682,15 @@ Because Go does not support method overloading, the batched form of `next(n)` av
 distinct method `NextN(n)` on `Traversal`. `Next()` returns a single `*Result`, while `NextN(n)` returns up to `n`
 results as `[]*Result`.
 
+Go rune literals are interpreted as `Integer` values rather than `Character` literals by default.
+To use the Gremlin `Character` type, wrap the rune in `gremlingo.Char()`. For example:
+
+[source,go]
+----
+g.Inject('a')                       // interpreted as integer 97 (the Unicode code point)
+g.Inject(gremlingo.Char('a'))       // properly translated to a Gremlin character literal
+----
+
 [[gremlin-go-aliases]]
 === Aliases
 To make the code more readable and close to the Gremlin query language), you can use aliases. These aliases can be named with capital letters to be consistent with non-aliased steps but will result in exported variables which could be problematic if not being used in a top-level program (i.e. not a redistributable package).
@@ -546,20 +731,42 @@ To make the code more readable and close to the Gremlin query language), you can
 	var order = gremlingo.Order
 ----
 
-Finally, the enum construct for `Cardinality` cannot have functions attached to it the way it can be done in Java,
-therefore cardinality functions that take a value like `list()`, `set()`, and `single()` are referenced from a
-`CardinalityValue` class rather than `Cardinality` itself.
+Finally, the enum construct for `Cardinality` cannot have functions attached to it the way it can be done in Java.
+Cardinality functions that take a value are therefore referenced from `CardinalityValue` rather than from
+`Cardinality` itself, and they follow the same Pascal-case convention as the step names described above:
+`CardinalityValue.List(v)`, `CardinalityValue.Set(v)`, and `CardinalityValue.Single(v)`. Qualified with the
+package name, these forms are `gremlingo.CardinalityValue.List(v)` and its `Set` and `Single` counterparts, and
+each is supplied as a property value:
+
+[source,go]
+----
+	g.V().Has("name", "foo").Property(map[interface{}]interface{}{"name": gremlingo.CardinalityValue.Set("bar"), "age": 43})
+----
 
 [[gremlin-go-limitations]]
 === Limitations
 
-* There is no default `set` type in Go. Any set type code from server will be deserialized into slices with the list
-type implementation. To input a set into Gremlin-Go, a custom struct which implements the `gremlingo.Set` interface
-will be serialized as a set. `gremlingo.NewSimpleSet` is a basic implementation of a set that is provided by Gremlin-Go
-that can be used to fulfill the `gremlingo.Set` interface if desired.
+* There is no default `set` type in Go. A set type code from the server is deserialized into a
+`*gremlingo.SimpleSet`, which implements the `gremlingo.Set` interface, rather than into a slice. To read its
+elements, the result should be type-asserted to `gremlingo.Set` and its `ToSlice()` method called. To input a set
+into Gremlin-Go, a custom struct which implements the `gremlingo.Set` interface will be serialized as a set.
+`gremlingo.NewSimpleSet` is a basic implementation of a set that is provided by Gremlin-Go that can be used to
+fulfill the `gremlingo.Set` interface if desired.
 
 * Go does not support ordered maps natively as the built-in `map` type does not guarantee iteration order. Traversal
 results which contain maps may not preserve original ordering when deserialized into Go's native map types.
+
+* GraphBinary permits map keys of any supported type, including composite values such as lists. Go's native `map`
+type only supports comparable keys, so GraphBinary maps with non-comparable keys are deserialized lossily rather than
+rejected. A list key is converted to its string form through `fmt.Sprint`, so a key such as `[marko 29]` is stored as
+the string `"[marko 29]"`, while a map key is stored under a pointer to the key value. In both cases the original
+key's type and identity are lost, so such keys cannot be reconstructed or looked up by their original value.
+
+* The `subgraph()`-step returns a detached `*Graph` data container exposing
+`Vertices map[interface{}]*Vertex` and `Edges map[interface{}]*Edge`. The result is not a live `Graph` instance:
+mutating the maps has no effect on the source graph, and it cannot be passed to `traversal().with(...)`. To
+re-query subgraph elements against the original graph, extract their `Id` and use `g.V(id)` / `g.E(id)` on the
+original `GraphTraversalSource`.
 
 [[gremlin-go-examples]]
 === Application Examples
@@ -615,6 +822,49 @@ go run basic_gremlin.go
 go run modern_traversals.go
 ----
 
+[[gremlin-go-pdt]]
+=== Provider Defined Types
+
+Provider Defined Types (PDTs) allow graph providers to expose custom types through the driver. PDT values arrive as
+`*CompositePDT` structs containing a `Name` and `Fields` map without any configuration.
+Consult your graph provider's documentation for the list of PDTs they support.
+
+[source,go]
+----
+results, err := g.V().Has("location").Values("location").ToList()
+pdt := results[0].GetInterface().(*gremlingo.CompositePDT)
+fmt.Println(pdt.Name)   // "x:Point"
+fmt.Println(pdt.Fields) // map[x:1.0 y:2.0]
+----
+
+Working with raw `*CompositePDT` values is always available. Using a `PDTRegistry` is an optional
+convenience that automates conversion between PDT values and application types on both the request and response paths.
+
+Using a `PDTRegistry` for hydration and dehydration:
+
+[source,go]
+----
+registry := gremlingo.NewPDTRegistry()
+registry.RegisterFuncsWithType("x:Point", reflect.TypeOf(Point{}),
+    // hydrate: convert incoming PDT fields map to a Go type
+    func(fields map[string]interface{}) (interface{}, error) {
+        return &Point{X: fields["x"].(float64), Y: fields["y"].(float64)}, nil
+    },
+    // dehydrate: convert a Go type to a PDT fields map for sending
+    func(obj interface{}) (map[string]interface{}, error) {
+        p := obj.(*Point)
+        return map[string]interface{}{"x": p.X, "y": p.Y}, nil
+    },
+)
+
+remote, _ := gremlingo.NewDriverRemoteConnection("http://localhost:8182/gremlin",
+    func(settings *gremlingo.DriverRemoteConnectionSettings) {
+        settings.PDTRegistry = registry
+    })
+g := gremlingo.Traversal_().With(remote)
+----
+
+[llms-summary="Using Gremlin from Groovy: the JVM-based Gremlin-Groovy variant backed by Gremlin-Java, its role as the language of the Gremlin Console and Server, and its syntax differences."]
 [[gremlin-groovy]]
 == Gremlin-Groovy
 
@@ -632,9 +882,14 @@ compile group: 'org.apache.tinkerpop', name: 'gremlin-driver', version: 'x.y.z'
 [[gremlin-groovy-differences]]
 === Differences
 
-In Groovy, `as`, `in`, and `not` are reserved words. Gremlin-Groovy does not allow these steps to be called
-statically from the anonymous traversal `+__+` and therefore, must always be prefixed with `+__.+` For instance:
-`+g.V().as('a').in().as('b').where(__.not(__.as('a').out().as('b')))+`
+In Groovy, `as`, `in`, and `not` overlap with reserved words and predicate functions, so calling them as bare
+functions is not guaranteed to resolve to the anonymous traversal step you intend. For deterministic, portable
+results, be explicit: prefix an anonymous traversal step with `+__.+` and use `P.` when you actually want a
+predicate. For instance: `+g.V().as('a').in().as('b').where(__.not(__.as('a').out().as('b')))+`
+
+This is especially important for `not`: a bare `+not(...)+` resolves to `+P.not(P)+` (predicate negation), whereas
+`+__.not(traversal)+` is the filter step. Prefer `+__.not(...)+` for the step and `+P.not(...)+` for the predicate to
+avoid the ambiguity.
 
 Care needs to be taken when using the `any(P)` step as you may accidentally invoke Groovy's `any(Closure)` method. This
 typically happens when calling `any()` without arguments. You can tell if Groovy's `any` has been called if the return
@@ -652,9 +907,12 @@ time zone offset of UTC(+00:00):
 * `2018-03-22T00:35:44.741Z`
 * `2018-03-22T00:35:44.741+1600`
 
+The `datetime()` function returns a `java.time.OffsetDateTime`.
+
 anchor:connecting-via-remotegraph[]
 anchor:connecting-via-java[]
 [[gremlin-java]]
+[llms-summary="Using Gremlin from Java: the reference implementation of the language, GraphTraversalSource construction, and connecting to a remote Gremlin Server."]
 == Gremlin-Java
 
 image:gremlin-java-drawing.png[width=130,float=right] Apache TinkerPop's Gremlin-Java implements Gremlin within the
@@ -707,6 +965,7 @@ The following table outlines recommended runtime versions by the release in whic
 |3.6.0 | Java 8, 11
 |3.7.0 | Java 8, 11, 17
 |3.8.0 | Java 11, 17
+|4.0.0 | Java 17, 21, 25
 |===
 
 [[gremlin-java-connecting]]
@@ -818,11 +1077,11 @@ on the `TraversalSource`. For instance to set request timeout to 500 millisecond
 [source,java]
 ----
 GraphTraversalSource g = traversal().with(conf);
-List<Vertex> vertices = g.with(Tokens.ARGS_EVAL_TIMEOUT, 500L).V().out("knows").toList()
+List<Vertex> vertices = g.with(Tokens.TIMEOUT_MILLIS, 500L).V().out("knows").toList()
 ----
 
-The following options are allowed on a per-request basis in this fashion: `batchSize`, `bulkResults`, `userAgent`,
-`materializeProperties` and `evaluationTimeout`. Use of `Tokens` to reference these options is preferred.
+The following options are allowed on a per-request basis in this fashion: `batchSize`, `bulkResults`, `language`,
+`materializeProperties` and `timeoutMillis`. Use of `Tokens` to reference these options is preferred.
 
 NOTE: When submitting traversals through `DriverRemoteConnection`, `bulkResults` defaults to `true` per-request
 to optimize result transfer. This does not apply to direct `Client.submit()` calls, where `bulkResults` must be
@@ -866,33 +1125,38 @@ The following table describes the various configuration options for the Gremlin 
 |auth.password |The password to submit on requests that require basic authentication. |_none_
 |auth.region |The region setting for sigv4 authentication. |_none_
 |auth.serviceName |The service name setting for sigv4 authentication. |_none_
-|connectionPool.connectionSetupTimeoutMillis | Duration of time in milliseconds provided for connection setup to complete which includes the SSL handshake. |15000
+|connectionPool.compression |The wire compression algorithm negotiated with the server. Can be: `NONE` or `DEFLATE`. |DEFLATE
+|connectionPool.connectTimeoutMillis | Duration of time in milliseconds that bounds TCP connection establishment (transport setup, including the SSL handshake). On `Cluster.Builder` also settable as `connectTimeout(Duration)`. |5000
 |connectionPool.enableSsl |Determines if SSL should be enabled or not. If enabled on the server then it must be enabled on the client. |false
-|connectionPool.idleConnectionTimeout | Duration of time in milliseconds that the driver will allow a channel to not receive read or writes before it automatically closes. |180000
+|connectionPool.idleTimeoutMillis | Duration of time in milliseconds that the driver will allow a channel to not receive read or writes before it automatically closes. On `Cluster.Builder` also settable as `idleTimeout(Duration)`. |180000
+|connectionPool.keepAliveTimeMillis | Idle time in milliseconds before TCP keep-alive probes begin on an otherwise idle connection. Enables `SO_KEEPALIVE` on the socket and, where supported (JDK 11+ on Linux/macOS via `TCP_KEEPIDLE`), sets the per-socket idle time. Set to `0` to disable. On `Cluster.Builder` also settable as `keepAliveTime(Duration)`. |30000
 |connectionPool.keyStore |The private key in JKS or PKCS#12 format. |_none_
 |connectionPool.keyStorePassword |The password of the `keyStore` if it is password-protected. |_none_
 |connectionPool.keyStoreType |`PKCS12` |_none_
-|connectionPool.maxResponseContentLength |The maximum length in bytes that a message can be received from the server. |2147483647
-|connectionPool.maxSize |The maximum size of a connection pool for a host. |128
-|connectionPool.maxWaitForConnection |The amount of time in milliseconds to wait for a new connection before timing out. |3000
+|connectionPool.maxConnections |The maximum size of a connection pool for a host. |128
+|connectionPool.maxResponseHeaderBytes |The maximum size in bytes allowed for the HTTP response headers. |8192
+|connectionPool.maxWaitForConnection |The amount of time in milliseconds to wait for a new connection before timing out. |16000
 |connectionPool.maxWaitForClose |The amount of time in milliseconds to wait for pending messages to be returned from the server before closing the connection. |3000
 |connectionPool.reconnectInterval |The amount of time in milliseconds to wait before trying to reconnect to a dead host. |1000
-|connectionPool.resultIterationBatchSize |The override value for the size of the result batches to be returned from the server. |64
+|connectionPool.batchSize |The default value for the per-request batch size used when a request does not specify one. |64
+|connectionPool.readTimeoutMillis |Idle-read timeout in milliseconds. Bounds the wait for the initial server response and the idle time between response chunks, resetting per chunk. It is not a whole-request deadline. Set to `0` to disable. On `Cluster.Builder` also settable as `readTimeout(Duration)`. |0
 |connectionPool.sslCipherSuites |The list of JSSE ciphers to support for SSL connections. If specified, only the ciphers that are listed and supported will be enabled. If not specified, the JVM default is used.  |_none_
 |connectionPool.sslEnabledProtocols |The list of SSL protocols to support for SSL connections. If specified, only the protocols that are listed and supported will be enabled. If not specified, the JVM default is used.  |_none_
 |connectionPool.sslSkipCertValidation |Configures the `TrustManager` to trust all certs without any validation. Should not be used in production.|false
 |connectionPool.trustStore |File location for a SSL Certificate Chain to use when SSL is enabled. If this value is not provided and SSL is enabled, the default `TrustManager` will be used. |_none_
 |connectionPool.trustStorePassword |The password of the `trustStore` if it is password-protected |_none_
-|connectionPool.validationRequest |A script that is used to test server connectivity. A good script to use is one that evaluates quickly and returns no data. The default simply returns an empty string, but if a graph is required by a particular provider, a good traversal might be `g.inject()`. |_''_
+|connectionPool.validationRequest |A script that is used to test server connectivity. A good script to use is one that evaluates quickly and returns no data. The default `g.inject(0)` runs a trivial traversal that returns immediately. |_g.inject(0)_
+|auth |An authentication `RequestInterceptor` (e.g. `Auth.basic()`). Always appended to the end of the interceptor list so it runs last. |_none_
 |bulkResults |Sets whether the server should attempt to get bulk results or not. |false
 |enableUserAgentOnConnect |Enables sending a user agent to the server during connection requests. More details can be found in provider docs link:https://tinkerpop.apache.org/docs/x.y.z/dev/provider/#_graph_driver_provider_requirements[here].|true
 |hosts |The list of hosts that the driver will connect to. |localhost
+|interceptors |A list of `RequestInterceptor` instances that modify the HTTP request before sending. |empty
 |nioPoolSize |Size of the pool for handling request/response operations. |available processors
 |password |The password to submit on requests that require authentication. |_none_
 |path |The URL path to the Gremlin Server. |_/gremlin_
-|port |The port of the Gremlin Server to connect to. The same port will be applied for all hosts. |8192
-|serializer.className |The fully qualified class name of the `MessageSerializer` that will be used to deserialize responses from the server. Note that the serializer configured on the client should be supported by the server configuration. |_none_
-|serializer.config |A `Map` of configuration settings for the serializer. |_none_
+|port |The port of the Gremlin Server to connect to. The same port will be applied for all hosts. |8182
+|responseSerializer.className |The fully qualified class name of the `MessageSerializer` that will be used to deserialize responses from the server. Note that the serializer configured on the client should be supported by the server configuration. Requests are always serialized as JSON and can only be customized through a <<gremlin-java-interceptors,request interceptor>>. |_none_
+|responseSerializer.config |A `Map` of configuration settings for the serializer. |_none_
 |username |The username to submit on requests that require authentication. |_none_
 |workerPoolSize |Size of the pool for handling background work. |available processors * 2
 |=========================================================
@@ -902,10 +1166,10 @@ Please see the link:https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/
 [[gremlin-java-transactions]]
 === Transactions
 
-Gremlin-Java supports remote transactions over HTTP. There are two ways to create a transaction: from a
-`GraphTraversalSource` or directly from a `Cluster` instance.
+Gremlin-Java supports remote transactions over HTTP. There are two ways to create a transaction: the Traversal API
+(`g.tx()`) and the Driver API (`cluster.transact()`).
 
-==== Via GraphTraversalSource
+==== Traversal API
 
 The recommended approach uses the standard `g.tx()` pattern:
 
@@ -928,7 +1192,35 @@ try {
 Traversals spawned from `gtx` are bound to the transaction. The driver handles host pinning and transaction ID
 propagation automatically.
 
-==== Via Cluster
+The transaction-bound source retains its owning transaction. Calling `gtx.tx()` returns the same `Transaction`, so
+lifecycle operations can also be performed from the source with calls such as `gtx.tx().commit()`.
+
+==== Managed Transaction Blocks
+
+To avoid the manual begin/commit/rollback boilerplate, `g` also provides closure methods that manage the
+transaction lifecycle. The closure receives the transaction-bound `gtx`, and the transaction is committed when the
+closure completes normally or rolled back if it throws. Use `executeInTx` when the body returns nothing and
+`evaluateInTx` when it returns a value:
+
+[source,java]
+----
+GraphTraversalSource g = traversal().with(DriverRemoteConnection.using("localhost", 8182, "g"));
+
+// executeInTx: no return value
+g.executeInTx(gtx -> {
+    gtx.addV("person").property("name", "jorge").iterate();
+    gtx.addV("person").property("name", "josh").iterate();
+});
+
+// evaluateInTx: returns the body's value
+long count = g.evaluateInTx(gtx -> gtx.V().count().next());
+----
+
+The transaction runs exactly once (no automatic retry). If the closure throws, the original exception is re-thrown
+after the rollback; if the commit fails, a rollback is still attempted to release server-side resources and the commit
+error propagates. These methods are also available on embedded graphs that support transactions.
+
+==== Driver API
 
 For script-based usage or when working with the `Client` API directly, transactions can be created from the `Cluster`:
 
@@ -958,25 +1250,27 @@ sequentially.
 
 ==== Close Behavior
 
-The default behavior of `close()` on a transaction is to commit. This can be changed:
+The default behavior of `close()` on a transaction is to rollback. This can be changed:
 
 [source,java]
 ----
 RemoteTransaction tx = cluster.transact("g");
-tx.onClose(Transaction.CLOSE_BEHAVIOR.ROLLBACK);
+tx.onClose(Transaction.CLOSE_BEHAVIOR.COMMIT);
 tx.begin();
 // ... do work ...
-tx.close(); // rolls back instead of committing
+tx.close(); // commits instead of rolling back
 ----
 
 [[gremlin-java-serialization]]
 === Serialization
 
 Remote systems like Gremlin Server and Remote Gremlin Providers respond to requests made in a particular serialization
-format and respond by serializing results to some format to be interpreted by the client. For JVM-based languages,
-there is a single option for serialization: GraphBinary.
+format and respond by serializing results to some format to be interpreted by the client. Requests are always
+serialized as JSON (`application/json`) and that behavior is not configurable. The `responseSerializer` option
+controls only the `Accept` header sent with each request and the deserialization of the response. For JVM-based
+languages, there is a single option for response serialization: GraphBinary.
 
-IMPORTANT: 4.0.0-beta.2 Release - There is temporary support for GraphSON in the Java driver which will help with
+IMPORTANT: 4.0.0-beta.3 Release - There is temporary support for GraphSON in the Java driver which will help with
 testing, but it is expected that the drivers will only support GraphBinary when 4.0 is fully released.
 
 It is important that the client and server have the same serializers configured in the same way or else one or the
@@ -990,7 +1284,7 @@ IoRegistry registry = ...; // an IoRegistry instance exposed by a specific graph
 TypeSerializerRegistry typeSerializerRegistry = TypeSerializerRegistry.build().addRegistry(registry).create();
 MessageSerializer serializer = new GraphBinaryMessageSerializerV4(typeSerializerRegistry);
 Cluster cluster = Cluster.build().
-                          serializer(serializer).
+                          responseSerializer(serializer).
                           create();
 Client client = cluster.connect();
 GraphTraversalSource g = traversal().with(DriverRemoteConnection.using(client, "g"));
@@ -998,9 +1292,20 @@ GraphTraversalSource g = traversal().with(DriverRemoteConnection.using(client, "
 
 The `IoRegistry` tells the serializer what classes from the graph provider to auto-register during serialization.
 Gremlin Server roughly uses this same approach when it configures its serializers, so using this same model will
-ensure compatibility when making requests. Obviously, it is possible to switch to GraphSON or GraphBinary by using
-the appropriate `MessageSerializer` (e.g. `GraphSONMessageSerializerV4` or `GraphBinaryMessageSerializerV4` respectively)
-in the same way and building that into the `Cluster` object.
+ensure compatibility when making requests.
+
+[[gremlin-java-streaming]]
+==== Streaming Deserialization
+
+The driver streams and deserializes a response incrementally as it arrives only when `GraphBinaryMessageSerializerV4`
+is configured, which is the default. Any other `MessageSerializer`, such as a GraphSON serializer, causes the driver to
+buffer the full response body before deserializing it.
+
+[[gremlin-java-limitations]]
+=== Limitations
+
+* Java `Character` values do not support values outside the Basic Multilingual Plane, which are mainly 4-byte UTF-8
+characters. Those GraphBinary `Char` values are not supported.
 
 [[gremlin-java-gvalue]]
 === GValue Parameterization
@@ -1130,28 +1435,27 @@ which will boost performance and reduce resources required on the server.
 
 There are a number of overloads to `Client.submit()` that accept a `RequestOptions` object. The `RequestOptions`
 provide a way to include options that are specific to the request made with the call to `submit()`. A good use-case for
-this feature is to set a per-request override to the `evaluationTimeout` so that it only applies to the current
-request.
+this feature is to set a per-request override to the `timeoutMillis` so that it only applies to the current request.
 
 [source,java]
 ----
 Cluster cluster = Cluster.open();
 Client client = cluster.connect();
-RequestOptions options = RequestOptions.build().timeout(500).create();
+RequestOptions options = RequestOptions.build().timeoutMillis(500).create();
 List<Result> result = client.submit("g.V().repeat(both()).times(100)", options).all().get();
 ----
 
-The preferred method for setting a per-request timeout for scripts is demonstrated above, but those familiar with
-bytecode may try `g.with(EVALUATION_TIMEOUT, 500)` within a script. Gremlin Server will respect timeouts set this way
-in scripts as well. With scripts of course, it is possible to send multiple traversals at once in the same script.
+The preferred method for setting a per-request timeout for scripts is demonstrated above, but a script may also use
+`g.with("timeoutMillis", 500)`. Gremlin Server will respect timeouts set this way in scripts as well. With scripts of
+course, it is possible to send multiple traversals at once in the same script.
 In such events, the timeout for the request is interpreted as a sum of all timeouts identified in the script.
 
 [source,java]
 ----
-RequestOptions options = RequestOptions.build().timeout(500).create();
-List<Result> result = client.submit("g.with(EVALUATION_TIMEOUT, 500).addV().iterate();" +
+RequestOptions options = RequestOptions.build().timeoutMillis(500).create();
+List<Result> result = client.submit("g.with(\"timeoutMillis\", 500).addV().iterate();" +
                                     "g.addV().iterate();" + 
-                                    "g.with(EVALUATION_TIMEOUT, 500).addV();", options).all().get();
+                                    "g.with(\"timeoutMillis\", 500).addV();", options).all().get();
 ----
 
 In the above example, `RequestOptions` defines a timeout of 500 milliseconds, but the script has three traversals with
@@ -1186,30 +1490,37 @@ g2Client.submit("g.V()")
 The above code demonstrates how the `alias` method can be used such that the script need only contain a reference
 to "g" and "g1" and "g2" are automatically rebound into "g" on the server-side.
 
+[[gremlin-java-interceptors]]
 ==== RequestInterceptor
 
 Gremlin-Java allows for modification of the underlying HTTP request through the use of `RequestInterceptors`. This is
 intended to be an advanced feature which means that you will need to understand how the implementation works in order
-to safely utilize it. Gremlin-Java is written in a way that you should be able to interact with a TinkerPop-enabled
-server without having to use interceptors. This is intended for cases where the server has special capabilities.
+to safely utilize it. Gremlin-Java is written in a way that you should be able to interact with most TinkerPop-enabled
+servers without having to use interceptors. This is intended for cases where the server has special capabilities.
 
-A `RequestInterceptor` is simply a `UnaryOperator`. A list of these are maintained and will be run sequentially for
-each request. When building a `Cluster` instance, the methods `addInterceptorAfter()`, `addInterceptorBefore()`,
-`addInterceptor()`, and `removeInterceptor()` can be used to add or remove interceptors. It's important to remember
-that order matters so if one interceptor depends on another's output then ensure they are added in the correct order.
-Note that `Auth` is also implemented using interceptors, and `Auth` is always run last after your list of interceptors
-has already ran. By default, the `PayloadSerializingInterceptor` with the name `serializer` is added to your list of
-interceptors. This interceptor is used for serializing the body of the request. The first interceptor is provided with
-a `org.apache.tinkerpop.gremlin.driver.HttpRequest` that contains a `RequestMessage` in the body. As a reminder
-`RequestMessage` is immutable and only certain keys can be added to them. If you want to customize the body by adding
-other fields, you will need to make a different copy of the `RequestMessage` or completely change the body to contain a
-different data type. The very last interceptor should have a `org.apache.tinkerpop.gremlin.driver.HttpRequest` that
-contains a byte[] in the body.
+A `RequestInterceptor` is a function that mutates the `HttpRequest` in place (it returns nothing).
+A list of these is maintained and will be run sequentially for each request. When building a
+`Cluster` instance, the `interceptors()` method accepts an ordered list of interceptors. It's
+important to remember that order matters so if one interceptor depends on another's output then
+ensure they are added in the correct order. Note that `Auth` is also implemented using interceptors.
+The `auth()` convenience on the `Cluster.Builder` appends the auth interceptor to the end of the list so it runs last.
+
+Each interceptor is provided with a `org.apache.tinkerpop.gremlin.driver.HttpRequest` that contains
+a `RequestMessage` in the body. As a reminder `RequestMessage` is immutable and only certain keys
+can be added to them. If you want to customize the body by adding other fields, you will need to
+make a different copy of the `RequestMessage` or completely change the body to contain a different
+data type. By default, the driver serializes the body to JSON (`application/json`) by calling
+`HttpRequest.serializeBody()` after all interceptors have run. An interceptor that needs the
+serialized bytes (for example, to compute a signature hash) can call `serializeBody()` itself; the
+method is idempotent. If you require a GraphBinary-encoded request body instead of JSON, you can
+write a custom interceptor that serializes the `RequestMessage` with the GraphBinary serializer and
+sets the resulting `byte[]` as the body.
 
 For an example of a simple `RequestInterceptor` that only modifies the header of the request take a look at
 link:https://github.com/apache/tinkerpop/blob/x.y.z/gremlin-driver/src/main/java/org/apache/tinkerpop/gremlin/driver/auth/Basic.java[basic authentication].
 
 [[gremlin-java-dsl]]
+[llms-summary="Creating a Domain Specific Language (DSL) in Java with the @GremlinDsl annotation from the gremlin-annotations module: defining the DSL interface, customizing the TraversalSource with additional start steps, and the traversal classes generated by the annotation processor."]
 === Domain Specific Languages
 
 Creating a <<dsl,Domain Specific Language>> (DSL) in Java requires the `@GremlinDsl` Java annotation in the
@@ -1232,20 +1543,25 @@ public interface SocialTraversalDsl<S, E> extends GraphTraversal.Admin<S, E> {
 }
 ----
 
-IMPORTANT: The name of the DSL interface should be suffixed with "TraversalDSL". All characters in the interface name
+IMPORTANT: The name of the DSL interface should be suffixed with "TraversalDsl". All characters in the interface name
 before that become the "name" of the DSL.
 
 In this interface, define the methods that the DSL will be composed of:
 
 [source,java]
 ----
+import org.apache.tinkerpop.gremlin.process.traversal.P;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.GremlinDsl;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
+
 @GremlinDsl
 public interface SocialTraversalDsl<S, E> extends GraphTraversal.Admin<S, E> {
     public default GraphTraversal<S, Vertex> knows(String personName) {
         return out("knows").hasLabel("person").has("name", personName);
     }
 
-    public default <E2 extends Number> GraphTraversal<S, E2> youngestFriendsAge() {
+    public default <E2 extends Comparable> GraphTraversal<S, E2> youngestFriendsAge() {
         return out("knows").hasLabel("person").values("age").min();
     }
 
@@ -1296,6 +1612,16 @@ any custom methods required by the DSL:
 
 [source,java]
 ----
+import org.apache.tinkerpop.gremlin.process.remote.RemoteConnection;
+import org.apache.tinkerpop.gremlin.process.traversal.P;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.DefaultGraphTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep;
+import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
+
 public class SocialTraversalSourceDsl extends GraphTraversalSource {
 
     public SocialTraversalSourceDsl(Graph graph, TraversalStrategies traversalStrategies) {
@@ -1315,7 +1641,7 @@ public class SocialTraversalSourceDsl extends GraphTraversalSource {
 
         // Manually add a "start" step for the traversal in this case the equivalent of V(). GraphStep is marked
         // as a "start" step by passing "true" in the constructor.
-        clone.getBytecode().addStep(GraphTraversal.Symbols.V);
+        clone.getGremlinLang().addStep(GraphTraversal.Symbols.V);
         GraphTraversal<Vertex, Vertex> traversal = new DefaultGraphTraversal<>(clone);
         traversal.asAdmin().addStep(new GraphStep<>(traversal.asAdmin(), Vertex.class, true));
 
@@ -1355,7 +1681,23 @@ paths to the generated code automatically.
 *Response exceeded X bytes.*
 
 This error occurs when the driver attempts to process a response that exceeds the configured maximum response size.
-The most direct way to fix this problem is to increase the `maxResponseContentLength` setting in the driver.
+Responses are now streamed rather than buffered to a fixed size, so this client-side cap no longer exists. If large
+responses are causing timeouts, increase the `readTimeout` on the driver and consider applying server-side limits
+(such as result iteration or serialization limits) to constrain the size of responses being returned.
+
+Note that no driver timeout bounds the *total* duration of a request once it is under way. `readTimeout` bounds the
+wait for the initial server response and the gap between response chunks, so a response that keeps producing chunks will not time out no matter how long it
+runs overall, and there is no client-side "overall" request timeout. If you need an absolute deadline, impose it in
+your application around the asynchronous API, for example by wrapping a `CompletableFuture` with a timeout:
+
+[source,java]
+----
+// bound the entire request (submit plus full result iteration) to 30 seconds
+final List<Result> results = client.submitAsync("g.V().out().out()")
+        .thenCompose(ResultSet::all)
+        .orTimeout(30, TimeUnit.SECONDS)
+        .get();
+----
 
 *TimeoutException*
 
@@ -1369,9 +1711,7 @@ where this occurs:
 The latter of the two can be addressed from the driver side in the following ways:
 
 * Increase the `maxWaitForConnection` allowing the client to wait a bit longer for a connection to become available.
-* Increase the number of requests allowed per connection by increasing the `maxSimultaneousUsagePerConnection` and
-`maxInProcessPerConnection` settings.
-* Increase the number of connections available in the connection pool by increasing the `maxConnectionPoolSize`.
+* Increase the number of connections available in the connection pool by increasing the `maxConnections`.
 
 The exception and logs (assuming they are enabled) should contain information about the state of the connection pool
 along with its connections which can help shed more light on which of these scenarios caused the problem. Some examples
@@ -1389,7 +1729,7 @@ _Client is likely issuing more requests than the pool size can handle_
 
 [source,text]
 ----
-Timed-out (150 MILLISECONDS) waiting for connection on Host{address=localhost/127.0.0.1:45940, hostUri=http://localhost:45940/gremlin}. Potential Cause: Number of active requests exceeds pool size. Consider increasing the value for maxConnectionPoolSize.
+Timed-out (150 MILLISECONDS) waiting for connection on Host{address=localhost/127.0.0.1:45940, hostUri=http://localhost:45940/gremlin}. Potential Cause: Number of active requests (1) exceeds pool size (1). Consider increasing the value for maxConnections.
 ConnectionPool (Host{address=localhost/127.0.0.1:45940, hostUri=http://localhost:45940/gremlin})
 Connection Pool Status (size=1 available=1 max=1 toCreate=0 bin=0 waiter=0)
 > Connection{channel=5a859d62 isDead=false borrowed=1 pending=1 markedReplaced=false closing=false created=2022-12-19T21:08:21.569613100Z thread=gremlin-driver-conn-scheduler-1}
@@ -1504,7 +1844,74 @@ java -cp target/run-examples-shaded.jar examples.BasicGremlin
 java -cp target/run-examples-shaded.jar examples.ModernTraversals
 ----
 
+[[gremlin-java-pdt]]
+=== Provider Defined Types
+
+Provider Defined Types (PDTs) allow graph providers to expose custom types through the driver. PDT values arrive as
+`CompositePDT` objects containing a name and fields map without any configuration.
+Consult your graph provider's documentation for the list of PDTs they support.
+
+Receiving a raw PDT:
+
+[source,java]
+----
+CompositePDT pdt = (CompositePDT) g.V().has("location").values("location").next();
+String typeName = pdt.getName();                   // "x:Point"
+Map<String, Object> fields = pdt.getFields();      // {x: 1.0, y: 2.0}
+----
+
+Working with raw `CompositePDT` objects is always available. The following two approaches are optional
+conveniences that automate conversion between PDT values and application types on both the request and response paths.
+
+Using a `PDTRegistry` for hydration and dehydration:
+----
+public class PointAdapter implements ProviderDefinedTypeAdapter<Point> {
+    @Override public String typeName() { return "x:Point"; }
+    @Override public Class<Point> targetClass() { return Point.class; }
+    @Override public Map<String, Object> toFields(Point p) { return Map.of("x", p.getX(), "y", p.getY()); }
+    @Override public Point fromFields(Map<String, Object> m) { return new Point((double) m.get("x"), (double) m.get("y")); }
+}
+----
+
+Register adapters via ServiceLoader by adding the fully qualified class name to
+`META-INF/services/org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefinedTypeAdapter`. The driver discovers
+adapters on the classpath and automatically hydrates/dehydrates.
+
+For simpler cases where you own the type, annotate it directly to avoid writing an adapter:
+
+Annotation-based conversion with `@ProviderDefined`:
+
+[source,java]
+----
+// includedFields: only serialize the listed fields
+@ProviderDefined(name = "x:Point", includedFields = {"x", "y"})
+public class Point {
+    private final double x;
+    private final double y;
+    private final String internalId; // not serialized
+    // constructor, getters...
+}
+
+// excludedFields: serialize all fields except those listed
+@ProviderDefined(name = "x:Timestamped", excludedFields = {"createdAt"})
+public class Timestamped {
+    private final String value;
+    private final long createdAt; // not serialized
+    // constructor, getters...
+}
+
+// send: Point is automatically dehydrated
+g.inject(new Point(1.0, 2.0, "internal")).iterate();
+
+// receive: PDT is automatically hydrated back to Point
+Point p = (Point) g.V().has("location").values("location").next();
+----
+
+Classes annotated with `@ProviderDefined` are automatically dehydrated when passed as traversal arguments and
+hydrated on deserialization without explicit registry configuration.
+
 [[gremlin-javascript]]
+[llms-summary="Using Gremlin from JavaScript/Node.js: installing the gremlin package, building traversals, and connecting to a remote Gremlin Server."]
 == Gremlin-JavaScript
 
 image:gremlin-js.png[width=130,float=right] Apache TinkerPop's Gremlin-JavaScript implements Gremlin within the
@@ -1570,11 +1977,18 @@ const g = traversal().with_(new DriverRemoteConnection('http://localhost:8182/gr
 }));
 ----
 
+NOTE: `auth.sigv4()` is only supported when running in Node.js. In a browser, `auth.sigv4()` throws an error as soon as
+it is called. `auth.basic()` works in both environments.
+
 Given that I/O operations in Node.js are asynchronous by default, <<terminal-steps,Terminal Steps>> return a `Promise`:
 
+* `Traversal.hasNext()`: Returns a `Promise` with a `Boolean` indicating whether a further result is available.
 * `Traversal.toList()`: Returns a `Promise` with an `Array` as result value.
 * `Traversal.next()`: Returns a `Promise` with a `{ value, done }` tuple as result value, according to the
 link:https://github.com/tc39/proposal-async-iteration[async iterator proposal].
+* `Traversal.next(amount)`: Returns a `Promise` with an `Array` of up to `amount` result values, the batched form
+of `next(n)` available in the other GLVs. The `Array` is always returned when an `amount` is supplied, so `next(1)`
+resolves to an `Array` of one value, and an `amount` of zero or less resolves to an empty `Array`.
 * `Traversal.iterate()`: Returns a `Promise` without a value.
 
 For example:
@@ -1598,11 +2012,11 @@ Some connection options can also be set on individual requests made through the 
 
 [source,javascript]
 ----
-const vertices = await g.with_('evaluationTimeout', 500).V().out('knows').toList()
+const vertices = await g.with_('timeoutMillis', 500).V().out('knows').toList()
 ----
 
-The following options are allowed on a per-request basis in this fashion: `batchSize`, `requestId`, `userAgent`,
-`bulkResults`, `materializeProperties` and `evaluationTimeout`.
+The following options are allowed on a per-request basis in this fashion: `batchSize`, `bulkResults`,
+`materializeProperties` and `timeoutMillis`.
 
 NOTE: When submitting traversals through `DriverRemoteConnection`, `bulkResults` defaults to `true` per-request
 to optimize result transfer. This does not apply to direct `Client.submit()` calls, where `bulkResults` must be
@@ -1674,20 +2088,87 @@ can be passed in the constructor of a new `Client` or `DriverRemoteConnection` :
 |Key |Type |Description |Default
 |url |String |The resource uri. |None
 |options |Object |The connection options. |{}
-|options.traversalSource |String |The traversal source. |'g'
-|options.headers |Object |Additional HTTP header key/values included with each request. |undefined
-|options.interceptors |RequestInterceptor/RequestInterceptor[] |One or more functions that can modify the HTTP request before it is sent. |undefined
+|options.traversalSource |String |The name of the remote `GraphTraversalSource`. |'g'
+|options.maxConnections |Number |Caps the number of concurrent connections per origin on the default dispatcher. |128
+|options.readTimeoutMillis |Number |Idle-read timeout in milliseconds. Bounds the wait for the initial server response and the idle time between response chunks, resetting per chunk. It is not a whole-request deadline. Maps to undici `headersTimeout` and `bodyTimeout`. |runtime default
+|options.maxResponseHeaderBytes |Number |The maximum size of the response headers in bytes (undici `maxHeaderSize`). |runtime default
+|options.keepAliveTimeMillis |Number |Idle time in milliseconds before TCP keep-alive probes begin. Enables `SO_KEEPALIVE` on the socket. Set to `0` to disable. |30000
+|options.proxy |String |An HTTP proxy URI. When set, requests are routed through an undici `ProxyAgent`. |undefined
+|options.compression |String |Response compression codec, `'none'` or `'deflate'`. |'deflate'
+|options.batchSize |Number |Connection-level default that fills a request's `batchSize` when it is left unset. |64
+|options.bulkResults |Boolean |Connection-level default for `bulkResults`, applied to every request unless overridden per-request. The `DriverRemoteConnection` traversal path defaults to `true` regardless of this setting. |false
+|options.logger |Object/Function |A logger object (with `debug`/`info`/`warn`/`error` methods, e.g. `console`) or a `(level, message, ...args)` callback. |none (disabled)
+|options.interceptors |RequestInterceptor/RequestInterceptor[] |One or more functions that can modify the HTTP request before it is sent, run in order. |undefined
+|options.auth |RequestInterceptor |An auth interceptor that is always appended to the end of the interceptor list so it runs last. |undefined
 |options.preciseNumbers |Boolean |When `true`, wraps deserialized numbers in typed wrappers that preserve the server's original type. |undefined
-|options.reader |GraphBinaryReader |The reader to use for deserializing responses. |GraphBinaryReader
-|options.writer |GraphBinaryWriter |The writer to use for serializing requests. |GraphBinaryWriter
+|options.responseSerializer |GraphBinaryReader |The reader to use for deserializing responses. Requests are always serialized as JSON and can only be customized through a <<gremlin-javascript-interceptors,request interceptor>>. |GraphBinaryReader
 |options.enableUserAgentOnConnect |Boolean |Determines if a user agent header will be sent with requests. |true
-|options.agent |Agent |A custom `node:http` or `node:https` Agent for connection pooling or proxy configuration. |undefined
+|options.pdtRegistry |PDTRegistry |A registry for hydrating and dehydrating <<gremlin-javascript-pdt,Provider Defined Types>>. |undefined
 |=========================================================
+
+TLS is configured through the Node.js/undici runtime (for example the `NODE_EXTRA_CA_CERTS` or
+`NODE_TLS_REJECT_UNAUTHORIZED` environment variables), not through driver options. Custom headers are set via an
+interceptor rather than a `headers` option, for example `interceptors: (req) => { req.headers['X-Custom'] = 'value'; }`.
+
+Note that no driver timeout bounds the *total* duration of a request once it is under way. `readTimeoutMillis` bounds the
+wait for the initial server response and the gap between response chunks, so a response that keeps producing chunks will not time out no matter how long it
+runs overall, and there is no client-side "overall" request timeout. If you need an absolute deadline, impose it in
+your application around the call by racing the `submit` promise against a timeout:
+
+[source,javascript]
+----
+// bound the entire request to 30 seconds
+const results = await Promise.race([
+  client.submit('g.V().out().out()'),
+  new Promise((_, reject) => setTimeout(() => reject(new Error('request timed out')), 30000)),
+]);
+----
+
+[[gremlin-javascript-interceptors]]
+=== RequestInterceptor
+
+Gremlin-JavaScript allows modification of the underlying HTTP request through `RequestInterceptor` functions. This is
+intended to be an advanced feature which means that you will need to understand how the implementation works in order
+to safely utilize it. Gremlin-JavaScript is written in a way that you should be able to interact with most
+ TinkerPop-enabled servers without having to use interceptors. This is intended for cases where the server has special
+ capabilities.
+
+A `RequestInterceptor` is a function with the signature `(request: HttpRequest) => void | Promise<void>` that mutates
+the `HttpRequest` in place (it returns nothing). A list of these is maintained and will be run sequentially for each
+request. When creating a `DriverRemoteConnection` or `Client`, the `interceptors` option accepts one interceptor or an
+array of interceptors. Order matters, so if one interceptor depends on another's output, ensure they are added in the
+correct order. Note that authentication (e.g. `auth.basic()`, `auth.sigv4()`) is also implemented using interceptors.
+The `auth` convenience on connection options appends the auth interceptor to the end of the list so it runs last.
+
+[source,javascript]
+----
+const { auth } = gremlin.driver;
+const g = traversal().with_(new DriverRemoteConnection('http://localhost:8182/gremlin', {
+  interceptors: [
+    auth.basic('myuser', 'mypassword'),
+    (request) => {
+      request.headers['X-Custom-Header'] = 'value';
+    }
+  ]
+}));
+----
+
+Each interceptor receives an `HttpRequest` whose `body` field initially contains a `RequestMessage`. The
+`RequestMessage` class is immutable (fields are private, accessed via getters). To customize the body by adding other
+fields, you must build a new `RequestMessage` via `RequestMessage.build(gremlin)` and its builder methods, or set a
+completely different body (such as a `Buffer`). By default, the driver serializes the body to JSON
+(`application/json`) by calling `HttpRequest.serializeBody()` after all interceptors have run. An interceptor that
+needs the serialized bytes (for example, to compute a signature hash) can call `serializeBody()` itself; the method
+is idempotent. If you require a GraphBinary-encoded request body instead of JSON, you can write a custom interceptor
+that serializes the `RequestMessage` with the GraphBinary writer and sets the resulting `Buffer` as the body.
+
+For an example of a simple `RequestInterceptor` that only modifies the header of the request, see
+link:https://github.com/apache/tinkerpop/blob/x.y.z/gremlin-js/gremlin-javascript/lib/driver/auth.ts[basic authentication].
 
 [[gremlin-javascript-logging]]
 === Logging
 
-IMPORTANT: 4.0.0-beta.2 Release - Event-based logging is not yet implemented for the HTTP driver. Listeners can be registered
+IMPORTANT: 4.0.0-beta.3 Release - Event-based logging is not yet implemented for the HTTP driver. Listeners can be registered
 but will not currently receive any events. This functionality is planned for a future release.
 
 The Gremlin-JavaScript driver emits connection events for logging and monitoring, but these events are silently ignored unless a listener is attached. Use the `addListener()` method to subscribe to events after creating a `DriverRemoteConnection` or `Client`:
@@ -1756,8 +2237,62 @@ To get a full understanding of this section, it would be good to start by readin
 section of this documentation, which discusses transactions in the general context of TinkerPop itself. This section
 builds on that content by demonstrating the transactional syntax for Javascript.
 
-IMPORTANT: 4.0.0-beta.2 Release - Transactions are not yet implemented for the HTTP driver. This functionality is
-planned for a future release.
+Gremlin-Javascript supports remote transactions over HTTP via two entry points: the Traversal API (`g.tx()`) and the
+Driver API (`client.transact()`).
+
+==== Traversal API
+
+[source,javascript]
+----
+const g = traversal().with_(new DriverRemoteConnection('http://localhost:8182/gremlin'));
+const tx = g.tx();
+const gtx = await tx.begin();
+
+await gtx.addV("person").property("name", "jorge").iterate();
+await gtx.addV("person").property("name", "josh").iterate();
+
+await tx.commit();
+----
+
+The transaction-bound source retains its owning transaction. Calling `gtx.tx()` returns the same `Transaction`, so
+lifecycle operations can also be performed from the source with calls such as `await gtx.tx().commit()`.
+
+==== Managed Transaction Blocks
+
+To avoid the manual begin/commit/rollback boilerplate, `g` provides an `executeInTx` method that manages the
+lifecycle. The callback receives the transaction-bound `gtx` and may be `async`; the transaction is committed when the
+callback resolves or rolled back if it throws. `executeInTx` resolves to whatever the callback returns:
+
+[source,javascript]
+----
+const g = traversal().with_(new DriverRemoteConnection('http://localhost:8182/gremlin'));
+
+// no return value
+await g.executeInTx(async (gtx) => {
+    await gtx.addV("person").property("name", "jorge").iterate();
+    await gtx.addV("person").property("name", "josh").iterate();
+});
+
+// returns the callback's value
+const count = await g.executeInTx((gtx) => gtx.V().count().next());
+----
+
+The transaction runs exactly once (no automatic retry). If the callback rejects, the original error is re-thrown after
+the rollback; if the commit fails, a rollback is still attempted and the commit error propagates.
+
+==== Driver API
+
+[source,javascript]
+----
+const client = new Client('http://localhost:8182/gremlin', { traversalSource: 'g' });
+const tx = client.transact();
+await tx.begin();
+await tx.submit("g.addV('person').property('name','alice')");
+await tx.commit();
+----
+
+IMPORTANT: Each traversal must be `await`ed before submitting the next. Transactions are not thread-safe. The default
+behavior of `close()` is to rollback. Transactions are single-use and cannot be reused after commit or rollback.
 
 [source,javascript]
 ----
@@ -1784,8 +2319,17 @@ Promise.all([
 [[gremlin-javascript-gvalue]]
 === GValue Parameterization
 
-IMPORTANT: 4.0.0-beta.2 Release - `GValue` parameterization is not yet implemented for the JavaScript driver. This
-functionality is planned for a future release.
+A `GValue` is an encapsulation of a parameter name and value. A <<traversal-parameterization,subset of gremlin steps>>
+are able to accept GValues. When constructing a `GraphTraversal` with such steps in JavaScript, a GValue may be passed
+in the traversal to utilize a parameter in place of a literal.
+
+[source,javascript]
+----
+const GValue = gremlin.process.GValue;
+
+g.V().has('name', new GValue('name', 'marko'));
+g.mergeV(new GValue('vertexPattern', { name: 'marko' }));
+----
 
 [[gremlin-javascript-scripts]]
 === Submitting Scripts
@@ -1812,21 +2356,21 @@ for (const vertex of result2) {
 
 The `client.submit()` functions accept a `requestOptions` which expects a dictionary. The `requestOptions`
 provide a way to include options that are specific to the request made with the call to `submit()`. A good use-case for
-this feature is to set a per-request override to the `evaluationTimeout` so that it only applies to the current
-request.
+this feature is to set a per-request override to the `timeoutMillis` so that it only applies to the current request.
 
 [source,javascript]
 ----
-const result = await client.submit("g.V().repeat(both()).times(100)", null, { evaluationTimeout: 5000 })
+const result = await client.submit("g.V().repeat(both()).times(100)", null, { timeoutMillis: 5000 })
 ----
 
-The following options are allowed on a per-request basis in this fashion: `batchSize`, `requestId`, `userAgent`,
-`bulkResults`, `materializeProperties` and `evaluationTimeout`.
+The following options are allowed on a per-request basis in this fashion: `batchSize`, `bulkResults`, `language`,
+`materializeProperties` and `timeoutMillis`.
 
-IMPORTANT: The preferred method for setting a per-request timeout for scripts is demonstrated above, but those familiar
-with bytecode may try `g.with(EVALUATION_TIMEOUT, 500)` within a script. Scripts with multiple traversals and multiple
+IMPORTANT: The preferred method for setting a per-request timeout for scripts is demonstrated above, but a script may
+also use `g.with("timeoutMillis", 500)`. Scripts with multiple traversals and multiple
 timeouts will be interpreted as a sum of all timeouts identified in the script for that request.
 
+[[gremlin-javascript-streaming]]
 ==== Streaming Results
 
 `client.submit()` buffers the entire response before returning a `ResultSet`. When working with larger result sets it
@@ -1852,13 +2396,13 @@ for await (const item of client.stream('g.V()', null)) {
 }
 ----
 
-`client.stream()` accepts the same parameters as `client.submit()`: a script string, optional bindings, and optional
+`client.stream()` accepts the same arguments as `client.submit()`: a script string, optional parameters, and optional
 per-request settings.
 
 [source,javascript]
 ----
 try {
-  for await (const item of client.stream('g.V().has("age", gt(age))', { age: 30 }, { evaluationTimeout: 5000 })) {
+  for await (const item of client.stream('g.V().has("age", gt(age))', { age: 30 }, { timeoutMillis: 5000 })) {
     console.log(item);
   }
 } catch (err) {
@@ -2025,19 +2569,30 @@ unwrap('hello');    // 'hello'
 
 * JavaScript's `Number` type is an IEEE 754 double-precision float. `Float`, `Byte`, and `Short` values from the server
 are deserialized as `Number` and lose their original type information. Use `preciseNumbers: true` to preserve the
-original types — see <<gremlin-javascript-numeric-types>>.
+original types. See <<gremlin-javascript-numeric-types>>.
 * `Long` values outside the safe integer range (|n| > 2^53 - 1) are deserialized as `BigInt` to preserve precision.
 Values within the safe range are deserialized as `Number`. The same server type may produce different JavaScript types.
 * `Number.isInteger(1.0)` is `true` in JavaScript, so the driver cannot distinguish integer values from whole-number
-doubles. `BigDecimal` is not implemented. Typed wrappers (e.g. `toInt()`, `toDouble()`) can be used to control the
-exact type sent to the server — see <<gremlin-javascript-numeric-types>>.
+doubles. Typed wrappers (e.g. `toInt()`, `toDouble()`) can be used to control the exact type sent to the server. See
+<<gremlin-javascript-numeric-types>>.
+* GraphBinary `BigDecimal`, `Char`, and `Duration` values are not implemented.
+* JavaScript `Date` values do not support the extreme values of GraphBinary's `DateTime` maximum and minimum. Those
+GraphBinary `DateTime` values are not supported.
 * The driver applies GremlinLang type suffixes automatically based on value characteristics: integers within the 32-bit
 signed range are unsuffixed (Int), integers beyond that up to `Number.MAX_SAFE_INTEGER` use the `L` suffix (Long),
 non-integer numbers and integers beyond the safe range use the `D` suffix (Double), and `BigInt` values use the `N`
 suffix (BigInteger).
-* The `subgraph()`-step is not supported by any variant that is not running on the Java Virtual Machine as there is
-no `Graph` instance to deserialize a result into on the client-side. A workaround is to replace the step with
-`aggregate(local)` and then convert those results to something the client can use locally.
+* Gremlin `Character` and `Duration` values are not supported. If the server returns one of these types, the client
+throws a deserialization error for the unknown type code rather than failing silently or coercing the value. These
+types also cannot currently be produced from the client, as GremlinLang provides no literal syntax for them, so this
+failure can only be observed with a server that emits them directly.
+* The `subgraph()`-step returns a detached `Graph` data container exposing
+`vertices: Map<any, Vertex>` and `edges: Map<any, Edge>`. The result is not a live `Graph` instance: mutating the
+collections has no effect on the source graph. Passing it to `traversal().with_(...)` does not raise an error
+immediately, but yields a non-functional traversal source that fails only when a traversal is executed against it
+(surfacing as an opaque `this.connection.submit is not a function`). To re-query
+subgraph elements against the original graph, extract their `id` and use `g.V(id)` / `g.E(id)` on the original
+`GraphTraversalSource`.
 
 [[gremlin-javascript-examples]]
 === Application Examples
@@ -2101,6 +2656,43 @@ node basic-gremlin.js
 node modern-traversals.js
 ----
 
+[[gremlin-javascript-pdt]]
+=== Provider Defined Types
+
+Provider Defined Types (PDTs) allow graph providers to expose custom types through the driver. PDT values arrive as
+`CompositePDT` objects containing a `name` and `fields` map without any configuration.
+Consult your graph provider's documentation for the list of PDTs they support.
+
+Receiving a raw PDT:
+
+[source,javascript]
+----
+const results = await g.V().has('location').values('location').toList();
+const pdt = results[0];
+console.log(pdt.name);   // "x:Point"
+console.log(pdt.fields); // { x: 1.0, y: 2.0 }
+----
+
+Working with raw `CompositePDT` objects is always available. Using a `PDTRegistry` is an
+optional convenience that automates conversion between PDT values and application types on both the request and
+response paths.
+
+[source,javascript]
+----
+const { PDTRegistry } = require('gremlin');
+
+const registry = new PDTRegistry();
+registry.register('x:Point', {
+    serialize: (point) => ({ x: point.x, y: point.y }),
+    deserialize: (fields) => new Point(fields.x, fields.y)
+}, Point);
+
+const g = traversal().with_(new DriverRemoteConnection('http://localhost:8182/gremlin', {
+    pdtRegistry: registry
+}));
+----
+
+[llms-summary="Using Gremlin from .NET: installing the Gremlin.Net package, its C# API with PascalCase step names, and connecting to a remote Gremlin Server."]
 anchor:gremlin-DotNet[]
 [[gremlin-dotnet]]
 == Gremlin.Net
@@ -2147,7 +2739,7 @@ include::../../../gremlin-dotnet/test/Gremlin.Net.IntegrationTest/Docs/Reference
 
 Authentication is handled through request interceptors. Interceptors are functions that modify the outgoing HTTP
 request before it is sent — they are used for authentication, custom headers, or request signing. The `Auth` class
-provides `BasicAuth()` and `SigV4Auth()` as built-in interceptors:
+provides `Basic()` and `SigV4()` as built-in interceptors:
 
 [source,csharp]
 ----
@@ -2155,12 +2747,12 @@ provides `BasicAuth()` and `SigV4Auth()` as built-in interceptors:
 var server = new GremlinServer("localhost", 8182, enableSsl: true);
 using var client = new GremlinClient(server,
     connectionSettings: new ConnectionSettings { SkipCertificateValidation = true },
-    interceptors: new[] { Auth.BasicAuth("username", "password") });
+    interceptors: new[] { Auth.Basic("username", "password") });
 
 // SigV4 authentication
 var server = new GremlinServer("localhost", 8182, enableSsl: true);
 using var client = new GremlinClient(server,
-    interceptors: new[] { Auth.SigV4Auth("service-region", "service-name") });
+    interceptors: new[] { Auth.Sigv4("service-region", "service-name") });
 ----
 
 If you authenticate to a remote <<connecting-gremlin-server,Gremlin Server>> or
@@ -2172,12 +2764,12 @@ For instance to set request timeout to 500 milliseconds:
 
 [source,csharp]
 ----
-var l = g.With(Tokens.ArgsEvalTimeout, 500).V().Out("knows").Count().ToList();
+var l = g.With(Tokens.ArgsTimeoutMillis, 500).V().Out("knows").Count().ToList();
 ----
 
-The following options are allowed on a per-request basis in this fashion: `batchSize`, `bulkResults`, `userAgent`,
-`materializeProperties`, and `evaluationTimeout`. These options are available as constants on the
-`Gremlin.Net.Driver.Tokens` class.
+The following options are allowed on a per-request basis in this fashion: `batchSize`, `bulkResults`, `language`,
+`materializeProperties`, and `timeoutMillis`. These options are available as constants on the `Gremlin.Net.Driver.Tokens`
+class.
 
 NOTE: When submitting traversals through `DriverRemoteConnection`, `bulkResults` defaults to `true` per-request
 to optimize result transfer. This does not apply to direct `GremlinClient.SubmitAsync()` calls, where `bulkResults`
@@ -2216,17 +2808,36 @@ constructor:
 [width="100%",cols="3,10,^2",options="header"]
 |=========================================================
 |Key |Description |Default
-|ConnectionTimeout |The TCP connection timeout. |15 s
-|IdleConnectionTimeout |How long idle connections stay in the pool before being closed. |180 s
-|MaxConnectionsPerServer |The maximum concurrent connections to a single server. |128
-|KeepAliveInterval |The TCP keep-alive probe interval. |30 s
-|EnableCompression |Whether to request deflate compression. |false
+|ConnectTimeoutMillis |The TCP connect timeout in milliseconds (transport establishment, i.e. TCP connect plus TLS handshake where applicable, not an HTTP request timeout). Also settable as `ConnectTimeout` (a `TimeSpan`). |5000
+|IdleTimeoutMillis |How long in milliseconds idle connections stay in the pool before being closed. Also settable as `IdleTimeout` (a `TimeSpan`). |180000
+|MaxConnections |The maximum concurrent connections to a single server. |128
+|KeepAliveTimeMillis |Idle time in milliseconds before TCP keep-alive probes begin on an otherwise idle connection. Enables `SO_KEEPALIVE` on the socket and sets the per-socket idle time on Windows, Linux, and macOS; on other platforms keep-alive stays enabled at the OS default idle time. Also settable as `KeepAliveTime` (a `TimeSpan`). |30000
+|Compression |The response compression algorithm (`Compression.None` or `Compression.Deflate`). |`Compression.Deflate`
+|BatchSize |The connection-level default batch size used to fill the per-request batch size when it is unset. |64
+|Ssl |The `SslClientAuthenticationOptions` used for HTTPS connections (client certificates, custom CA, protocols, etc.). `SkipCertificateValidation` is applied to an internal copy of these options rather than mutating the object you provide. |`null`
+|MaxResponseHeaderBytes |The maximum allowed size, in bytes, of the response headers. `0` leaves the handler default unchanged (converted internally to the handler's native kilobyte unit). |0
+|ReadTimeoutMillis |Idle-read timeout in milliseconds. Bounds the wait for the initial server response and the idle time between response chunks, resetting per chunk. It is not a whole-request deadline. `0` (the default) disables it. Also settable as `ReadTimeout` (a `TimeSpan`; `Timeout.InfiniteTimeSpan` disables). |0
+|Proxy |The `IWebProxy` used for connections. |`null`
 |EnableUserAgentOnConnect |Enables sending a user agent to the server on requests.
 More details can be found in provider docs
 link:https://tinkerpop.apache.org/docs/x.y.z/dev/provider/#_graph_driver_provider_requirements[here].|true
 |BulkResults |Whether to send the bulkResults header on all requests. |false
-|SkipCertificateValidation |Whether to skip SSL certificate validation. Only use for testing with self-signed certificates. |false
+|SkipCertificateValidation |Whether to skip SSL certificate validation. Only use for testing with self-signed certificates. When `Ssl` is also provided, the accept-all callback is set on an internal copy so the supplied options object is never mutated. |false
 |=========================================================
+
+Note that no driver timeout bounds the *total* duration of a request once it is under way. `ReadTimeout` bounds
+the wait for the initial server response and the gap between response chunks, so a response that keeps producing
+chunks will not time out no matter how long it
+runs overall, and there is no client-side "overall" request timeout. If you need an absolute deadline, impose it in
+your application by passing a cancellation token that cancels after the deadline:
+
+[source,csharp]
+----
+// bound the entire request (submit plus full result iteration) to 30 seconds
+using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+var results = await client.SubmitAsync<Vertex>(
+    "g.V().out().out()", cancellationToken: cts.Token);
+----
 
 ==== GremlinClient Settings
 
@@ -2235,13 +2846,56 @@ The following options can be passed to the `GremlinClient` constructor:
 [width="100%",cols="3,10,^2",options="header"]
 |=========================================================
 |Key |Description |Default
-|messageSerializer |A single `IMessageSerializer` used for both request and response. |`GraphBinary4MessageSerializer`
-|requestSerializer |The serializer for outgoing requests. When `null`, interceptors must serialize the body. |`GraphBinary4MessageSerializer`
-|responseSerializer |The serializer for incoming responses. Always required. |`GraphBinary4MessageSerializer`
+|responseSerializer |The serializer for incoming responses. Requests are always serialized as JSON and can only be customized through a <<gremlin-dotnet-interceptors,request interceptor>>. |`GraphBinary4MessageSerializer`
 |connectionSettings |The `ConnectionSettings` for the HTTP connection. |default `ConnectionSettings`
 |loggerFactory |An `ILoggerFactory` for logging. |`NullLoggerFactory`
 |interceptors |A list of `Func<HttpRequestContext, Task>` that modify HTTP requests before sending. |_none_
+|pdtRegistry |A `PDTRegistry` for hydrating and dehydrating <<gremlin-dotnet-pdt,Provider Defined Types>>. |`null`
+|auth |A single `Func<HttpRequestContext, Task>` for authentication. Always appended to the end of the interceptor list so it runs last. |_none_
 |=========================================================
+
+[[gremlin-dotnet-interceptors]]
+=== RequestInterceptor
+
+Gremlin.Net allows modification of the underlying HTTP request through request interceptors. This is
+intended to be an advanced feature which means that you will need to understand how the implementation works in order
+to safely utilize it. Gremlin.Net is written in a way that you should be able to interact with most TinkerPop-enabled
+servers without having to use interceptors. This is intended for cases where the server has special capabilities.
+
+A request interceptor is a `Func<HttpRequestContext, Task>` that mutates the `HttpRequestContext` in place (it returns
+`Task` for async support but does not produce a value). A list of these is maintained and will be run sequentially for
+each request. When creating a `GremlinClient`, the `interceptors` parameter accepts an ordered collection of
+interceptors. Order matters, so if one interceptor depends on another's output, ensure they are added in the correct
+order. Note that authentication (e.g. `Auth.Basic()`, `Auth.Sigv4()`) is also implemented using interceptors.
+These factory methods return interceptor delegates that can be included in the `interceptors` list. Alternatively, the
+`auth` parameter on `GremlinClient` appends the auth interceptor to the end of the list so it runs last.
+
+[source,csharp]
+----
+var server = new GremlinServer("localhost", 8182);
+using var client = new GremlinClient(server,
+    interceptors: new Func<HttpRequestContext, Task>[]
+    {
+        Auth.Basic("username", "password"),
+        context =>
+        {
+            context.Headers["X-Custom-Header"] = "value";
+            return Task.CompletedTask;
+        }
+    });
+----
+
+Each interceptor receives an `HttpRequestContext` whose `Body` property initially contains a `RequestMessage`.
+The `RequestMessage` has an immutable `Gremlin` property and a mutable `Fields` dictionary, so an interceptor can
+add or modify fields directly. Alternatively, you can replace the body entirely. By default, the driver serializes
+the body to JSON (`application/json`) by calling `HttpRequestContext.SerializeBody()` after all interceptors have
+run. An interceptor that needs the serialized bytes (for example, to compute a signature hash) can call
+`SerializeBody()` itself; the method is idempotent. If you require a GraphBinary-encoded request body instead of
+JSON, you can write a custom interceptor that serializes the `RequestMessage` with the GraphBinary serializer and
+sets the resulting `byte[]` as the body.
+
+For an example of a simple request interceptor that only modifies the header of the request, see
+link:https://github.com/apache/tinkerpop/blob/x.y.z/gremlin-dotnet/src/Gremlin.Net/Driver/Auth.cs[basic authentication].
 
 [[gremlin-dotnet-logging]]
 === Logging
@@ -2257,8 +2911,23 @@ include::../../../gremlin-dotnet/test/Gremlin.Net.IntegrationTest/Docs/Reference
 [[gremlin-dotnet-serialization]]
 === Serialization
 
-The Gremlin.Net driver uses GraphBinary 4.0 by default. A custom serializer can be provided when creating the
-`GremlinClient`. The driver supports separate request and response serializers, or a single serializer for both:
+The Gremlin.Net driver uses GraphBinary 4.0 for responses by default. A custom response serializer can be provided
+when creating the `GremlinClient`. Requests are always serialized as JSON (`application/json`) and that behavior is
+not configurable, however it can be modified with a `RequestInterceptor`.
+
+The driver is distributed as the `Gremlin.Net` package on NuGet and is installed as shown in <<gremlin-dotnet,Gremlin.Net>>.
+The `GremlinClient` and `GremlinServer` types belong to the `Gremlin.Net.Driver` namespace and the
+`GraphBinary4MessageSerializer` belongs to the `Gremlin.Net.Structure.IO.GraphBinary4` namespace, so the following
+`using` directives are required for the example below to compile:
+
+[source,csharp]
+----
+using Gremlin.Net.Driver;
+using Gremlin.Net.Structure.IO.GraphBinary4;
+----
+
+The response serializer is passed to the `GremlinClient` constructor. After the client is created, a traversal can be
+submitted and its result retrieved:
 
 [source,csharp]
 ----
@@ -2283,8 +2952,68 @@ encoded in the Gremlin.Net GremlinLang and transmitted to the Gremlin traversal 
 [[gremlin-dotnet-transactions]]
 === Transactions
 
-IMPORTANT: Transaction support over HTTP is not yet implemented in Gremlin.Net. This will be addressed by the official
-4.0.0 release.
+Gremlin.Net supports remote transactions over HTTP via two entry points: the Traversal API (`g.Tx()`) and the
+Driver API (`client.Transact()`).
+
+==== Traversal API
+
+[source,csharp]
+----
+var g = AnonymousTraversalSource.Traversal().With(new DriverRemoteConnection("localhost", 8182));
+
+var tx = g.Tx();
+var gtx = await tx.BeginAsync();
+
+await gtx.AddV("person").Property("name", "jorge").Promise(t => t.Iterate());
+await gtx.AddV("person").Property("name", "josh").Promise(t => t.Iterate());
+
+await tx.CommitAsync();
+----
+
+The transaction-bound source retains its owning transaction. Calling `gtx.Tx()` returns the same `RemoteTransaction`,
+so lifecycle operations can also be performed from the source with calls such as `await gtx.Tx().CommitAsync()`.
+
+==== Managed Transaction Blocks
+
+To avoid the manual begin/commit/rollback boilerplate, `g` provides closure methods that manage the
+lifecycle. The callback receives the transaction-bound `gtx` and the transaction is committed when it completes or
+rolled back if it throws. Use `ExecuteInTxAsync` when the body returns nothing and `EvaluateInTxAsync` when it returns
+a value; both accept an optional `CancellationToken`:
+
+[source,csharp]
+----
+var g = AnonymousTraversalSource.Traversal().With(new DriverRemoteConnection("localhost", 8182));
+
+// ExecuteInTxAsync: no return value
+await g.ExecuteInTxAsync(async gtx =>
+{
+    await gtx.AddV("person").Property("name", "jorge").Promise(t => t.Iterate());
+    await gtx.AddV("person").Property("name", "josh").Promise(t => t.Iterate());
+});
+
+// EvaluateInTxAsync: returns the body's value
+var count = await g.EvaluateInTxAsync(gtx => gtx.V().Count().Promise(t => t.Next()));
+----
+
+The transaction runs exactly once (no automatic retry). If the callback throws, the original exception is re-thrown
+after the rollback; if the commit fails, a rollback is still attempted and the commit error propagates.
+
+==== Driver API
+
+[source,csharp]
+----
+using var client = new GremlinClient(new GremlinServer("localhost", 8182));
+var tx = client.Transact("g");
+await tx.BeginAsync();
+
+await tx.SubmitAsync<object>("g.addV('person').property('name','alice')");
+
+await tx.CommitAsync();
+----
+
+NOTE: Submissions within a transaction are serialized internally via a semaphore to guarantee the server receives
+requests in order. Transactions are not thread-safe. The default behavior of `DisposeAsync()` is to rollback. Use
+`await using` for automatic cleanup. Transactions are single-use and cannot be reused after commit or rollback.
 
 [[gremlin-dotnet-gvalue]]
 === GValue Parameterization
@@ -2296,6 +3025,8 @@ the traversal to utilize a parameter in place of a literal.
 [source,csharp]
 ----
 g.V().Has("name", new GValue<string>("name", "marko"));
+g.MergeV(new GValue<IDictionary<object, object>>("vertexPattern",
+    new Dictionary<object, object> { { "name", "marko" } }));
 ----
 
 [[gremlin-dotnet-scripts]]
@@ -2318,15 +3049,51 @@ include::../../../gremlin-dotnet/test/Gremlin.Net.IntegrationTest/Docs/Reference
 ==== Per Request Settings
 
 A `RequestMessage` can be built with additional fields using the builder pattern. A good use-case for this
-feature is to set a per-request override to the `evaluationTimeout` so that it only applies to the current request.
+feature is to set a per-request override to the `timeoutMillis` so that it only applies to the current request.
 
 [source,csharp]
 ----
 include::../../../gremlin-dotnet/test/Gremlin.Net.IntegrationTest/Docs/Reference/GremlinVariantsTests.cs[tags=submittingScriptsWithTimeout]
 ----
 
-The following options are allowed on a per-request basis in this fashion: `batchSize`, `bulkResults`, `userAgent`, `materializeProperties`
-and `evaluationTimeout`. These options are available as constants on the `Gremlin.Net.Driver.Tokens` class.
+The following options are allowed on a per-request basis in this fashion: `batchSize`, `bulkResults`, `language`, `materializeProperties`
+and `timeoutMillis`. These options are available as constants on the `Gremlin.Net.Driver.Tokens` class.
+
+[[gremlin-dotnet-streaming]]
+==== Streaming Results
+
+`GremlinClient.SubmitAsync<T>()` returns a `ResultSet<T>` that implements `IAsyncEnumerable<T>`, backed by a channel
+that is filled as results are deserialized from the response. Results become available to the caller incrementally
+as they are received. `ResultSet<T>` can be consumed directly with `await foreach`, or materialized into a
+`List<T>` with `ToListAsync()` when that is more convenient:
+
+[source,csharp]
+----
+// consume incrementally
+var resultSet = await client.SubmitAsync<int>("g.inject(1,2,3)");
+await foreach (var item in resultSet) { }
+
+// or materialize into a list
+var otherResultSet = await client.SubmitAsync<int>("g.inject(1,2,3)");
+var list = await otherResultSet.ToListAsync();
+----
+
+Because results are consumed incrementally, a server-side error (`ResponseException`) surfaces while the result
+set is being iterated rather than when `SubmitAsync()` is called. Error handling should wrap the iteration or
+`ToListAsync()` call, not `SubmitAsync()` itself:
+
+[source,csharp]
+----
+var resultSet = await client.SubmitAsync<int>("invalid");
+try
+{
+    var list = await resultSet.ToListAsync();
+}
+catch (ResponseException ex) { }
+----
+
+The traversal API (`Next()`, `ToList()`, `HasNext()`, `ToSet()`, `Iterate()`) blocks internally on the underlying
+async stream, so it throws `ResponseException` directly from those methods.
 
 ==== Request Interceptors
 
@@ -2337,12 +3104,12 @@ order and are useful for authentication, custom headers, or request signing.
 [source,csharp]
 ----
 var client = new GremlinClient(new GremlinServer("localhost", 8182),
-    interceptors: new[] { Auth.BasicAuth("username", "password") });
+    interceptors: new[] { Auth.Basic("username", "password") });
 ----
 
-When `requestSerializer` is set to `null`, the request body is passed as a `RequestMessage` to interceptors, and an
-interceptor is responsible for serializing it to `byte[]` and setting the `Content-Type` header. This follows the
-Python driver's `request_serializer=None` pattern and is useful for custom serialization workflows.
+Each interceptor receives the request body as a `RequestMessage`. By default, the driver serializes the body to JSON
+(`application/json`) after all interceptors have run. An interceptor that requires a different body encoding can
+serialize the `RequestMessage` to `byte[]` itself and set the `Content-Type` header accordingly.
 
 anchor:gremlin-net-dsl[]
 [[gremlin-dotnet-dsl]]
@@ -2401,7 +3168,7 @@ would become the following in C#:
 ----
 g.V().Has("Person","name","marko").
   Out("knows").
-  ElementMap().ToList();
+  ElementMap<object>().ToList();
 ----
 
 In addition to the uppercase change, also note the conversion of the single quotes to double quotes as is expected for
@@ -2434,10 +3201,6 @@ g.V().GroupCount<object>().By("age")
 
 where "age" is not a valid key for all vertices in a way that will remove the need for a `null` to be returned.
 
-Finally, the enum construct for `Cardinality` cannot have functions attached to it the way it can be done in Java,
-therefore cardinality functions that take a value like `list()`, `set()`, and `single()` are referenced from a
-`CardinalityValue` class rather than `Cardinality` itself.
-
 [source,csharp]
 ----
 g.V().Has("age").GroupCount<object>().By("age")
@@ -2447,21 +3210,57 @@ g.V().HasLabel("person").GroupCount<object>().By("age")
 Either of the above two options accomplishes the desired goal as both prevent `groupCount()` from having to process
 the possibility of `null`.
 
+Finally, the enum construct for `Cardinality` cannot have functions attached to it the way it can be done in Java,
+therefore cardinality functions that take a value like `CardinalityValue.List(value)`, `CardinalityValue.Set(value)`,
+and `CardinalityValue.Single(value)` are referenced from a `CardinalityValue` class rather than `Cardinality` itself.
+
+[source,csharp]
+----
+g.AddV("person").Property("nicknames", CardinalityValue.List("okram"));
+----
+
 anchor:gremlin-net-limitations[]
 [[gremlin-dotnet-limitations]]
 === Limitations
 
-* The `subgraph()`-step is not supported by any variant that is not running on the Java Virtual Machine as there is
-no `Graph` instance to deserialize a result into on the client-side. A workaround is to replace the step with
-`aggregate(local)` and then convert those results to something the client can use locally.
-* `DateTimeOffset` cannot represent the extreme values of Gremlin's `OffsetDateTime` maximum and minimum,
-so offset date-time values at those boundaries will fail to deserialize.
-* Gremlin's `Duration` type has a much larger range than C#'s `TimeSpan`, so extreme duration values (such as
-`Duration.FOREVER`) that exceed `TimeSpan.MaxValue` or `TimeSpan.MinValue` will fail to deserialize.
+Several Gremlin types have a wider domain or finer precision than their closest C# counterparts. When the server
+returns a value that falls outside the C# range, the outcome depends on the type. In most cases Gremlin.Net raises
+an exception as it deserializes the response, so the error surfaces on the client at the point the result is read.
+In a few cases the value is instead altered without any error. A character outside the Basic Multilingual Plane is
+reconstructed incorrectly, and a fractional second finer than the C# tick is silently truncated.
+
+* The `subgraph()`-step returns a detached `Graph` data container exposing
+`Vertices: IDictionary<object, Vertex>` and `Edges: IDictionary<object, Edge>`. The result is not a live `Graph`
+instance: mutating the collections has no effect on the source graph, and it cannot be passed to
+`traversal().with(...)`. To re-query subgraph elements against the original graph, extract their `Id` and use
+`g.V(id)` / `g.E(id)` on the original `GraphTraversalSource`.
+* C#'s `DateTimeOffset` accepts offsets only in the range `-14:00` to `+14:00` and years from 1 to 9999, while
+Gremlin's `OffsetDateTime` permits offsets up to `+18:00`/`-18:00` and a much wider year range. When the offset
+or year of the returned value lies outside the C# range, the `DateTimeOffset` constructor rejects it and
+Gremlin.Net raises an `ArgumentOutOfRangeException` while reading the result. The offset bound is the more common
+trigger, since a value such as `datetime('2018-03-22T00:35:44.741+18:00')` is a valid `OffsetDateTime` that
+cannot be represented as a `DateTimeOffset`. A second offset restriction concerns granularity rather than
+magnitude. `DateTimeOffset` records its UTC offset in whole minutes, whereas Java and GraphBinary express the
+offset in seconds, so an offset that carries a sub-minute component cannot be represented and Gremlin.Net raises
+an `ArgumentException` while reading the result. Precision is likewise a separate consideration from range.
+Gremlin represents time with nanosecond precision, while `DateTimeOffset` measures time in 100-nanosecond ticks,
+so a fractional second finer than one tick is silently truncated on deserialization without any error, and a
+value such as `00.123456789` is read back as `00.1234567`.
+* Gremlin's `Duration` type has a much larger range than C#'s `TimeSpan`, so a duration whose magnitude exceeds
+`TimeSpan.MaxValue` or `TimeSpan.MinValue` cannot be constructed and Gremlin.Net raises an `OverflowException`
+while reading the result. This affects only extreme values such as `Duration.FOREVER`. Durations within the
+`TimeSpan` range are unaffected. As with `DateTimeOffset`, precision is a separate consideration from range.
+Gremlin represents a duration with nanosecond precision, while `TimeSpan` measures time in 100-nanosecond ticks,
+so a fractional-second component finer than one tick is silently truncated on deserialization without any error.
 * Gremlin's `BigDecimal` supports up to 33 digits of precision while C#'s `decimal` type is limited to 28-29
-significant digits, so high-precision values may lose accuracy or fail to deserialize.
-* C# `Dictionary` does not allow `null` keys, so `Map` results with `null` keys (e.g. from `group()` or
-`groupCount()` on a missing property) will fail during deserialization.
+significant digits. When the returned value exceeds the `decimal` range, the conversion overflows and
+Gremlin.Net raises an `OverflowException` while reading the result.
+* C#'s `char` holds a single UTF-16 code unit and cannot represent a code point outside the Basic Multilingual
+Plane, which GraphBinary encodes as a four-byte `Char`. Such a value is decoded into a surrogate pair, of which
+only the leading surrogate is returned, so the character is silently corrupted rather than raising an error.
+Characters within the Basic Multilingual Plane are unaffected.
+* C#'s `Dictionary` does not allow `null` keys, so a `Map` result that contains a `null` key cannot be populated
+and Gremlin.Net raises an `IOException` while reading the result.
 
 anchor:gremlin-dotnet-template[]
 anchor:dotnet-application-examples[]
@@ -2548,7 +3347,84 @@ dotnet run --project Connections
 dotnet run --project ModernTraversals
 ----
 
+[[gremlin-dotnet-pdt]]
+=== Provider Defined Types
+
+Provider Defined Types (PDTs) allow graph providers to expose custom types through the driver. PDT values arrive as
+`CompositePDT` objects containing a `Name` and `Fields` dictionary without any configuration.
+Consult your graph provider's documentation for the list of PDTs they support.
+
+Receiving a raw PDT:
+
+[source,csharp]
+----
+var pdt = (CompositePDT) g.V().Has("location").Values<object>("location").Next();
+Console.WriteLine(pdt.Name);   // "x:Point"
+Console.WriteLine(pdt.Fields); // { x: 1.0, y: 2.0 }
+----
+
+Working with raw `CompositePDT` objects is always available. The following two approaches are optional
+conveniences that automate conversion between PDT values and application types on both the request and response paths.
+
+Using a `PDTRegistry` for hydration and dehydration:
+
+[source,csharp]
+----
+public class PointAdapter : IProviderDefinedTypeAdapter<Point>
+{
+    public string TypeName => "x:Point";
+
+    public Point FromFields(IReadOnlyDictionary<string, object?> fields) =>
+        new Point((double)fields["x"], (double)fields["y"]);
+
+    public IReadOnlyDictionary<string, object?> ToFields(Point value) =>
+        new Dictionary<string, object?> { ["x"] = value.X, ["y"] = value.Y };
+}
+
+var registry = new PDTRegistry();
+registry.Register(new PointAdapter());
+
+using var client = new GremlinClient(new GremlinServer("localhost", 8182), pdtRegistry: registry);
+----
+
+The `PDTRegistry.Create()` method scans loaded assemblies for `IProviderDefinedTypeAdapter<T>`
+implementations and registers them automatically.
+
+For simpler cases where you own the type, annotate it directly to avoid writing an adapter:
+
+Attribute-based conversion with `[ProviderDefined]`:
+
+[source,csharp]
+----
+// IncludedFields: only serialize the listed fields
+[ProviderDefined(Name = "x:Point", IncludedFields = new[] { "X", "Y" })]
+public class Point
+{
+    public double X { get; set; }
+    public double Y { get; set; }
+    public string InternalId { get; set; } // not serialized
+}
+
+// ExcludedFields: serialize all fields except those listed
+[ProviderDefined(Name = "x:Timestamped", ExcludedFields = new[] { "CreatedAt" })]
+public class Timestamped
+{
+    public string Value { get; set; }
+    public long CreatedAt { get; set; } // not serialized
+}
+
+// send: Point is automatically dehydrated
+await g.Inject(new Point { X = 1.0, Y = 2.0 }).Promise(t => t.Iterate());
+
+// receive: PDT is automatically hydrated back to Point
+var p = (Point) await g.V().Has("location").Values<object>("location").Promise(t => t.Next());
+----
+
+Classes annotated with `[ProviderDefined]` are automatically dehydrated when passed as traversal arguments and
+hydrated on deserialization without explicit registry configuration.
+
 [[gremlin-python]]
+[llms-summary="Using Gremlin from Python: installing gremlinpython, building traversals, Pythonic syntax differences, and connecting to a remote Gremlin Server."]
 == Gremlin-Python
 
 image:gremlin-python-drawing.png[width=130,float=right] Apache TinkerPop's Gremlin-Python implements Gremlin within
@@ -2592,13 +3468,15 @@ the "g" provided to the `DriverRemoteConnection` corresponds to the name of a `G
 g = traversal().with_(DriverRemoteConnection('http://localhost:8182/gremlin','g'))
 ----
 
-If you need to send additional headers in the HTTP connection, you can pass an optional `headers` parameter
-to the `DriverRemoteConnection` constructor.
+If you need to send additional headers on each HTTP request, set them via a request interceptor rather than a
+connection parameter. Pass a callable to the `interceptors` keyword argument that mutates the request headers in
+place. See <<gremlin-python-interceptors, RequestInterceptor>> for details.
 
 [source,python]
 ----
 g = traversal().with_(DriverRemoteConnection(
-    'http://localhost:8182/gremlin', 'g', headers={'Header':'Value'}))
+    'http://localhost:8182/gremlin', 'g',
+    interceptors=[lambda req: req.headers.update({'Header': 'Value'})]))
 ----
 
 Gremlin-Python contains an `auth` module that provides built-in authentication functions. These are passed to the
@@ -2622,7 +3500,7 @@ with 'https://'. If Gremlin-Server uses a self-signed certificate for SSL, Greml
 the CA certificate file (in openssl .pem format), to be specified in the SSL_CERT_FILE environment variable.
 
 NOTE: If connecting from an inherently single-threaded Python process where blocking while waiting for Gremlin
-traversals to complete is acceptable, it might be helpful to set `pool_size` and `max_workers` parameters to 1.
+traversals to complete is acceptable, it might be helpful to set `max_connections` and `max_workers` parameters to 1.
 See the <<python-configuration,Configuration>> section just below.  Examples where this could apply are serverless cloud functions or WSGI
 worker processes.
 
@@ -2631,11 +3509,11 @@ Some connection options can also be set on individual requests made through the 
 
 [source,python]
 ----
-vertices = g.with_('evaluationTimeout', 500).V().out('knows').to_list()
+vertices = g.with_('timeoutMillis', 500).V().out('knows').to_list()
 ----
 
 The following options are allowed on a per-request basis in this fashion: `batchSize`, `bulkResults`, `language`,
-`materializeProperties`, `userAgent`, and `evaluationTimeout`.
+`materializeProperties`, and `timeoutMillis`.
 
 NOTE: When submitting traversals through `DriverRemoteConnection`, `bulkResults` defaults to `True` per-request
 to optimize result transfer. This does not apply to direct `Client.submit()` calls, where `bulkResults` must be
@@ -2716,6 +3594,11 @@ from gremlin_python.statics import SingleChar   # Java char type
 from gremlin_python.statics import GremlinType  # Java Class
 ----
 
+Python has a single arbitrary precision `int`, so the serializer picks the Java type from the value:
+an `int` that fits the Java `int` range is sent as an `int` and anything wider is sent as a `long`.
+Values beyond the Java `long` range have to be wrapped in `bigint`. Use `long` when a graph needs the
+wider type for a value that would otherwise fit in an `int`.
+
 anchor:python-configuration[]
 [[gremlin-python-configuration]]
 === Configuration
@@ -2726,17 +3609,26 @@ can be passed to the `Client` or `DriverRemoteConnection` instance as keyword ar
 [width="100%",cols="3,10,^2",options="header"]
 |=========================================================
 |Key |Description |Default
-|headers |Additional headers that will be added to each request message. |`None`
-|max_workers |Maximum number of worker threads. |Number of CPUs * 5
-|request_serializer |The request serializer implementation.|`gremlin_python.driver.serializer.GraphBinarySerializersV4`
-|response_serializer |The response serializer implementation.|`gremlin_python.driver.serializer.GraphBinarySerializersV4`
-|interceptors |The request interceptors to run after request serialization.|`None`
-|auth |The authentication scheme to use when submitting requests that require authentication. |`None`
-|pool_size |The number of connections used by the pool. |4
+|max_workers |Maximum number of worker threads. |Same as `max_connections` (128)
+|response_serializer |The response serializer implementation. Requests are always serialized as JSON and can only be customized through a <<gremlin-python-interceptors,request interceptor>>.|`gremlin_python.driver.serializer.GraphBinarySerializersV4`
+|interceptors |The request interceptors to run before the request body is serialized.|`None`
+|auth |An authentication interceptor. Always appended to the end of the interceptor list so it runs last. |`None`
+|max_connections |The maximum number of connections used by the pool. |128
+|connect_timeout_millis |Timeout in milliseconds for establishing the connection (TCP connect plus TLS handshake). Also settable as `connect_timeout` (in seconds). |5000
+|read_timeout_millis |Idle-read timeout in milliseconds. Bounds the wait for the initial server response and the idle time between response chunks, resetting per chunk. It is not a whole-request deadline. Maps to aiohttp `sock_read`. Also settable as `read_timeout` (in seconds). |`None`
+|write_timeout |Timeout in seconds for writing a request to the transport. |`None`
+|ssl |An `ssl.SSLContext` used for TLS connections. |`None`
+|idle_timeout_millis |How long in milliseconds an idle connection remains in the pool before being closed. Also settable as `idle_timeout` (in seconds). |180000
+|keep_alive_time_millis |TCP keep-alive idle time in milliseconds before probes begin on an otherwise idle connection. Also settable as `keep_alive_time` (in seconds). |30000
+|compression |The wire compression negotiated with the server (`'none'` or `'deflate'`). |`'deflate'`
+|batch_size |The connection-level default batch size used when a request does not specify one. |64
+|proxy |HTTP proxy URL routed through the underlying `ClientSession`. |`None`
+|trust_env |Whether to trust environment variables for proxy and SSL configuration. |False
 |enable_user_agent_on_connect |Enables sending a user agent to the server during connection requests.
 More details can be found in provider docs
 link:https://tinkerpop.apache.org/docs/x.y.z/dev/provider/#_graph_driver_provider_requirements[here].|True
 |bulk_results |Enables bulking of results on the server. |False
+|pdt_registry |A `PDTRegistry` for hydrating and dehydrating <<gremlin-python-pdt,Provider Defined Types>>. |`None`
 |=========================================================
 
 Transport options such as SSL and timeouts can be passed as keyword arguments to `Client` or
@@ -2748,9 +3640,69 @@ import ssl
 ...
 g = traversal().with_(
   DriverRemoteConnection('https://localhost:8182/gremlin','g',
-                         ssl_options=ssl.create_default_context(),
+                         ssl=ssl.create_default_context(),
                          read_timeout=30))
 ----
+
+Note that no driver timeout bounds the *total* duration of a request once it is under way. `read_timeout` bounds the
+wait for the initial server response and the gap between response chunks, so a response that keeps producing chunks will not time out no matter how long it
+runs overall, and there is no client-side "overall" request timeout. If you need an absolute deadline, impose it in
+your application. `submit_async()` and `ResultSet.all()` return `concurrent.futures.Future` objects, so pass a
+`timeout` to `result()`:
+
+[source,python]
+----
+from concurrent.futures import TimeoutError
+
+# bound the entire request (submit plus full result iteration) to 30 seconds
+try:
+    result_set = client.submit_async("g.V().out().out()").result(timeout=30)
+    results = result_set.all().result(timeout=30)
+except TimeoutError:
+    # deadline exceeded; stop waiting on the request
+    ...
+----
+
+[[gremlin-python-interceptors]]
+=== RequestInterceptor
+
+Gremlin-Python allows modification of the underlying HTTP request through request interceptors. This is
+intended to be an advanced feature which means that you will need to understand how the implementation works in order
+to safely utilize it. Gremlin-Python is written in a way that you should be able to interact with most TinkerPop-enabled
+servers without having to use interceptors. This is intended for cases where the server has special capabilities.
+
+A request interceptor is a callable that receives an `HttpRequest` and mutates it in place (it returns nothing).
+A list of these is maintained and will be run sequentially for each request. When creating a
+`DriverRemoteConnection` or `Client`, the `interceptors` keyword argument accepts an ordered list of interceptors.
+Order matters, so if one interceptor depends on another's output, ensure they are added in the correct order. Note
+that authentication (e.g. `basic()`, `sigv4()`) is also implemented using interceptors. The `auth` convenience
+parameter on `DriverRemoteConnection` and `Client` appends the auth interceptor to the end of the list so it
+runs last.
+
+[source,python]
+----
+from gremlin_python.driver.auth import basic
+
+g = traversal().with_(DriverRemoteConnection(
+    'http://localhost:8182/gremlin', 'g',
+    auth=basic('username', 'password'),
+    interceptors=[
+        lambda req: req.headers.update({'X-Custom-Header': 'value'})
+    ]))
+----
+
+Each interceptor receives an `HttpRequest` whose `body` attribute initially contains a `RequestMessage`.
+The `RequestMessage` is a named tuple with mutable `fields` (a `dict`) and a `gremlin` string. Because
+`fields` is a regular dictionary, an interceptor can add or modify entries directly. To replace the body
+entirely, assign a new value to `req.body`. By default, the driver serializes the body to JSON
+(`application/json`) by calling `HttpRequest.serialize_body()` after all interceptors have run. An interceptor
+that needs the serialized bytes (for example, to compute a signature hash) can call `serialize_body()` itself;
+the method is idempotent. If you require a GraphBinary-encoded request body instead of JSON, you can write a
+custom interceptor that serializes the `RequestMessage` with the GraphBinary serializer and sets the resulting
+`bytes` as the body.
+
+For an example of a simple request interceptor that only modifies the header of the request, see
+link:https://github.com/apache/tinkerpop/blob/x.y.z/gremlin-python/src/main/python/gremlin_python/driver/auth.py[basic authentication].
 
 [[gremlin-python-strategies]]
 === Traversal Strategies
@@ -2785,8 +3737,72 @@ re-construction machine-side.
 [[gremlin-python-transactions]]
 === Transactions
 
-IMPORTANT: Transaction support over HTTP is not yet implemented in Gremlin-Python. This will be addressed by the
-official 4.0.0 release.
+Gremlin-Python supports remote transactions over HTTP via two entry points: the Traversal API (`g.tx()`) and the
+Driver API (`client.transact()`).
+
+==== Traversal API
+
+[source,python]
+----
+g = traversal().with_remote(DriverRemoteConnection('http://localhost:8182/gremlin', 'g'))
+
+tx = g.tx()
+gtx = tx.begin()
+
+gtx.addV('person').property('name', 'jorge').iterate()
+gtx.addV('person').property('name', 'josh').iterate()
+
+tx.commit()
+----
+
+The transaction-bound source retains its owning transaction. Calling `gtx.tx()` returns the same `Transaction`, so
+lifecycle operations can also be performed from the source with calls such as `gtx.tx().commit()`.
+
+==== Managed Transaction Blocks
+
+To avoid the manual begin/commit/rollback boilerplate, `g` provides an `execute_in_tx` method that manages the
+lifecycle. The function receives the transaction-bound `gtx` and the transaction is committed when it returns or rolled
+back if it raises. `execute_in_tx` returns whatever the function returns:
+
+[source,python]
+----
+g = traversal().with_remote(DriverRemoteConnection('http://localhost:8182/gremlin', 'g'))
+
+# no return value
+g.execute_in_tx(lambda gtx: gtx.addV('person').property('name', 'jorge').iterate())
+
+# returns the function's value
+count = g.execute_in_tx(lambda gtx: gtx.V().count().next())
+----
+
+The transaction runs exactly once (no automatic retry). If the function raises, the original exception is re-raised
+after the rollback; if the commit fails, a rollback is still attempted and the commit error propagates.
+
+==== Driver API
+
+[source,python]
+----
+client = Client('http://localhost:8182/gremlin', 'g')
+
+tx = client.transact()
+tx.begin()
+tx.submit("g.addV('person').property('name','alice')")
+tx.commit()
+----
+
+==== Context Manager
+
+[source,python]
+----
+with client.transact() as tx:
+    tx.begin()
+    tx.submit("g.addV('person').property('name','alice')")
+    tx.commit()
+    # if commit() not called or exception occurs, rollback happens on exit
+----
+
+NOTE: Transactions are not thread-safe. All operations must be sequential. The default behavior of `close()` is to
+rollback. Transactions are single-use and cannot be reused after commit or rollback.
 
 [[gremlin-python-gvalue]]
 === GValue Parameterization
@@ -2854,27 +3870,26 @@ returns a `concurrent.futures.Future` that resolves to a list when it is complet
 
 The `client.submit()` functions accept a `request_options` which expects a dictionary. The `request_options`
 provide a way to include options that are specific to the request made with the call to `submit()`. A good use-case for
-this feature is to set a per-request override to the `evaluationTimeout` so that it only applies to the current
-request.
+this feature is to set a per-request override to the `timeoutMillis` so that it only applies to the current request.
 
 [source,python]
 ----
-result_set = client.submit('g.V().repeat(both()).times(100)', request_options={'evaluationTimeout': 5000})
+result_set = client.submit('g.V().repeat(both()).times(100)', request_options={'timeoutMillis': 5000})
 ----
 
-The following options are allowed on a per-request basis in this fashion: `batchSize`, `bulkResults`, `requestId`, `userAgent`,
-`materializeProperties` and `evaluationTimeout` (formerly `scriptEvaluationTimeout` which is also supported but now deprecated).
+The following options are allowed on a per-request basis in this fashion: `batchSize`, `bulkResults`, `language`,
+`materializeProperties` and `timeoutMillis`.
 
-IMPORTANT: The preferred method for setting a per-request timeout for scripts is demonstrated above, but those familiar
-with bytecode may try `g.with(EVALUATION_TIMEOUT, 500)` within a script. Scripts with multiple traversals and multiple
+IMPORTANT: The preferred method for setting a per-request timeout for scripts is demonstrated above, but a script may
+also use `g.with("timeoutMillis", 500)`. Scripts with multiple traversals and multiple
 timeouts will be interpreted as a sum of all timeouts identified in the script for that request.
 
 [source,java]
 ----
-RequestOptions options = RequestOptions.build().timeout(500).create();
-List<Result> result = client.submit("g.with(EVALUATION_TIMEOUT, 500).addV().iterate();" +
-                                    "g.addV().iterate();
-                                    "g.with(EVALUATION_TIMEOUT, 500).addV();", options).all().get();
+RequestOptions options = RequestOptions.build().timeoutMillis(500).create();
+List<Result> result = client.submit("g.with(\"timeoutMillis\", 500).addV().iterate();" +
+                                    "g.addV().iterate();" +
+                                    "g.with(\"timeoutMillis\", 500).addV();", options).all().get();
 ----
 
 In the above example, `RequestOptions` defines a timeout of 500 milliseconds, but the script has three traversals with
@@ -2970,13 +3985,31 @@ that makes traversals a bit more concise.
 ['lop', 'lop', 'lop', 'vadas', 'josh', 'josh', 'josh', 'marko', 'marko', 'marko', 'peter', 'ripple']
 ----
 
+Although this sugar borrows Python syntax, it maps onto Gremlin steps and follows Gremlin semantics rather than
+Python semantics, so a few behaviors differ from what the syntax might suggest. The slice and index forms are
+translated into the <<range-step,range()>>-step. That step treats its high bound as exclusive, so `[1:3]` returns the
+elements at positions one and two. Because the translation targets `range()`, the step component of a Python slice is
+ignored, and `[0:4:2]` behaves the same as `[0:4]` rather than selecting every second element. Negative indices and
+bounds are also not interpreted as offsets from the end of the result the way they are in Python. A negative index
+such as `[-1]` yields no elements, and a slice with a negative bound such as `[-2:]` does not count back from the end.
+
+The property-access form is shorthand for the <<values-step,values()>>-step and works only for property keys that are
+valid Python identifiers. A key that contains a space or any other character that is not permitted in an identifier
+cannot be reached this way, in which case `values('the key')` should be used instead. Accessing a key that does not
+exist, or one that is not identifier-safe, returns no elements rather than raising an error.
+
+The order of the results reflects the graph's natural traversal order and is not sorted or otherwise guaranteed to be
+deterministic. When a particular ordering matters, an <<order-step,order()>>-step should be applied explicitly. This is
+especially relevant before the slice and index forms, since their selection depends on the position of elements in the
+result.
+
 [[gremlin-python-differences]]
 === Differences
 
 In situations where Python reserved words and global functions overlap with standard Gremlin steps and tokens, those
 bits of conflicting Gremlin get an underscore appended as a suffix:
 
-*Steps* - <<all-step,all_()>>, <<and-step,and_()>>, <<any-step,any_()>>, <<as-step,as_()>>, <<filter-step,filter_()>>, <<from-step,from_()>>,
+*Steps* - <<all-step,all_()>>, <<and-step,and_()>>, <<any-step,any_()>>, <<as-step,as_()>>, <<filter-step,filter_()>>, <<format-step,format_()>>, <<from-step,from_()>>,
 <<id-step,id_()>>, <<is-step,is_()>>, <<in-step,in_()>>, <<max-step,max_()>>,
 <<min-step,min_()>>, <<not-step,not_()>>, <<or-step,or_()>>, <<range-step,range_()>>, <<sum-step,sum_()>>,
 <<with-step,with_()>>
@@ -2984,8 +4017,9 @@ bits of conflicting Gremlin get an underscore appended as a suffix:
 *Tokens* - <<a-note-on-scopes,Scope.global_>>, `Direction.from_`, `Operator.sum_`
 
 In addition, the enum construct for `Cardinality` cannot have functions attached to it the way it can be done in Java,
-therefore cardinality functions that take a value like `list()`, `set()`, and `single()` are referenced from a
-`CardinalityValue` class rather than `Cardinality` itself.
+therefore cardinality functions that take a value like `single()`, `list_()`, and `set_()` are referenced from a
+`CardinalityValue` class rather than `Cardinality` itself. Note that `list` and `set` overlap with Python built-ins and
+so are spelled with a trailing underscore, while `single()` is unchanged.
 
 [[gremlin-python-limitations]]
 === Limitations
@@ -3016,9 +4050,10 @@ and `timedelta`.
 * In Gremlin, 1 isn't equal to the boolean true value and 0 isn't equal to the boolean false value, but they are equal
 in Python. This means that in `gremlin-python` if these values are in a `Set`, you will get a different behavior than
 what is intended by Gremlin, since it follows Python's behavior.
-* The `subgraph()`-step is not supported by any variant that is not running on the Java Virtual Machine as there is
-no `Graph` instance to deserialize a result into on the client-side. A workaround is to replace the step with
-`aggregate(local)` and then convert those results to something the client can use locally.
+* The `subgraph()`-step returns a detached `Graph` data container exposing `vertices: dict` and `edges: dict`
+keyed by element id. The result is not a live `Graph` instance: mutating the dicts has no effect on the source
+graph, and it cannot be passed to `traversal().with(...)`. To re-query subgraph elements against the original
+graph, extract their `id` and use `g.V(id)` / `g.E(id)` on the original `GraphTraversalSource`.
 * Use of the aiohttp library in the default transport requires the use of asyncio's event loop to run the async functions.
 This can be an issue in situations where the application calling Gremlin-Python is already using an event loop.
 Certain types of event loops can be patched using nest-asyncio which allows Gremlin-Python to proceed without an error like
@@ -3108,3 +4143,76 @@ python connections.py
 python basic_gremlin.py
 python modern_traversals.py
 ----
+
+[[gremlin-python-pdt]]
+=== Provider Defined Types
+
+Provider Defined Types (PDTs) allow graph providers to expose custom types through the driver. PDT values arrive as
+`CompositePDT` objects containing a `name` and `fields` dict without any configuration.
+Consult your graph provider's documentation for the list of PDTs they support.
+
+Receiving a raw PDT:
+
+[source,python]
+----
+pdt = g.V().has('location').values('location').next()
+print(pdt.name)   # "x:Point"
+print(pdt.fields) # {'x': 1.0, 'y': 2.0}
+----
+
+Working with raw `CompositePDT` objects is always available. The following two approaches are optional
+conveniences that automate conversion between PDT values and application types on both the request and response paths.
+
+Using a `PDTRegistry` for hydration and dehydration:
+
+[source,python]
+----
+from gremlin_python.structure.graph import PDTRegistry
+
+registry = PDTRegistry()
+registry.register('x:Point',
+    deserialize_fn=lambda fields: Point(fields['x'], fields['y']),
+    serialize_fn=lambda p: {'x': p.x, 'y': p.y},
+    target_class=Point)
+
+g = traversal().with_(DriverRemoteConnection('http://localhost:8182/gremlin', 'g',
+    pdt_registry=registry))
+----
+
+The `PDTRegistry.create()` class method discovers adapters via `entry_points` in `pyproject.toml`
+under the `tinkerpop.pdt` group.
+
+For simpler cases where you own the type, the `@provider_defined` decorator enables automatic round-trip conversion
+without an explicit registry:
+
+Decorator-based conversion with `@provider_defined`:
+
+[source,python]
+----
+from gremlin_python.structure.graph import provider_defined
+
+# included_fields: only serialize the listed fields
+@provider_defined(name='x:Point', included_fields=['x', 'y'])
+class Point:
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+        self._internal_id = None  # not serialized
+
+# excluded_fields: serialize all instance fields except those listed
+@provider_defined(name='x:Timestamped', excluded_fields=['created_at'])
+class Timestamped:
+    def __init__(self, value, created_at):
+        self.value = value
+        self.created_at = created_at  # not serialized
+
+# send: Point is automatically dehydrated
+g.inject(Point(1.0, 2.0)).iterate()
+
+# receive: PDT is automatically hydrated back to Point
+p = g.V().has('location').values('location').next()
+# type(p) is Point
+----
+
+Objects decorated with `@provider_defined` are automatically dehydrated when passed as traversal arguments and
+hydrated back into the same type when received in responses.

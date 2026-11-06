@@ -74,6 +74,19 @@ public class ArgumentVisitor extends DefaultGremlinBaseVisitor<Object> {
     }
 
     /**
+     * Parse a (non-nullable) string argument varargs, and return a string array. Unlike
+     * {@link #parseStringVarargs(GremlinParser.StringNullableArgumentVarargsContext)}, this expects at least one
+     * argument to be present.
+     */
+    public GValue<String>[] parseStringVarargs(final GremlinParser.StringArgumentVarargsContext varargsContext) {
+        return varargsContext.stringArgument()
+                .stream()
+                .filter(Objects::nonNull)
+                .map(antlr.argumentVisitor::parseString)
+                .toArray(GValue[]::new);
+    }
+
+    /**
      * Wrapper to visit function for string types.
      */
     public GValue<String> parseString(final GremlinParser.StringNullableArgumentContext ctx) {
@@ -82,6 +95,18 @@ public class ArgumentVisitor extends DefaultGremlinBaseVisitor<Object> {
             return (GValue<String>) literalOrVar;
         } else {
             return GValue.ofString(null, (String) literalOrVar);
+        }
+    }
+
+    /**
+     * Wrapper to visit function for (non-nullable) string types.
+     */
+    public GValue<String> parseString(final GremlinParser.StringArgumentContext ctx) {
+        final Object literalOrVar = visitStringArgument(ctx);
+        if (GValue.valueInstanceOf(literalOrVar, String.class)) {
+            return (GValue<String>) literalOrVar;
+        } else {
+            return GValue.ofString((String) literalOrVar);
         }
     }
 

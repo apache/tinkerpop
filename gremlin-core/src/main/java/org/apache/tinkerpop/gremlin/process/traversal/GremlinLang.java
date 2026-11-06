@@ -30,6 +30,12 @@ import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversal;
 import org.apache.tinkerpop.gremlin.structure.Column;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefined;
+import org.apache.tinkerpop.gremlin.structure.io.pdt.PrimitivePDTAdapter;
+import org.apache.tinkerpop.gremlin.structure.io.pdt.PrimitivePDT;
+import org.apache.tinkerpop.gremlin.structure.io.pdt.CompositePDT;
+import org.apache.tinkerpop.gremlin.structure.io.pdt.CompositePDTAdapter;
+import org.apache.tinkerpop.gremlin.structure.io.pdt.PDTRegistry;
 import org.apache.tinkerpop.gremlin.util.NumberHelper;
 
 import javax.lang.model.SourceVersion;
@@ -48,6 +54,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.Base64;
@@ -67,8 +74,13 @@ public class GremlinLang implements Cloneable, Serializable {
     private Map<String, Object> parameters = new HashMap<>();
     private String unsupportedType = "";
     private List<OptionsStrategy> optionsStrategies = new ArrayList<>();
+    private PDTRegistry pdtRegistry;
 
     public GremlinLang() {
+    }
+
+    public GremlinLang(final PDTRegistry pdtRegistry) {
+        this.pdtRegistry = pdtRegistry;
     }
 
     public GremlinLang(final String sourceName, final Object... arguments) {
@@ -179,6 +191,16 @@ public class GremlinLang implements Cloneable, Serializable {
             return String.format("Binary(\"%s\")", Base64.getEncoder().encodeToString((byte[]) arg));
         }
 
+        if (arg instanceof PrimitivePDT) {
+            final PrimitivePDT pdt = (PrimitivePDT) arg;
+            return "PDT(" + argAsString(pdt.getName()) + "," + argAsString(pdt.getValue()) + ")";
+        }
+
+        if (arg instanceof CompositePDT) {
+            final CompositePDT pdt = (CompositePDT) arg;
+            return "PDT(" + argAsString(pdt.getName()) + "," + asString((Map<?, ?>) pdt.getFields()) + ")";
+        }
+
         if (arg instanceof Enum) {
             // special handling for enums with additional interfaces
             if (arg instanceof T)
@@ -252,6 +274,25 @@ public class GremlinLang implements Cloneable, Serializable {
             return ((Class) arg).getSimpleName();
         }
 
+        // Intentional precedence: a registered adapter takes priority over @ProviderDefined annotation
+        // so that providers/users can override annotation-derived behavior with an explicit adapter.
+        if (pdtRegistry != null) {
+            final Optional<PrimitivePDTAdapter<?>> primitiveAdapter = pdtRegistry.getPrimitiveAdapterByClass(arg.getClass());
+            if (primitiveAdapter.isPresent()) {
+                final String value = ((PrimitivePDTAdapter) primitiveAdapter.get()).toValue(arg);
+                return argAsString(new PrimitivePDT(primitiveAdapter.get().typeName(), value));
+            }
+            final Optional<CompositePDTAdapter<?>> adapter = pdtRegistry.getCompositeAdapterByClass(arg.getClass());
+            if (adapter.isPresent()) {
+                final Map<String, Object> fields = ((CompositePDTAdapter) adapter.get()).toFields(arg);
+                return argAsString(new CompositePDT(adapter.get().typeName(), fields));
+            }
+        }
+
+        if (arg.getClass().isAnnotationPresent(ProviderDefined.class)) {
+            return argAsString(CompositePDT.from(arg));
+        }
+
         unsupportedType = arg.getClass().getSimpleName();
         return arg.toString();
     }
@@ -287,7 +328,11 @@ public class GremlinLang implements Cloneable, Serializable {
         final StringBuilder sb = new StringBuilder();
         if (p instanceof TextP) {
             sb.append("TextP.").append(p.getPredicateName()).append("(");
-            sb.append(argAsString(p.getValue()));
+            if (p.hasTraversal()) {
+                sb.append(argAsString(p.getChildTraversals().get(0)));
+            } else {
+                sb.append(argAsString(p.getValue()));
+            }
         } else if (p instanceof ConnectiveP) {
             // ConnectiveP gets some special handling because it's reduced to and(P, P, P) and we want it
             // generated the way it was written which was P.and(P).and(P)
@@ -307,6 +352,18 @@ public class GremlinLang implements Cloneable, Serializable {
         } else if (p instanceof NotP) {
             sb.append("P.not(");
             sb.append(argAsString(p.negate())); // Wrap internal P in `P.not(%s)`
+        } else if (p.hasTraversal()) {
+            // Traversal-bearing predicate: serialize as P.op(traversalGremlinLang)
+            sb.append("P.").append(p.getPredicateName()).append("(");
+            final List<Traversal.Admin<?, ?>> traversals = p.getChildTraversals();
+            if (traversals.size() > 1) {
+                for (int i = 0; i < traversals.size(); i++) {
+                    if (i > 0) sb.append(",");
+                    sb.append(argAsString(traversals.get(i)));
+                }
+            } else {
+                sb.append(argAsString(traversals.get(0)));
+            }
         } else {
             sb.append("P.").append(p.getPredicateName()).append("(");
             sb.append(argAsString(p.getValue()));
@@ -439,13 +496,6 @@ public class GremlinLang implements Cloneable, Serializable {
     }
 
     /**
-     * The alias to set.
-     */
-    public void addG(final String g) {
-        parameters.put("g", g);
-    }
-
-    /**
      * Add a {@link TraversalSource} instruction to the GremlinLang.
      *
      * @param sourceName the traversal source method name (e.g. withSack())
@@ -471,6 +521,14 @@ public class GremlinLang implements Cloneable, Serializable {
             // special handling for OptionsStrategy
             if (arguments[i] instanceof OptionsStrategy) {
                 optionsStrategies.add((OptionsStrategy) arguments[i]);
+                // Render multilabel/singlelabel in gremlin text (temporary until these options are removed)
+                final Configuration configuration = ((OptionsStrategy) arguments[i]).getConfiguration();
+                if (configuration.containsKey("multilabel")) {
+                    gremlin.append(".with(\"multilabel\")");
+                }
+                if (configuration.containsKey("singlelabel")) {
+                    gremlin.append(".with(\"singlelabel\")");
+                }
                 break;
             }
 
@@ -532,6 +590,20 @@ public class GremlinLang implements Cloneable, Serializable {
         return optionsStrategies;
     }
 
+    /**
+     * Sets the {@link PDTRegistry} used for registry-based dehydration of unknown types.
+     */
+    public void setPdtRegistry(final PDTRegistry pdtRegistry) {
+        this.pdtRegistry = pdtRegistry;
+    }
+
+    /**
+     * Gets the {@link PDTRegistry} used for registry-based dehydration.
+     */
+    public PDTRegistry getPdtRegistry() {
+        return this.pdtRegistry;
+    }
+
     public boolean isEmpty() {
         return this.gremlin.length() == 0;
     }
@@ -565,6 +637,7 @@ public class GremlinLang implements Cloneable, Serializable {
             clone.gremlin.append(gremlin);
             clone.optionsStrategies = new ArrayList<>(this.optionsStrategies);
             clone.unsupportedType = this.unsupportedType;
+            clone.pdtRegistry = this.pdtRegistry;
             return clone;
         } catch (final CloneNotSupportedException e) {
             throw new IllegalStateException(e.getMessage(), e);

@@ -19,11 +19,12 @@ under the License.
 
 import uuid
 import math
+import pytest
 from collections import OrderedDict
 
 from datetime import datetime, timedelta, timezone
 from gremlin_python.statics import long, bigint, BigDecimal, SingleByte, SingleChar
-from gremlin_python.structure.graph import Graph, Vertex, Edge, Property, VertexProperty, Path
+from gremlin_python.structure.graph import Graph, Vertex, Edge, Property, VertexProperty, Path, CompositePDT
 from gremlin_python.structure.io.graphbinaryV4 import GraphBinaryWriter, GraphBinaryReader
 from gremlin_python.process.traversal import Direction
 from gremlin_python.structure.io.util import Marker
@@ -42,6 +43,44 @@ class TestGraphBinaryV4(object):
         output = self.graphbinary_reader.read_object(self.graphbinary_writer.write_object(x))
         assert x == output
 
+    def test_int_out_of_int32_range_promotes_to_long(self):
+        # Python has one arbitrary precision int type, so a plain int beyond the Java int
+        # range used to reach int32_pack and fail with a bare struct.error (TINKERPOP-2363).
+        for x in [2 ** 31, -2 ** 31 - 1, 3000000000, 2 ** 63 - 1, -2 ** 63]:
+            output = self.graphbinary_reader.read_object(self.graphbinary_writer.write_object(x))
+            assert x == output
+
+    def test_int_wire_bytes_at_int32_boundary(self):
+        # The type code stays Int (0x01) inside the Java int range and becomes Long (0x02)
+        # immediately outside it, so promotion never widens a value that already fits.
+        cases = {
+            2 ** 31 - 1: b'\x01\x00\x7f\xff\xff\xff',
+            -2 ** 31: b'\x01\x00\x80\x00\x00\x00',
+            2 ** 31: b'\x02\x00\x00\x00\x00\x00\x80\x00\x00\x00',
+            -2 ** 31 - 1: b'\x02\x00\xff\xff\xff\xff\x7f\xff\xff\xff',
+        }
+        for value, expected in cases.items():
+            assert bytes(self.graphbinary_writer.write_object(value)) == expected
+
+    def test_int_out_of_int64_range_still_raises(self):
+        # Promotion stops at Long. bigint stays an explicit choice.
+        for x in [2 ** 63, -2 ** 63 - 1]:
+            with pytest.raises(Exception, match='Value too big'):
+                self.graphbinary_writer.write_object(x)
+
+    def test_int_out_of_int32_range_nested(self):
+        # The reported failure arrived as server-assigned ids inside nested bindings.
+        for x in [[[3000000000, 5000000000]], {'id': 3000000000}]:
+            output = self.graphbinary_reader.read_object(self.graphbinary_writer.write_object(x))
+            assert x == output
+
+    def test_bool_is_not_affected_by_int_promotion(self):
+        # bool subclasses int, so it must keep resolving to the Boolean serializer.
+        for x in [True, False]:
+            output = self.graphbinary_reader.read_object(self.graphbinary_writer.write_object(x))
+            assert x == output
+            assert isinstance(output, bool)
+
     def test_long(self):
         x = long(100)
         output = self.graphbinary_reader.read_object(self.graphbinary_writer.write_object(x))
@@ -51,6 +90,35 @@ class TestGraphBinaryV4(object):
         x = bigint(0x1000_0000_0000_0000_0000)
         output = self.graphbinary_reader.read_object(self.graphbinary_writer.write_object(x))
         assert x == output
+
+    def test_bigint_boundaries(self):
+        # Boundary values around signed byte-width transitions, including
+        # negative boundaries that previously raised OverflowError (TINKERPOP-3275).
+        # One representative per equivalence class of the length formula: zero,
+        # positive byte-width boundary (127/128), negative power-of-two (-128),
+        # negative just past a boundary (-129/-255, previously OverflowError), the
+        # obj+1==0 edge (-1), and arbitrary-precision values of both signs.
+        values = [0, 1, -1, 127, 128, -128, -129, -255,
+                  0x1000_0000_0000_0000_0000, -0x1000_0000_0000_0000_0000]
+        for v in values:
+            x = bigint(v)
+            output = self.graphbinary_reader.read_object(self.graphbinary_writer.write_object(x))
+            assert x == output
+
+    def test_bigint_wire_bytes(self):
+        # Lock in exact minimal signed two's-complement bytes, matching the Java
+        # reference BigInteger.toByteArray() (guards against non-minimal encoding).
+        from gremlin_python.structure.io.graphbinaryV4 import BigIntIO
+        cases = {
+            0: b'\x00\x00\x00\x01\x00',
+            127: b'\x00\x00\x00\x01\x7f',
+            128: b'\x00\x00\x00\x02\x00\x80',
+            -128: b'\x00\x00\x00\x01\x80',
+            -129: b'\x00\x00\x00\x02\xff\x7f',
+            -256: b'\x00\x00\x00\x02\xff\x00',
+        }
+        for value, expected in cases.items():
+            assert bytes(BigIntIO.write_bigint(value, bytearray())) == expected
 
     def test_float(self):
         x = float(100.001)
@@ -79,6 +147,14 @@ class TestGraphBinaryV4(object):
         output = self.graphbinary_reader.read_object(self.graphbinary_writer.write_object(x))
         assert x.scale == output.scale
         assert x.unscaled_value == output.unscaled_value
+
+    def test_bigdecimal_negative_boundaries(self):
+        # Negative unscaled values at byte-width boundaries previously raised
+        # OverflowError during serialization (TINKERPOP-3275).
+        for x in [BigDecimal(0, -129), BigDecimal(2, -255)]:
+            output = self.graphbinary_reader.read_object(self.graphbinary_writer.write_object(x))
+            assert x.scale == output.scale
+            assert x.unscaled_value == output.unscaled_value
 
     def test_datetime(self):
         tz = timezone(timedelta(seconds=36000))
@@ -211,6 +287,29 @@ class TestGraphBinaryV4(object):
         assert x.inV == output.inV
         assert x.outV == output.outV
 
+    def test_edge_with_multi_labelled_endpoints(self):
+        # the edge itself remains single-labelled, but its endpoint vertices may carry
+        # multiple labels - see TINKERPOP-3261
+        in_vertex = Vertex(1, labels=["person", "employee"])
+        out_vertex = Vertex(10, labels=["software", "product"])
+        x = Edge(123, out_vertex, "developed", in_vertex)
+        output = self.graphbinary_reader.read_object(self.graphbinary_writer.write_object(x))
+        assert x == output
+        assert output.inV.labels == frozenset(["person", "employee"])
+        assert output.outV.labels == frozenset(["software", "product"])
+
+    def test_edge_with_zero_label_endpoints(self):
+        # endpoint vertices may carry no labels at all under ZERO_OR_MORE cardinality - see TINKERPOP-3261
+        in_vertex = Vertex(1, labels=[])
+        out_vertex = Vertex(10, labels=[])
+        x = Edge(123, out_vertex, "developed", in_vertex)
+        output = self.graphbinary_reader.read_object(self.graphbinary_writer.write_object(x))
+        assert x == output
+        assert output.inV.labels == frozenset()
+        assert output.outV.labels == frozenset()
+        assert output.inV.label == ""
+        assert output.outV.label == ""
+
     def test_path(self):
         x = Path(["x", "y", "z"], [1, 2, 3])
         output = self.graphbinary_reader.read_object(self.graphbinary_writer.write_object(x))
@@ -225,6 +324,21 @@ class TestGraphBinaryV4(object):
         x = Vertex(123, "person")
         output = self.graphbinary_reader.read_object(self.graphbinary_writer.write_object(x))
         assert x == output
+
+    def test_vertex_with_multiple_labels(self):
+        # vertices may carry multiple labels under ONE_OR_MORE/ZERO_OR_MORE cardinality - see TINKERPOP-3261
+        x = Vertex(123, labels=["person", "employee"])
+        output = self.graphbinary_reader.read_object(self.graphbinary_writer.write_object(x))
+        assert x == output
+        assert output.labels == frozenset(["person", "employee"])
+
+    def test_vertex_with_no_labels(self):
+        # vertices may carry no labels under ZERO_OR_MORE cardinality - see TINKERPOP-3261
+        x = Vertex(123, labels=[])
+        output = self.graphbinary_reader.read_object(self.graphbinary_writer.write_object(x))
+        assert x == output
+        assert output.labels == frozenset()
+        assert output.label == ""
 
     def test_vertexproperty(self):
         x = VertexProperty(123, "name", "stephen", None)
@@ -316,3 +430,53 @@ class TestGraphBinaryV4(object):
         assert len(re1.properties) == 1
         assert re1.properties[0].key == "weight"
         assert re1.properties[0].value == 0.5
+
+    def test_graph_with_multi_labelled_vertices(self):
+        # a graph containing vertices with multiple labels - see TINKERPOP-3261
+        graph = Graph()
+        graph.vertices[1] = Vertex(1, labels=["person", "employee"])
+        graph.vertices[2] = Vertex(2, labels=["software", "product"])
+        graph.edges[3] = Edge(3, graph.vertices[1], "created", graph.vertices[2])
+
+        output = self.graphbinary_reader.read_object(self.graphbinary_writer.write_object(graph))
+
+        assert isinstance(output, Graph)
+        assert output.vertices[1].labels == frozenset(["person", "employee"])
+        assert output.vertices[2].labels == frozenset(["software", "product"])
+
+    def test_graph_with_zero_labelled_vertices(self):
+        # a graph containing vertices with no labels - see TINKERPOP-3261
+        graph = Graph()
+        graph.vertices[1] = Vertex(1, labels=[])
+        graph.vertices[2] = Vertex(2, labels=[])
+        graph.edges[3] = Edge(3, graph.vertices[1], "created", graph.vertices[2])
+
+        output = self.graphbinary_reader.read_object(self.graphbinary_writer.write_object(graph))
+
+        assert isinstance(output, Graph)
+        assert output.vertices[1].labels == frozenset()
+        assert output.vertices[1].label == ""
+        assert output.vertices[2].labels == frozenset()
+        assert output.vertices[2].label == ""
+
+    def test_provider_defined_type(self):
+        pdt = CompositePDT('Point', {'x': 1, 'y': 2})
+        result = self.graphbinary_reader.read_object(self.graphbinary_writer.write_object(pdt))
+        assert isinstance(result, CompositePDT)
+        assert result.name == 'Point'
+        assert result.fields == {'x': 1, 'y': 2}
+
+    def test_provider_defined_type_nested(self):
+        inner = CompositePDT('Address', {'street': 'Main'})
+        outer = CompositePDT('Person', {'name': 'Alice', 'address': inner})
+        result = self.graphbinary_reader.read_object(self.graphbinary_writer.write_object(outer))
+        assert result.name == 'Person'
+        assert result.fields['name'] == 'Alice'
+        assert isinstance(result.fields['address'], CompositePDT)
+        assert result.fields['address'].name == 'Address'
+
+    def test_provider_defined_type_null_field(self):
+        pdt = CompositePDT('NullableType', {'value': None, 'name': 'test'})
+        result = self.graphbinary_reader.read_object(self.graphbinary_writer.write_object(pdt))
+        assert result.fields['value'] is None
+        assert result.fields['name'] == 'test'

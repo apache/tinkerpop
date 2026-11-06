@@ -43,7 +43,7 @@ namespace Gremlin.Net.Driver
         /// <param name="username">The username.</param>
         /// <param name="password">The password.</param>
         /// <returns>A request interceptor delegate.</returns>
-        public static Func<HttpRequestContext, Task> BasicAuth(string username, string password)
+        public static Func<HttpRequestContext, Task> Basic(string username, string password)
         {
             var encoded = Convert.ToBase64String(
                 Encoding.UTF8.GetBytes(username + ":" + password));
@@ -62,13 +62,13 @@ namespace Gremlin.Net.Driver
         ///     used and the resolved provider is cached on first use (the provider itself handles
         ///     credential refresh for expiring credentials like STS).
         /// </summary>
-        /// <param name="region">The AWS region (e.g. "us-east-1").</param>
-        /// <param name="service">The AWS service name (e.g. "neptune-db").</param>
+        /// <param name="region">The region.</param>
+        /// <param name="service">The service name.</param>
         /// <param name="credentials">
         ///     Optional AWS credentials. When null, the default credential chain is used.
         /// </param>
         /// <returns>A request interceptor delegate.</returns>
-        public static Func<HttpRequestContext, Task> SigV4Auth(
+        public static Func<HttpRequestContext, Task> Sigv4(
             string region, string service, AWSCredentials? credentials = null)
         {
             // Cache the credential provider once when using the default chain.
@@ -94,6 +94,9 @@ namespace Gremlin.Net.Driver
                     }
                 }
 
+                // Ensure the body is serialized before signing so we have bytes to hash.
+                context.SerializeBody();
+
                 // Use the async path — important for credential providers that perform
                 // network I/O (e.g. IMDS on EC2, ECS task role endpoint).
                 var immutableCreds = await cachedProvider.GetCredentialsAsync()
@@ -101,6 +104,7 @@ namespace Gremlin.Net.Driver
                 SignRequest(context, immutableCreds, signer, clientConfig);
             };
         }
+
 
         private static void SignRequest(HttpRequestContext context,
             ImmutableCredentials credentials, AWS4Signer signer, SigningClientConfig clientConfig)
@@ -116,19 +120,17 @@ namespace Gremlin.Net.Driver
                     ? bytes
                     : throw new InvalidOperationException(
                         "SigV4 signing requires Body to be byte[]. " +
-                        "Ensure serialization occurs before the SigV4 interceptor."),
+                        "Ensure SerializeBody() was called before signing."),
                 AuthenticationRegion = clientConfig.AuthenticationRegion,
                 OverrideSigningServiceName = clientConfig.AuthenticationServiceName,
             };
 
-            // Copy headers (skip Host — signer adds it)
-            foreach (var header in context.Headers)
-            {
-                if (!string.Equals(header.Key, "Host", StringComparison.OrdinalIgnoreCase))
-                {
-                    awsRequest.Headers[header.Key] = header.Value;
-                }
-            }
+            // Signed header set: host (derived from the endpoint), x-amz-content-sha256 and
+            // x-amz-date, plus x-amz-security-token for session credentials (all set below). The
+            // request's own headers (accept, content-type, accept-encoding, ...) are deliberately
+            // NOT copied into the signature: the HTTP client may add or rewrite transport-managed
+            // headers after this interceptor runs, so a signature covering them would not match
+            // the bytes sent.
 
             // Copy query parameters
             var query = context.Uri.Query;
@@ -150,6 +152,13 @@ namespace Gremlin.Net.Driver
             var payloadHash = context.GetPayloadHash();
             awsRequest.Headers["x-amz-content-sha256"] = payloadHash;
 
+            // For temporary credentials, add the session token BEFORE signing so it is bound into
+            // the signature rather than sent as a weaker present-but-unsigned header.
+            if (!string.IsNullOrEmpty(credentials.Token))
+            {
+                awsRequest.Headers["X-Amz-Security-Token"] = credentials.Token;
+            }
+
             // Sign the request
             signer.Sign(awsRequest, clientConfig, new RequestMetrics(), credentials);
 
@@ -167,10 +176,11 @@ namespace Gremlin.Net.Driver
             }
             context.Headers["x-amz-content-sha256"] = payloadHash;
 
-            // Add session token if temporary credentials
-            if (!string.IsNullOrEmpty(credentials.Token))
+            // Copy back the session token that was signed above (for temporary credentials), so
+            // the header on the wire matches exactly what the signature covered.
+            if (awsRequest.Headers.ContainsKey("X-Amz-Security-Token"))
             {
-                context.Headers["X-Amz-Security-Token"] = credentials.Token;
+                context.Headers["X-Amz-Security-Token"] = awsRequest.Headers["X-Amz-Security-Token"];
             }
         }
 

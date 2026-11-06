@@ -30,7 +30,9 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.util.Arrays;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
@@ -88,5 +90,20 @@ public class VertexWritableTest {
         assertEquals(2, IteratorUtils.count(vw.get().properties()));
         assertEquals("marko", vw.get().value("name"));
         assertEquals("private", vw.get().property("name").value("acl"));
+    }
+
+    @Test
+    public void shouldPreserveMultipleLabelsOnByteRepresentation() {
+        // VertexWritable is the OLAP serialization carrier for Hadoop (and, via the same StarGraph/KryoShim
+        // mechanism, Spark shuffle/persist). A multi-label vertex must survive the write/readFields round-trip.
+        final StarGraph graph = StarGraph.open();
+        final Vertex v = graph.addVertex(T.id, 1, T.label, "person");
+        ((StarGraph.StarVertex) v).setLabels(new LinkedHashSet<>(Arrays.asList("person", "employee")));
+
+        final VertexWritable vw = byteClone(new VertexWritable(v));
+
+        assertEquals(new LinkedHashSet<>(Arrays.asList("person", "employee")), vw.get().labels());
+        // the deprecated single-label accessor still yields the first label
+        assertEquals("person", vw.get().label());
     }
 }

@@ -22,6 +22,7 @@ import org.antlr.v4.runtime.tree.ParseTree;
 import org.apache.tinkerpop.gremlin.process.traversal.GType;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.TextP;
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 
 import java.util.Collection;
 
@@ -67,6 +68,9 @@ public class TraversalPredicateVisitor extends DefaultGremlinBaseVisitor<P> {
      */
     @Override
     public P visitTraversalPredicate_eq(final GremlinParser.TraversalPredicate_eqContext ctx) {
+        if (ctx.nestedTraversal() != null) {
+            return P.eq((Traversal.Admin<?, ?>) antlr.tvisitor.visitNestedTraversal(ctx.nestedTraversal()));
+        }
         return P.eq(getSingleGenericLiteralArgument(ctx));
     }
 
@@ -75,6 +79,9 @@ public class TraversalPredicateVisitor extends DefaultGremlinBaseVisitor<P> {
      */
     @Override
     public P visitTraversalPredicate_neq(final GremlinParser.TraversalPredicate_neqContext ctx) {
+        if (ctx.nestedTraversal() != null) {
+            return P.neq((Traversal.Admin<?, ?>) antlr.tvisitor.visitNestedTraversal(ctx.nestedTraversal()));
+        }
         return P.neq(getSingleGenericLiteralArgument(ctx));
     }
 
@@ -97,6 +104,9 @@ public class TraversalPredicateVisitor extends DefaultGremlinBaseVisitor<P> {
      */
     @Override
     public P visitTraversalPredicate_lt(final GremlinParser.TraversalPredicate_ltContext ctx) {
+        if (ctx.nestedTraversal() != null) {
+            return P.lt((Traversal.Admin<?, ?>) antlr.tvisitor.visitNestedTraversal(ctx.nestedTraversal()));
+        }
         return P.lt(getSingleGenericLiteralArgument(ctx));
     }
 
@@ -105,6 +115,9 @@ public class TraversalPredicateVisitor extends DefaultGremlinBaseVisitor<P> {
      */
     @Override
     public P visitTraversalPredicate_lte(final GremlinParser.TraversalPredicate_lteContext ctx) {
+        if (ctx.nestedTraversal() != null) {
+            return P.lte((Traversal.Admin<?, ?>) antlr.tvisitor.visitNestedTraversal(ctx.nestedTraversal()));
+        }
         return P.lte(getSingleGenericLiteralArgument(ctx));
     }
 
@@ -113,6 +126,9 @@ public class TraversalPredicateVisitor extends DefaultGremlinBaseVisitor<P> {
      */
     @Override
     public P visitTraversalPredicate_gt(final GremlinParser.TraversalPredicate_gtContext ctx) {
+        if (ctx.nestedTraversal() != null) {
+            return P.gt((Traversal.Admin<?, ?>) antlr.tvisitor.visitNestedTraversal(ctx.nestedTraversal()));
+        }
         return P.gt(getSingleGenericLiteralArgument(ctx));
     }
 
@@ -121,6 +137,9 @@ public class TraversalPredicateVisitor extends DefaultGremlinBaseVisitor<P> {
      */
     @Override
     public P visitTraversalPredicate_gte(final GremlinParser.TraversalPredicate_gteContext ctx) {
+        if (ctx.nestedTraversal() != null) {
+            return P.gte((Traversal.Admin<?, ?>) antlr.tvisitor.visitNestedTraversal(ctx.nestedTraversal()));
+        }
         return P.gte(getSingleGenericLiteralArgument(ctx));
     }
 
@@ -129,6 +148,11 @@ public class TraversalPredicateVisitor extends DefaultGremlinBaseVisitor<P> {
      */
     @Override
     public P visitTraversalPredicate_inside(final GremlinParser.TraversalPredicate_insideContext ctx) {
+        if (!ctx.nestedTraversal().isEmpty()) {
+            final Traversal.Admin<?, ?> first = (Traversal.Admin<?, ?>) antlr.tvisitor.visitNestedTraversal(ctx.nestedTraversal(0));
+            final Traversal.Admin<?, ?> second = (Traversal.Admin<?, ?>) antlr.tvisitor.visitNestedTraversal(ctx.nestedTraversal(1));
+            return P.gt(first).and(P.lt(second));
+        }
         final Object[] arguments = getDoubleGenericLiteralArgument(ctx);
         return P.inside(arguments[0], arguments[1]);
     }
@@ -138,6 +162,11 @@ public class TraversalPredicateVisitor extends DefaultGremlinBaseVisitor<P> {
      */
     @Override
     public P visitTraversalPredicate_outside(final GremlinParser.TraversalPredicate_outsideContext ctx) {
+        if (!ctx.nestedTraversal().isEmpty()) {
+            final Traversal.Admin<?, ?> first = (Traversal.Admin<?, ?>) antlr.tvisitor.visitNestedTraversal(ctx.nestedTraversal(0));
+            final Traversal.Admin<?, ?> second = (Traversal.Admin<?, ?>) antlr.tvisitor.visitNestedTraversal(ctx.nestedTraversal(1));
+            return P.lt(first).or(P.gt(second));
+        }
         final Object[] arguments = getDoubleGenericLiteralArgument(ctx);
         return P.outside(arguments[0], arguments[1]);
     }
@@ -147,6 +176,11 @@ public class TraversalPredicateVisitor extends DefaultGremlinBaseVisitor<P> {
      */
     @Override
     public P visitTraversalPredicate_between(final GremlinParser.TraversalPredicate_betweenContext ctx) {
+        if (!ctx.nestedTraversal().isEmpty()) {
+            final Traversal.Admin<?, ?> first = (Traversal.Admin<?, ?>) antlr.tvisitor.visitNestedTraversal(ctx.nestedTraversal(0));
+            final Traversal.Admin<?, ?> second = (Traversal.Admin<?, ?>) antlr.tvisitor.visitNestedTraversal(ctx.nestedTraversal(1));
+            return P.gte(first).and(P.lt(second));
+        }
         final Object[] arguments = getDoubleGenericLiteralArgument(ctx);
         return P.between(arguments[0], arguments[1]);
     }
@@ -156,6 +190,10 @@ public class TraversalPredicateVisitor extends DefaultGremlinBaseVisitor<P> {
      */
     @Override
     public P visitTraversalPredicate_within(final GremlinParser.TraversalPredicate_withinContext ctx) {
+        if (ctx.nestedTraversal() != null) {
+            return P.within((Traversal.Admin<?, ?>) antlr.tvisitor.visitNestedTraversal(ctx.nestedTraversal()));
+        }
+
         // called with no args which is valid for java/groovy
         if (null == ctx.genericArgumentVarargs()) return P.within();
 
@@ -175,6 +213,10 @@ public class TraversalPredicateVisitor extends DefaultGremlinBaseVisitor<P> {
      */
     @Override
     public P visitTraversalPredicate_without(final GremlinParser.TraversalPredicate_withoutContext ctx) {
+        if (ctx.nestedTraversal() != null) {
+            return P.without((Traversal.Admin<?, ?>) antlr.tvisitor.visitNestedTraversal(ctx.nestedTraversal()));
+        }
+
         // called with no args which is valid for java/groovy
         if (null == ctx.genericArgumentVarargs()) return P.without();
 
@@ -199,31 +241,49 @@ public class TraversalPredicateVisitor extends DefaultGremlinBaseVisitor<P> {
 
     @Override
     public P visitTraversalPredicate_containing(final GremlinParser.TraversalPredicate_containingContext ctx) {
+        if (ctx.nestedTraversal() != null) {
+            return TextP.containing((Traversal.Admin<?, ?>) antlr.tvisitor.visitNestedTraversal(ctx.nestedTraversal()));
+        }
         return TextP.containing((String) antlr.argumentVisitor.visitStringArgument(ctx.stringArgument()));
     }
 
     @Override
     public P visitTraversalPredicate_notContaining(final GremlinParser.TraversalPredicate_notContainingContext ctx) {
+        if (ctx.nestedTraversal() != null) {
+            return TextP.notContaining((Traversal.Admin<?, ?>) antlr.tvisitor.visitNestedTraversal(ctx.nestedTraversal()));
+        }
         return TextP.notContaining((String) antlr.argumentVisitor.visitStringArgument(ctx.stringArgument()));
     }
 
     @Override
     public P visitTraversalPredicate_notEndingWith(final GremlinParser.TraversalPredicate_notEndingWithContext ctx) {
+        if (ctx.nestedTraversal() != null) {
+            return TextP.notEndingWith((Traversal.Admin<?, ?>) antlr.tvisitor.visitNestedTraversal(ctx.nestedTraversal()));
+        }
         return TextP.notEndingWith((String) antlr.argumentVisitor.visitStringArgument(ctx.stringArgument()));
     }
 
     @Override
     public P visitTraversalPredicate_endingWith(final GremlinParser.TraversalPredicate_endingWithContext ctx) {
+        if (ctx.nestedTraversal() != null) {
+            return TextP.endingWith((Traversal.Admin<?, ?>) antlr.tvisitor.visitNestedTraversal(ctx.nestedTraversal()));
+        }
         return TextP.endingWith((String) antlr.argumentVisitor.visitStringArgument(ctx.stringArgument()));
     }
 
     @Override
     public P visitTraversalPredicate_startingWith(final GremlinParser.TraversalPredicate_startingWithContext ctx) {
+        if (ctx.nestedTraversal() != null) {
+            return TextP.startingWith((Traversal.Admin<?, ?>) antlr.tvisitor.visitNestedTraversal(ctx.nestedTraversal()));
+        }
         return TextP.startingWith((String) antlr.argumentVisitor.visitStringArgument(ctx.stringArgument()));
     }
 
     @Override
     public P visitTraversalPredicate_notStartingWith(final GremlinParser.TraversalPredicate_notStartingWithContext ctx) {
+        if (ctx.nestedTraversal() != null) {
+            return TextP.notStartingWith((Traversal.Admin<?, ?>) antlr.tvisitor.visitNestedTraversal(ctx.nestedTraversal()));
+        }
         return TextP.notStartingWith((String) antlr.argumentVisitor.visitStringArgument(ctx.stringArgument()));
     }
 

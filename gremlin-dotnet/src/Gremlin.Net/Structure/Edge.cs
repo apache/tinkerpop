@@ -21,6 +21,8 @@
 
 #endregion
 
+using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 
 namespace Gremlin.Net.Structure
@@ -38,12 +40,22 @@ namespace Gremlin.Net.Structure
         /// <param name="label">The label of the edge.</param>
         /// <param name="inV">The incoming/head vertex of the edge.</param>
         /// <param name="properties">Optional properties of the edge.</param>
-        public Edge(object? id, Vertex outV, string label, Vertex inV, dynamic[]? properties = null)
+        /// <param name="labels">Optional set of labels for multi-label support.</param>
+        public Edge(object? id, Vertex outV, string label, Vertex inV, dynamic[]? properties = null,
+            IEnumerable<string>? labels = null)
             : base(id, label, properties)
         {
             OutV = outV;
             InV = inV;
+            Labels = labels != null
+                ? ImmutableHashSet.CreateRange(labels)
+                : ImmutableHashSet.Create(label ?? "edge");
         }
+
+        /// <summary>
+        ///     Gets all labels on this edge.
+        /// </summary>
+        public IReadOnlySet<string> Labels { get; }
 
         /// <summary>
         ///     Gets the incoming/head vertex of this edge.
@@ -62,6 +74,25 @@ namespace Gremlin.Net.Structure
         public Property? Property(string key)
         {
             return Properties?.Cast<Property>().FirstOrDefault(p => p.Key == key);
+        }
+
+        /// <summary>
+        /// Groups this edge's properties by key.
+        /// </summary>
+        /// <returns>A map of property key to the list of Property objects for that key (empty when none).</returns>
+        public Dictionary<string, List<Property>> PropertyMap()
+        {
+            var map = new Dictionary<string, List<Property>>();
+            foreach (var p in Properties.Cast<Property>())
+            {
+                if (!map.TryGetValue(p.Key, out var list))
+                {
+                    list = new List<Property>();
+                    map[p.Key] = list;
+                }
+                list.Add(p);
+            }
+            return map;
         }
 
         /// <inheritdoc />

@@ -1,7 +1,7 @@
 github.com/BurntSushi/toml v1.5.0 h1:W5quZX/G/csjUnuI8SUYlsHs9M38FC7znL0lIO+DvMg=
 github.com/BurntSushi/toml v1.5.0/go.mod h1:ukJfTF/6rtPPRCnwkur4qwRxa8vTRFBF0uk2lLoLwho=
-github.com/apache/tinkerpop/gremlin-go/v3 v3.7.4 h1:w4kbgY+klmw5WjcniKqhhfoSmbinhT3lc0CoF/AHMqI=
-github.com/apache/tinkerpop/gremlin-go/v3 v3.7.4/go.mod h1:hw4is2yHBjGOOoa9Z1sKckEJsH2bCXvq2biORjo32sM=
+github.com/apache/tinkerpop/gremlin-go/v3 v3.8.2 h1:kE0xuL6UncFQgPYwmQfBT440wNOMlzHvm/vic3VQBGM=
+github.com/apache/tinkerpop/gremlin-go/v3 v3.8.2/go.mod h1:HkUXCwiMMjv3oBUqwrbqRLSkbHh9csEC3aW7Ntw/uFc=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/google/uuid v1.6.0 h1:NIvaJDMOsjHA8n1jAhLSgzrAzy1Hgr+hNrb57e+94F0=

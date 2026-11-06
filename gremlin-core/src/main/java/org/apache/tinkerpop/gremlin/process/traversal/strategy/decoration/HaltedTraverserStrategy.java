@@ -35,12 +35,16 @@ public final class HaltedTraverserStrategy extends AbstractTraversalStrategy<Tra
     private final Class haltedTraverserFactory;
     private final boolean useReference;
 
-    private HaltedTraverserStrategy(final Class haltedTraverserFactory) {
-        if (haltedTraverserFactory.equals(DetachedFactory.class) || haltedTraverserFactory.equals(ReferenceFactory.class)) {
-            this.haltedTraverserFactory = haltedTraverserFactory;
-            this.useReference = ReferenceFactory.class.equals(this.haltedTraverserFactory);
-        } else
-            throw new IllegalArgumentException("The provided traverser detachment factory is unknown: " + haltedTraverserFactory);
+    private HaltedTraverserStrategy(final String haltedTraverserFactory) {
+        if (DetachedFactory.class.getName().equals(haltedTraverserFactory))
+            this.haltedTraverserFactory = DetachedFactory.class;
+        else if (ReferenceFactory.class.getName().equals(haltedTraverserFactory))
+            this.haltedTraverserFactory = ReferenceFactory.class;
+        else
+            throw new IllegalArgumentException("The provided traverser detachment factory is unknown: " +
+                    haltedTraverserFactory);
+
+        this.useReference = ReferenceFactory.class.equals(this.haltedTraverserFactory);
     }
 
     public void apply(final Traversal.Admin<?, ?> traversal) {
@@ -62,11 +66,7 @@ public final class HaltedTraverserStrategy extends AbstractTraversalStrategy<Tra
     public static final String HALTED_TRAVERSER_FACTORY = "haltedTraverserFactory";
 
     public static HaltedTraverserStrategy create(final Configuration configuration) {
-        try {
-            return new HaltedTraverserStrategy(Class.forName(configuration.getString(HALTED_TRAVERSER_FACTORY)));
-        } catch (final ClassNotFoundException e) {
-            throw new IllegalArgumentException(e.getMessage(), e);
-        }
+        return new HaltedTraverserStrategy(configuration.getString(HALTED_TRAVERSER_FACTORY));
     }
 
     @Override
@@ -79,11 +79,11 @@ public final class HaltedTraverserStrategy extends AbstractTraversalStrategy<Tra
     ////////////
 
     public static HaltedTraverserStrategy detached() {
-        return new HaltedTraverserStrategy(DetachedFactory.class);
+        return new HaltedTraverserStrategy(DetachedFactory.class.getName());
     }
 
     public static HaltedTraverserStrategy reference() {
-        return new HaltedTraverserStrategy(ReferenceFactory.class);
+        return new HaltedTraverserStrategy(ReferenceFactory.class.getName());
     }
 
 }

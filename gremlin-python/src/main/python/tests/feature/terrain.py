@@ -42,13 +42,16 @@ def prepare_static_traversal_source(features, marker):
     # as the various traversal sources for testing do not change their data, there is no need to re-create remotes
     # and client side lookup data over and over. it can be created once for all tests and be reused.
     cache = {}
-    for graph_name in (("modern", "gmodern"), ("classic", "gclassic"), ("crew", "gcrew"), ("grateful", "ggrateful"), ("sink", "gsink")):
+    for graph_name in (("modern", "gmodern"), ("classic", "gclassic"), ("crew", "gcrew"), ("grateful", "ggrateful"), ("sink", "gsink"), ("zoo", "gzoo")):
         cache[graph_name[0]] = {}
         remote = __create_remote(graph_name[1])
-        cache[graph_name[0]]["remote_conn"] = __create_remote(graph_name[1])
+        cache[graph_name[0]]["remote_conn"] = remote
         cache[graph_name[0]]["lookup_v"] = world.create_lookup_v(remote)
         cache[graph_name[0]]["lookup_e"] = world.create_lookup_e(remote)
         cache[graph_name[0]]["lookup_vp"] = world.create_lookup_vp(remote)
+
+    # air-routes scenarios only return values so the graph needs no element lookups
+    cache["airroutes"] = {"remote_conn": __create_remote("gairroutes"), "lookup_v": {}, "lookup_e": {}, "lookup_vp": {}}
 
     # store the cache on the global context so that remotes can be shutdown cleanly at the end of the tests
     world.cache = cache
@@ -62,7 +65,7 @@ def prepare_static_traversal_source(features, marker):
             scenario.context.lookup_e = {}
             scenario.context.lookup_vp = {}
 
-            for graph_name in ("modern", "classic", "crew", "grateful", "sink"):
+            for graph_name in ("modern", "classic", "crew", "grateful", "sink", "zoo", "airroutes"):
                 scenario.context.remote_conn[graph_name] = cache[graph_name]["remote_conn"]
                 scenario.context.lookup_v[graph_name] = cache[graph_name]["lookup_v"]
                 scenario.context.lookup_e[graph_name] = cache[graph_name]["lookup_e"]
@@ -83,10 +86,23 @@ def prepare_traversal_source(scenario):
     g = traversal().with_(remote)
     g.V().drop().iterate()
 
+    # create a fresh remote for multi-label tests that need ZERO_OR_MORE vertex label cardinality
+    tagset = [tag.name for tag in scenario.all_tags]
+    if "MultiLabel" in tagset:
+        multilabel_remote = __create_remote("gmultilabel")
+        scenario.context.remote_conn["multilabel"] = multilabel_remote
+        scenario.context.lookup_v["multilabel"] = {}
+        scenario.context.lookup_e["multilabel"] = {}
+        scenario.context.lookup_vp["multilabel"] = {}
+        gml = traversal().with_(multilabel_remote)
+        gml.V().drop().iterate()
+
 
 @after.each_scenario
 def close_traversal_source(scenario):
     scenario.context.remote_conn["empty"].close()
+    if "multilabel" in scenario.context.remote_conn:
+        scenario.context.remote_conn["multilabel"].close()
 
 
 @after.all
@@ -106,6 +122,9 @@ def __create_remote(server_graph_name):
 
     bulking = world.config.user_data["bulking"] == "true" if "bulking" in world.config.user_data else False
 
+    # scenarios run one at a time, so a small pool is enough. each pooled connection holds its own event loop and
+    # socket, and the driver default of 128 per remote exhausts the container's file descriptor limit over a full run
     return DriverRemoteConnection(test_no_auth_url, server_graph_name,
-                                  request_serializer=s, response_serializer=s,
-                                  bulk_results=bulking)
+                                  response_serializer=s,
+                                  bulk_results=bulking,
+                                  max_connections=4)

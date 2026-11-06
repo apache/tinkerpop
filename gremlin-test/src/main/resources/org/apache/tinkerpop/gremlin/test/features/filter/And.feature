@@ -20,6 +20,10 @@ Feature: Step - and()
 
   Scenario: g_V_andXhasXage_gt_27X__outE_count_gte_2X_name
     Given the modern graph
+    And the intent
+      """
+      Which vertices have an age over 27 and at least two outgoing edges? Return their names.
+      """
     And the traversal of
       """
       g.V().and(__.has("age", P.gt(27)), __.outE().count().is(P.gte(2))).values("name")
@@ -80,3 +84,48 @@ Feature: Step - and()
     Then the result should be unordered
       | result |
       | v[marko] |
+
+  @MultiLabel
+  Scenario: g_V_andXhasLabelXmammalX_hasLabelXendangeredXX_name_multilabel
+    Given the zoo graph
+    And the traversal of
+      """
+      g.V().and(__.hasLabel("mammal"), __.hasLabel("endangered")).values("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | blaze |
+      | titan |
+      | splash |
+      | tinker |
+
+  Scenario: g_V_whereXoutEXcreatedX_and_outEXknowsXX_name
+    Given the modern graph
+    And the intent
+      """
+      Which vertices have both created something and know someone? Return their names.
+      """
+    And the traversal of
+      """
+      g.V().where(outE("created").and().outE("knows")).values("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | marko |
+
+  Scenario: g_V_andXoutEXknowsX_valuesXageX_isXltX30XXX_name
+    Given the modern graph
+    And the intent
+      """
+      Which vertices know someone and have an age under 30? Return their names.
+      """
+    And the traversal of
+      """
+      g.V().and(outE("knows"),values("age").is(P.lt(30))).values("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | marko |

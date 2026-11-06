@@ -141,7 +141,7 @@ cd ${DIR_NAME}
 echo -n "* checking source files ... "
 find . -type f | xargs -n1 -I {} file {} --mime | grep 'charset=binary' | cut -f1 -d: |
   grep -Pv '^\./docs/(static|(site/home))/(img|images|fonts)/((icons|logos|policy|resources|providers|community|use-cases|gremlin|download|social)/)?[^/]*\.(png|jpg|ico|pdf|eot|otf|woff|woff2|ttf)$' |
-  grep -Pv '^\./docs/gremlint/(src|public)/[^/]*\.(png|jpg|ico)$' |
+  grep -Pv '^\./docs/(gremlint|gremlator)/(src|public)/[^/]*\.(png|jpg|ico)$' |
   grep -Pv '^\./docs/original/(ai/)?[^/]*\.(png|jpg|ico|ai)$' |
   grep -Pv '^./gremlin-dotnet/src/images/[^/]*\.(png|ico)$' |
   grep -Pv '^./gremlin-dotnet/.*\.snk$' |
@@ -209,10 +209,10 @@ if [ "${TYPE}" = "CONSOLE" ]; then
   SCRIPT_FILENAME="test.groovy"
   SCRIPT_PATH="${TMP_DIR}/${SCRIPT_FILENAME}"
   echo ${SCRIPT} > ${SCRIPT_PATH}
-  [[ `bin/gremlin.sh <<< ${SCRIPT} | ${SCRIPT_DIR}/../docs/preprocessor/control-characters.sh | grep '^==>' | sed -e 's/^==>//'` -eq 6 ]] || { echo "failed to evaluate sample script"; exit 1; }
-  [[ `bin/gremlin.sh -e ${SCRIPT_PATH}` -eq 6 ]] || { echo "failed to evaluate sample script using -e option"; exit 1; }
+  [[ `bin/gremlin.sh <<< ${SCRIPT} | sed "s/\x1b\[[0-9;]*m//g" | tr -d "\r" | grep '^==>' | sed -e 's/^==>//'` -eq 6 ]] || { echo "failed to evaluate sample script"; exit 1; }
+  [[ `bin/gremlin.sh -e ${SCRIPT_PATH} | tr -d "\r" | grep -E '^[0-9]+$' | tail -n1` -eq 6 ]] || { echo "failed to evaluate sample script using -e option"; exit 1; }
   CONSOLE_DIR=`pwd`
   cd ${TMP_DIR}
-  [[ `${CONSOLE_DIR}/bin/gremlin.sh -e ${SCRIPT_FILENAME}` -eq 6 ]] || { echo "failed to evaluate sample script using -e option (using a different working directory and a relative script path)"; exit 1; }
+  [[ `${CONSOLE_DIR}/bin/gremlin.sh -e ${SCRIPT_FILENAME} | tr -d "\r" | grep -E '^[0-9]+$' | tail -n1` -eq 6 ]] || { echo "failed to evaluate sample script using -e option (using a different working directory and a relative script path)"; exit 1; }
   echo "OK"
 fi

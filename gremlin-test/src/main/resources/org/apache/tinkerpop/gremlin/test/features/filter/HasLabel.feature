@@ -32,6 +32,10 @@ Feature: Step - hasLabel()
 
   Scenario: g_E_hasLabelXknowsX
     Given the modern graph
+    And the intent
+      """
+      Find all the knows edges in the graph.
+      """
     And the traversal of
       """
       g.E().hasLabel("knows")
@@ -45,6 +49,10 @@ Feature: Step - hasLabel()
   @MultiProperties @MetaProperties
   Scenario: g_E_hasLabelXuses_traversesX
     Given the crew graph
+    And the intent
+      """
+      Find all the uses and traverses edges in the graph.
+      """
     And the traversal of
       """
       g.E().hasLabel("uses", "traverses")
@@ -61,6 +69,26 @@ Feature: Step - hasLabel()
       | e[matthias-uses->gremlin] |
       | e[matthias-uses->tinkergraph] |
       | e[gremlin-traverses->tinkergraph] |
+
+  Scenario: g_V_hasLabelXperson_softwareX
+    Given the modern graph
+    And the intent
+      """
+      Find all the people and software in the graph.
+      """
+    And the traversal of
+      """
+      g.V().hasLabel("person","software")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | v[marko] |
+      | v[vadas] |
+      | v[josh] |
+      | v[peter] |
+      | v[lop] |
+      | v[ripple] |
 
   Scenario: g_V_hasLabelXperson_software_blahX
     Given the modern graph
@@ -97,6 +125,10 @@ Feature: Step - hasLabel()
 
   Scenario: g_V_hasLabelXpersonX_hasLabelXsoftwareX
     Given the modern graph
+    And the intent
+      """
+      Get vertices with both person and software labels.
+      """
     And the traversal of
     """
     g.V().hasLabel("person").hasLabel("software")
@@ -211,3 +243,64 @@ Feature: Step - hasLabel()
     """
     When iterated to list
     Then the result should be empty
+
+  @MultiLabel
+  Scenario: g_V_hasLabelXbirdX_name_multilabel
+    Given the zoo graph
+    And the traversal of
+      """
+      g.V().hasLabel("bird").values("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | tux |
+
+  @MultiLabel
+  Scenario: g_V_hasLabelXaquaticX_name_multilabel
+    Given the zoo graph
+    And the traversal of
+      """
+      g.V().hasLabel("aquatic").values("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | tux |
+      | atlas |
+      | ripple |
+      | splash |
+      | lagoon |
+
+  @MultiLabel
+  Scenario: g_V_hasLabelXreptile_birdX_name_multilabel
+    Given the zoo graph
+    And the traversal of
+      """
+      g.V().hasLabel("reptile", "bird").values("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | tux |
+      | atlas |
+      | monty |
+
+  @GraphComputerVerificationMidVNotSupported
+  Scenario: g_V_hasLabelXV_hasXname_markoX_labelX_name
+    Given the modern graph
+    And the intent
+      """
+      Which vertices have the same label as marko? Return their names.
+      """
+    And the traversal of
+      """
+      g.V().hasLabel(__.V().has("name","marko").label()).values("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | marko |
+      | vadas |
+      | josh |
+      | peter |

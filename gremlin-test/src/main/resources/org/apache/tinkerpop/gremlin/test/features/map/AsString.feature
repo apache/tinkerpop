@@ -199,6 +199,10 @@ Feature: Step - asString()
 
   Scenario: g_V_hasLabelXpersonX_valuesXageX_asString_concatX_years_oldX
     Given the modern graph
+    And the intent
+      """
+      Describe each person's age as text in the form "29 years old".
+      """
     And the traversal of
       """
       g.V().hasLabel("person").values("age").asString().concat(" years old")
@@ -210,3 +214,15 @@ Feature: Step - asString()
       | 27 years old |
       | 32 years old |
       | 35 years old |
+
+  @StepSubgraph
+  Scenario: g_V_outEXknowsX_subgraphXsgX_capXsgX_asString
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().outE("knows").subgraph("sg").cap("sg").asString()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | tinkermemorygraph[vertices:3 edges:2] |

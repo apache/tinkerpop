@@ -36,26 +36,26 @@ namespace Gremlin.Net.Driver
     {
         private readonly HttpResponseMessage _response;
         private readonly Stream _contentStream;
-        private readonly DeflateStream? _deflateStream;
+        private readonly Stream? _decompressionStream;
 
         /// <summary>
         ///     Gets the stream to read from — the decompression stream if present,
         ///     otherwise the raw content stream.
         /// </summary>
-        public Stream Stream => (Stream?)_deflateStream ?? _contentStream;
+        public Stream Stream => _decompressionStream ?? _contentStream;
 
         /// <summary>
         ///     Initializes a new instance of the <see cref="StreamingResponseContext"/> class.
         /// </summary>
         /// <param name="response">The HTTP response message.</param>
         /// <param name="contentStream">The raw content stream from the response.</param>
-        /// <param name="deflateStream">An optional deflate decompression stream wrapping the content stream.</param>
+        /// <param name="decompressionStream">An optional decompression stream wrapping the content stream.</param>
         public StreamingResponseContext(HttpResponseMessage response, Stream contentStream,
-            DeflateStream? deflateStream = null)
+            Stream? decompressionStream = null)
         {
             _response = response;
             _contentStream = contentStream;
-            _deflateStream = deflateStream;
+            _decompressionStream = decompressionStream;
         }
 
         /// <summary>
@@ -63,7 +63,7 @@ namespace Gremlin.Net.Driver
         /// </summary>
         public void Dispose()
         {
-            _deflateStream?.Dispose();
+            _decompressionStream?.Dispose();
             _contentStream.Dispose();
             _response.Dispose();
         }

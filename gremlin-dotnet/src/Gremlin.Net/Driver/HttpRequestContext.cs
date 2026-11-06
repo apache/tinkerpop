@@ -24,6 +24,8 @@
 using System;
 using System.Collections.Generic;
 using System.Security.Cryptography;
+using System.Text.Json;
+using Gremlin.Net.Driver.Messages;
 
 namespace Gremlin.Net.Driver
 {
@@ -48,10 +50,10 @@ namespace Gremlin.Net.Driver
         public Dictionary<string, string> Headers { get; }
 
         /// <summary>
-        ///     Gets or sets the request body. This is <c>byte[]</c> when serialization has occurred
-        ///     (default path), or <c>RequestMessage</c> when serialization is deferred to interceptors
-        ///     (<c>requestSerializer = null</c>). Interceptors may also set this to an
-        ///     <see cref="System.Net.Http.HttpContent"/> instance for full control over the wire format.
+        ///     Gets or sets the request body. Initially a <see cref="RequestMessage"/>, becomes
+        ///     <c>byte[]</c> after <see cref="SerializeBody"/> is called. Interceptors may also
+        ///     set this to an <see cref="System.Net.Http.HttpContent"/> instance for full control
+        ///     over the wire format.
         /// </summary>
         public object Body { get; set; }
 
@@ -61,14 +63,54 @@ namespace Gremlin.Net.Driver
         /// <param name="method">The HTTP method.</param>
         /// <param name="uri">The request URI.</param>
         /// <param name="headers">The HTTP headers.</param>
-        /// <param name="body">The request body. Typically <c>byte[]</c> (post-serialization) or
-        ///     <c>RequestMessage</c> (pre-serialization).</param>
+        /// <param name="body">The request body. Typically <c>RequestMessage</c> (pre-serialization)
+        ///     or <c>byte[]</c> (post-serialization).</param>
         public HttpRequestContext(string method, Uri uri, Dictionary<string, string> headers, object body)
         {
             Method = method ?? throw new ArgumentNullException(nameof(method));
             Uri = uri ?? throw new ArgumentNullException(nameof(uri));
             Headers = headers ?? throw new ArgumentNullException(nameof(headers));
             Body = body;
+        }
+
+        /// <summary>
+        ///     Serializes the body to JSON if it is still a <see cref="RequestMessage"/>.
+        ///     Sets the body to the resulting <c>byte[]</c>, and sets the <c>Content-Type</c>
+        ///     and <c>Content-Length</c> headers. This method is idempotent: if the body is
+        ///     already <c>byte[]</c>, it returns those bytes without re-serializing.
+        /// </summary>
+        /// <returns>The serialized body bytes.</returns>
+        /// <exception cref="InvalidOperationException">
+        ///     Thrown if the body is neither <see cref="RequestMessage"/> nor <c>byte[]</c>.
+        /// </exception>
+        public byte[] SerializeBody()
+        {
+            if (Body is byte[] existing)
+            {
+                return existing;
+            }
+
+            if (Body is RequestMessage message)
+            {
+                var payload = new Dictionary<string, object>
+                {
+                    [Tokens.ArgsGremlin] = message.Gremlin
+                };
+                foreach (var field in message.Fields)
+                {
+                    payload[field.Key] = field.Value;
+                }
+
+                var jsonBytes = JsonSerializer.SerializeToUtf8Bytes(payload);
+                Body = jsonBytes;
+                Headers["Content-Type"] = "application/json";
+                Headers["Content-Length"] = jsonBytes.Length.ToString();
+                return jsonBytes;
+            }
+
+            throw new InvalidOperationException(
+                "Cannot serialize body of type " + (Body?.GetType().Name ?? "null") +
+                ". Body must be RequestMessage or byte[].");
         }
 
         /// <summary>

@@ -60,7 +60,7 @@ import java.util.Map;
 
 /**
  * An implementation of the {@link IoRegistry} interface that provides serializers with custom configurations for
- * implementation specific classes that might need to be serialized.  This registry allows a {@link TinkerGraph} to
+ * implementation specific classes that might need to be serialized.  This registry allows a {@link TinkerMemoryGraph} to
  * be serialized directly which is useful for moving small graphs around on the network.
  * <p/>
  * Most providers need not implement this kind of custom serializer as they will deal with much larger graphs that
@@ -75,7 +75,7 @@ public final class TinkerIoRegistryV1 extends AbstractIoRegistry {
     private static final TinkerIoRegistryV1 INSTANCE = new TinkerIoRegistryV1();
 
     private TinkerIoRegistryV1() {
-        register(GryoIo.class, TinkerGraph.class, new TinkerGraphGryoSerializer());
+        register(GryoIo.class, TinkerMemoryGraph.class, new TinkerGraphGryoSerializer());
         register(GraphSONIo.class, null, new TinkerModule());
     }
 
@@ -84,12 +84,12 @@ public final class TinkerIoRegistryV1 extends AbstractIoRegistry {
     }
 
     /**
-     * Provides a method to serialize an entire {@link TinkerGraph} into itself for Gryo.  This is useful when
+     * Provides a method to serialize an entire {@link TinkerMemoryGraph} into itself for Gryo.  This is useful when
      * shipping small graphs around through Gremlin Server. Reuses the existing Kryo instance for serialization.
      */
-    final static class TinkerGraphGryoSerializer extends Serializer<TinkerGraph> {
+    final static class TinkerGraphGryoSerializer extends Serializer<TinkerMemoryGraph> {
         @Override
-        public void write(final Kryo kryo, final Output output, final TinkerGraph graph) {
+        public void write(final Kryo kryo, final Output output, final TinkerMemoryGraph graph) {
             try (final ByteArrayOutputStream stream = new ByteArrayOutputStream()) {
                 GryoWriter.build().mapper(() -> kryo).create().writeGraph(stream, graph);
                 final byte[] bytes = stream.toByteArray();
@@ -101,10 +101,10 @@ public final class TinkerIoRegistryV1 extends AbstractIoRegistry {
         }
 
         @Override
-        public TinkerGraph read(final Kryo kryo, final Input input, final Class<TinkerGraph> tinkerGraphClass) {
+        public TinkerMemoryGraph read(final Kryo kryo, final Input input, final Class<TinkerMemoryGraph> tinkerGraphClass) {
             final Configuration conf = new BaseConfiguration();
             conf.setProperty("gremlin.tinkergraph.defaultVertexPropertyCardinality", "list");
-            final TinkerGraph graph = TinkerGraph.open(conf);
+            final TinkerMemoryGraph graph = TinkerMemoryGraph.open(conf);
             final int len = input.readInt();
             final byte[] bytes = input.readBytes(len);
             try (final ByteArrayInputStream stream = new ByteArrayInputStream(bytes)) {
@@ -118,14 +118,14 @@ public final class TinkerIoRegistryV1 extends AbstractIoRegistry {
     }
 
     /**
-     * Provides a method to serialize an entire {@link TinkerGraph} into itself for GraphSON.  This is useful when
+     * Provides a method to serialize an entire {@link TinkerMemoryGraph} into itself for GraphSON.  This is useful when
      * shipping small graphs around through Gremlin Server.
      */
     final static class TinkerModule extends SimpleModule {
         public TinkerModule() {
             super("tinkergraph-1.0");
-            addSerializer(TinkerGraph.class, new TinkerGraphJacksonSerializer());
-            addDeserializer(TinkerGraph.class, new TinkerGraphJacksonDeserializer());
+            addSerializer(TinkerMemoryGraph.class, new TinkerGraphJacksonSerializer());
+            addDeserializer(TinkerMemoryGraph.class, new TinkerGraphJacksonDeserializer());
         }
     }
 
@@ -137,14 +137,14 @@ public final class TinkerIoRegistryV1 extends AbstractIoRegistry {
      * with as a format and doesn't require a cache for loading (as vertex labels are not serialized in adjacency
      * list).
      */
-    final static class TinkerGraphJacksonSerializer extends StdSerializer<TinkerGraph> {
+    final static class TinkerGraphJacksonSerializer extends StdSerializer<TinkerMemoryGraph> {
 
         public TinkerGraphJacksonSerializer() {
-            super(TinkerGraph.class);
+            super(TinkerMemoryGraph.class);
         }
 
         @Override
-        public void serialize(final TinkerGraph graph, final JsonGenerator jsonGenerator, final SerializerProvider serializerProvider)
+        public void serialize(final TinkerMemoryGraph graph, final JsonGenerator jsonGenerator, final SerializerProvider serializerProvider)
                 throws IOException {
             jsonGenerator.writeStartObject();
 
@@ -172,10 +172,10 @@ public final class TinkerIoRegistryV1 extends AbstractIoRegistry {
         }
 
         @Override
-        public void serializeWithType(final TinkerGraph graph, final JsonGenerator jsonGenerator,
+        public void serializeWithType(final TinkerMemoryGraph graph, final JsonGenerator jsonGenerator,
                                       final SerializerProvider serializerProvider, final TypeSerializer typeSerializer) throws IOException {
             jsonGenerator.writeStartObject();
-            jsonGenerator.writeStringField(GraphSONTokens.CLASS, TinkerGraph.class.getName());
+            jsonGenerator.writeStringField(GraphSONTokens.CLASS, TinkerMemoryGraph.class.getName());
 
             jsonGenerator.writeFieldName(GraphSONTokens.VERTICES);
             jsonGenerator.writeStartArray();
@@ -210,16 +210,16 @@ public final class TinkerIoRegistryV1 extends AbstractIoRegistry {
     /**
      * Deserializes the edge list format.
      */
-    static class TinkerGraphJacksonDeserializer extends StdDeserializer<TinkerGraph> {
+    static class TinkerGraphJacksonDeserializer extends StdDeserializer<TinkerMemoryGraph> {
         public TinkerGraphJacksonDeserializer() {
-            super(TinkerGraph.class);
+            super(TinkerMemoryGraph.class);
         }
 
         @Override
-        public TinkerGraph deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException, JsonProcessingException {
+        public TinkerMemoryGraph deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException, JsonProcessingException {
             final Configuration conf = new BaseConfiguration();
             conf.setProperty("gremlin.tinkergraph.defaultVertexPropertyCardinality", "list");
-            final TinkerGraph graph = TinkerGraph.open(conf);
+            final TinkerMemoryGraph graph = TinkerMemoryGraph.open(conf);
 
             final List<Map<String, Object>> edges;
             final List<Map<String, Object>> vertices;

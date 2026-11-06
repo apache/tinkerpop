@@ -37,7 +37,9 @@ public class TreeSerializer extends SimpleTypeSerializer<Tree> {
 
         final Tree result = new Tree();
         for (int i = 0; i < length; i++) {
-            result.put(context.read(buffer), context.readValue(buffer, Tree.class, false));
+            final Object key = context.read(buffer);
+            final Tree value = context.readValue(buffer, Tree.class, false);
+            result.getOrCreateChild(key).addTree(value);
         }
 
         return result;
@@ -45,11 +47,12 @@ public class TreeSerializer extends SimpleTypeSerializer<Tree> {
 
     @Override
     protected void writeValue(final Tree value, final Buffer buffer, final GraphBinaryWriter context) throws IOException {
-        buffer.writeInt(value.size());
+        final java.util.Set<Object> rootNodes = value.rootNodes();
+        buffer.writeInt(rootNodes.size());
 
-        for (Object key : value.keySet()) {
+        for (final Object key : rootNodes) {
             context.write(key, buffer);
-            context.writeValue(value.get(key), buffer, false);
+            context.writeValue(value.childAt(key), buffer, false);
         }
     }
 }

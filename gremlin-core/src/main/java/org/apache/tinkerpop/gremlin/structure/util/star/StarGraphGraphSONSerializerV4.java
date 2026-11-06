@@ -71,7 +71,7 @@ public class StarGraphGraphSONSerializerV4 extends StdSerializer<DirectionalStar
         final StarGraph starGraph = directionalStarGraph.getStarGraphToSerialize();
         GraphSONUtil.writeStartObject(starGraph, jsonGenerator, typeSerializer);
         GraphSONUtil.writeWithType(GraphSONTokens.ID, starGraph.starVertex.id, jsonGenerator, serializerProvider, typeSerializer);
-        jsonGenerator.writeStringField(GraphSONTokens.LABEL, starGraph.starVertex.label);
+        writeLabels(jsonGenerator, starGraph.starVertex.labels());
         if (directionalStarGraph.getDirection() != null) writeEdges(directionalStarGraph, jsonGenerator, serializerProvider, typeSerializer, Direction.IN);
         if (directionalStarGraph.getDirection() != null) writeEdges(directionalStarGraph, jsonGenerator, serializerProvider, typeSerializer, Direction.OUT);
         if (starGraph.starVertex.vertexProperties != null && !starGraph.starVertex.vertexProperties.isEmpty()) {
@@ -160,6 +160,18 @@ public class StarGraphGraphSONSerializerV4 extends StdSerializer<DirectionalStar
     private static <S> List<S> sort(final List<S> listToSort, final Comparator comparator) {
         Collections.sort(listToSort, comparator);
         return listToSort;
+    }
+
+    /**
+     * Helper method for writing a vertex's labels as an array. Used for multi-label vertex support.
+     */
+    private static void writeLabels(final JsonGenerator jsonGenerator, final Set<String> labels) throws IOException {
+        jsonGenerator.writeFieldName(GraphSONTokens.LABEL);
+        jsonGenerator.writeStartArray();
+        for (final String label : labels) {
+            jsonGenerator.writeString(label);
+        }
+        jsonGenerator.writeEndArray();
     }
 
 }

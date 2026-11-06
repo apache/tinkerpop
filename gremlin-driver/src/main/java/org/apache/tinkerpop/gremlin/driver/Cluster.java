@@ -29,10 +29,8 @@ import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 import io.netty.util.concurrent.Future;
 import org.apache.commons.configuration2.Configuration;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
-import org.apache.commons.lang3.tuple.Pair;
 import org.apache.tinkerpop.gremlin.driver.auth.Auth;
 import org.apache.tinkerpop.gremlin.driver.exception.NoHostAvailableException;
-import org.apache.tinkerpop.gremlin.driver.interceptor.PayloadSerializingInterceptor;
 import org.apache.tinkerpop.gremlin.driver.remote.HttpRemoteTransaction;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.apache.tinkerpop.gremlin.util.MessageSerializer;
@@ -53,6 +51,7 @@ import java.lang.ref.WeakReference;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.UnknownHostException;
 import java.security.KeyStore;
@@ -63,10 +62,10 @@ import java.security.cert.CertificateException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.time.Duration;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -86,7 +85,6 @@ import java.util.stream.Collectors;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public final class Cluster {
-    public static final String SERIALIZER_INTERCEPTOR_NAME = "serializer";
     private static final Logger logger = LoggerFactory.getLogger(Cluster.class);
 
     private final Manager manager;
@@ -123,8 +121,9 @@ public final class Cluster {
      * @param graphOrTraversalSource the graph/traversal source alias, or null to use the server default
      */
     public RemoteTransaction transact(final String graphOrTraversalSource) {
-        final Client.PinnedClient pinnedClient = new Client.PinnedClient(this);
-        manager.trackClient(pinnedClient);
+        // Ensures the shared transaction client and its pools exist before pinning the transaction to a host.
+        init();
+        final Client.PinnedClient pinnedClient = new Client.PinnedClient(manager.transactionClient);
         return new HttpRemoteTransaction(pinnedClient, graphOrTraversalSource);
     }
 
@@ -139,10 +138,6 @@ public final class Cluster {
 
     public static Builder build(final String address) {
         return new Builder(address);
-    }
-
-    public static Builder build(final RequestInterceptor serializingInterceptor) {
-        return new Builder(serializingInterceptor);
     }
 
     public static Builder build(final File configurationFile) throws FileNotFoundException {
@@ -171,12 +166,15 @@ public final class Cluster {
                 .nioPoolSize(settings.nioPoolSize)
                 .workerPoolSize(settings.workerPoolSize)
                 .reconnectInterval(settings.connectionPool.reconnectInterval)
-                .resultIterationBatchSize(settings.connectionPool.resultIterationBatchSize)
-                .maxResponseContentLength(settings.connectionPool.maxResponseContentLength)
+                .batchSize(settings.connectionPool.batchSize)
+                .maxResponseHeaderBytes(settings.connectionPool.maxResponseHeaderBytes)
                 .maxWaitForConnection(settings.connectionPool.maxWaitForConnection)
-                .maxConnectionPoolSize(settings.connectionPool.maxSize)
-                .connectionSetupTimeoutMillis(settings.connectionPool.connectionSetupTimeoutMillis)
-                .idleConnectionTimeoutMillis(settings.connectionPool.idleConnectionTimeout)
+                .maxConnections(settings.connectionPool.maxConnections)
+                .connectTimeoutMillis(settings.connectionPool.connectTimeout)
+                .idleTimeoutMillis(settings.connectionPool.idleTimeout)
+                .keepAliveTimeMillis(settings.connectionPool.keepAliveTime)
+                .readTimeoutMillis(settings.connectionPool.readTimeout)
+                .compression(settings.connectionPool.compression)
                 .enableUserAgentOnConnect(settings.enableUserAgentOnConnect)
                 .bulkResults(settings.bulkResults)
                 .validationRequest(settings.connectionPool.validationRequest);
@@ -190,7 +188,7 @@ public final class Cluster {
             addresses.stream().skip(1).forEach(builder::addContactPoint);
 
         try {
-            builder.serializer(settings.serializer.create());
+            builder.responseSerializer(settings.responseSerializer.create());
         } catch (Exception ex) {
             throw new IllegalStateException("Could not establish serializer - " + ex.getMessage());
         }
@@ -294,15 +292,15 @@ public final class Cluster {
     /**
      * Gets the maximum size that the {@link ConnectionPool} can grow.
      */
-    public int maxConnectionPoolSize() {
-        return manager.connectionPoolSettings.maxSize;
+    public int maxConnections() {
+        return manager.connectionPoolSettings.maxConnections;
     }
 
     /**
-     * Gets the override for the server setting that determines how many results are returned per batch.
+     * Gets the default for the per-request batch size used when the request does not specify one.
      */
-    public int getResultIterationBatchSize() {
-        return manager.connectionPoolSettings.resultIterationBatchSize;
+    public int getBatchSize() {
+        return manager.connectionPoolSettings.batchSize;
     }
 
     /**
@@ -320,17 +318,54 @@ public final class Cluster {
     }
 
     /**
-     * Gets the maximum size in bytes of any request received from the server.
+     * Gets the maximum size in bytes of the HTTP response headers.
      */
-    public long getMaxResponseContentLength() {
-        return manager.connectionPoolSettings.maxResponseContentLength;
+    public int getMaxResponseHeaderBytes() {
+        return manager.connectionPoolSettings.maxResponseHeaderBytes;
     }
 
     /**
      * Get time in milliseconds that the driver will allow a channel to not receive read or writes before it automatically closes.
      */
-    public long getIdleConnectionTimeout() {
-        return manager.connectionPoolSettings.idleConnectionTimeout;
+    public long getIdleTimeout() {
+        return manager.connectionPoolSettings.idleTimeout;
+    }
+
+    /**
+     * Gets the duration in milliseconds that bounds TCP connection establishment (including the SSL handshake).
+     */
+    public int getConnectTimeout() {
+        return manager.connectionPoolSettings.connectTimeout;
+    }
+
+    /**
+     * Gets the idle time in milliseconds before TCP keep-alive probes begin on an otherwise idle connection. A value
+     * of {@code 0} disables the feature.
+     */
+    public long getKeepAliveTime() {
+        return manager.connectionPoolSettings.keepAliveTime;
+    }
+
+    /**
+     * Gets the idle-read timeout in milliseconds that bounds the time between inbound response chunks. A value of
+     * {@code 0} disables the feature.
+     */
+    public long getReadTimeout() {
+        return manager.connectionPoolSettings.readTimeout;
+    }
+
+    /**
+     * Gets the {@link Compression} algorithm negotiated with the server.
+     */
+    public Compression getCompression() {
+        return manager.connectionPoolSettings.compression;
+    }
+
+    /**
+     * Gets the configured {@link ProxyOptions} or {@code null} if no proxy is configured.
+     */
+    public ProxyOptions getProxy() {
+        return manager.proxyOptions;
     }
 
     /**
@@ -370,8 +405,8 @@ public final class Cluster {
         return manager.serializer;
     }
 
-    List<Pair<String, ? extends RequestInterceptor>> getRequestInterceptors() {
-        return manager.interceptors;
+    List<RequestInterceptor> getRequestInterceptors() {
+        return Collections.unmodifiableList(manager.interceptors);
     }
 
     ScheduledExecutorService executor() {
@@ -483,20 +518,19 @@ public final class Cluster {
     }
 
     public final static class Builder {
-        private static int INTERCEPTOR_NOT_FOUND = -1;
 
         private final List<InetAddress> addresses = new ArrayList<>();
         private int port = 8182;
         private String path = "/gremlin";
-        private MessageSerializer<?> serializer = null;
+        private MessageSerializer<?> responseSerializer = null;
         private int nioPoolSize = Runtime.getRuntime().availableProcessors();
         private int workerPoolSize = Runtime.getRuntime().availableProcessors() * 2;
-        private int maxConnectionPoolSize = ConnectionPool.MAX_POOL_SIZE;
+        private int maxConnections = ConnectionPool.MAX_POOL_SIZE;
         private int maxWaitForConnection = Connection.MAX_WAIT_FOR_CONNECTION;
         private int maxWaitForClose = Connection.MAX_WAIT_FOR_CLOSE;
-        private long maxResponseContentLength = Connection.MAX_RESPONSE_CONTENT_LENGTH;
+        private int maxResponseHeaderBytes = Connection.MAX_RESPONSE_HEADER_BYTES;
         private int reconnectInterval = Connection.RECONNECT_INTERVAL;
-        private int resultIterationBatchSize = Connection.RESULT_ITERATION_BATCH_SIZE;
+        private int batchSize = Connection.RESULT_ITERATION_BATCH_SIZE;
         private boolean enableSsl = false;
         private String keyStore = null;
         private String keyStorePassword = null;
@@ -504,31 +538,28 @@ public final class Cluster {
         private String trustStorePassword = null;
         private String keyStoreType = null;
         private String trustStoreType = null;
-        private String validationRequest = "''";
+        private String validationRequest = "g.inject(0)";
         private List<String> sslEnabledProtocols = new ArrayList<>();
         private List<String> sslCipherSuites = new ArrayList<>();
         private boolean sslSkipCertValidation = false;
         private SslContext sslContext = null;
         private LoadBalancingStrategy loadBalancingStrategy = new LoadBalancingStrategy.RoundRobin();
-        private LinkedList<Pair<String, ? extends RequestInterceptor>> interceptors = new LinkedList<>();
-        private long connectionSetupTimeoutMillis = Connection.CONNECTION_SETUP_TIMEOUT_MILLIS;
-        private long idleConnectionTimeoutMillis = Connection.CONNECTION_IDLE_TIMEOUT_MILLIS;
+        private List<RequestInterceptor> interceptors = new ArrayList<>();
+        private Auth auth = null;
+        private int connectTimeout = Connection.CONNECTION_SETUP_TIMEOUT_MILLIS;
+        private long idleTimeout = Connection.CONNECTION_IDLE_TIMEOUT_MILLIS;
+        private long keepAliveTime = Connection.KEEP_ALIVE_TIME_MILLIS;
+        private long readTimeout = Connection.READ_TIMEOUT_MILLIS;
+        private Compression compression = Compression.DEFLATE;
+        private ProxyOptions proxyOptions = null;
         private boolean enableUserAgentOnConnect = true;
         private boolean bulkResults = false;
 
         private Builder() {
-            addInterceptor(SERIALIZER_INTERCEPTOR_NAME,
-                    new PayloadSerializingInterceptor(new GraphBinaryMessageSerializerV4()));
         }
 
         private Builder(final String address) {
             addContactPoint(address);
-            addInterceptor(SERIALIZER_INTERCEPTOR_NAME,
-                    new PayloadSerializingInterceptor(new GraphBinaryMessageSerializerV4()));
-        }
-
-        private Builder(final RequestInterceptor bodySerializer) {
-            addInterceptor(SERIALIZER_INTERCEPTOR_NAME, bodySerializer);
         }
 
         /**
@@ -557,29 +588,34 @@ public final class Cluster {
         }
 
         /**
-         * Set the {@link MessageSerializer} to use given the exact name of a {@link Serializers} enum.  Note that
-         * setting this value this way will not allow specific configuration of the serializer itself.  If specific
-         * configuration is required * please use {@link #serializer(MessageSerializer)}.
+         * Set the {@link MessageSerializer} used to deserialize responses from the server given the exact name of a
+         * {@link Serializers} enum. This selects the encoding requested via the {@code Accept} header; requests are
+         * always sent as JSON regardless of this setting. Note that setting this value this way will not allow specific
+         * configuration of the serializer itself. If specific configuration is required please use
+         * {@link #responseSerializer(MessageSerializer)}.
          */
-        public Builder serializer(final String mimeType) {
-            serializer = Serializers.valueOf(mimeType).simpleInstance();
+        public Builder responseSerializer(final String mimeType) {
+            responseSerializer = Serializers.valueOf(mimeType).simpleInstance();
             return this;
         }
 
         /**
-         * Set the {@link MessageSerializer} to use via the {@link Serializers} enum. If specific configuration is
-         * required please use {@link #serializer(MessageSerializer)}.
+         * Set the {@link MessageSerializer} used to deserialize responses from the server via the {@link Serializers}
+         * enum. This selects the encoding requested via the {@code Accept} header; requests are always sent as JSON
+         * regardless of this setting. If specific configuration is required please use
+         * {@link #responseSerializer(MessageSerializer)}.
          */
-        public Builder serializer(final Serializers mimeType) {
-            serializer = mimeType.simpleInstance();
+        public Builder responseSerializer(final Serializers mimeType) {
+            responseSerializer = mimeType.simpleInstance();
             return this;
         }
 
         /**
-         * Sets the {@link MessageSerializer} to use.
+         * Sets the {@link MessageSerializer} used to deserialize responses from the server. This selects the encoding
+         * requested via the {@code Accept} header; requests are always sent as JSON regardless of this setting.
          */
-        public Builder serializer(final MessageSerializer<?> serializer) {
-            this.serializer = serializer;
+        public Builder responseSerializer(final MessageSerializer<?> responseSerializer) {
+            this.responseSerializer = responseSerializer;
             return this;
         }
 
@@ -593,13 +629,12 @@ public final class Cluster {
         }
 
         /**
-         * Explicitly set the {@code SslContext} for when more flexibility is required in the configuration than is
-         * allowed by the {@link Builder}. If this value is set to something other than {@code null} then all other
-         * related SSL settings are ignored. The {@link #enableSsl} setting should still be set to {@code true} for
-         * this setting to take effect.
+         * Explicitly set the {@code SslContext} to use for SSL connections. When set, all other SSL-related builder
+         * settings (key store, trust store, ciphers, protocols, skip-cert-validation) are ignored.
          */
-        public Builder sslContext(final SslContext sslContext) {
+        public Builder ssl(final SslContext sslContext) {
             this.sslContext = sslContext;
+            this.enableSsl = true;
             return this;
         }
 
@@ -684,16 +719,17 @@ public final class Cluster {
         /**
          * The maximum size that the {@link ConnectionPool} can grow.
          */
-        public Builder maxConnectionPoolSize(final int maxSize) {
-            this.maxConnectionPoolSize = maxSize;
+        public Builder maxConnections(final int maxConnections) {
+            this.maxConnections = maxConnections;
             return this;
         }
 
         /**
-         * Override the server setting that determines how many results are returned per batch.
+         * Sets the default for the per-request batch size, used when a request does not specify its own
+         * {@code batchSize} via {@link RequestOptions}. Defaults to 64.
          */
-        public Builder resultIterationBatchSize(final int size) {
-            this.resultIterationBatchSize = size;
+        public Builder batchSize(final int size) {
+            this.batchSize = size;
             return this;
         }
 
@@ -716,18 +752,55 @@ public final class Cluster {
         }
 
         /**
-         * The maximum size in bytes of any response received from the server.
+         * The maximum size in bytes allowed for the HTTP response headers. Defaults to 8192. Exposes the underlying
+         * Netty {@code HttpClientCodec} max header size.
          */
-        public Builder maxResponseContentLength(final long maxResponseContentLength) {
-            this.maxResponseContentLength = maxResponseContentLength;
+        public Builder maxResponseHeaderBytes(final int maxResponseHeaderBytes) {
+            this.maxResponseHeaderBytes = maxResponseHeaderBytes;
+            return this;
+        }
+
+        /**
+         * Sets the idle-read timeout in milliseconds that bounds the time between inbound response chunks. The clock
+         * is reset on each chunk received, so it bounds idle gaps rather than the total response time. A value of
+         * {@code 0} (the default) disables the feature.
+         */
+        public Builder readTimeoutMillis(final long readTimeout) {
+            this.readTimeout = readTimeout;
+            return this;
+        }
+
+        /**
+         * Sets the idle-read timeout that bounds the time between inbound response chunks. Equivalent to
+         * {@link #readTimeoutMillis(long)} with the duration expressed as a {@link Duration}. {@link Duration#ZERO}
+         * disables the feature.
+         */
+        public Builder readTimeout(final Duration readTimeout) {
+            return readTimeoutMillis(readTimeout.toMillis());
+        }
+
+        /**
+         * Sets the wire {@link Compression} algorithm negotiated with the server. Defaults to {@link Compression#DEFLATE}
+         * (compression on). Set {@link Compression#NONE} to disable.
+         */
+        public Builder compression(final Compression compression) {
+            this.compression = compression == null ? Compression.NONE : compression;
+            return this;
+        }
+
+        /**
+         * Routes connections through the supplied HTTP proxy. A Netty {@code HttpProxyHandler} is inserted into the
+         * pipeline before the SSL handler.
+         */
+        public Builder proxy(final ProxyOptions proxyOptions) {
+            this.proxyOptions = proxyOptions;
             return this;
         }
 
         /**
          * Specify a valid Gremlin script that can be used to test remote operations. This script should be designed
-         * to return quickly with the least amount of overhead possible. By default, the script sends an empty string.
-         * If the graph does not support that sort of script because it requires all scripts to include a reference
-         * to a graph then a good option might be {@code g.inject()}.
+         * to return quickly with the least amount of overhead possible. By default, the script sends
+         * {@code g.inject(0)}.
          */
         public Builder validationRequest(final String script) {
             validationRequest = script;
@@ -751,82 +824,28 @@ public final class Cluster {
         }
 
         /**
-         * Adds a {@link RequestInterceptor} after another one that will allow manipulation of the {@code HttpRequest}
-         * prior to its being sent to the server.
+         * Sets the list of {@link RequestInterceptor} instances that will be run in order to allow
+         * modification of the {@link HttpRequest} prior to its being sent to the server.
          */
-        public Builder addInterceptorAfter(final String priorInterceptorName, final String nameOfInterceptor,
-                                           final RequestInterceptor interceptor) {
-            final int index = getInterceptorIndex(priorInterceptorName);
-            if (INTERCEPTOR_NOT_FOUND == index) {
-                throw new IllegalArgumentException(priorInterceptorName + " interceptor not found");
-            } else if (getInterceptorIndex(nameOfInterceptor) != INTERCEPTOR_NOT_FOUND) {
-                throw new IllegalArgumentException(nameOfInterceptor + " interceptor already exists");
-            }
-            interceptors.add(index + 1, Pair.of(nameOfInterceptor, interceptor));
-
+        public Builder interceptors(final List<RequestInterceptor> interceptors) {
+            this.interceptors = new ArrayList<>(interceptors);
             return this;
         }
 
         /**
-         * Adds a {@link RequestInterceptor} before another one that will allow manipulation of the {@code HttpRequest}
-         * prior to its being sent to the server.
+         * Sets the list of {@link RequestInterceptor} instances that will be run in order.
          */
-        public Builder addInterceptorBefore(final String subsequentInterceptorName, final String nameOfInterceptor,
-                                            final RequestInterceptor interceptor) {
-            final int index = getInterceptorIndex(subsequentInterceptorName);
-            if (INTERCEPTOR_NOT_FOUND == index) {
-                throw new IllegalArgumentException(subsequentInterceptorName + " interceptor not found");
-            } else if (getInterceptorIndex(nameOfInterceptor) != INTERCEPTOR_NOT_FOUND) {
-                throw new IllegalArgumentException(nameOfInterceptor + " interceptor already exists");
-            } else if (index == 0) {
-                interceptors.addFirst(Pair.of(nameOfInterceptor, interceptor));
-            } else {
-                interceptors.add(index - 1, Pair.of(nameOfInterceptor, interceptor));
-            }
-
+        public Builder interceptors(final RequestInterceptor... interceptors) {
+            this.interceptors = new ArrayList<>(List.of(interceptors));
             return this;
         }
 
         /**
-         * Adds a {@link RequestInterceptor} to the end of the list that will allow manipulation of the
-         * {@code HttpRequest} prior to its being sent to the server.
-         */
-        public Builder addInterceptor(final String name, final RequestInterceptor interceptor) {
-            if (getInterceptorIndex(name) != INTERCEPTOR_NOT_FOUND) {
-                throw new IllegalArgumentException(name + " interceptor already exists");
-            }
-            interceptors.add(Pair.of(name, interceptor));
-            return this;
-        }
-
-        /**
-         * Removes a {@link RequestInterceptor} from the list. This can be used to remove the default interceptors that
-         * aren't needed.
-         */
-        public Builder removeInterceptor(final String name) {
-            final int index = getInterceptorIndex(name);
-            if (index == INTERCEPTOR_NOT_FOUND) {
-                throw new IllegalArgumentException(name + " interceptor not found");
-            }
-            interceptors.remove(index);
-            return this;
-        }
-
-        private int getInterceptorIndex(final String name) {
-            for (int i = 0; i < interceptors.size(); i++) {
-                if (interceptors.get(i).getLeft().equals(name)) {
-                    return i;
-                }
-            }
-
-            return INTERCEPTOR_NOT_FOUND;
-        }
-
-        /**
-         * Adds an Auth {@link RequestInterceptor} to the end of list of interceptors.
+         * Adds an Auth {@link RequestInterceptor} that will always be appended to the end of the interceptor list
+         * when the {@link Cluster} is created, regardless of the order in which builder methods are called.
          */
         public Builder auth(final Auth auth) {
-            addInterceptor(auth.getClass().getSimpleName().toLowerCase() + "-auth", auth);
+            this.auth = auth;
             return this;
         }
 
@@ -864,20 +883,115 @@ public final class Cluster {
         }
 
         /**
-         * Sets the duration of time in milliseconds provided for connection setup to complete which includes WebSocket
-         * handshake and SSL handshake. Beyond this duration an exception would be thrown.
+         * Configures the endpoint from a single URL string. The URL is parsed and applied to the builder as follows:
+         * the scheme selects SSL ({@code https} enables SSL, {@code http} disables it; other or absent schemes leave
+         * the current SSL setting unchanged), the host is added as a contact point, an explicit port is applied via
+         * {@link #port(int)}, and a non-empty path is applied via {@link #path(String)}. This is a convenience for the
+         * common single-host case; use {@link #addContactPoint(String)} / {@link #addContactPoints(String...)} along
+         * with {@link #port(int)} and {@link #path(String)} for multi-host configurations.
+         * <p>
+         * Because this is a single-endpoint convenience, it must not be combined with the multi-host contact point
+         * methods: calling it after a contact point has already been added throws {@link IllegalArgumentException}.
+         *
+         * @param url a full URL such as {@code https://gremlin.example.com:8182/gremlin}
+         * @throws IllegalArgumentException if the URL cannot be parsed, has no host, or a contact point already exists
          */
-        public Builder connectionSetupTimeoutMillis(final long connectionSetupTimeoutMillis) {
-            this.connectionSetupTimeoutMillis = connectionSetupTimeoutMillis;
+        public Builder url(final String url) {
+            if (!this.addresses.isEmpty())
+                throw new IllegalArgumentException(
+                        "url(String) configures a single endpoint and cannot be combined with addContactPoint(s); " +
+                        "use addContactPoint(s) with port(int) and path(String) for multi-host configurations");
+
+            final URI uri;
+            try {
+                uri = new URI(url);
+            } catch (URISyntaxException e) {
+                throw new IllegalArgumentException("Invalid url: " + url, e);
+            }
+
+            final String host = uri.getHost();
+            if (null == host || host.isEmpty())
+                throw new IllegalArgumentException("Invalid url, no host could be parsed from: " + url);
+
+            final String scheme = uri.getScheme();
+            if (null != scheme) {
+                if (scheme.equalsIgnoreCase("https"))
+                    this.enableSsl = true;
+                else if (scheme.equalsIgnoreCase("http"))
+                    this.enableSsl = false;
+                else
+                    throw new IllegalArgumentException("Invalid url scheme '" + scheme + "', expected http or https in: " + url);
+            }
+
+            addContactPoint(host);
+
+            if (uri.getPort() != -1)
+                port(uri.getPort());
+
+            final String urlPath = uri.getPath();
+            if (null != urlPath && !urlPath.isEmpty())
+                path(urlPath);
+
             return this;
         }
 
         /**
-         * Sets the time in milliseconds that the driver will allow a channel to not receive read or writes before it automatically closes.
+         * Sets the duration of time in milliseconds that bounds TCP connection establishment (transport setup,
+         * including the SSL handshake). Beyond this duration an exception would be thrown. This is a transport
+         * establishment timeout, not an HTTP request/response timeout. Defaults to 5000.
          */
-        public Builder idleConnectionTimeoutMillis(final long idleConnectionTimeoutMillis) {
-            this.idleConnectionTimeoutMillis = idleConnectionTimeoutMillis;
+        public Builder connectTimeoutMillis(final int connectTimeout) {
+            this.connectTimeout = connectTimeout;
             return this;
+        }
+
+        /**
+         * Sets the TCP connection-establishment timeout. Equivalent to {@link #connectTimeoutMillis(int)} with the
+         * duration expressed as a {@link Duration}. The value is applied via Netty's int-typed
+         * {@code CONNECT_TIMEOUT_MILLIS}, so it must not exceed {@link Integer#MAX_VALUE} milliseconds.
+         */
+        public Builder connectTimeout(final Duration connectTimeout) {
+            final long millis = connectTimeout.toMillis();
+            if (millis > Integer.MAX_VALUE)
+                throw new IllegalArgumentException("connectTimeout must not exceed " + Integer.MAX_VALUE + " ms");
+            return connectTimeoutMillis((int) millis);
+        }
+
+        /**
+         * Sets the time in milliseconds that the driver will allow a channel to not receive read or writes before it
+         * automatically closes.
+         */
+        public Builder idleTimeoutMillis(final long idleTimeout) {
+            this.idleTimeout = idleTimeout;
+            return this;
+        }
+
+        /**
+         * Sets the idle-connection pool timeout. Equivalent to {@link #idleTimeoutMillis(long)} with the duration
+         * expressed as a {@link Duration}. {@link Duration#ZERO} disables idle-connection detection.
+         */
+        public Builder idleTimeout(final Duration idleTimeout) {
+            return idleTimeoutMillis(idleTimeout.toMillis());
+        }
+
+        /**
+         * Sets the idle time in milliseconds before TCP keep-alive probes begin on an otherwise idle connection.
+         * When set to a positive value the {@code SO_KEEPALIVE} socket option is enabled and, where supported by the
+         * platform/JDK (JDK 11+ on Linux/macOS via {@code TCP_KEEPIDLE}), the per-socket idle time is configured. On
+         * platforms/JDKs where the per-socket idle time cannot be set, {@code SO_KEEPALIVE} is still enabled and the
+         * OS default idle time is used. Defaults to 30000. Set this value to {@code 0} to disable the feature.
+         */
+        public Builder keepAliveTimeMillis(final long keepAliveTime) {
+            this.keepAliveTime = keepAliveTime;
+            return this;
+        }
+
+        /**
+         * Sets the idle time before TCP keep-alive probes begin. Equivalent to {@link #keepAliveTimeMillis(long)}
+         * with the duration expressed as a {@link Duration}. {@link Duration#ZERO} disables the feature.
+         */
+        public Builder keepAliveTime(final Duration keepAliveTime) {
+            return keepAliveTimeMillis(keepAliveTime.toMillis());
         }
 
         /**
@@ -905,7 +1019,8 @@ public final class Cluster {
 
         public Cluster create() {
             if (addresses.isEmpty()) addContactPoint("localhost");
-            if (null == serializer) serializer = Serializers.GRAPHBINARY_V4.simpleInstance();
+            if (null == responseSerializer) responseSerializer = Serializers.GRAPHBINARY_V4.simpleInstance();
+            if (null != auth) interceptors.add(auth);
             return new Cluster(this);
         }
     }
@@ -945,8 +1060,9 @@ public final class Cluster {
         private final Settings.ConnectionPoolSettings connectionPoolSettings;
         private final LoadBalancingStrategy loadBalancingStrategy;
         private final Optional<SslContext> sslContextOptional;
+        private final ProxyOptions proxyOptions;
         private final Supplier<RequestMessage.Builder> validationRequest;
-        private final List<Pair<String, ? extends RequestInterceptor>> interceptors;
+        private final List<RequestInterceptor> interceptors;
 
         /**
          * Thread pool for requests.
@@ -980,22 +1096,26 @@ public final class Cluster {
 
         private final List<WeakReference<Client>> openedClients = new ArrayList<>();
 
+        // Single ClusteredClient shared by all transactions. Not tracked in openedClients: it is Cluster-owned and
+        // closed explicitly in close(), after the rollbacks that borrow from its pools.
+        private Client.ClusteredClient transactionClient;
+
         private Manager(final Builder builder) {
             validateBuilder(builder);
 
             this.loadBalancingStrategy = builder.loadBalancingStrategy;
             this.contactPoints = builder.getContactPoints();
-            this.interceptors = builder.interceptors;
+            this.interceptors = Collections.unmodifiableList(new ArrayList<>(builder.interceptors));
             this.enableUserAgentOnConnect = builder.enableUserAgentOnConnect;
             this.bulkResults = builder.bulkResults;
 
             connectionPoolSettings = new Settings.ConnectionPoolSettings();
-            connectionPoolSettings.maxSize = builder.maxConnectionPoolSize;
+            connectionPoolSettings.maxConnections = builder.maxConnections;
             connectionPoolSettings.maxWaitForConnection = builder.maxWaitForConnection;
             connectionPoolSettings.maxWaitForClose = builder.maxWaitForClose;
-            connectionPoolSettings.maxResponseContentLength = builder.maxResponseContentLength;
+            connectionPoolSettings.maxResponseHeaderBytes = builder.maxResponseHeaderBytes;
             connectionPoolSettings.reconnectInterval = builder.reconnectInterval;
-            connectionPoolSettings.resultIterationBatchSize = builder.resultIterationBatchSize;
+            connectionPoolSettings.batchSize = builder.batchSize;
             connectionPoolSettings.enableSsl = builder.enableSsl;
             connectionPoolSettings.keyStore = builder.keyStore;
             connectionPoolSettings.keyStorePassword = builder.keyStorePassword;
@@ -1007,10 +1127,14 @@ public final class Cluster {
             connectionPoolSettings.sslEnabledProtocols = builder.sslEnabledProtocols;
             connectionPoolSettings.sslSkipCertValidation = builder.sslSkipCertValidation;
             connectionPoolSettings.validationRequest = builder.validationRequest;
-            connectionPoolSettings.connectionSetupTimeoutMillis = builder.connectionSetupTimeoutMillis;
-            connectionPoolSettings.idleConnectionTimeout = builder.idleConnectionTimeoutMillis;
+            connectionPoolSettings.connectTimeout = builder.connectTimeout;
+            connectionPoolSettings.idleTimeout = builder.idleTimeout;
+            connectionPoolSettings.keepAliveTime = builder.keepAliveTime;
+            connectionPoolSettings.readTimeout = builder.readTimeout;
+            connectionPoolSettings.compression = builder.compression;
 
             sslContextOptional = Optional.ofNullable(builder.sslContext);
+            proxyOptions = builder.proxyOptions;
 
             nioPoolSize = builder.nioPoolSize;
             workerPoolSize = builder.workerPoolSize;
@@ -1018,7 +1142,7 @@ public final class Cluster {
             path = builder.path;
 
             this.factory = new Factory(builder.nioPoolSize);
-            this.serializer = builder.serializer;
+            this.serializer = builder.responseSerializer;
             
             this.executor = new ScheduledThreadPoolExecutor(builder.workerPoolSize,
                     new BasicThreadFactory.Builder().namingPattern("gremlin-driver-worker-%d").build());
@@ -1036,7 +1160,7 @@ public final class Cluster {
             this.connectionScheduler = new ScheduledThreadPoolExecutor(Runtime.getRuntime().availableProcessors(),
                     new BasicThreadFactory.Builder().namingPattern("gremlin-driver-conn-scheduler-%d").build());
 
-            this.streamingReaderPool = new ThreadPoolExecutor(0, builder.maxConnectionPoolSize * Math.max(contactPoints.size(), 1) * 4,
+            this.streamingReaderPool = new ThreadPoolExecutor(0, builder.maxConnections * Math.max(contactPoints.size(), 1) * 4,
                     60L, TimeUnit.SECONDS, new SynchronousQueue<>(),
                     new BasicThreadFactory.Builder().namingPattern("gremlin-driver-stream-reader-%d").build());
 
@@ -1044,8 +1168,8 @@ public final class Cluster {
         }
 
         private void validateBuilder(final Builder builder) {
-            if (builder.maxConnectionPoolSize < 1)
-                throw new IllegalArgumentException("maxConnectionPoolSize must be greater than zero");
+            if (builder.maxConnections < 1)
+                throw new IllegalArgumentException("maxConnections must be greater than zero");
 
             if (builder.maxWaitForConnection < 1)
                 throw new IllegalArgumentException("maxWaitForConnection must be greater than zero");
@@ -1053,14 +1177,14 @@ public final class Cluster {
             if (builder.maxWaitForClose < 1)
                 throw new IllegalArgumentException("maxWaitForClose must be greater than zero");
 
-            if (builder.maxResponseContentLength < 0)
-                throw new IllegalArgumentException("maxResponseContentLength must be greater than or equal to zero");
+            if (builder.maxResponseHeaderBytes < 1)
+                throw new IllegalArgumentException("maxResponseHeaderBytes must be greater than zero");
 
             if (builder.reconnectInterval < 1)
                 throw new IllegalArgumentException("reconnectInterval must be greater than zero");
 
-            if (builder.resultIterationBatchSize < 1)
-                throw new IllegalArgumentException("resultIterationBatchSize must be greater than zero");
+            if (builder.batchSize < 1)
+                throw new IllegalArgumentException("batchSize must be greater than zero");
 
             if (builder.nioPoolSize < 1)
                 throw new IllegalArgumentException("nioPoolSize must be greater than zero");
@@ -1068,13 +1192,19 @@ public final class Cluster {
             if (builder.workerPoolSize < 1)
                 throw new IllegalArgumentException("workerPoolSize must be greater than zero");
 
-            if (builder.connectionSetupTimeoutMillis < 1)
-                throw new IllegalArgumentException("connectionSetupTimeoutMillis must be greater than zero");
+            if (builder.connectTimeout < 1)
+                throw new IllegalArgumentException("connectTimeout must be greater than zero");
+
+            if (builder.readTimeout < 0)
+                throw new IllegalArgumentException("readTimeout must be greater than or equal to zero");
+
+            if (builder.keepAliveTime < 0)
+                throw new IllegalArgumentException("keepAliveTime must be greater than or equal to zero");
 
             // zero value will disable idle connection detection
             // non-zero will be converted to seconds so any value between 1 and 999 is invalid as it will be less than 1 second
-            if (builder.idleConnectionTimeoutMillis != 0 && builder.idleConnectionTimeoutMillis < 1000)
-                throw new IllegalArgumentException("idleConnectionTimeoutMillis must be zero or greater than or equal to 1000");
+            if (builder.idleTimeout != 0 && builder.idleTimeout < 1000)
+                throw new IllegalArgumentException("idleTimeout must be zero or greater than or equal to 1000");
 
         }
 
@@ -1087,6 +1217,13 @@ public final class Cluster {
             contactPoints.forEach(address -> {
                 final Host host = add(address);
             });
+
+            // All transactions share one ClusteredClient rather than each transact() standing up (and tearing down on
+            // commit/rollback) its own per-host pools. Sharing is safe because transactions borrow a connection per
+            // request and return it immediately, so pool occupancy matches normal query traffic. Eager for simplicity;
+            // unused connections are reaped by the idle timeout.
+            transactionClient = new Client.ClusteredClient(Cluster.this);
+            transactionClient.init();
         }
 
         void trackClient(final Client client) {
@@ -1135,6 +1272,12 @@ public final class Cluster {
                     // any background client closing operations are included in this shutdown future
                     clientCloseFutures.add(client.closeAsync());
                 }
+            }
+
+            // Closed here, after the rollbacks above that borrow from its pools (it is intentionally not in
+            // openedClients).
+            if (transactionClient != null) {
+                clientCloseFutures.add(transactionClient.closeAsync());
             }
 
             // when all the clients are fully closed then shutdown the netty event loop. not sure why this needs to

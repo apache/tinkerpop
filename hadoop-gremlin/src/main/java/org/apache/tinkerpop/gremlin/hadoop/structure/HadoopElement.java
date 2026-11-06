@@ -24,6 +24,8 @@ import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
+import java.util.Set;
+
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
@@ -53,6 +55,11 @@ public abstract class HadoopElement implements Element {
     @Override
     public String label() {
         return this.baseElement.label();
+    }
+
+    @Override
+    public Set<String> labels() {
+        return this.baseElement.labels();
     }
 
     @Override

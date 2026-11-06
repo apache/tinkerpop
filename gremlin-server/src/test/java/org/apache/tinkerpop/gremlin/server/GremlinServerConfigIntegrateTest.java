@@ -33,7 +33,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -70,7 +69,6 @@ public class GremlinServerConfigIntegrateTest {
         final File confDir = new File(TestSupport.getRootOfBuildDirectory(GremlinServerConfigIntegrateTest.class), "../conf");
         final Settings settings = Settings.read(new FileInputStream(new File(confDir, configName)));
 
-        settings.serializers = Collections.emptyList();
         ServerTestHelper.rewritePathsInGremlinServerSettings(settings);
 
         final GremlinServer server = new GremlinServer(settings);

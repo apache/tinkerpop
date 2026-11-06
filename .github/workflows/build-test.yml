@@ -1,22 +1,29 @@
 name: build-test
-on: [push, pull_request]
+on:
+  push:
+    branches-ignore:
+      - dependabot/**
+  pull_request:
 env:
   # modules commonly excluded from builds as they have their own independent non-JVM setups and can be run in parallel.
   # take care when modifying this list because GLVs use shell commands to remove themselves from this list and
   # modifications could break patterns of replacement they are searching for.
   EXCLUDE_MODULES: '-:gremlin-dotnet-source,-:gremlin-dotnet-tests,-:gremlin-go,-:gremlin-js,-:gremlin-javascript,-:gremlint,-:gremlin-mcp,-:gremlin-python'
   EXCLUDE_FOR_GLV: '-:gremlin-console,-:gremlin-coverage,-:hadoop-gremlin,-:spark-gremlin'
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 jobs:
   smoke:
     name: smoke
     timeout-minutes: 10
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     steps:
-      - uses: actions/checkout@v6
-      - name: Set up JDK 11
-        uses: actions/setup-java@v5
+      - uses: actions/checkout@v7
+      - name: Set up JDK 17
+        uses: actions/setup-java@v6
         with:
-          java-version: '11'
+          java-version: '17'
           distribution: 'temurin'
       - name: Build with Maven
         run: mvn clean install -DskipTests -Dci --batch-mode -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
@@ -24,45 +31,59 @@ jobs:
     name: mvn clean install - jdk17
     timeout-minutes: 45
     needs: smoke
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Set up JDK 17
-        uses: actions/setup-java@v5
+        uses: actions/setup-java@v6
         with:
           java-version: '17'
           distribution: 'temurin'
       - name: Build with Maven
+        run: mvn clean install -pl $EXCLUDE_MODULES -Dci --batch-mode -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn -Dcoverage
+      - name: Upload to Codecov
+        uses: codecov/codecov-action@v7
+        with:
+         directory: ./gremlin-tools/gremlin-coverage/target/site
+  java-jdk21:
+    name: mvn clean install - jdk21
+    timeout-minutes: 45
+    needs: smoke
+    runs-on: ubuntu-26.04
+    steps:
+      - uses: actions/checkout@v7
+      - name: Set up JDK 21
+        uses: actions/setup-java@v6
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+      - name: Build with Maven
         run: mvn clean install -pl $EXCLUDE_MODULES -Dci --batch-mode -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
-  java-jdk11:
-    name: mvn clean install - jdk11
+  java-jdk25:
+    name: mvn clean install - jdk25
     timeout-minutes: 45
     needs: smoke
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
-      - name: Set up JDK 11
-        uses: actions/setup-java@v5
+      - uses: actions/checkout@v7
+      - name: Set up JDK 25
+        uses: actions/setup-java@v6
         with:
-          java-version: '11'
+          java-version: '25'
           distribution: 'temurin'
       - name: Build with Maven
-        run: mvn clean install -pl $EXCLUDE_MODULES -Dci --batch-mode -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn -Dcoverage
-      - name: Upload to Codecov
-        uses: codecov/codecov-action@v6
-        with:
-         directory: ./gremlin-tools/gremlin-coverage/target/site
+        run: mvn clean install -pl $EXCLUDE_MODULES -Dci --batch-mode -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
   gremlin-server-default:
     name: gremlin-server default
     timeout-minutes: 45
     needs: smoke
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     steps:
-      - uses: actions/checkout@v6
-      - name: Set up JDK 11
-        uses: actions/setup-java@v5
+      - uses: actions/checkout@v7
+      - name: Set up JDK 17
+        uses: actions/setup-java@v6
         with:
-          java-version: '11'
+          java-version: '17'
           distribution: 'temurin'
       - name: Build with Maven
         run: |
@@ -72,13 +93,13 @@ jobs:
       name: cache gremlin-server docker image
       timeout-minutes: 10
       needs: smoke
-      runs-on: ubuntu-latest
+      runs-on: ubuntu-26.04
       steps:
-        - uses: actions/checkout@v6
-        - name: Set up JDK 11
-          uses: actions/setup-java@v5
+        - uses: actions/checkout@v7
+        - name: Set up JDK 17
+          uses: actions/setup-java@v6
           with:
-            java-version: '11'
+            java-version: '17'
             distribution: 'temurin'
         - name: Generate Gremlin Server Base
           working-directory: .
@@ -87,7 +108,7 @@ jobs:
         - name: Save Docker image
           working-directory: ./gremlin-server
           run: docker save --output gremlin-server.tar tinkerpop/gremlin-server
-        - uses: actions/cache@v5
+        - uses: actions/cache@v6
           id: gremlin-server-test-docker-image
           with:
             path: |
@@ -108,13 +129,13 @@ jobs:
 #    name: hadoop standard
 #    timeout-minutes: 45
 #    needs: smoke
-#    runs-on: ubuntu-latest
+#    runs-on: ubuntu-26.04
 #    steps:
-#      - uses: actions/checkout@v6
-#      - name: Set up JDK 11
-#        uses: actions/setup-java@v5
+#      - uses: actions/checkout@v7
+#      - name: Set up JDK 17
+#        uses: actions/setup-java@v6
 #        with:
-#          java-version: '11'
+#          java-version: '17'
 #          distribution: 'temurin'
 #      - name: Build with Maven
 #        run: |
@@ -124,13 +145,13 @@ jobs:
     name: hadoop feature
     timeout-minutes: 45
     needs: smoke
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     steps:
-      - uses: actions/checkout@v6
-      - name: Set up JDK 11
-        uses: actions/setup-java@v5
+      - uses: actions/checkout@v7
+      - name: Set up JDK 17
+        uses: actions/setup-java@v6
         with:
-          java-version: '11'
+          java-version: '17'
           distribution: 'temurin'
       - name: Build with Maven
         run: |
@@ -143,13 +164,13 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest]
+        os: [ubuntu-26.04, windows-latest]
     steps:
-      - uses: actions/checkout@v6
-      - name: Set up JDK 11
-        uses: actions/setup-java@v5
+      - uses: actions/checkout@v7
+      - name: Set up JDK 17
+        uses: actions/setup-java@v6
         with:
-          java-version: '11'
+          java-version: '17'
           distribution: 'temurin'
       - name: Build with Maven Windows
         if: runner.os == 'Windows'
@@ -167,13 +188,13 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest]
+        os: [ubuntu-26.04, windows-latest]
     steps:
-      - uses: actions/checkout@v6
-      - name: Set up JDK 11
-        uses: actions/setup-java@v5
+      - uses: actions/checkout@v7
+      - name: Set up JDK 17
+        uses: actions/setup-java@v6
         with:
-          java-version: '11'
+          java-version: '17'
           distribution: 'temurin'
       - name: Build with Maven Windows
         if: runner.os == 'Windows'
@@ -188,13 +209,13 @@ jobs:
     name: gremlin-console
     timeout-minutes: 20
     needs: smoke
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     steps:
-      - uses: actions/checkout@v6
-      - name: Set up JDK 11
-        uses: actions/setup-java@v5
+      - uses: actions/checkout@v7
+      - name: Set up JDK 17
+        uses: actions/setup-java@v6
         with:
-          java-version: '11'
+          java-version: '17'
           distribution: 'temurin'
       - name: Build with Maven
         run: |
@@ -205,13 +226,13 @@ jobs:
     name: gremlin-driver
     timeout-minutes: 20
     needs: cache-gremlin-server-docker-image
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     steps:
-      - uses: actions/checkout@v6
-      - name: Set up JDK 11
-        uses: actions/setup-java@v5
+      - uses: actions/checkout@v7
+      - name: Set up JDK 17
+        uses: actions/setup-java@v6
         with:
-          java-version: '11'
+          java-version: '17'
           distribution: 'temurin'
       - name: Build with Maven
         run: |
@@ -221,20 +242,20 @@ jobs:
     name: javascript-glv-node${{ matrix.node-version }}
     timeout-minutes: 15
     needs: cache-gremlin-server-docker-image
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     strategy:
       fail-fast: false
       matrix:
         node-version: [ '22', '24', '26' ]
     steps:
-      - uses: actions/checkout@v6
-      - name: Set up JDK 11
-        uses: actions/setup-java@v5
+      - uses: actions/checkout@v7
+      - name: Set up JDK 17
+        uses: actions/setup-java@v6
         with:
-          java-version: '11'
+          java-version: '17'
           distribution: 'temurin'
       - name: Get Cached Server Base Image
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         id: gremlin-server-test-docker-image
         with:
           path: |
@@ -249,11 +270,70 @@ jobs:
           EXCLUDE="-:gremlin-dotnet-source,-:gremlin-dotnet-tests,-:gremlin-go,-:gremlin-python,$EXCLUDE_FOR_GLV"
           mvn clean install -pl $EXCLUDE -q -DskipTests -Dci
           mvn verify -pl :gremlin-js,:gremlin-javascript,:gremlint,:gremlin-mcp -Dhost.uid=$(id -u) -Dhost.gid=$(id -g) -Dnode.test.version=${{ matrix.node-version }}
+  javascript-browser:
+    name: javascript-glv browser smoke test
+    timeout-minutes: 15
+    needs: cache-gremlin-server-docker-image
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Set up JDK 17
+        uses: actions/setup-java@v5
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+      - name: Set up Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Get Cached Server Base Image
+        uses: actions/cache@v6
+        id: gremlin-server-test-docker-image
+        with:
+          path: |
+            ./gremlin-server/*
+            ~/.m2/repository/org/apache/tinkerpop/*
+          key: ${{ github.sha }}
+      - name: Load Docker Image
+        working-directory: ./gremlin-server
+        run: docker load --input gremlin-server.tar
+      - name: Build gremlin-server test jar
+        run: |
+          EXCLUDE="-:gremlin-dotnet-source,-:gremlin-dotnet-tests,-:gremlin-go,-:gremlin-python,$EXCLUDE_FOR_GLV"
+          mvn clean install -pl $EXCLUDE -q -DskipTests -Dci
+      - name: Start Gremlin Server
+        run: |
+          export GREMLIN_SERVER="$(mvn -q -pl :gremlin-javascript help:evaluate -Dexpression=project.version -DforceStdout)"
+          export ABS_PROJECT_HOME="$GITHUB_WORKSPACE"
+          cd gremlin-js/gremlin-javascript
+          docker compose up --build --wait gremlin-server-test-js
+      - name: Install dependencies
+        working-directory: ./gremlin-js/gremlin-javascript
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+      # Tier 1 (no server): builds the browser bundle from the package's real public entry points
+      # (resolved through the "browser" field, as a consumer's bundler would) and runs it in
+      # headless Chromium. Catches a Node-only import leaking into a shared code path - such an
+      # import fails the bundle step itself, before any test runs.
+      - name: Browser smoke test (bundle load)
+        working-directory: ./gremlin-js/gremlin-javascript
+        run: npm run browser-test
+      # Tier 2: same bundle, pointed at the Gremlin Server started above, to prove the browser
+      # transport (a plain `fetch`, no undici) actually round-trips over HTTP from a real browser
+      # engine. Browser security is left on, so this also exercises Gremlin Server's CORS handling.
+      - name: Browser smoke test (live round-trip)
+        working-directory: ./gremlin-js/gremlin-javascript
+        run: npm run browser-test-live
+      - name: Stop Gremlin Server
+        if: always()
+        working-directory: ./gremlin-js/gremlin-javascript
+        run: docker compose down
   python:
     name: python-${{ matrix.python-version }}
     timeout-minutes: 20
     needs: cache-gremlin-server-docker-image
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     strategy:
       fail-fast: false
       matrix:
@@ -261,14 +341,14 @@ jobs:
     env:
       PYTHON_VERSION: ${{ matrix.python-version }}
     steps:
-      - uses: actions/checkout@v6
-      - name: Set up JDK 11
-        uses: actions/setup-java@v5
+      - uses: actions/checkout@v7
+      - name: Set up JDK 17
+        uses: actions/setup-java@v6
         with:
-          java-version: '11'
+          java-version: '17'
           distribution: 'temurin'
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@v7
         with:
           python-version: ${{ matrix.python-version }}
       - name: Build with Maven
@@ -281,20 +361,20 @@ jobs:
     name: .NET
     timeout-minutes: 20
     needs: cache-gremlin-server-docker-image
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     steps:
-      - uses: actions/checkout@v6
-      - name: Set up JDK11
-        uses: actions/setup-java@v5
+      - uses: actions/checkout@v7
+      - name: Set up JDK17
+        uses: actions/setup-java@v6
         with:
-          java-version: '11'
+          java-version: '17'
           distribution: 'temurin'
       - name: Set up .NET 8.0.x
-        uses: actions/setup-dotnet@v5
+        uses: actions/setup-dotnet@v6
         with:
           dotnet-version: '8.0.x'
       - name: Get Cached Server Base Image
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         id: gremlin-server-test-docker-image
         with:
           path: |
@@ -315,11 +395,16 @@ jobs:
     name: go
     timeout-minutes: 20
     needs: cache-gremlin-server-docker-image
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
+      - name: Set up JDK 17
+        uses: actions/setup-java@v6
+        with:
+          java-version: '17'
+          distribution: 'temurin'
       - name: Setup Go
-        uses: actions/setup-go@v6
+        uses: actions/setup-go@v7
         with:
           go-version: '1.25'
       - name: Build with Maven
@@ -330,7 +415,7 @@ jobs:
           mvn clean install -pl $EXCLUDE -q -DskipTests -Dci
           mvn verify -pl :gremlin-go
       - name: Upload to Codecov
-        uses: codecov/codecov-action@v6
+        uses: codecov/codecov-action@v7
         with:
           working-directory: ./gremlin-go
       - name: Go-Vet

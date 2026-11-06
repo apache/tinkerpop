@@ -29,6 +29,8 @@ import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 
 import java.io.Serializable;
+import java.util.Collections;
+import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -74,6 +76,11 @@ public abstract class ReferenceElement<E extends Element> implements Element, Se
     @Override
     public String label() {
         return this.label;
+    }
+
+    @Override
+    public Set<String> labels() {
+        return this.label != null ? Collections.singleton(this.label) : Collections.emptySet();
     }
 
     @Override

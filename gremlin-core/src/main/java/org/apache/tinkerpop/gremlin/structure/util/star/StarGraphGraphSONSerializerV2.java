@@ -71,7 +71,7 @@ public class StarGraphGraphSONSerializerV2 extends StdSerializer<DirectionalStar
         final StarGraph starGraph = directionalStarGraph.getStarGraphToSerialize();
         GraphSONUtil.writeStartObject(starGraph, jsonGenerator, typeSerializer);
         GraphSONUtil.writeWithType(GraphSONTokens.ID, starGraph.starVertex.id, jsonGenerator, serializerProvider, typeSerializer);
-        jsonGenerator.writeStringField(GraphSONTokens.LABEL, starGraph.starVertex.label);
+        jsonGenerator.writeStringField(GraphSONTokens.LABEL, starGraph.starVertex.label());
         if (directionalStarGraph.getDirection() != null) writeEdges(directionalStarGraph, jsonGenerator, serializerProvider, typeSerializer, Direction.IN);
         if (directionalStarGraph.getDirection() != null) writeEdges(directionalStarGraph, jsonGenerator, serializerProvider, typeSerializer, Direction.OUT);
         if (starGraph.starVertex.vertexProperties != null && !starGraph.starVertex.vertexProperties.isEmpty()) {

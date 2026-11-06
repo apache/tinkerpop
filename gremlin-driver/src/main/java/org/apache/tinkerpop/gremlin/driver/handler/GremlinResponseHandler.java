@@ -96,7 +96,7 @@ public class GremlinResponseHandler extends SimpleChannelInboundHandler<Response
                 // Save the error because there could be a subsequent HttpContent coming (probably just trailers). All
                 // content should be read first before marking the ResultSet or else this channel might get reused too early.
                 channelHandlerContext.channel().attr(CAUGHT_EXCEPTION).set(
-                        new ResponseException(response.getStatus().getCode(), response.getStatus().getMessage(),
+                        ResponseException.create(response.getStatus().getCode(), response.getStatus().getMessage(),
                                 response.getStatus().getException())
                 );
             }

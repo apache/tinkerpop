@@ -28,4 +28,4 @@ auth: {
 connectionPool: {
   enableSsl: true,
   sslEnabledProtocols: [TLSv1.2] }
-serializer: { className: org.apache.tinkerpop.gremlin.util.ser.GraphBinaryMessageSerializerV4}
+responseSerializer: { className: org.apache.tinkerpop.gremlin.util.ser.GraphBinaryMessageSerializerV4}

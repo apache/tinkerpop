@@ -66,12 +66,15 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.StartStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.HasContainer;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.WithOptions;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.OptionsStrategy;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -553,6 +556,19 @@ public final class TraversalHelper {
             }
         }
         return false;
+    }
+
+    /**
+     * Checks whether multi-label output is enabled for the given traversal via source-level
+     * {@code g.with("multilabel")} configuration.
+     *
+     * @param traversal the traversal to inspect
+     * @return {@code true} if multi-label output is enabled and {@code false} otherwise
+     */
+    public static boolean isMultilabelEnabled(final Traversal.Admin<?, ?> traversal) {
+        return traversal.getStrategies().getStrategy(OptionsStrategy.class)
+                .map(os -> os.getOptions().containsKey(WithOptions.MULTILABEL_KEY))
+                .orElse(false);
     }
 
     /**
@@ -1141,6 +1157,32 @@ public final class TraversalHelper {
             traversal = traversal.getParent().asStep().getTraversal();
         }
         return false;
+    }
+
+    /**
+     * Combines a required first argument with zero or more additional varargs arguments into a single ordered
+     * {@link List}, validating that neither the first argument nor any of the additional arguments are
+     * {@code null}. This is useful for {@code GraphTraversal}/{@code GraphTraversalSource} spawn methods of the
+     * common {@code method(first, more...)} shape (e.g. {@code addV(label, additionalLabels)},
+     * {@code addLabel(labelTraversal, moreLabelTraversals)}) that need to treat the arguments as a single ordered
+     * collection while still requiring at least one argument to be supplied.
+     *
+     * @param first        the required first argument
+     * @param more         the additional, possibly empty, varargs arguments
+     * @param argumentName the name to use for the argument in the exception message when a {@code null} is found
+     * @param <T>          the argument type
+     * @return an unmodifiable list containing {@code first} followed by the elements of {@code more}, in order
+     * @throws IllegalArgumentException if {@code first} or any element of {@code more} is {@code null}
+     */
+    public static <T> List<T> asVarargsList(final T first, final T[] more, final String argumentName) {
+        if (null == first) throw new IllegalArgumentException(argumentName + " cannot be null");
+        final List<T> all = new ArrayList<>(more.length + 1);
+        all.add(first);
+        for (final T t : more) {
+            if (null == t) throw new IllegalArgumentException(argumentName + " cannot be null");
+            all.add(t);
+        }
+        return Collections.unmodifiableList(all);
     }
 
 }

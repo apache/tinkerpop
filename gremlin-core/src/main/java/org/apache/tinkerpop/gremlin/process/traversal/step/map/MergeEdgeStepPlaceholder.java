@@ -132,15 +132,23 @@ public class MergeEdgeStepPlaceholder<S> extends AbstractMergeElementStepPlaceho
     @Override
     public void addChildOption(final Merge token, final Traversal.Admin traversalOption) {
         if (token == Merge.onCreate) {
+            if (onCreateTraversal != null)
+                throw new IllegalArgumentException("option(onCreate) can only be specified once per merge step");
             validateStaticNoOverrides(mergeTraversal, traversalOption);
             setOnCreate(traversalOption);
         } else if (token == Merge.onMatch) {
+            if (onMatchTraversal != null)
+                throw new IllegalArgumentException("option(onMatch) can only be specified once per merge step");
             setOnMatch(traversalOption);
         } else if (token == Merge.outV) {
+            if (outVTraversal != null)
+                throw new IllegalArgumentException("option(outV) can only be specified once per mergeE step");
             this.outVTraversal = traversalOption;
         } else if (token == Merge.inV) {
+            if (inVTraversal != null)
+                throw new IllegalArgumentException("option(inV) can only be specified once per mergeE step");
             this.inVTraversal = traversalOption;
-        }else {
+        } else {
             throw new UnsupportedOperationException(String.format("Option %s for Merge is not supported", token.name()));
         }
     }

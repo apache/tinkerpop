@@ -312,3 +312,22 @@ Feature: Step - union()
       | vadas |
       | josh |
       | peter |
+
+  @GraphComputerVerificationMidVNotSupported
+  Scenario: g_unionXV_hasXperson_name_vadasX_V_hasXsoftware_name_lopX_inXcreatedXX_name
+    Given the modern graph
+    And the intent
+      """
+      Return the name of vadas together with the names of the people who created lop.
+      """
+    And the traversal of
+      """
+      g.union(V().has("person","name","vadas"),V().has("software","name","lop").in("created")).values("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | vadas |
+      | marko |
+      | josh |
+      | peter |

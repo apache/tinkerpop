@@ -69,14 +69,14 @@ public abstract class AbstractGremlinServerIntegrationTest {
     }
 
     /**
-     * This method may be called after {@link #startServer()} to (re-)set the evaluation timeout in
+     * This method may be called after {@link #startServer()} to (re-)set the request timeout in
      * the running server.
-     * @param timeoutInMillis new evaluation timeout
+     * @param timeoutInMillis new request timeout in milliseconds
      */
-    protected void overrideEvaluationTimeout(final long timeoutInMillis) {
+    protected void overrideTimeoutMillis(final long timeoutInMillis) {
         // Note: overriding settings in a running server is not guaranteed to work for all settings.
-        // It works for the evaluation timeout, though, because GremlinExecutor is re-created for each evaluation.
-        overriddenSettings.evaluationTimeout = timeoutInMillis;
+        // It works for the timeout, though, because GremlinExecutor is re-created for each evaluation.
+        overriddenSettings.timeoutMillis = timeoutInMillis;
     }
 
     public InputStream getSettingsInputStream() {
@@ -163,8 +163,8 @@ public abstract class AbstractGremlinServerIntegrationTest {
         return (directory.delete());
     }
 
-    protected static void useTinkerTransactionGraph(final Settings settings) {
-        logger.info("Running transactional tests using TinkerTransactionGraph");
-        settings.graphs.put("graph", "conf/tinkertransactiongraph-empty.properties");
+    protected static void useTinkerStorageGraph(final Settings settings) {
+        logger.info("Running transactional tests using TinkerStorageGraph");
+        settings.graphs.put("graph", "conf/tinkerstoragegraph-empty.properties");
     }
 }

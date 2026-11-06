@@ -28,6 +28,7 @@ import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -49,6 +50,12 @@ public class ReferenceEdge extends ReferenceElement<Edge> implements Edge {
 
     public ReferenceEdge(final Object id, final String label, final ReferenceVertex inVertex, final ReferenceVertex outVertex) {
         super(id, label);
+        this.inVertex = inVertex;
+        this.outVertex = outVertex;
+    }
+
+    public ReferenceEdge(final Object id, final Set<String> labels, final ReferenceVertex inVertex, final ReferenceVertex outVertex) {
+        super(id, labels != null && !labels.isEmpty() ? labels.iterator().next() : Edge.DEFAULT_LABEL);
         this.inVertex = inVertex;
         this.outVertex = outVertex;
     }

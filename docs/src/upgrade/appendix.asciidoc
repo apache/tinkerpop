@@ -100,13 +100,13 @@ TinkerPop 3.x `Graph`.
 gremlin> Gremlin.version()
 ==>x.y.z
 gremlin> graph = TinkerGraph.open()
-==>tinkergraph[vertices:0 edges:0]
+==>tinkermemorygraph[vertices:0 edges:0]
 gremlin> r = LegacyGraphSONReader.build().create()
 ==>org.apache.tinkerpop.gremlin.structure.io.graphson.LegacyGraphSONReader@64337702
 gremlin> r.readGraph(new FileInputStream('/tmp/tp2.json'), graph)
 ==>null
 gremlin> g = graph.traversal()
-==>graphtraversalsource[tinkergraph[vertices:6 edges:6], standard]
+==>graphtraversalsource[tinkermemorygraph[vertices:6 edges:6], standard]
 gremlin> g.E()
 ==>e[11][4-created->3]
 ==>e[12][6-created->3]

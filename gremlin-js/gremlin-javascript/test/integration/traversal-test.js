@@ -23,7 +23,8 @@
 
 import assert from 'assert';
 import { AssertionError } from 'assert';
-import {Edge, Vertex, VertexProperty} from '../../lib/structure/graph.js';
+import {Edge, Vertex, VertexProperty, CompositePDT, PrimitivePDT} from '../../lib/structure/graph.js';
+import { PDTRegistry } from '../../lib/structure/PDTRegistry.js';
 import anon from '../../lib/process/anonymous-traversal.js';
 import { GraphTraversalSource, GraphTraversal, statics } from '../../lib/process/graph-traversal.js';
 import {
@@ -31,11 +32,11 @@ import {
   OptionsStrategy, ReservedKeysVerificationStrategy, EdgeLabelVerificationStrategy, MatchAlgorithmStrategy
 } from '../../lib/process/traversal-strategy.js';
 import GremlinLang from '../../lib/process/gremlin-lang.js';
+import DriverRemoteConnection from '../../lib/driver/driver-remote-connection.js';
 import { getConnection, getDriverRemoteConnection } from '../helper.js';
 const __ = statics;
 
 let connection;
-let txConnection;
 
 class SocialTraversal extends GraphTraversal {
   constructor(graph, traversalStrategies, gremlinLang) {
@@ -125,6 +126,26 @@ describe('Traversal', function () {
           assert.ok(item);
           assert.strictEqual(item.done, true);
           assert.strictEqual(item.value, null);
+        });
+    });
+  });
+  describe('#next(amount)', function () {
+    it('should submit the traversal and return a batch of up to amount results', function () {
+      var g = anon.traversal().with_(connection);
+      var t = g.V();
+      return t.next(2)
+        .then(function (batch) {
+          assert.ok(Array.isArray(batch));
+          assert.strictEqual(batch.length, 2);
+          batch.forEach(v => assert.ok(v instanceof Vertex));
+          return t.next(10);
+        }).then(function (batch) {
+          // gmodern has 6 vertices, 2 already consumed, so only 4 remain
+          assert.strictEqual(batch.length, 4);
+          batch.forEach(v => assert.ok(v instanceof Vertex));
+          return t.next(2);
+        }).then(function (batch) {
+          assert.deepStrictEqual(batch, []);
         });
     });
   });
@@ -301,8 +322,8 @@ describe('Traversal', function () {
       });
       return g.V().out().iterate().then(() => assert.fail("should have tanked"), (err) => assert.strictEqual(err.statusCode, 500));
     });
-    it('should allow with_(evaluationTimeout,10)', function() {
-      const g = anon.traversal().with_(connection).with_('x').with_('evaluationTimeout', 10);
+    it('should allow with_(timeoutMillis,10)', function() {
+      const g = anon.traversal().with_(connection).with_('x').with_('timeoutMillis', 10);
       return g.V().repeat(__.both()).iterate().then(() => assert.fail("should have tanked"), (err) => assert.strictEqual(err.statusCode, 500));
     });
     it('should allow SeedStrategy', function () {
@@ -327,110 +348,200 @@ describe('Traversal', function () {
       });
     });
   });
-  //TODO:: Re-enable after tx reimplementation
-  // describe("should handle tx errors if graph not support tx", function() {
-  //   it('should throw exception on commit if graph not support tx', async function() {
-  //     const g = anon.traversal().withRemote(connection);
-  //     const tx = g.tx();
-  //     const gtx = tx.begin();
-  //     const result = await g.V().count().next();
-  //     assert.strictEqual(6, result.value);
-  //     try {
-  //       await tx.commit();
-  //       assert.fail("should throw error");
-  //     } catch (err) {
-  //       assert.strictEqual(err.statusCode, 500);
-  //       assert.ok(err.statusMessage.includes('Graph does not support transactions'));
-  //     }
-  //   });
-  //   it('should throw exception on rollback if graph not support tx', async function() {
-  //     const g = anon.traversal().withRemote(connection);
-  //     const tx = g.tx();
-  //     tx.begin();
-  //     try {
-  //       await tx.rollback();
-  //       assert.fail("should throw error");
-  //     } catch (err) {
-  //       assert.strictEqual(err.statusCode, 500);
-  //       assert.ok(err.statusMessage.includes('Graph does not support transactions'));
-  //     }
-  //   });
-  // });
-  // describe('support remote transactions - commit', function() {
-  //   before(function () {
-  //     txConnection = getConnection('gtx');
-  //     return txConnection.open();
-  //   });
-  //   after(function () {
-  //     const g = anon.traversal().with_(txConnection);
-  //     return g.V().drop().iterate().then(() => {
-  //       return txConnection.close()
-  //     });
-  //   });
-  //   it('should commit a simple transaction', async function () {
-  //     const g = anon.traversal().with_(txConnection);
-  //     const tx = g.tx();
-  //     const gtx = tx.begin();
-  //     await Promise.all([
-  //       gtx.addV("person").property("name", "jorge").iterate(),
-  //       gtx.addV("person").property("name", "josh").iterate()
-  //     ]);
-  //
-  //     let r = await gtx.V().count().next();
-  //     // assert within the transaction....
-  //     assert.ok(r);
-  //     assert.strictEqual(r.value, 2);
-  //
-  //     // now commit changes to test outside of the transaction
-  //     await tx.commit();
-  //
-  //     r = await g.V().count().next();
-  //     assert.ok(r);
-  //     assert.strictEqual(r.value, 2);
-  //     // connection closing async, so need to wait
-  //     while (tx._sessionBasedConnection.isOpen) {
-  //       await new Promise(resolve => setTimeout(resolve, 10));
-  //     }
-  //     assert.ok(!tx._sessionBasedConnection.isOpen);
-  //   });
-  // });
-  // describe('support remote transactions - rollback', function() {
-  //   before(function () {
-  //
-  //     txConnection = getConnection('gtx');
-  //     return txConnection.open();
-  //   });
-  //   after(function () {
-  //     const g = anon.traversal().with_(txConnection);
-  //     return g.V().drop().iterate().then(() => {
-  //       return txConnection.close()
-  //     });
-  //   });
-  //   it('should rollback a simple transaction', async function() {
-  //     const g = anon.traversal().with_(txConnection);
-  //     const tx = g.tx();
-  //     const gtx = tx.begin();
-  //     await Promise.all([
-  //       gtx.addV("person").property("name", "jorge").iterate(),
-  //       gtx.addV("person").property("name", "josh").iterate()
-  //     ]);
-  //
-  //     let r = await gtx.V().count().next();
-  //     // assert within the transaction....
-  //     assert.ok(r);
-  //     assert.strictEqual(r.value, 2);
-  //
-  //     // now rollback changes to test outside of the transaction
-  //     await tx.rollback();
-  //
-  //     r = await g.V().count().next();
-  //     assert.ok(r);
-  //     assert.strictEqual(r.value, 0);
-  //     // connection closing async, so need to wait
-  //     while (tx._sessionBasedConnection.isOpen) {
-  //       await new Promise(resolve => setTimeout(resolve, 10));
-  //     }
-  //     assert.ok(!tx._sessionBasedConnection.isOpen);
-  //   });
-  // });
+});
+
+let serverUrl;
+if (process.env.DOCKER_ENVIRONMENT === 'true') {
+  serverUrl = 'http://gremlin-server-test-js:45940/gremlin';
+} else {
+  serverUrl = 'http://localhost:45940/gremlin';
+}
+
+describe('CompositePDT - Traversal API', function () {
+  describe('raw PDT round-trip via Traversal API', function () {
+    let pdtConnection;
+
+    before(function () {
+      pdtConnection = getConnection('gmodern');
+      return pdtConnection.open();
+    });
+    after(function () {
+      return pdtConnection.close();
+    });
+
+    it('should round-trip a PDT via g.inject()', async function () {
+      const g = anon.traversal().with_(pdtConnection);
+      const pdt = new CompositePDT('TestPoint', { x: 1, y: 2 });
+
+      const results = await g.inject(pdt).toList();
+
+      assert.strictEqual(results.length, 1);
+      const result = results[0];
+      assert.ok(result instanceof CompositePDT);
+      assert.strictEqual(result.name, 'TestPoint');
+      assert.strictEqual(result.fields.x, 1);
+      assert.strictEqual(result.fields.y, 2);
+    });
+  });
+
+  describe('registry-based round-trip via typed object', function () {
+    let pdtConnection;
+
+    class TestPoint {
+      constructor(x, y) {
+        this.x = x;
+        this.y = y;
+      }
+    }
+
+    before(function () {
+      const registry = new PDTRegistry();
+      registry.register('TestPoint', {
+        serialize: (obj) => ({ x: obj.x, y: obj.y }),
+        deserialize: (fields) => new TestPoint(fields.x, fields.y),
+      }, TestPoint);
+      pdtConnection = new DriverRemoteConnection(serverUrl, {
+        traversalSource: 'gmodern',
+        pdtRegistry: registry,
+      });
+      return pdtConnection.open();
+    });
+    after(function () {
+      return pdtConnection.close();
+    });
+
+    it('should auto-dehydrate on send and auto-hydrate on receive via registry', async function () {
+      const g = anon.traversal().with_(pdtConnection);
+      const point = new TestPoint(5, 10);
+
+      const results = await g.inject(point).toList();
+
+      assert.strictEqual(results.length, 1);
+      const result = results[0];
+      assert.ok(result instanceof TestPoint);
+      assert.strictEqual(result.x, 5);
+      assert.strictEqual(result.y, 10);
+    });
+  });
+});
+
+describe('PrimitivePDT - Traversal API', function () {
+  describe('raw primitive PDT round-trip via Traversal API', function () {
+    let pdtConnection;
+
+    before(function () {
+      pdtConnection = getConnection('gmodern');
+      return pdtConnection.open();
+    });
+    after(function () {
+      return pdtConnection.close();
+    });
+
+    it('should round-trip a primitive PDT via g.inject()', async function () {
+      const g = anon.traversal().with_(pdtConnection);
+      const pdt = new PrimitivePDT('Uint32', '42');
+
+      const results = await g.inject(pdt).toList();
+
+      assert.strictEqual(results.length, 1);
+      const result = results[0];
+      assert.ok(result instanceof PrimitivePDT);
+      assert.strictEqual(result.name, 'Uint32');
+      assert.strictEqual(result.value, '42');
+    });
+
+    it('should round-trip an unregistered primitive PDT (raw)', async function () {
+      const g = anon.traversal().with_(pdtConnection);
+      const pdt = new PrimitivePDT('UnregisteredType', 'opaque-value');
+
+      const results = await g.inject(pdt).toList();
+
+      assert.strictEqual(results.length, 1);
+      const result = results[0];
+      assert.ok(result instanceof PrimitivePDT);
+      assert.strictEqual(result.name, 'UnregisteredType');
+      assert.strictEqual(result.value, 'opaque-value');
+    });
+  });
+
+  describe('registry-based primitive round-trip via typed object', function () {
+    let pdtConnection;
+
+    class Uint32 {
+      constructor(v) {
+        this.v = v;
+      }
+    }
+
+    before(function () {
+      const registry = new PDTRegistry();
+      registry.registerPrimitive('Uint32', {
+        toValue: (obj) => String(obj.v),
+        fromValue: (value) => new Uint32(parseInt(value, 10)),
+      }, Uint32);
+      pdtConnection = new DriverRemoteConnection(serverUrl, {
+        traversalSource: 'gmodern',
+        pdtRegistry: registry,
+      });
+      return pdtConnection.open();
+    });
+    after(function () {
+      return pdtConnection.close();
+    });
+
+    it('should auto-dehydrate primitive on send and auto-hydrate on receive', async function () {
+      const g = anon.traversal().with_(pdtConnection);
+      const val = new Uint32(99);
+
+      const results = await g.inject(val).toList();
+
+      assert.strictEqual(results.length, 1);
+      const result = results[0];
+      assert.ok(result instanceof Uint32);
+      assert.strictEqual(result.v, 99);
+    });
+  });
+
+  describe('nested composite containing primitive PDT', function () {
+    let pdtConnection;
+
+    class Uint32 {
+      constructor(v) {
+        this.v = v;
+      }
+    }
+
+    before(function () {
+      const registry = new PDTRegistry();
+      registry.registerPrimitive('Uint32', {
+        toValue: (obj) => String(obj.v),
+        fromValue: (value) => new Uint32(parseInt(value, 10)),
+      }, Uint32);
+      pdtConnection = new DriverRemoteConnection(serverUrl, {
+        traversalSource: 'gmodern',
+        pdtRegistry: registry,
+      });
+      return pdtConnection.open();
+    });
+    after(function () {
+      return pdtConnection.close();
+    });
+
+    it('should hydrate nested primitive inside composite', async function () {
+      const g = anon.traversal().with_(pdtConnection);
+      const inner = new PrimitivePDT('Uint32', '55');
+      const outer = new CompositePDT('Measurement', { unit: 'kg', amount: inner });
+
+      const results = await g.inject(outer).toList();
+
+      assert.strictEqual(results.length, 1);
+      const result = results[0];
+      assert.ok(result instanceof CompositePDT);
+      assert.strictEqual(result.name, 'Measurement');
+      assert.strictEqual(result.fields.unit, 'kg');
+      // The nested primitive PDT should be hydrated to Uint32
+      assert.ok(result.fields.amount instanceof Uint32);
+      assert.strictEqual(result.fields.amount.v, 55);
+    });
+  });
 });

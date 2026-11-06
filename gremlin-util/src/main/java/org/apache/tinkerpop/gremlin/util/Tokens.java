@@ -47,10 +47,10 @@ public final class Tokens {
     public static final String ARGS_BATCH_SIZE = "batchSize";
 
     /**
-     * Argument name that allows to provide a map of key/value pairs to apply as variables in the context of
+     * Argument name that allows to provide a map of key/value pairs to apply as query parameters in the context of
      * the Gremlin request sent to the server.
      */
-    public static final String ARGS_BINDINGS = "bindings";
+    public static final String ARGS_PARAMETERS = "parameters";
 
     /**
      * Argument name that allows definition of alias names for {@link Graph} and {@link TraversalSource} objects on
@@ -67,12 +67,6 @@ public final class Tokens {
      * Argument name that allows definition of the flavor of Gremlin used (e.g. gremlin-groovy) to process the request.
      */
     public static final String ARGS_LANGUAGE = "language";
-
-    /**
-     * Argument name that allows the override of the server setting that determines the maximum time to wait for a
-     * request to execute on the server.
-     */
-    public static final String ARGS_EVAL_TIMEOUT = "evaluationTimeout";
 
     /**
      * The name of the argument that allows to control the serialization of properties on the server.
@@ -92,20 +86,16 @@ public final class Tokens {
     public static final String MATERIALIZE_PROPERTIES_TOKENS = "tokens";
 
     /**
-     * The key for the per request server-side timeout in milliseconds.
+     * The key for the per request server-side timeout in milliseconds. This overrides the server's configured
+     * default ({@code timeoutMillis}) and determines the maximum time a request is allowed to execute on the server
+     * before it times out.
      */
-    public static final String TIMEOUT_MS = "timeoutMs";
+    public static final String TIMEOUT_MILLIS = "timeoutMillis";
 
     /**
      * The key for server to bulk result as a form of optimization for driver requests.
      */
     public static final String BULK_RESULTS = "bulkResults";
-
-    /**
-     * A value that is a custom string that the user can pass to a server that might accept it for purpose of
-     * identifying the kind of client it came from.
-     */
-    public static final String ARGS_USER_AGENT = "userAgent";
 
     /**
      * Argument name for the transaction ID used to track multi-request transactions over HTTP.

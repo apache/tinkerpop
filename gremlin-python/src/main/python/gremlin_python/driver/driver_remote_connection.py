@@ -18,7 +18,6 @@
 #
 import logging
 from concurrent.futures import Future
-import warnings
 
 from gremlin_python.driver import client, serializer
 from gremlin_python.driver.remote_connection import RemoteConnection, RemoteTraversal
@@ -32,33 +31,33 @@ __author__ = 'David M. Brown (davebshow@gmail.com), Lyndon Bauto (lyndonb@bitqui
 class DriverRemoteConnection(RemoteConnection):
 
     def __init__(self, url, traversal_source="g",
-                 pool_size=None, max_workers=None,
-                 request_serializer=serializer.GraphBinarySerializersV4(),
+                 max_connections=128, max_workers=None,
                  response_serializer=None, interceptors=None, auth=None,
-                 headers=None, enable_user_agent_on_connect=True,
-                 bulk_results=False, **transport_kwargs):
+                 enable_user_agent_on_connect=True,
+                 bulk_results=False, pdt_registry=None, batch_size=None,
+                 **transport_kwargs):
         log.info("Creating DriverRemoteConnection with url '%s'", str(url))
         self.__url = url
         self.__traversal_source = traversal_source
-        self.__pool_size = pool_size
+        self.__max_connections = max_connections
         self.__max_workers = max_workers
         self.__auth = auth
-        self.__headers = headers
         self.__enable_user_agent_on_connect = enable_user_agent_on_connect
         self.__bulk_results = bulk_results
         self.__transport_kwargs = transport_kwargs
+        self.pdt_registry = pdt_registry
 
         if response_serializer is None:
             response_serializer = serializer.GraphBinarySerializersV4()
         self._client = client.Client(url, traversal_source,
-                                     pool_size=pool_size,
+                                     max_connections=max_connections,
                                      max_workers=max_workers,
-                                     request_serializer=request_serializer,
                                      response_serializer=response_serializer,
                                      interceptors=interceptors, auth=auth,
-                                     headers=headers,
                                      enable_user_agent_on_connect=enable_user_agent_on_connect,
                                      bulk_results=bulk_results,
+                                     pdt_registry=pdt_registry,
+                                     batch_size=batch_size,
                                      **transport_kwargs)
         self._url = self._client._url
         self._traversal_source = self._client._traversal_source
@@ -70,22 +69,13 @@ class DriverRemoteConnection(RemoteConnection):
 
     def submit(self, gremlin_lang):
         log.debug("submit with gremlin lang script '%s'", gremlin_lang.get_gremlin())
-        gremlin_lang.add_g(self._traversal_source)
         result_set = self._client.submit(gremlin_lang.get_gremlin(),
                                          request_options=self.extract_request_options(gremlin_lang))
         return RemoteTraversal(result_set)
 
-    def submitAsync(self, message, bindings=None, request_options=None):
-        warnings.warn(
-            "gremlin_python.driver.driver_remote_connection.DriverRemoteConnection.submitAsync will be replaced by "
-            "gremlin_python.driver.driver_remote_connection.DriverRemoteConnection.submit_async.",
-            DeprecationWarning)
-        self.submit_async(message, bindings, request_options)
-
     def submit_async(self, gremlin_lang):
         log.debug("submit_async with gremlin lang script '%s'", gremlin_lang.get_gremlin())
         future = Future()
-        gremlin_lang.add_g(self._traversal_source)
         future_result_set = self._client.submit_async(gremlin_lang.get_gremlin(),
                                                       request_options=self.extract_request_options(gremlin_lang))
 
@@ -102,15 +92,6 @@ class DriverRemoteConnection(RemoteConnection):
     def is_closed(self):
         return self._client.is_closed()
 
-    # TODO remove or update once HTTP transaction is implemented
-    # def commit(self):
-    #     log.info("Submitting commit graph operation.")
-    #     return self._client.submit(Bytecode.GraphOp.commit())
-    #
-    # def rollback(self):
-    #     log.info("Submitting rollback graph operation.")
-    #     return self._client.submit(Bytecode.GraphOp.rollback())
-
     @staticmethod
     def extract_request_options(gremlin_lang):
         request_options = {}
@@ -123,6 +104,6 @@ class DriverRemoteConnection(RemoteConnection):
 
         parameters_string = gremlin_lang.get_parameters_as_string()
         if parameters_string != '[:]':
-            request_options["bindings"] = parameters_string
+            request_options["parameters"] = parameters_string
 
         return request_options

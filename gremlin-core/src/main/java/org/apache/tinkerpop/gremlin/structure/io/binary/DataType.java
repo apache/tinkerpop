@@ -53,12 +53,13 @@ public enum DataType {
     BOOLEAN(0x27),
     BULKSET(0X2A),  // todo:
     TREE(0X2B),
-    GTYPE(0x30),
 
     CHAR(0X80),
     DURATION(0X81),
 
-    CUSTOM(0),
+    COMPOSITE_PDT(0xF0),
+    PRIMITIVE_PDT(0xF1),
+
     MARKER(0XFD),
     UNSPECIFIED_NULL(0XFE);
 

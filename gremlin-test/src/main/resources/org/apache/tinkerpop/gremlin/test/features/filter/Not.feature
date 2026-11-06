@@ -59,3 +59,17 @@ Feature: Step - not()
       | josh |
       | ripple |
       | peter |
+
+  @MultiLabel
+  Scenario: g_V_notXhasLabelXanimalXX_name_multilabel
+    Given the zoo graph
+    And the traversal of
+      """
+      g.V().not(__.hasLabel("animal")).values("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | lagoon |
+      | canopy |
+      | dr_gremlin |

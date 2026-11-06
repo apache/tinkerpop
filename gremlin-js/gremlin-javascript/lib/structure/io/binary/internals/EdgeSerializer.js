@@ -59,7 +59,14 @@ export default class EdgeSerializer {
     bufs.push(this.ioc.anySerializer.serialize(item.id));
 
     // {label}
-    const labels = Array.isArray(item.label) ? item.label : item.label ? [item.label] : [];
+    const labels =
+      item.labels instanceof Set
+        ? Array.from(item.labels)
+        : Array.isArray(item.label)
+          ? item.label
+          : item.label
+            ? [item.label]
+            : [];
     bufs.push(this.ioc.listSerializer.serialize(labels, false));
 
     // {inVId}
@@ -67,8 +74,14 @@ export default class EdgeSerializer {
     bufs.push(this.ioc.anySerializer.serialize(inVId));
 
     // {inVLabel}
-    const inVLabel = item.inV && item.inV.label;
-    const inVLabels = Array.isArray(inVLabel) ? inVLabel : inVLabel ? [inVLabel] : [];
+    const inVLabels =
+      item.inV && item.inV.labels instanceof Set
+        ? Array.from(item.inV.labels)
+        : item.inV && Array.isArray(item.inV.label)
+          ? item.inV.label
+          : item.inV && item.inV.label
+            ? [item.inV.label]
+            : [];
     bufs.push(this.ioc.listSerializer.serialize(inVLabels, false));
 
     // {outVId}
@@ -76,8 +89,14 @@ export default class EdgeSerializer {
     bufs.push(this.ioc.anySerializer.serialize(outVId));
 
     // {outVLabel}
-    const outVLabel = item.outV && item.outV.label;
-    const outVLabels = Array.isArray(outVLabel) ? outVLabel : outVLabel ? [outVLabel] : [];
+    const outVLabels =
+      item.outV && item.outV.labels instanceof Set
+        ? Array.from(item.outV.labels)
+        : item.outV && Array.isArray(item.outV.label)
+          ? item.outV.label
+          : item.outV && item.outV.label
+            ? [item.outV.label]
+            : [];
     bufs.push(this.ioc.listSerializer.serialize(outVLabels, false));
 
     // {parent}
@@ -100,23 +119,26 @@ export default class EdgeSerializer {
     // {id} fully qualified
     const id = await this.ioc.anySerializer.deserialize(reader);
 
-    // {label} bare list, extract first element
+    // {label} bare list - full multi-label list
     const labelList = await this.ioc.listSerializer.deserializeValue(reader, 0x00, this.ioc.DataType.LIST);
-    const label = Array.isArray(labelList) && labelList.length > 0 ? labelList[0] : labelList;
+    const labels = Array.isArray(labelList) ? labelList : labelList ? [labelList] : [];
+    const label = labels.length > 0 ? labels[0] : 'edge';
 
     // {inVId} fully qualified
     const inVId = await this.ioc.anySerializer.deserialize(reader);
 
-    // {inVLabel} bare list, extract first element
+    // {inVLabel} bare list - full multi-label list
     const inVLabelList = await this.ioc.listSerializer.deserializeValue(reader, 0x00, this.ioc.DataType.LIST);
-    const inVLabel = Array.isArray(inVLabelList) && inVLabelList.length > 0 ? inVLabelList[0] : inVLabelList;
+    const inVLabels = Array.isArray(inVLabelList) ? inVLabelList : inVLabelList ? [inVLabelList] : [];
+    const inVLabel = inVLabels.length > 0 ? inVLabels[0] : 'vertex';
 
     // {outVId} fully qualified
     const outVId = await this.ioc.anySerializer.deserialize(reader);
 
-    // {outVLabel} bare list, extract first element
+    // {outVLabel} bare list - full multi-label list
     const outVLabelList = await this.ioc.listSerializer.deserializeValue(reader, 0x00, this.ioc.DataType.LIST);
-    const outVLabel = Array.isArray(outVLabelList) && outVLabelList.length > 0 ? outVLabelList[0] : outVLabelList;
+    const outVLabels = Array.isArray(outVLabelList) ? outVLabelList : outVLabelList ? [outVLabelList] : [];
+    const outVLabel = outVLabels.length > 0 ? outVLabels[0] : 'vertex';
 
     // {parent} fully qualified (always null in current TinkerPop)
     await this.ioc.anySerializer.deserialize(reader);
@@ -126,10 +148,11 @@ export default class EdgeSerializer {
 
     return new Edge(
       id,
-      new Vertex(outVId, outVLabel, null),
+      new Vertex(outVId, outVLabel, null, outVLabels),
       label,
-      new Vertex(inVId, inVLabel, null),
+      new Vertex(inVId, inVLabel, null, inVLabels),
       properties || [],
+      labels,
     );
   }
 

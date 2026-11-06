@@ -1,0 +1,145 @@
+////
+Licensed to the Apache Software Foundation (ASF) under one
+or more contributor license agreements.  See the NOTICE file
+distributed with this work for additional information
+regarding copyright ownership.  The ASF licenses this file
+to you under the Apache License, Version 2.0 (the
+"License"); you may not use this file except in compliance
+with the License.  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on an
+"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied.  See the License for the
+specific language governing permissions and limitations
+under the License.
+////
+[[air-routes]]
+[llms-summary="The air routes graph: a large, real-world graph of airports connected by flight routes and grouped by geography. Includes its GQL Graph Types schema and runnable Gremlin examples that exercise property lookups, edge-weight ranking and multi-hop connectivity."]
+== The Air Routes Graph
+
+The air routes graph models the world's commercial air travel network. Its `airport` vertices are
+connected by `route` edges that represent a nonstop flight between two airports, and each `route`
+carries a `dist` property with the distance of that flight. Alongside the airports, the graph
+records geography as `continent` and `country` vertices, and a `contains` edge links a continent or
+a country to the airports that lie within it. A single `version` vertex holds metadata about the
+dataset itself.
+
+The dataset has long been used to showcase and teach Gremlin and was popularized by the first
+edition of link:https://kelvinlawrence.net/book/PracticalGremlin.html[Practical Gremlin]. With 3749
+vertices and 57645 edges, it is far larger than the other sample graphs, and its structure reflects
+the real world rather than a hand-built illustration. That scale and realism make it the best choice
+for demonstrating traversals that resemble genuine questions: looking up a record by a business key,
+ranking routes by distance, measuring how well connected an airport is, and reasoning about journeys
+that require a connection. The graph is created with `TinkerFactory.createAirRoutes()` and ships as
+`data/air-routes.*`. It is too large to depict as a single diagram.
+
+=== Schema
+
+[source,gql]
+----
+-- node types
+(:airport => { code :: STRING NOT NULL, icao :: STRING, desc :: STRING, type :: STRING, city :: STRING, region :: STRING, country :: STRING, runways :: INT, longest :: INT, elev :: INT, lat :: DOUBLE, lon :: DOUBLE }),
+(:country => { code :: STRING, desc :: STRING, type :: STRING }),
+(:continent => { code :: STRING, desc :: STRING, type :: STRING }),
+(:version => { code :: STRING, desc :: STRING, type :: STRING, author :: STRING, date :: STRING }),
+
+-- edge types
+(:airport)-[:route { dist :: INT }]->(:airport),
+(:continent)-[:contains]->(:airport),
+(:country)-[:contains]->(:airport)
+----
+
+An `airport` is identified in traversals by its three-letter IATA `code`, such as `IAD` for
+Washington Dulles, and its `desc`, `city`, and geographic coordinates describe where it is. Every
+vertex carries a `type` property that names the kind of entity it represents, which is useful when
+the same property key appears across labels. The `contains` edge reaches an airport from both its
+`continent` and its `country`, so an airport has two incoming `contains` edges. The lone `version`
+vertex is a metadata record for the dataset and participates in no routes.
+
+=== Examples
+
+A single airport is located by its IATA `code`, and its descriptive properties are read directly
+from the vertex.
+
+[gremlin-groovy,airroutes]
+----
+g.V().has('airport','code','IAD').
+      valueMap('code','city','region','desc') <1>
+----
+
+<1> Look up one airport by its `code` and report a few of its descriptive properties.
+
+The `contains` edges group airports by geography, so the number of airports on each continent is the
+count of `contains` edges leaving that continent.
+
+[gremlin-groovy,airroutes]
+----
+g.V().hasLabel('continent').
+      project('continent','airports'). <1>
+        by('desc').
+        by(out('contains').hasLabel('airport').count()).
+      order().by(select('airports'),desc) <2>
+----
+
+<1> For each continent, project its name and the number of airports it `contains`.
+<2> Order the continents from the most airports to the fewest.
+
+The number of `route` edges leaving an airport is the count of destinations reachable nonstop from
+it, which is a simple measure of how busy the airport is.
+
+[gremlin-groovy,airroutes]
+----
+g.V().hasLabel('airport').
+      order().by(outE('route').count(),desc). <1>
+      limit(5).
+      project('code','routes'). <2>
+        by('code').
+        by(outE('route').count())
+----
+
+<1> Order airports by their number of outgoing `route` edges.
+<2> Report the `code` of the five busiest airports together with that route count.
+
+Because each `route` carries a `dist` property, the outgoing routes of an airport can be ranked to
+find its longest nonstop flights.
+
+[gremlin-groovy,airroutes]
+----
+g.V().has('airport','code','LHR').
+      outE('route'). <1>
+      order().by('dist',desc).
+      limit(5).
+      project('to','dist'). <2>
+        by(inV().values('code')).
+        by('dist')
+----
+
+<1> Step onto the outgoing `route` edges of London Heathrow so each edge's `dist` is available for
+ordering.
+<2> Rank the routes by `dist` and report the destination `code` and distance of the five longest
+nonstop routes.
+
+A connection query follows two `route` steps to find airports that cannot be reached nonstop from a
+starting airport but are reachable with a single stop, then ranks them by how many one-stop routings
+lead there.
+
+[gremlin-groovy,airroutes]
+----
+g.V().has('airport','code','AUS').as('origin').
+      out('route').aggregate('direct'). <1>
+      out('route').
+      where(without('direct')).
+      where(neq('origin')). <2>
+      groupCount().by('code').
+      order(local).by(values,desc).
+      limit(local,5) <3>
+----
+
+<1> Gather the airports reachable nonstop from Austin into a side collection named `direct`.
+<2> Take a second `route` step and keep only airports that are neither nonstop destinations nor
+Austin itself, leaving those that require exactly one connection.
+<3> Count how many one-stop routings reach each of those airports and keep the five reached by the
+most, giving the best-connected onward hubs from Austin.

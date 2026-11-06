@@ -20,14 +20,13 @@ package org.apache.tinkerpop.gremlin.driver;
 
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
-import io.netty.handler.codec.TooLongFrameException;
+import io.netty.handler.timeout.ReadTimeoutException;
 import nl.altindag.log.LogCaptor;
 import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.driver.exception.ConnectionException;
 import org.apache.tinkerpop.gremlin.driver.exception.NoHostAvailableException;
 import org.apache.tinkerpop.gremlin.server.AbstractGremlinServerIntegrationTest;
 import org.apache.tinkerpop.gremlin.server.TestClientFactory;
-import org.hamcrest.core.Is;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -97,57 +96,11 @@ public class ClientConnectionIntegrateTest extends AbstractGremlinServerIntegrat
         lcp.setLevel(previousConnectionPoolLevel);
     }
 
-    /**
-     * Reproducer for TINKERPOP-2169
-     */
-    @Test
-    public void shouldCloseConnectionDeadDueToUnRecoverableError() throws Exception {
-        // Set a low value of maxResponseContentLength to intentionally trigger CorruptedFrameException
-        final Cluster cluster = TestClientFactory.build()
-                                                 .maxResponseContentLength(64)
-                                                 .maxConnectionPoolSize(2)
-                                                 .create();
-        final Client.ClusteredClient client = cluster.connect();
-
-        try {
-            // Add the test data so that the g.V() response could exceed maxResponseContentLength
-            client.submit("g.inject(1).repeat(__.addV()).times(20).count()").all().get();
-            try {
-                client.submit("g.V().fold()").all().get();
-
-                fail("Should throw an exception.");
-            } catch (Exception re) {
-                assertThat(re.getCause() instanceof TooLongFrameException, is(true));
-            }
-
-            // without this wait this test is failing randomly on docker/travis with ConcurrentModificationException
-            // see TINKERPOP-2504 - adjust the sleep to account for the max time to wait for sessions to close in
-            // an orderly fashion
-            Thread.sleep(Connection.MAX_WAIT_FOR_CLOSE + 1000);
-
-            // Assert that the host has not been marked unavailable
-            assertEquals(1, cluster.availableHosts().size());
-
-            // Assert that there is no connection leak and all connections have been closed
-            assertEquals(0, client.hostConnectionPools.values().stream()
-                                                             .findFirst().get()
-                                                             .numConnectionsWaitingToCleanup());
-        } finally {
-            cluster.close();
-        }
-
-        // Assert that the connection has been destroyed. Specifically check for the string with
-        // isDead=true indicating the connection that was closed due to CorruptedFrameException.
-        assertThat(logCaptor.getLogs().stream().anyMatch(m -> m.matches(
-                "^(?!.*(isDead=false)).*isDead=true.*destroyed successfully.$")), Is.is(true));
-
-    }
-
     @Test
     public void shouldBalanceConcurrentRequestsAcrossConnections() throws InterruptedException {
         final int connPoolSize = 16;
         final Cluster cluster = TestClientFactory.build()
-                .maxConnectionPoolSize(connPoolSize)
+                .maxConnections(connPoolSize)
                 .create();
         final Client.ClusteredClient client = cluster.connect();
         client.init();
@@ -192,7 +145,7 @@ public class ClientConnectionIntegrateTest extends AbstractGremlinServerIntegrat
     public void shouldCreateNewHttpConnectionPerRequestAsNeeded() throws InterruptedException {
         final int operations = 6;
         final Cluster cluster = TestClientFactory.build()
-                .maxConnectionPoolSize(operations)
+                .maxConnections(operations)
                 .create();
         final Client.ClusteredClient client = cluster.connect();
         client.init();
@@ -241,7 +194,7 @@ public class ClientConnectionIntegrateTest extends AbstractGremlinServerIntegrat
      */
     @Test
     public void shouldSucceedWithJitteryConnection() throws Exception {
-        final Cluster cluster = TestClientFactory.build().maxConnectionPoolSize(128).
+        final Cluster cluster = TestClientFactory.build().maxConnections(128).
                 reconnectInterval(1000).
                 maxWaitForConnection(4000).validationRequest("g.inject()").create();
         final Client.ClusteredClient client = cluster.connect();
@@ -301,7 +254,7 @@ public class ClientConnectionIntegrateTest extends AbstractGremlinServerIntegrat
     public void shouldCloseIdleConnectionsAndRecreateNewConnections() throws InterruptedException {
         int idleMillis = 3000;
         final Cluster cluster = TestClientFactory.build()
-                .idleConnectionTimeoutMillis(idleMillis)
+                .idleTimeoutMillis(idleMillis)
                 .create();
         final Client.ClusteredClient client = cluster.connect();
         client.init();
@@ -327,24 +280,68 @@ public class ClientConnectionIntegrateTest extends AbstractGremlinServerIntegrat
         }
     }
 
+    /**
+     * Verifies that the {@code readTimeout} connection option fires end-to-end when the server stalls while producing
+     * a response and that the per-request timeout cleans up the dead connection without taking the host down or
+     * leaking connections. This restores the connection-cleanup resilience coverage previously provided by the
+     * (now removed) {@code shouldCloseConnectionDeadDueToUnRecoverableError} test, which triggered the failure via the
+     * removed {@code maxResponseContentLength} option.
+     */
     @Test
-    public void shouldThrowErrorWithHelpfulMessageWhenIdleTimeoutReachedBeforeResponseReceived() throws InterruptedException {
-        int idleMillis = 1000;
+    public void shouldTimeoutAndCleanUpConnectionWhenReadTimeoutReachedBeforeResponseReceived() throws Exception {
+        final int readMillis = 1000;
         final Cluster cluster = TestClientFactory.build()
-                .idleConnectionTimeoutMillis(idleMillis)
+                .readTimeoutMillis(readMillis)
+                .maxConnections(2)
                 .create();
         final Client.ClusteredClient client = cluster.connect();
         final RequestOptions ro = RequestOptions.build().language("gremlin-groovy").create();
 
         try {
-            client.submit("Thread.sleep(" + idleMillis * 3 + ")", ro).all().get();
-            fail("Expected exception due to idle timeout");
-        } catch (Exception e) {
-            assertTrue(e.getMessage().contains("Idle timeout occurred before response could be received from server - consider increasing idleConnectionTimeout"));
+            try {
+                // sleep on the server longer than the readTimeout so no response chunk arrives in time
+                client.submit("Thread.sleep(" + readMillis * 3 + ")", ro).all().get();
+                fail("Expected exception due to read timeout");
+            } catch (Exception e) {
+                // the readTimeout path fires a Netty ReadTimeoutException up the pipeline which is marked as the
+                // error on the in-flight ResultSet and surfaces through the cause chain of the ExecutionException
+                assertTrue("Expected a ReadTimeoutException in the cause chain but got: " + e,
+                        hasCause(e, ReadTimeoutException.class));
+            }
+
+            // give the connection time to be torn down in an orderly fashion after the timeout closed the channel
+            TimeUnit.MILLISECONDS.sleep(Connection.MAX_WAIT_FOR_CLOSE + 1000);
+
+            // a per-request read timeout must not mark the host unavailable - the server is still reachable
+            assertEquals(1, cluster.availableHosts().size());
+
+            // the dead connection should have been destroyed and not leaked in the pool's cleanup bin
+            assertEquals(0, client.hostConnectionPools.values().stream()
+                    .findFirst().get()
+                    .numConnectionsWaitingToCleanup());
+
+            // the client must recover after the channel-level error: a subsequent request succeeds on a fresh
+            // connection (this restores the recovery coverage previously provided by
+            // shouldEventuallySucceedAfterChannelLevelError)
+            assertEquals(2, client.submit("g.inject(2)").all().join().get(0).getInt());
         } finally {
             client.close();
             cluster.close();
         }
+
+        // the read timeout closes the channel which makes the connection dead, so it is destroyed (not returned to
+        // the pool). Verify the destroy log line for a connection with isDead=true (mirrors the old test).
+        assertTrue(logCaptor.getLogs().stream().anyMatch(m ->
+                m.matches("^(?!.*(isDead=false)).*isDead=true.*destroyed successfully.$")));
+    }
+
+    private static boolean hasCause(final Throwable t, final Class<? extends Throwable> type) {
+        Throwable current = t;
+        while (current != null) {
+            if (type.isInstance(current)) return true;
+            current = current.getCause();
+        }
+        return false;
     }
 
     private static void chooseConnections(int operations, Client.ClusteredClient client, ExecutorService executorServiceForTesting) throws InterruptedException {

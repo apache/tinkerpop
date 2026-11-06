@@ -26,6 +26,7 @@ import { Transaction } from './transaction.js';
 import { TraversalStrategies, VertexProgramStrategy, OptionsStrategy } from './traversal-strategy.js';
 import {Graph, Vertex} from '../structure/graph.js';
 import { RemoteConnection, RemoteStrategy } from '../driver/remote-connection.js';
+import DriverRemoteConnection from '../driver/driver-remote-connection.js';
 import GremlinLang from './gremlin-lang.js';
 
 /**
@@ -33,6 +34,8 @@ import GremlinLang from './gremlin-lang.js';
  */
 export class GraphTraversalSource {
   remoteConnection?: RemoteConnection;
+  /** @internal - set by Transaction.begin() for gtx.tx() to return the owning transaction */
+  _boundTransaction?: Transaction;
 
   /**
    * Creates a new instance of {@link GraphTraversalSource}.
@@ -58,12 +61,93 @@ export class GraphTraversalSource {
    * @returns {Transaction}
    */
   tx(): Transaction {
-    // you can't do g.tx().begin().tx() - no child transactions
-    if (this.remoteConnection) {
+    // If this GTS is already bound to a transaction, return that transaction.
+    if (this._boundTransaction) {
+      return this._boundTransaction;
+    }
+
+    if (!this.remoteConnection) {
+      throw new Error('Remote connection is required for transactions');
+    }
+
+    // If the DRC has a transactionId, it was created by a Transaction.begin().
+    // But we don't have the Transaction reference here (only _boundTransaction above).
+    if (this.remoteConnection instanceof DriverRemoteConnection && this.remoteConnection.transactionId) {
       throw new Error('This TraversalSource is already bound to a transaction - child transactions are not supported');
     }
 
-    return new Transaction(this);
+    // Extract the Client from the DriverRemoteConnection.
+    const client = (this.remoteConnection as DriverRemoteConnection)._client;
+    return new Transaction(client);
+  }
+
+  /**
+   * Runs a unit of work inside a transaction, owning the full lifecycle.
+   *
+   * The transaction is begun automatically and the resulting transaction-bound
+   * <code>GraphTraversalSource</code> (<code>gtx</code>) is passed to the
+   * callback as its sole argument. Only <code>gtx</code> is in scope inside the
+   * callback, which avoids accidentally issuing traversals against the
+   * non-transactional <code>g</code>.
+   *
+   * On normal completion of the callback the transaction is committed; on any
+   * abnormal exit (a thrown error or a rejected promise) the transaction is
+   * rolled back. This is a single-shot operation: there is exactly one attempt
+   * (begin -> run -> commit/rollback) and no retry. A second transaction cannot
+   * be opened from inside the callback: <code>gtx.tx()</code> returns the same
+   * transaction, and calling <code>begin()</code> on it again is idempotent and
+   * returns a source bound to that same transaction.
+   *
+   * The callback may be synchronous or asynchronous; its return value (or the
+   * value its promise resolves to) is awaited and returned from
+   * <code>executeInTx</code>. If the callback returns nothing the result is
+   * <code>undefined</code>.
+   *
+   * Error handling: if the callback throws/rejects, the original error is
+   * re-raised unchanged after rollback is attempted. If the commit itself fails,
+   * the commit error propagates and a rollback is still attempted afterward for
+   * server-side hygiene. In both cases a failed rollback during cleanup is logged
+   * as a warning and never replaces the primary error.
+   *
+   * @param txWork callback that receives the transaction-bound GraphTraversalSource
+   * @returns {Promise<T>} resolves to the callback's value (undefined if none)
+   */
+  async executeInTx<T>(txWork: (gtx: GraphTraversalSource) => T | Promise<T>): Promise<T> {
+    const tx = this.tx();
+    const gtx = await tx.begin();
+
+    let result: T;
+    // Phase 1: run the user's work. If it throws, roll back and rethrow the body error - the
+    // throw below exits the method, so a failed body never reaches the commit in phase 2.
+    try {
+      result = await txWork(gtx);
+    } catch (bodyError) {
+      try {
+        await tx.rollback();
+      } catch (rollbackError) {
+        console.warn('Rollback failed after transaction body error', rollbackError);
+      }
+      // Re-raise the exact original error; rollback failures never replace it.
+      throw bodyError;
+    }
+
+    // Phase 2: the body succeeded, so commit. A separate try because this failure mode is
+    // distinct (commit, not body): we still roll back for server hygiene, then rethrow the
+    // commit error as the primary error.
+    try {
+      await tx.commit();
+    } catch (commitError) {
+      try {
+        // Attempt rollback so the server does not keep the transaction around.
+        await tx.rollback();
+      } catch (rollbackError) {
+        console.warn('Rollback failed after commit failure', rollbackError);
+      }
+      // The commit error stays primary; rollback was only for server hygiene.
+      throw commitError;
+    }
+
+    return result;
   }
 
   /**
@@ -124,6 +208,10 @@ export class GraphTraversalSource {
     }
     glStrategies[glStrategies.length - 1].configuration[key] = val;
     const gl = new GremlinLang(this.gremlinLang);
+    // Render multilabel/singlelabel in gremlin text (temporary until these options are removed)
+    if (key === 'multilabel' || key === 'singlelabel') {
+      gl.appendGremlin(`.with("${key}")`);
+    }
     return new this.graphTraversalSourceClass(
       this.graph,
       new TraversalStrategies(this.traversalStrategies),
@@ -341,6 +429,18 @@ export class GraphTraversalSource {
     const gl = new GremlinLang(this.gremlinLang).addStep('union', args);
     return new this.graphTraversalClass(this.graph, new TraversalStrategies(this.traversalStrategies), gl);
   }
+
+  /**
+   * Spawns a {@link GraphTraversal} by executing a declarative pattern match query.
+   * @param {string} matchQuery - the declarative query string
+   * @param {Record<string, any>} [params] - optional query parameters
+   * @returns {GraphTraversal}
+   */
+  match(matchQuery: string, params?: Record<string, any>): GraphTraversal {
+    const args = params !== undefined ? [matchQuery, params] : [matchQuery];
+    const gl = new GremlinLang(this.gremlinLang).addStep('match', args);
+    return new this.graphTraversalClass(this.graph, new TraversalStrategies(this.traversalStrategies), gl);
+  }
 }
 
 /**
@@ -400,6 +500,16 @@ export class GraphTraversal extends Traversal {
    */
   addV(...args: any[]): this {
     this.gremlinLang.addStep('addV', args);
+    return this;
+  }
+
+  /**
+   * Graph traversal addLabel method.
+   * @param {...Object} args
+   * @returns {GraphTraversal}
+   */
+  addLabel(...args: any[]): this {
+    this.gremlinLang.addStep('addLabel', args);
     return this;
   }
 
@@ -743,6 +853,26 @@ export class GraphTraversal extends Traversal {
   }
 
   /**
+   * Graph traversal dropLabel method.
+   * @param {...Object} args
+   * @returns {GraphTraversal}
+   */
+  dropLabel(...args: any[]): this {
+    this.gremlinLang.addStep('dropLabel', args);
+    return this;
+  }
+
+  /**
+   * Graph traversal dropLabels method.
+   * @param {...Object} args
+   * @returns {GraphTraversal}
+   */
+  dropLabels(...args: any[]): this {
+    this.gremlinLang.addStep('dropLabels', args);
+    return this;
+  }
+
+  /**
    * Graph traversal element method.
    * @param {...Object} args
    * @returns {GraphTraversal}
@@ -1027,6 +1157,16 @@ export class GraphTraversal extends Traversal {
   }
 
   /**
+   * Graph traversal labels method.
+   * @param {...Object} args
+   * @returns {GraphTraversal}
+   */
+  labels(...args: any[]): this {
+    this.gremlinLang.addStep('labels', args);
+    return this;
+  }
+
+  /**
    * Graph traversal length method.
    * @param {...Object} args
    * @returns {GraphTraversal}
@@ -1087,10 +1227,24 @@ export class GraphTraversal extends Traversal {
   }
 
   /**
-   * Graph traversal match method.
-   * @param {...Object} args
+   * Graph traversal match method. Accepts either traversal-based match patterns
+   * (deprecated) or a declarative query string.
+   * @param {string} matchQuery - declarative query string
    * @returns {GraphTraversal}
    */
+  match(matchQuery: string): this;
+  /**
+   * @param {string} matchQuery - declarative query string
+   * @param {Record<string, any>} params - query parameters
+   * @returns {GraphTraversal}
+   */
+  match(matchQuery: string, params: Record<string, any>): this;
+  /**
+   * @deprecated Use match(String) for declarative pattern matching.
+   * @param {...any} matchTraversals - traversal-based match patterns
+   * @returns {GraphTraversal}
+   */
+  match(...matchTraversals: any[]): this;
   match(...args: any[]): this {
     this.gremlinLang.addStep('match', args);
     return this;
@@ -1784,6 +1938,7 @@ export const statics = {
   V: (...args: any[]) => callOnEmptyTraversal('V', args),
   addE: (...args: any[]) => callOnEmptyTraversal('addE', args),
   addV: (...args: any[]) => callOnEmptyTraversal('addV', args),
+  addLabel: (...args: any[]) => callOnEmptyTraversal('addLabel', args),
   aggregate: (...args: any[]) => callOnEmptyTraversal('aggregate', args),
   all: (...args: any[]) => callOnEmptyTraversal('all', args),
   and: (...args: any[]) => callOnEmptyTraversal('and', args),
@@ -1816,6 +1971,8 @@ export const statics = {
   discard: (...args: any[]) => callOnEmptyTraversal('discard', args),
   disjunct: (...args: any[]) => callOnEmptyTraversal('disjunct', args),
   drop: (...args: any[]) => callOnEmptyTraversal('drop', args),
+  dropLabel: (...args: any[]) => callOnEmptyTraversal('dropLabel', args),
+  dropLabels: (...args: any[]) => callOnEmptyTraversal('dropLabels', args),
   element: (...args: any[]) => callOnEmptyTraversal('element', args),
   elementMap: (...args: any[]) => callOnEmptyTraversal('elementMap', args),
   emit: (...args: any[]) => callOnEmptyTraversal('emit', args),
@@ -1843,6 +2000,7 @@ export const statics = {
   is: (...args: any[]) => callOnEmptyTraversal('is', args),
   key: (...args: any[]) => callOnEmptyTraversal('key', args),
   label: (...args: any[]) => callOnEmptyTraversal('label', args),
+  labels: (...args: any[]) => callOnEmptyTraversal('labels', args),
   length: (...args: any[]) => callOnEmptyTraversal('length', args),
   limit: (...args: any[]) => callOnEmptyTraversal('limit', args),
   local: (...args: any[]) => callOnEmptyTraversal('local', args),

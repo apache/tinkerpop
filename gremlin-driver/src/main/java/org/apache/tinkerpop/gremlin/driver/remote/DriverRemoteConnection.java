@@ -27,6 +27,7 @@ import org.apache.tinkerpop.gremlin.process.remote.traversal.RemoteTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.GremlinLang;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
+import org.apache.tinkerpop.gremlin.structure.io.pdt.PDTRegistry;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.util.Optional;
@@ -54,6 +55,10 @@ public class DriverRemoteConnection implements RemoteConnection {
     private transient Optional<Configuration> conf = Optional.empty();
 
     private final boolean attachElements;
+
+    // Default to SPI-discovered adapters so PDT dehydration works with zero configuration.
+    // This performs a lightweight ServiceLoader scan; the serializer path does its own independent scan.
+    private PDTRegistry pdtRegistry = PDTRegistry.create();
 
     public DriverRemoteConnection(final Configuration conf) {
         final boolean hasClusterConf = IteratorUtils.anyMatch(conf.getKeys(), k -> k.startsWith("clusterConfiguration"));
@@ -215,6 +220,18 @@ public class DriverRemoteConnection implements RemoteConnection {
     }
 
     @Override
+    public PDTRegistry getPdtRegistry() {
+        return pdtRegistry;
+    }
+
+    /**
+     * Sets the {@link PDTRegistry} for registry-based dehydration in the gremlin-lang translator.
+     */
+    public void setPdtRegistry(final PDTRegistry pdtRegistry) {
+        this.pdtRegistry = pdtRegistry;
+    }
+
+    @Override
     public <E> CompletableFuture<RemoteTraversal<?, E>> submitAsync(final GremlinLang gremlinLang) throws RemoteConnectionException {
         if (gremlinLang.containsUnsupportedTypes()) {
             throw new IllegalArgumentException(String.format(
@@ -223,7 +240,6 @@ public class DriverRemoteConnection implements RemoteConnection {
         }
 
         try {
-            gremlinLang.addG(remoteTraversalSourceName);
             return client.submitAsync(gremlinLang.getGremlin(), getRequestOptions(gremlinLang))
                     .thenApply(rs -> new DriverRemoteTraversal<>(rs, client, attachElements, conf));
         } catch (Exception ex) {

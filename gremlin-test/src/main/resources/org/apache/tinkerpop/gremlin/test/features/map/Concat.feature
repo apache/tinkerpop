@@ -146,6 +146,10 @@ Feature: Step - concat()
 
   Scenario: g_hasLabelXpersonX_valuesXnameX_asXaX_constantXMrX_concatXselectXaX
     Given the modern graph
+    And the intent
+      """
+      Put "Mr." in front of each person's name, with no space, as in "Mr.marko".
+      """
     And the traversal of
       """
       g.V().hasLabel("person").values("name").as("a").constant("Mr.").concat(__.select("a"))
@@ -175,6 +179,11 @@ Feature: Step - concat()
   Scenario: g_VX1X_outE_asXaX_VX1X_valuesXnamesX_concatXselectXaX_labelX_concatXselectXaX_inV_valuesXnameXX
     Given the modern graph
     And using the parameter vid1 defined as "v[marko].id"
+    And the intent
+      """
+      Describe each outgoing edge of vertex <vid1> as one string: the name of vertex <vid1>, then the edge label, then
+      the name of the vertex the edge points to, joined with no spaces, as in "markoknowsvadas".
+      """
     And the traversal of
       """
       g.V(vid1).outE().as("a").V(vid1).values("name").concat(select("a").label()).concat(select("a").inV().values("name"))

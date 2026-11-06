@@ -65,3 +65,9 @@ export const MIME_TYPES = {
   TEXT_PLAIN: 'text/plain',
   APPLICATION_JSON: 'application/json',
 } as const;
+
+// Property Analysis
+export const PROPERTY_TYPES = {
+  // Sentinel used when a property's type cannot be determined from sample values.
+  UNKNOWN: 'unknown',
+} as const;

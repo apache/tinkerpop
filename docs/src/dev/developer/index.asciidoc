@@ -25,6 +25,7 @@ image::apache-tinkerpop-logo.png[width=500,link="https://tinkerpop.apache.org"]
 
 *x.y.z*
 
+[llms-summary="Documentation for TinkerPop contributors and committers: setting up a development environment, contribution process, release process, governance, and community meetings."]
 = Developer Documentation
 
 This document contains information for TinkerPop developers, contributors, and community members. It focuses on

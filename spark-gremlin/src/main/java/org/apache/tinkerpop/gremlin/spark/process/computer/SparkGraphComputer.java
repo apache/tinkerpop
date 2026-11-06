@@ -45,6 +45,7 @@ import org.apache.tinkerpop.gremlin.hadoop.structure.io.FileSystemStorage;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.GraphFilterAware;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.HadoopPoolShimService;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
+import org.apache.tinkerpop.gremlin.hadoop.structure.io.util.OlapClassLoadingPolicy;
 import org.apache.tinkerpop.gremlin.hadoop.structure.util.ConfUtil;
 import org.apache.tinkerpop.gremlin.process.computer.ComputerResult;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
@@ -61,6 +62,7 @@ import org.apache.tinkerpop.gremlin.spark.process.computer.traversal.strategy.Sp
 import org.apache.tinkerpop.gremlin.spark.process.computer.traversal.strategy.optimization.SparkInterceptorStrategy;
 import org.apache.tinkerpop.gremlin.spark.process.computer.traversal.strategy.optimization.SparkSingleIterationStrategy;
 import org.apache.tinkerpop.gremlin.spark.process.computer.traversal.strategy.optimization.interceptor.SparkCloneVertexProgramInterceptor;
+import org.apache.tinkerpop.gremlin.spark.process.computer.traversal.strategy.optimization.interceptor.SparkStarBarrierInterceptor;
 import org.apache.tinkerpop.gremlin.spark.structure.Spark;
 import org.apache.tinkerpop.gremlin.spark.structure.io.InputFormatRDD;
 import org.apache.tinkerpop.gremlin.spark.structure.io.InputOutputHelper;
@@ -81,6 +83,7 @@ import org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.KryoShimServiceLo
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.Executor;
@@ -144,10 +147,76 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
         return this;
     }
 
+    /**
+     * The framework keys SparkGraphComputer's own optimization strategies set via {@link #configure(String, Object)}
+     * during normal execution; always permitted so ordinary OLAP is not broken. The class-valued
+     * {@link Constants#GREMLIN_HADOOP_VERTEX_PROGRAM_INTERCEPTOR} value is additionally validated at its load site.
+     */
+    private static final Set<String> BUILTIN_APPROVED_CONFIG_KEYS = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(
+            Constants.GREMLIN_SPARK_SKIP_PARTITIONER,
+            Constants.GREMLIN_SPARK_SKIP_GRAPH_CACHE,
+            Constants.GREMLIN_HADOOP_VERTEX_PROGRAM_INTERCEPTOR)));
+
+    @Override
+    protected Set<String> builtinApprovedConfigKeys() {
+        return BUILTIN_APPROVED_CONFIG_KEYS;
+    }
+
     @Override
     public SparkGraphComputer configure(final String key, final Object value) {
+        checkConfigurationKeyPermitted(key);
+        return set(key, value);
+    }
+
+    /**
+     * Sets a configuration value directly, bypassing the untrusted {@link #configure(String, Object)} key policy. Used
+     * by the typed fluent setters below, which are reachable only from embedded Java code (never from a remote
+     * traversal, whose config always arrives through {@code configure(String, Object)}), so they are not subject to the
+     * untrusted allow-list.
+     * <p/>
+     * These keys are intentionally <em>not</em> auto-trusted in {@link #builtinApprovedConfigKeys()}. Most fluent
+     * setters are individually benign ({@link #persistContext(boolean)}, {@link #graphStorageLevel(StorageLevel)}, and
+     * similar), but the setter key-set as a whole also includes class-load sinks -- {@link #serializer(Class)} and
+     * {@link #sparkKryoRegistrator(Class)} name classes Spark loads reflectively, and {@link #master(String)} redirects
+     * the driver's cluster manager -- so the set is gated uniformly rather than auto-trusting individual keys (which
+     * would reopen those sinks to remote {@code configure()}). Keeping them embedded-only via {@code set()} preserves
+     * the typed Java API; an operator that wants a specific benign key settable remotely can list it in
+     * {@code gremlin.io.approvedComputerConfigKeys} instead.
+     */
+    private SparkGraphComputer set(final String key, final Object value) {
         this.sparkConfiguration.setProperty(key, value);
         return this;
+    }
+
+    /**
+     * Resolves the configured {@link SparkVertexProgramInterceptor} class. Trust is read from the pristine operator
+     * graph configuration ({@code hadoopGraph.configuration()}), never from a post-merge configuration that could
+     * carry injected keys. Untrusted deployments restrict the interceptor to approved classes: the built-ins, an
+     * interceptor the operator declared in the pristine graph configuration ({@code gremlin.hadoop.vertexProgramInterceptor},
+     * auto-seeded as {@link org.apache.tinkerpop.gremlin.hadoop.process.computer.traversal.step.sideEffect.HadoopIoStep}
+     * seeds its reader/writer), and operator {@code gremlin.io.approvedClasses} -- so an injected value cannot drive
+     * arbitrary class loading. Trusted deployments load it directly, with an assignability check for a clear failure.
+     * <p/>
+     * Package-private (rather than {@code private}) so the trust/approval branches can be unit-tested directly without
+     * standing up a full Spark job.
+     */
+    @SuppressWarnings("unchecked")
+    Class<? extends SparkVertexProgramInterceptor> resolveInterceptorClass(final String interceptorClassName) throws ClassNotFoundException {
+        final org.apache.commons.configuration2.Configuration trustedConfiguration = this.hadoopGraph.configuration();
+        if (OlapClassLoadingPolicy.isTrusted(trustedConfiguration)) {
+            // load without initializing so a class that fails the assignability check never runs its static initializer
+            final Class<?> clazz = Class.forName(interceptorClassName, false, SparkGraphComputer.class.getClassLoader());
+            if (!SparkVertexProgramInterceptor.class.isAssignableFrom(clazz))
+                throw new IllegalArgumentException(String.format("The class '%s' is not a '%s'",
+                        interceptorClassName, SparkVertexProgramInterceptor.class.getName()));
+            return (Class<? extends SparkVertexProgramInterceptor>) clazz;
+        }
+        return OlapClassLoadingPolicy.build()
+                .approve(SparkCloneVertexProgramInterceptor.class, SparkStarBarrierInterceptor.class)
+                .approveFromConfigValues(trustedConfiguration, Constants.GREMLIN_HADOOP_VERTEX_PROGRAM_INTERCEPTOR)
+                .approveFrom(trustedConfiguration)
+                .create()
+                .resolve(interceptorClassName, SparkVertexProgramInterceptor.class);
     }
 
     /**
@@ -155,14 +224,14 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
      * one of the <a href="https://spark.apache.org/docs/latest/submitting-applications.html#master-urls">allowed master URLs</a>.
      */
     public SparkGraphComputer master(final String clusterManager) {
-        return configure(SparkLauncher.SPARK_MASTER, clusterManager);
+        return set(SparkLauncher.SPARK_MASTER, clusterManager);
     }
 
     /**
      * Determines if the Spark context should be left open preventing Spark from garbage collecting unreferenced RDDs.
      */
     public SparkGraphComputer persistContext(final boolean persist) {
-        return configure(GREMLIN_SPARK_PERSIST_CONTEXT, persist);
+        return set(GREMLIN_SPARK_PERSIST_CONTEXT, persist);
     }
 
     /**
@@ -170,18 +239,18 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
      * to use {@code StorageLevel#MEMORY_ONLY()}
      */
     public SparkGraphComputer graphStorageLevel(final StorageLevel storageLevel) {
-        return configure(GREMLIN_SPARK_GRAPH_STORAGE_LEVEL, storageLevel.description());
+        return set(GREMLIN_SPARK_GRAPH_STORAGE_LEVEL, storageLevel.description());
     }
 
     public SparkGraphComputer persistStorageLevel(final StorageLevel storageLevel) {
-        return configure(GREMLIN_SPARK_PERSIST_STORAGE_LEVEL, storageLevel.description());
+        return set(GREMLIN_SPARK_PERSIST_STORAGE_LEVEL, storageLevel.description());
     }
 
     /**
      * Determines if the graph RDD should be partitioned or not. By default, this value is {@code false}.
      */
     public SparkGraphComputer skipPartitioner(final boolean skip) {
-        return configure(GREMLIN_SPARK_SKIP_PARTITIONER, skip);
+        return set(GREMLIN_SPARK_SKIP_PARTITIONER, skip);
     }
 
     /**
@@ -189,7 +258,7 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
      * {@link #graphStorageLevel(StorageLevel)} is ignored. By default, this value is {@code false}.
      */
     public SparkGraphComputer skipGraphCache(final boolean skip) {
-        return configure(GREMLIN_SPARK_SKIP_GRAPH_CACHE, skip);
+        return set(GREMLIN_SPARK_SKIP_GRAPH_CACHE, skip);
     }
 
     /**
@@ -197,7 +266,7 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
      * set to {@code org.apache.spark.serializer.KryoSerializer}.
      */
     public SparkGraphComputer serializer(final Class<? extends Serializer> serializer) {
-        return configure(SPARK_SERIALIZER, serializer.getCanonicalName());
+        return set(SPARK_SERIALIZER, serializer.getCanonicalName());
     }
 
     /**
@@ -205,7 +274,7 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
      * default this value is set to TinkerPop's {@link GryoRegistrator}.
      */
     public SparkGraphComputer sparkKryoRegistrator(final Class<? extends KryoRegistrator> registrator) {
-        return configure(Constants.SPARK_KRYO_REGISTRATOR, registrator.getCanonicalName());
+        return set(Constants.SPARK_KRYO_REGISTRATOR, registrator.getCanonicalName());
     }
 
     /**
@@ -213,7 +282,7 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
      * will result in an error. By default this value is {@code false}.
      */
     public SparkGraphComputer kryoRegistrationRequired(final boolean required) {
-        return configure(SPARK_KRYO_REGISTRATION_REQUIRED, required);
+        return set(SPARK_KRYO_REGISTRATION_REQUIRED, required);
     }
 
     @Override
@@ -393,8 +462,10 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
                     // if there is a registered VertexProgramInterceptor, use it to bypass the GraphComputer semantics
                     if (graphComputerConfiguration.containsKey(Constants.GREMLIN_HADOOP_VERTEX_PROGRAM_INTERCEPTOR)) {
                         try {
+                            final Class<? extends SparkVertexProgramInterceptor> interceptorClass = this.resolveInterceptorClass(
+                                    graphComputerConfiguration.getString(Constants.GREMLIN_HADOOP_VERTEX_PROGRAM_INTERCEPTOR));
                             final SparkVertexProgramInterceptor<VertexProgram> interceptor =
-                                    (SparkVertexProgramInterceptor) Class.forName(graphComputerConfiguration.getString(Constants.GREMLIN_HADOOP_VERTEX_PROGRAM_INTERCEPTOR)).newInstance();
+                                    (SparkVertexProgramInterceptor) interceptorClass.newInstance();
                             computedGraphRDD = interceptor.apply(this.vertexProgram, loadedGraphRDD, memory);
                         } catch (final ClassNotFoundException | IllegalAccessException | InstantiationException e) {
                             throw new IllegalStateException(e.getMessage());

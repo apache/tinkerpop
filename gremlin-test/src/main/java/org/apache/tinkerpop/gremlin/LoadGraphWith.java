@@ -88,7 +88,24 @@ public @interface LoadGraphWith {
          * Loads a test graph which contains disconnected subgraphs specialized for testing purposes (e.g. a subgraph
          * with a self-loop).
          */
-        SINK;
+        SINK,
+
+        /**
+         * Loads the air-routes graph, a real-world dataset of ~3,500 airports and ~50,000 routes suitable for
+         * benchmarking and integration testing of traversals that benefit from larger, denser graphs.
+         */
+        AIR_ROUTES,
+
+        /**
+         * Loads "The Zoo" TinkerPop4 toy graph which showcases multi-label vertices and a variety of property
+         * types. Requires a graph configured with {@code LabelCardinality.ZERO_OR_MORE} (or {@code ONE_OR_MORE}).
+         * <p/>
+         * Note that this {@code GraphData} does not currently support {@link #location()} or
+         * {@link #featuresRequired()} since none of the serialization formats used to produce a data file for it
+         * (Gryo, GraphSON) correctly round-trip multi-label vertices yet. It is only usable via a
+         * {@link GraphProvider} that builds the graph directly, e.g. with {@code TinkerFactory.createTheZoo()}.
+         */
+        ZOO;
 
         private static final List<FeatureRequirement> featuresRequiredByClassic = new ArrayList<FeatureRequirement>() {{
             add(FeatureRequirement.Factory.create(FEATURE_STRING_VALUES, VertexPropertyFeatures.class));
@@ -119,6 +136,13 @@ public @interface LoadGraphWith {
             add(FeatureRequirement.Factory.create(FEATURE_STRING_VALUES, VertexPropertyFeatures.class));
         }};
 
+        private static final List<FeatureRequirement> featuresRequiredByAirRoutes = new ArrayList<FeatureRequirement>() {{
+            add(FeatureRequirement.Factory.create(FEATURE_STRING_VALUES, VertexPropertyFeatures.class));
+            add(FeatureRequirement.Factory.create(FEATURE_INTEGER_VALUES, VertexPropertyFeatures.class));
+            add(FeatureRequirement.Factory.create(FEATURE_DOUBLE_VALUES, VertexPropertyFeatures.class));
+            add(FeatureRequirement.Factory.create(FEATURE_INTEGER_VALUES, EdgePropertyFeatures.class));
+        }};
+
         public String location() {
             switch (this) {
                 case CLASSIC:
@@ -131,6 +155,8 @@ public @interface LoadGraphWith {
                     return RESOURCE_PATH_PREFIX + "grateful-dead-v3.kryo";
                 case SINK:
                     return RESOURCE_PATH_PREFIX + "tinkerpop-sink-v3.kryo";
+                case AIR_ROUTES:
+                    return RESOURCE_PATH_PREFIX + "air-routes-v3.kryo";
             }
 
             throw new RuntimeException("No file for this GraphData type");
@@ -148,6 +174,8 @@ public @interface LoadGraphWith {
                     return featuresRequiredByGrateful;
                 case SINK:
                     return featuresRequiredBySink;
+                case AIR_ROUTES:
+                    return featuresRequiredByAirRoutes;
             }
 
             throw new RuntimeException("No features for this GraphData type");

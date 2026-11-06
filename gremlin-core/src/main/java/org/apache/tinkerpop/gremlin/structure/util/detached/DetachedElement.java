@@ -31,6 +31,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -72,7 +73,12 @@ public abstract class DetachedElement<E> implements Element, Serializable, Attac
 
     @Override
     public String label() {
-        return this.label;
+        return this.label != null ? this.label : "";
+    }
+
+    @Override
+    public Set<String> labels() {
+        return this.label != null ? Collections.singleton(this.label) : Collections.emptySet();
     }
 
     @Override

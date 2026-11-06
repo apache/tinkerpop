@@ -1,0 +1,2871 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+package org.apache.tinkerpop.gremlin.tinkergraph.structure;
+
+import java.io.File;
+import java.io.UncheckedIOException;
+import java.lang.reflect.Field;
+import java.nio.file.Files;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
+import org.apache.tinkerpop.gremlin.structure.Direction;
+import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.Property;
+import org.apache.tinkerpop.gremlin.structure.T;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.service.Service;
+import org.apache.tinkerpop.gremlin.tinkergraph.services.TinkerServiceRegistry;
+import org.apache.tinkerpop.gremlin.tinkergraph.structure.storage.TinkerStorage;
+import org.apache.tinkerpop.gremlin.tinkergraph.structure.storage.TinkerStorageMutation;
+import org.apache.tinkerpop.gremlin.structure.VertexProperty;
+import org.apache.commons.configuration2.BaseConfiguration;
+import org.apache.commons.configuration2.Configuration;
+import org.apache.tinkerpop.gremlin.structure.util.TransactionException;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.spy;
+
+public class TinkerStorageGraphTest {
+
+    @Rule
+    public TemporaryFolder tempFolder = new TemporaryFolder();
+
+    @Test
+    public void shouldFailACommitThatWaitedOnTheStorageLockWhileTheGraphWasCleared() throws Exception {
+        final Configuration conf = new BaseConfiguration();
+        conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE, "graphbinary");
+        conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE_DIRECTORY, tempFolder.newFolder().getAbsolutePath());
+        TinkerStorageGraph graph = TinkerStorageGraph.open(conf);
+        graph.addVertex(T.id, 1);
+        graph.tx().commit();
+
+        // hold the commit lock so the other thread's commit passes its conflict checks and then waits on it
+        final TinkerStorageGraph g = graph;
+        final AtomicReference<Throwable> otherCommit = new AtomicReference<>();
+        graph.storageCommitLock.lock();
+        final Thread other = new Thread(() -> {
+            g.vertices(1).next().property("name", "late");
+            try {
+                g.tx().commit();
+            } catch (Throwable t) {
+                otherCommit.set(t);
+            }
+        });
+        try {
+            other.start();
+            // bounded, so a thread that fails before it reaches the lock fails the test instead of hanging the build
+            final long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(10);
+            while (!graph.storageCommitLock.hasQueuedThreads() && other.isAlive() && System.nanoTime() < deadline)
+                Thread.sleep(1);
+            assertTrue("the other commit should be waiting on the commit lock: " + otherCommit.get(),
+                    graph.storageCommitLock.hasQueuedThreads());
+            graph.clear();
+        } finally {
+            graph.storageCommitLock.unlock();
+        }
+        other.join(10_000);
+
+        assertTrue("the waiting commit should conflict: " + otherCommit.get(),
+                otherCommit.get() instanceof TransactionException);
+        graph.close();
+        graph = TinkerStorageGraph.open(conf);
+        assertFalse(graph.vertices().hasNext());
+        graph.close();
+    }
+
+    @Test
+    public void shouldKeepAVertexAddedAfterClearWhenAnOlderTransactionOnItsIdConflicts() throws Exception {
+        assertVertexAddedAfterClearSurvivesTheOlderTransaction(true);
+    }
+
+    @Test
+    public void shouldKeepAVertexAddedAfterClearWhenAnOlderTransactionOnItsIdRollsBack() throws Exception {
+        assertVertexAddedAfterClearSurvivesTheOlderTransaction(false);
+    }
+
+    /**
+     * A transaction on another thread changes vertex 1 and is still open when the graph is cleared and vertex 1 is added
+     * again and committed. Ending that older transaction must leave the new vertex 1 in place, in memory and on disk.
+     */
+    private void assertVertexAddedAfterClearSurvivesTheOlderTransaction(final boolean commit) throws Exception {
+        final Configuration conf = new BaseConfiguration();
+        conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE, "graphbinary");
+        conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE_DIRECTORY, tempFolder.newFolder().getAbsolutePath());
+        TinkerStorageGraph graph = TinkerStorageGraph.open(conf);
+        graph.addVertex(T.id, 1, "name", "old");
+        graph.tx().commit();
+
+        final TinkerStorageGraph g = graph;
+        final CountDownLatch changed = new CountDownLatch(1);
+        final CountDownLatch end = new CountDownLatch(1);
+        final AtomicReference<Throwable> older = new AtomicReference<>();
+        final Thread other = new Thread(() -> {
+            try {
+                g.vertices(1).next().property("name", "older");
+                changed.countDown();
+                end.await();
+                if (commit)
+                    g.tx().commit();
+                else
+                    g.tx().rollback();
+            } catch (Throwable t) {
+                older.set(t);
+            }
+        });
+        other.start();
+        assertTrue("the other transaction should change vertex 1", changed.await(10, TimeUnit.SECONDS));
+
+        graph.clear();
+        graph.addVertex(T.id, 1, "name", "new");
+        graph.tx().commit();
+        end.countDown();
+        other.join(10_000);
+        assertFalse("the other transaction should have ended", other.isAlive());
+        if (commit)
+            assertTrue("the older commit should conflict: " + older.get(), older.get() instanceof TransactionException);
+        else
+            assertNull(older.get());
+
+        assertEquals("new", graph.vertices(1).next().value("name"));
+        graph.close();
+        graph = TinkerStorageGraph.open(conf);
+        assertEquals("new", graph.vertices(1).next().value("name"));
+        graph.close();
+    }
+
+    @Test
+    public void shouldCloseTheServicesAndTheEngineWhenTheOpenFails() throws Exception {
+        final Configuration conf = new BaseConfiguration();
+        conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE, ReplayFailingStorage.class.getName());
+        conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE_DIRECTORY, tempFolder.newFolder().getAbsolutePath());
+        conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_SERVICE, CloseRecordingServiceFactory.class.getName());
+        CloseRecordingServiceFactory.closed.set(false);
+        ReplayFailingStorage.closed.set(false);
+        try {
+            TinkerStorageGraph.open(conf).close();
+            fail("the replay failure should fail the open");
+        } catch (IllegalStateException expected) {
+            assertEquals("replay failure", expected.getMessage());
+        }
+        assertTrue("the configured service should be closed", CloseRecordingServiceFactory.closed.get());
+        assertTrue("the storage engine should be closed", ReplayFailingStorage.closed.get());
+    }
+
+    /**
+     * A storage engine whose replay fails, recording whether it is closed. Static because it is instantiated by name.
+     */
+    public static final class ReplayFailingStorage implements TinkerStorage {
+        static final AtomicBoolean closed = new AtomicBoolean();
+
+        @Override
+        public void open(final TinkerStorageGraph graph, final Configuration config) { }
+
+        @Override
+        public void replay(final TinkerStorageGraph graph) {
+            throw new IllegalStateException("replay failure");
+        }
+
+        @Override
+        public void persist(final long txVersion, final Collection<TinkerStorageMutation<TinkerVertex>> changedVertices,
+                            final Collection<TinkerStorageMutation<TinkerEdge>> changedEdges) { }
+
+        @Override
+        public void flush() { }
+
+        @Override
+        public void compact(final TinkerStorageGraph graph) { }
+
+        @Override
+        public void clear(final TinkerStorageGraph graph) { }
+
+        @Override
+        public void failStop(final Throwable cause) { }
+
+        @Override
+        public void close() {
+            closed.set(true);
+        }
+    }
+
+    /**
+     * A service factory that records whether it is closed. Static because it is instantiated by name.
+     */
+    public static final class CloseRecordingServiceFactory extends TinkerServiceRegistry.TinkerServiceFactory<Object, Object> {
+        static final AtomicBoolean closed = new AtomicBoolean();
+
+        public CloseRecordingServiceFactory(final AbstractTinkerGraph graph) {
+            super(graph, "close.recording");
+        }
+
+        @Override
+        public Set<Service.Type> getSupportedTypes() {
+            return Collections.singleton(Service.Type.Start);
+        }
+
+        @Override
+        public Service<Object, Object> createService(final boolean isStart, final Map params) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void close() {
+            closed.set(true);
+        }
+    }
+
+    @Test
+    public void shouldStopAcceptingCommitsWhenTheEngineFailsToClearWithoutStoppingItself() throws Exception {
+        final Configuration conf = new BaseConfiguration();
+        conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE, "graphbinary");
+        conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE_DIRECTORY, tempFolder.newFolder().getAbsolutePath());
+        TinkerStorageGraph graph = TinkerStorageGraph.open(conf);
+        graph.addVertex(T.id, 1);
+        graph.tx().commit();
+
+        // an engine whose clear() throws without putting itself into the failed state
+        final TinkerStorage storage = spy(graph.storage);
+        doThrow(new IllegalStateException("clear failure")).when(storage).clear(any());
+        graph.storage = storage;
+        try {
+            graph.clear();
+            fail("the failure emptying the store should be reported");
+        } catch (IllegalStateException expected) {
+            assertEquals("clear failure", expected.getMessage());
+        }
+        assertTrue(graph.storage.isFailed());
+        assertFalse(graph.vertices().hasNext());
+
+        graph.addVertex(T.id, 2);
+        try {
+            graph.tx().commit();
+            fail("a commit after the failed clear should be refused");
+        } catch (UncheckedIOException expected) {
+            // the storage stopped accepting commits
+        }
+        graph.close();
+
+        // the store was never emptied, so the cleared data returns, but nothing was appended to it
+        graph = TinkerStorageGraph.open(conf);
+        assertEquals(Collections.singleton(1), elementIds(graph, false));
+        graph.close();
+    }
+
+    @Test
+    public void shouldAgreeInMemoryAndOnDiskAboutAVertexAddedWhileTheGraphIsCleared() throws Exception {
+        assertElementsAddedWhileClearingAgreeInMemoryAndOnDisk(false);
+    }
+
+    @Test
+    public void shouldAgreeInMemoryAndOnDiskAboutAnEdgeAddedWhileTheGraphIsCleared() throws Exception {
+        assertElementsAddedWhileClearingAgreeInMemoryAndOnDisk(true);
+    }
+
+    /**
+     * Another thread adds vertex 5 (and, with {@code withEdge}, vertex 6 and edge 100 between them) while clear() is
+     * emptying the element map, and then commits. Whether that commit conflicts or succeeds, memory, the store as a
+     * crash would leave it, and the store after a clean close must all show the same elements.
+     */
+    private void assertElementsAddedWhileClearingAgreeInMemoryAndOnDisk(final boolean withEdge) throws Exception {
+        final File directory = tempFolder.newFolder();
+        final Configuration conf = new BaseConfiguration();
+        conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE, "graphbinary");
+        conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE_DIRECTORY, directory.getAbsolutePath());
+        TinkerStorageGraph graph = TinkerStorageGraph.open(conf);
+        final Vertex v1 = graph.addVertex(T.id, 1);
+        v1.addEdge("knows", graph.addVertex(T.id, 2), T.id, 99);
+        graph.tx().commit();
+
+        // pause clear() inside its pass over the element map, after it has started emptying it
+        final PausingMap<Object> paused = new PausingMap<>();
+        final Field field = TinkerStorageGraph.class.getDeclaredField(withEdge ? "edges" : "vertices");
+        field.setAccessible(true);
+        paused.putAll((Map<Object, Object>) field.get(graph));
+        field.set(graph, paused);
+
+        final TinkerStorageGraph g = graph;
+        final AtomicReference<Throwable> addCommit = new AtomicReference<>();
+        final Thread other = new Thread(() -> {
+            try {
+                if (!paused.paused.await(10, TimeUnit.SECONDS))
+                    throw new AssertionError("clear() did not reach the element map");
+                final Vertex v5 = g.addVertex(T.id, 5);
+                if (withEdge) v5.addEdge("knows", g.addVertex(T.id, 6), T.id, 100);
+                paused.resume.countDown();
+                g.tx().commit();
+            } catch (Throwable t) {
+                addCommit.set(t);
+            } finally {
+                paused.resume.countDown();
+            }
+        });
+        other.start();
+        graph.clear();
+        other.join(10_000);
+        assertFalse("the other thread should have finished", other.isAlive());
+        final Throwable failure = addCommit.get();
+        assertTrue("the commit should succeed or conflict: " + failure,
+                null == failure || failure instanceof TransactionException);
+
+        final Set<Object> inMemory = elementIds(graph, withEdge);
+        if (null == failure)
+            assertTrue(inMemory.contains(withEdge ? 100 : 5));
+        else
+            assertTrue(inMemory.isEmpty());
+
+        // the store as a crash right now would leave it, read from a copy since the graph still holds the directory
+        final File crashed = tempFolder.newFolder();
+        for (final File file : directory.listFiles()) {
+            if (!file.getName().equals("LOCK"))
+                Files.copy(file.toPath(), new File(crashed, file.getName()).toPath());
+        }
+        graph.close();
+        final Configuration crashedConf = new BaseConfiguration();
+        crashedConf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE, "graphbinary");
+        crashedConf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE_DIRECTORY, crashed.getAbsolutePath());
+        graph = TinkerStorageGraph.open(crashedConf);
+        assertEquals("after a crash", inMemory, elementIds(graph, withEdge));
+        graph.close();
+
+        graph = TinkerStorageGraph.open(conf);
+        assertEquals("after a clean close", inMemory, elementIds(graph, withEdge));
+        graph.close();
+    }
+
+    private static Set<Object> elementIds(final TinkerStorageGraph graph, final boolean edges) {
+        final Set<Object> ids = new HashSet<>();
+        (edges ? graph.edges() : graph.vertices()).forEachRemaining(e -> ids.add(e.id()));
+        return ids;
+    }
+
+    /**
+     * Pauses the first removal from the map, which is how clear() empties it, until another thread lets it go on.
+     */
+    private static class PausingMap<V> extends ConcurrentHashMap<Object, V> {
+        final CountDownLatch paused = new CountDownLatch(1);
+        final CountDownLatch resume = new CountDownLatch(1);
+        private final AtomicBoolean first = new AtomicBoolean(true);
+
+        @Override
+        public boolean remove(final Object key, final Object value) {
+            pauseOnce();
+            return super.remove(key, value);
+        }
+
+        @Override
+        public void clear() {
+            pauseOnce();
+            super.clear();
+        }
+
+        private void pauseOnce() {
+            if (!first.getAndSet(false)) return;
+            paused.countDown();
+            try {
+                resume.await(10, TimeUnit.SECONDS);
+            } catch (InterruptedException ex) {
+                Thread.currentThread().interrupt();
+            }
+        }
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    public void shouldReportACommitThatFailsAfterItsStorageWriteAsDurable() throws Exception {
+        final Configuration conf = new BaseConfiguration();
+        conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE, "graphbinary");
+        conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE_DIRECTORY, tempFolder.newFolder().getAbsolutePath());
+        TinkerStorageGraph graph = TinkerStorageGraph.open(conf);
+        graph.createIndex("name", Vertex.class);
+        graph.addVertex(T.id, 1, "name", "a");
+        graph.tx().commit();
+
+        // the index commit runs once the transaction is durable, so a failure there comes after the write
+        final TinkerTransactionalIndex<TinkerVertex> index = spy((TinkerTransactionalIndex<TinkerVertex>) graph.vertexIndex);
+        doThrow(new IllegalStateException("index failure")).when(index).commit(any());
+        graph.vertexIndex = index;
+
+        graph.addVertex(T.id, 2, "name", "b");
+        try {
+            graph.tx().commit();
+            fail("the failure applying the transaction should be reported");
+        } catch (TransactionException expected) {
+            assertTrue(expected.getMessage(), expected.getMessage().contains("will be present when the graph is reopened"));
+        }
+        assertTrue(graph.storage.isFailed());
+        assertFalse("the failure came before any of the transaction was applied", graph.vertices(2).hasNext());
+
+        graph.addVertex(T.id, 3);
+        try {
+            graph.tx().commit();
+            fail("no further commits are accepted until the graph is reopened");
+        } catch (UncheckedIOException expected) {
+            assertTrue(expected.getMessage(), expected.getMessage().contains("stopped accepting commits"));
+        }
+        graph.close();
+
+        graph = TinkerStorageGraph.open(conf);
+        assertTrue("the durable transaction is present after the reopen", graph.vertices(2).hasNext());
+        assertFalse(graph.vertices(3).hasNext());
+        graph.close();
+    }
+
+    @Test
+    public void shouldReportACommitThatFailsPartwayThroughItsApplyAsDurable() throws Exception {
+        final Configuration conf = new BaseConfiguration();
+        conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE, "graphbinary");
+        conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE_DIRECTORY, tempFolder.newFolder().getAbsolutePath());
+        TinkerStorageGraph graph = TinkerStorageGraph.open(conf);
+        graph.createIndex("name", Vertex.class);
+        graph.createIndex("weight", Edge.class);
+        graph.addVertex(T.id, 1, "name", "a");
+        graph.tx().commit();
+
+        // the vertex index is committed first, so a failure in the edge index comes after part of the apply
+        final TinkerTransactionalIndex<TinkerEdge> index = spy((TinkerTransactionalIndex<TinkerEdge>) graph.edgeIndex);
+        doThrow(new IllegalStateException("index failure")).when(index).commit(any());
+        graph.edgeIndex = index;
+
+        graph.vertices(1).next().addEdge("knows", graph.addVertex(T.id, 2, "name", "b"), T.id, 10, "weight", 0.5d);
+        try {
+            graph.tx().commit();
+            fail("the failure applying the transaction should be reported");
+        } catch (TransactionException expected) {
+            assertTrue(expected.getMessage(), expected.getMessage().contains("will be present when the graph is reopened"));
+            assertTrue(expected.getMessage(), expected.getMessage().contains("may show only part of it"));
+        }
+        assertTrue(graph.storage.isFailed());
+        graph.close();
+
+        graph = TinkerStorageGraph.open(conf);
+        assertEquals(1L, graph.traversal().V().has("name", "b").count().next().longValue());
+        assertEquals(1L, graph.traversal().E().has("weight", 0.5d).count().next().longValue());
+        assertEquals(2, graph.vertices(1).next().edges(Direction.OUT).next().inVertex().id());
+        graph.close();
+    }
+
+    private static final String PROPERTY_NAME = "name";
+    private static final String PROPERTY_WEIGHT = "weight";
+    private static final String EDGE_LABEL = "tests";
+    private static final int EDGE_ID = 200;
+    final Object vid = 100;
+
+    ///// vertex tests
+
+    @Test
+    public void shouldCountVerticesByLabelAccountingForMultipleLabels() {
+        final org.apache.commons.configuration2.Configuration config = new org.apache.commons.configuration2.BaseConfiguration();
+        config.setProperty(org.apache.tinkerpop.gremlin.structure.Graph.GRAPH, TinkerStorageGraph.class.getName());
+        config.setProperty(AbstractTinkerGraph.GREMLIN_TINKERGRAPH_VERTEX_LABEL_CARDINALITY, "ZERO_OR_MORE");
+        final TinkerStorageGraph g = TinkerStorageGraph.open(config);
+
+        final GraphTraversalSource gtx = g.tx().begin();
+        gtx.addV("person").next();
+        final Vertex multiLabelled = gtx.addV("person").addLabel("employee").next();
+        gtx.tx().commit();
+
+        assertEquals(2L, g.countVerticesByLabel("person"));
+        assertEquals(1L, g.countVerticesByLabel("employee"));
+        assertEquals(0L, g.countVerticesByLabel("customer"));
+
+        gtx.V(multiLabelled.id()).next();
+        ((Vertex) gtx.V(multiLabelled.id()).next()).dropLabel("person");
+        gtx.tx().commit();
+
+        assertEquals(1L, g.countVerticesByLabel("person"));
+        assertEquals(1L, g.countVerticesByLabel("employee"));
+    }
+
+    @Test
+    public void shouldRollbackWithVertexIndexButNoEdgeIndex() {
+        final TinkerStorageGraph g = TinkerStorageGraph.open();
+        g.createIndex("name", Vertex.class);
+        g.addVertex("name", "marko");
+        g.tx().rollback();
+
+        assertEquals(0L, (long) g.traversal().V().has("name", "marko").count().next());
+        g.tx().rollback();
+    }
+
+    @Test
+    public void shouldReturnSameVertexInstanceInsideTransaction() {
+        final TinkerStorageGraph g = TinkerStorageGraph.open();
+
+        final GraphTraversalSource gtx = g.tx().begin();
+
+        final Vertex vertex = gtx.addV().property(T.id, vid).next();
+        assertEquals(vertex, gtx.V().next());
+        assertEquals(vertex, gtx.V(vid).next());
+        assertEquals(vertex, gtx.V().toList().get(0));
+    }
+
+    @Test
+    public void shouldDeleteVertexOnCommit() throws InterruptedException {
+        final TinkerStorageGraph g = TinkerStorageGraph.open();
+
+        final GraphTraversalSource gtx = g.tx().begin();
+
+        gtx.addV().iterate();
+        gtx.tx().commit();
+
+        assertEquals(1, (long) gtx.V().count().next());
+
+        gtx.V().drop().iterate();
+        assertEquals(0, (long) gtx.V().count().next());
+
+        countElementsInNewThreadTx(g, 1, 0);
+
+        gtx.tx().commit();
+
+        assertEquals(0, (long) gtx.V().count().next());
+
+        final GraphTraversalSource gtx3 = g.tx().begin();
+        assertEquals(0L, (long) gtx3.V().count().next());
+
+        countElementsInNewThreadTx(g, 0, 0);
+    }
+
+    @Test
+    public void shouldDeleteCreatedVertexOnCommit() throws InterruptedException {
+        final TinkerStorageGraph g = TinkerStorageGraph.open();
+
+        final GraphTraversalSource gtx = g.tx().begin();
+
+        // create and drop Vertex in same transaction
+        gtx.addV().property(T.id, vid).iterate();
+        gtx.V(vid).drop().iterate();
+
+        assertEquals(0, (long) gtx.V().count().next());
+        countElementsInNewThreadTx(g, 0, 0);
+
+        gtx.tx().commit();
+
+        assertEquals(0, (long) gtx.V().count().next());
+        countElementsInNewThreadTx(g, 0, 0);
+        // should remove unused container
+        assertEquals(0, g.getVertices().size());
+    }
+
+    @Test
+    public void shouldCleanUpVertexContainerOnCommit() {
+        final TinkerStorageGraph g = TinkerStorageGraph.open();
+
+        final GraphTraversalSource gtx = g.tx().begin();
+
+        gtx.addV().property(T.id, vid).iterate();
+        gtx.tx().commit();
+
+        // read vertex in new TX
+        final GraphTraversalSource gtx2 = g.tx().begin();
+        final Vertex v = gtx.V(vid).next();
+        gtx.V(vid).iterate();
+        // should be the same instance
+        assertEquals(v, g.getVertices().get(vid).getModified());
+        // commit without modifications
+        gtx.tx().commit();
+
+        // should clean up unused value in container
+        assertEquals(1, g.getVertices().size());
+        assertNull(g.getVertices().get(vid).getModified());
+    }
+
+    @Test
+    public void shouldCleanUpVertexContainerOnRollback() {
+        final TinkerStorageGraph g = TinkerStorageGraph.open();
+
+        final GraphTraversalSource gtx = g.tx().begin();
+
+        gtx.addV().property(T.id, vid).iterate();
+        gtx.tx().commit();
+
+        // read vertex in new TX
+        final GraphTraversalSource gtx2 = g.tx().begin();
+        final Vertex v = gtx.V(vid).next();
+        gtx.V(vid).iterate();
+        // should be the same instance
+        assertEquals(v, g.getVertices().get(vid).getModified());
+        // rollback without modifications
+        gtx.tx().rollback();
+
+        // should clean up unused value in container
+        assertEquals(1, g.getVertices().size());
+        assertNull(g.getVertices().get(vid).getModified());
+    }
+
+    @Test
+    public void shouldDeleteUnusedVertexContainerOnCommit() {
+        final TinkerStorageGraph g = TinkerStorageGraph.open();
+
+        final GraphTraversalSource gtx = g.tx().begin();
+
+        gtx.addV().property(T.id, vid).iterate();
+        gtx.tx().commit();
+
+        gtx.V(vid).drop().iterate();
+        gtx.tx().commit();
+
+        // should remove unused container
+        assertEquals(0, g.getVertices().size());
+    }
+
+    @Test
+    public void shouldDeleteUnusedVertexContainerOnRollback() throws InterruptedException {
+        final TinkerStorageGraph g = TinkerStorageGraph.open();
+
+        final GraphTraversalSource gtx = g.tx().begin();
+
+        gtx.addV().property(T.id, vid).iterate();
+        gtx.tx().commit();
+
+        gtx.V(vid).properties("test-property").iterate();
+        // 1 container for existing vertex
+        assertEquals(1, g.getVertices().size());
+
+        // other tx try to add new vertices and modify existing
+        final Thread thread = new Thread(() -> {
+            final GraphTraversalSource gtx2 = g.tx().begin();
+
+            gtx2.addV().addV().iterate();
+            gtx.V(vid).properties("test-property").iterate();
+
+            // 1 container for existing vertex + 2 for new ones
+            assertEquals(3, g.getVertices().size());
+
+            assertEquals(3, (long) gtx2.V().count().next());
+
+            gtx2.tx().rollback();
+            // containers for new vertices should be removed
+            assertEquals(1, g.getVertices().size());
+        });
+        thread.start();
+        thread.join();
+
+        gtx.tx().rollback();
+
+        // should keep container because vertex not created in this transaction
+        assertEquals(1, g.getVertices().size());
+    }
+
+    @Test
+    public void shouldDeleteUnusedVertexContainerOnConcurrentVertexDelete() throws InterruptedException {
+        final TinkerStorageGraph g = TinkerStorageGraph.open();
+
+        final GraphTraversalSource gtx = g.tx().begin();
+
+        final TinkerVertex v1 = (TinkerVertex) gtx.addV().next();
+        gtx.tx().commit();
+
+        gtx.V(v1.id()).drop().iterate();
+
+        // other tx try to remove same vertex
+        final Thread thread = new Thread(() -> {
+            final GraphTraversalSource gtx2 = g.tx().begin();
+
+            gtx2.V(v1.id()).drop().iterate();
+
+            // should be ok
+            assertEquals(0, (long) gtx2.V().count().next());
+            assertEquals(0, (long) gtx2.E().count().next());
+
+            gtx2.tx().commit();
+        });
+        thread.start();
+        thread.join();
+
+        // try do delete in initial tx
+        try {
+            gtx.tx().commit();
+            fail("should throw TransactionException");
+        } catch (TransactionException e) {
+
+        }
+
+        // should remove unused container
+        assertEquals(0, g.getVertices().size());
+    }
+
+    ///// Edge tests
+
+    @Test
+    public void shouldRemoveContainerAndReferenceFromVertexOnDeleteEdge() throws InterruptedException {
+        final TinkerStorageGraph g = TinkerStorageGraph.open();
+
+        final GraphTraversalSource gtx = g.tx().begin();
+
+        final TinkerVertex v1 = (TinkerVertex) gtx.addV().next();
+        final TinkerVertex v2 = (TinkerVertex) gtx.addV().next();
+        gtx.addE(EDGE_LABEL).from(v1).to(v2).next();
+        gtx.tx().commit();
+
+        assertEquals(2, (long) gtx.V().count().next());
+        assertEquals(1, (long) gtx.E().count().next());
+
+        gtx.E().hasLabel(EDGE_LABEL).drop().iterate();
+
+        assertEquals(2, (long) gtx.V().count().next());
+        assertEquals(0, (long) gtx.E().count().next());
+
+        // test count in other thread transaction
+        final Thread thread = new Thread(() -> {
+            final GraphTraversalSource gtx2 = g.tx().begin();
+            assertEquals(2L, (long) gtx2.V().count().next());
+            assertEquals(1L, (long) gtx2.E().count().next());
+        });
+        thread.start();
+        thread.join();
+
+        gtx.tx().commit();
+
+        assertEquals(2, (long) gtx.V().count().next());
+        assertEquals(0, (long) gtx.E().count().next());
+
+        // should remove reference from edge to parent vertices
+        final TinkerVertex v1afterTx = g.getVertices().get(v1.id()).get();
+        final TinkerVertex v2afterTx = g.getVertices().get(v2.id()).get();
+        assertNull(v1afterTx.inEdgesId);
+        assertEquals(0, v1afterTx.outEdgesId.get(EDGE_LABEL).size());
+        assertEquals(0, v2afterTx.inEdgesId.get(EDGE_LABEL).size());
+        assertNull(v2afterTx.outEdgesId);
+
+        // should remove unused container
+        assertEquals(0, g.getEdges().size());
+
+        countElementsInNewThreadTx(g, 2, 0);
+    }
+
+    @Test
+    public void shouldRemoveContainerAndReferenceFromVertexOnConcurrentDeleteEdge() throws InterruptedException {
+        final TinkerStorageGraph g = TinkerStorageGraph.open();
+
+        final GraphTraversalSource gtx = g.tx().begin();
+
+        final TinkerVertex v1 = (TinkerVertex) gtx.addV().next();
+        final TinkerVertex v2 = (TinkerVertex) gtx.addV().next();
+        gtx.addE(EDGE_LABEL).from(v1).to(v2).next();
+        gtx.tx().commit();
+
+        assertEquals(2, (long) gtx.V().count().next());
+        assertEquals(1, (long) gtx.E().count().next());
+
+        gtx.E().hasLabel(EDGE_LABEL).drop().iterate();
+
+        assertEquals(2, (long) gtx.V().count().next());
+        assertEquals(0, (long) gtx.E().count().next());
+
+        // other tx try to remove same edge
+        final Thread thread = new Thread(() -> {
+            final GraphTraversalSource gtx2 = g.tx().begin();
+            assertEquals(2L, (long) gtx2.V().count().next());
+            assertEquals(1L, (long) gtx2.E().count().next());
+
+            // try to remove edge
+            gtx2.E().hasLabel(EDGE_LABEL).drop().iterate();
+
+            // should be ok
+            assertEquals(2, (long) gtx2.V().count().next());
+            assertEquals(0, (long) gtx2.E().count().next());
+
+            gtx2.tx().commit();
+        });
+        thread.start();
+        thread.join();
+
+        // try do delete in initial tx
+        try {
+            gtx.tx().commit();
+            fail("should throw TransactionException");
+        } catch (TransactionException e) {
+
+        }
+
+        // should remove unused container
+        assertEquals(0, g.getEdges().size());
+
+        assertEquals(2, (long) gtx.V().count().next());
+        assertEquals(0, (long) gtx.E().count().next());
+
+        // should remove reference from edge to parent vertices
+        final TinkerVertex v1afterTx = g.getVertices().get(v1.id()).get();
+        final TinkerVertex v2afterTx = g.getVertices().get(v2.id()).get();
+        assertNull(v1afterTx.inEdgesId);
+        assertEquals(0, v1afterTx.outEdgesId.get(EDGE_LABEL).size());
+        assertEquals(0, v2afterTx.inEdgesId.get(EDGE_LABEL).size());
+        assertNull(v2afterTx.outEdgesId);
+
+        countElementsInNewThreadTx(g, 2, 0);
+    }
+
+    // index tests for vertex
+
+    @Test
+    public void shouldCreateIndexForNewVertex() throws InterruptedException {
+        final TinkerStorageGraph g = TinkerStorageGraph.open();
+        g.createIndex("test-property", Vertex.class);
+
+        final GraphTraversalSource gtx = g.tx().begin();
+
+        gtx.addV().property(T.id, vid).property("test-property", 1).iterate();
+        gtx.addV().property("test-property", 2).iterate();
+
+        assertEquals(1L, (long) gtx.V().has("test-property", 1).count().next());
+        assertEquals(vid, gtx.V().has("test-property", 1).id().next());
+        assertEquals(0L, (long) gtx.V().has("test-property", 3).count().next());
+        assertEquals(2L, (long) gtx.V().count().next());
+
+        final Thread thread = new Thread(() -> {
+            final GraphTraversalSource gtx2 = g.tx().begin();
+            assertEquals(0L, (long) gtx2.V().has("test-property", 1).count().next());
+        });
+        thread.start();
+        thread.join();
+
+        gtx.tx().commit();
+
+        final GraphTraversalSource gtx3 = g.tx().begin();
+        assertEquals(1L, (long) gtx3.V().has("test-property", 1).count().next());
+        assertEquals(vid, gtx3.V().has("test-property", 1).id().next());
+        assertEquals(0L, (long) gtx3.V().has("test-property", 3).count().next());
+        assertEquals(2L, (long) gtx3.V().count().next());
+
+        countElementsInNewThreadTx(g, 2, 0);
+
+        final Map<Object, Set<TinkerElementContainer<?>>> index =
+                (Map<Object, Set<TinkerElementContainer<?>>>) ((TinkerTransactionalIndex) g.vertexIndex).index.get("test-property");
+        assertNotNull(index);
+        // should be only vertex vid in set
+        assertEquals(1, index.get(1).size());
+        assertEquals(vid, index.get(1).iterator().next().get().id());
+    }
+
+    @Test
+    public void shouldCreateIndexForNullVertexProperty() throws InterruptedException {
+        final TinkerStorageGraph g = TinkerStorageGraph.open();
+        g.createIndex("test-property", Vertex.class);
+        g.allowNullPropertyValues = true;
+        final Integer nullValue = null;
+
+        final GraphTraversalSource gtx = g.tx().begin();
+
+        gtx.addV().property(T.id, vid).property("test-property", nullValue).iterate();
+        gtx.addV().property("test-property", 2).iterate();
+
+        assertEquals(1L, (long) gtx.V().has("test-property", nullValue).count().next());
+        assertEquals(vid, gtx.V().has("test-property", nullValue).id().next());
+        assertEquals(0L, (long) gtx.V().has("test-property", 1).count().next());
+        assertEquals(2L, (long) gtx.V().count().next());
+
+        final Thread thread = new Thread(() -> {
+            final GraphTraversalSource gtx2 = g.tx().begin();
+            assertEquals(0L, (long) gtx2.V().has("test-property", nullValue).count().next());
+        });
+        thread.start();
+        thread.join();
+
+        gtx.tx().commit();
+
+        final GraphTraversalSource gtx3 = g.tx().begin();
+        assertEquals(1L, (long) gtx3.V().has("test-property", nullValue).count().next());
+        assertEquals(vid, gtx3.V().has("test-property", nullValue).id().next());
+        assertEquals(0L, (long) gtx3.V().has("test-property", 1).count().next());
+        assertEquals(2L, (long) gtx3.V().count().next());
+
+        countElementsInNewThreadTx(g, 2, 0);
+
+        final Map<Object, Set<TinkerElementContainer<?>>> index =
+                (Map<Object, Set<TinkerElementContainer<?>>>) ((TinkerTransactionalIndex) g.vertexIndex).index.get("test-property");
+        assertNotNull(index);
+        // should be only vertex vid in set
+        assertEquals(1, index.get(AbstractTinkerIndex.IndexedNull.instance()).size());
+        assertEquals(vid, index.get(AbstractTinkerIndex.IndexedNull.instance()).iterator().next().get().id());
+    }
+
+    @Test
+    public void shouldRemoveIndexForRemovedVertex() throws InterruptedException {
+        final TinkerStorageGraph g = TinkerStorageGraph.open();
+        g.createIndex("test-property", Vertex.class);
+
+        final GraphTraversalSource gtx = g.tx().begin();
+
+        gtx.addV().property(T.id, vid).property("test-property", 1).iterate();
+
+        gtx.tx().commit();
+
+        gtx.V(vid).drop().iterate();
+
+        assertEquals(0L, (long) gtx.V().has("test-property", 1).count().next());
+        assertEquals(0L, (long) gtx.V().count().next());
+
+        // in another thread elements exists before commit
+        final Thread thread = new Thread(() -> {
+            final GraphTraversalSource gtx2 = g.tx().begin();
+            assertEquals(1L, (long) gtx2.V().has("test-property", 1).count().next());
+        });
+        thread.start();
+        thread.join();
+
+        gtx.tx().commit();
+
+        final GraphTraversalSource gtx3 = g.tx().begin();
+        assertEquals(0L, (long) gtx3.V().has("test-property", 1).count().next());
+        assertEquals(0L, (long) gtx3.V().count().next());
+
+        countElementsInNewThreadTx(g, 0, 0);
+
+        final Map<Object, Set<TinkerElementContainer<?>>> index =
+                (Map<Object, Set<TinkerElementContainer<?>>>) ((TinkerTransactionalIndex) g.vertexIndex).index.get("test-property");
+        assertNotNull(index);
+        // should be only vertex vid in set
+        assertEquals(0, index.size());
+     }
+
+    @Test
+    public void shouldRemoveIndexForRemovedVertexProperty() throws InterruptedException {
+        final TinkerStorageGraph g = TinkerStorageGraph.open();
+        g.createIndex("test-property", Vertex.class);
+
+        final GraphTraversalSource gtx = g.tx().begin();
+
+        gtx.addV().property(T.id, vid).property("test-property", 1).iterate();
+
+        gtx.tx().commit();
+
+        gtx.V(vid).properties("test-property").drop().iterate();
+
+        assertEquals(0L, (long) gtx.V().has("test-property", 1).count().next());
+        assertEquals(1L, (long) gtx.V().count().next());
+
+        // in another thread elements exists before commit
+        final Thread thread = new Thread(() -> {
+            final GraphTraversalSource gtx2 = g.tx().begin();
+            assertEquals(1L, (long) gtx2.V().has("test-property", 1).count().next());
+        });
+        thread.start();
+        thread.join();
+
+        gtx.tx().commit();
+
+        final GraphTraversalSource gtx3 = g.tx().begin();
+        assertEquals(0L, (long) gtx3.V().has("test-property", 1).count().next());
+        assertEquals(1L, (long) gtx3.V().count().next());
+
+        countElementsInNewThreadTx(g, 1, 0);
+
+        final Map<Object, Set<TinkerElementContainer<?>>> index =
+                (Map<Object, Set<TinkerElementContainer<?>>>) ((TinkerTransactionalIndex) g.vertexIndex).index.get("test-property");
+        assertNotNull(index);
+        // should be only vertex vid in set
+        assertEquals(0, index.size());
+    }
+
+    // index tests for edge
+
+    @Test
+    public void shouldCreateIndexForNewEdge() throws InterruptedException {
+        final TinkerStorageGraph g = TinkerStorageGraph.open();
+        g.createIndex("test-property", Edge.class);
+
+        final GraphTraversalSource gtx = g.tx().begin();
+
+        final TinkerVertex v1 = (TinkerVertex) gtx.addV().next();
+        final TinkerVertex v2 = (TinkerVertex) gtx.addV().next();
+        final TinkerEdge edge = (TinkerEdge) gtx.addE(EDGE_LABEL).property("test-property", 1).from(v1).to(v2).next();
+
+        assertEquals(1L, (long) gtx.E().has("test-property", 1).count().next());
+        assertEquals(1L, (long) gtx.E().count().next());
+
+        // in another thread index not updated yet
+        final Thread thread = new Thread(() -> {
+            final GraphTraversalSource gtx2 = g.tx().begin();
+            assertEquals(0L, (long) gtx2.E().has("test-property", 1).count().next());
+            assertEquals(0L, (long) gtx2.E().count().next());
+        });
+        thread.start();
+        thread.join();
+
+        gtx.tx().commit();
+
+        final GraphTraversalSource gtx3 = g.tx().begin();
+        assertEquals(1L, (long) gtx.E().has("test-property", 1).count().next());
+        assertEquals(1L, (long) gtx.E().count().next());
+
+        countElementsInNewThreadTx(g, 2, 1);
+
+        final Map<Object, Set<TinkerElementContainer<?>>> index =
+                (Map<Object, Set<TinkerElementContainer<?>>>) ((TinkerTransactionalIndex) g.edgeIndex).index.get("test-property");
+        assertNotNull(index);
+        // should be only vertex vid in set
+        assertEquals(1, index.size());
+        assertEquals(1, index.get(1).size());
+        assertEquals(edge.id(), index.get(1).iterator().next().get().id());
+    }
+
+    @Test
+    public void shouldChangeIndexForChangedEdge() throws InterruptedException {
+        final TinkerStorageGraph g = TinkerStorageGraph.open();
+        g.createIndex("test-property", Edge.class);
+
+        final GraphTraversalSource gtx = g.tx().begin();
+
+        final TinkerVertex v1 = (TinkerVertex) gtx.addV().next();
+        final TinkerVertex v2 = (TinkerVertex) gtx.addV().next();
+        final TinkerEdge edge = (TinkerEdge) gtx.addE(EDGE_LABEL).property("test-property", 1).from(v1).to(v2).next();
+        gtx.tx().commit();
+
+        gtx.E(edge.id()).property("test-property", 2).iterate();
+
+        assertEquals(0L, (long) gtx.E().has("test-property", 1).count().next());
+        assertEquals(1L, (long) gtx.E().has("test-property", 2).count().next());
+        assertEquals(1L, (long) gtx.E().count().next());
+
+        // in another thread index not updated yet
+        final Thread thread = new Thread(() -> {
+            final GraphTraversalSource gtx2 = g.tx().begin();
+            assertEquals(1L, (long) gtx2.E().has("test-property", 1).count().next());
+            assertEquals(0L, (long) gtx2.E().has("test-property", 2).count().next());
+            assertEquals(1L, (long) gtx2.E().count().next());
+        });
+        thread.start();
+        thread.join();
+
+        gtx.tx().commit();
+
+        final GraphTraversalSource gtx3 = g.tx().begin();
+        assertEquals(0L, (long) gtx.E().has("test-property", 1).count().next());
+        assertEquals(1L, (long) gtx.E().has("test-property", 2).count().next());
+        assertEquals(1L, (long) gtx.E().count().next());
+
+        countElementsInNewThreadTx(g, 2, 1);
+
+        final Map<Object, Set<TinkerElementContainer<?>>> index =
+                (Map<Object, Set<TinkerElementContainer<?>>>) ((TinkerTransactionalIndex) g.edgeIndex).index.get("test-property");
+        assertNotNull(index);
+        // should be only vertex vid in set
+        assertEquals(1, index.size());
+        assertNull(index.get(1));
+        assertEquals(1, index.get(2).size());
+        assertEquals(edge.id(), index.get(2).iterator().next().get().id());
+    }
+
+    @Test
+    public void shouldRemoveIndexForRemovedEdge() throws InterruptedException {
+        final TinkerStorageGraph g = TinkerStorageGraph.open();
+        g.createIndex("test-property", Edge.class);
+
+        final GraphTraversalSource gtx = g.tx().begin();
+
+        final TinkerVertex v1 = (TinkerVertex) gtx.addV().next();
+        final TinkerVertex v2 = (TinkerVertex) gtx.addV().next();
+        final TinkerEdge edge = (TinkerEdge) gtx.addE(EDGE_LABEL).property("test-property", 1).from(v1).to(v2).next();
+        gtx.tx().commit();
+
+        gtx.E(edge.id()).drop().iterate();
+
+        assertEquals(0L, (long) gtx.E().has("test-property", 1).count().next());
+        assertEquals(0L, (long) gtx.E().count().next());
+
+        // in another thread elements exists before commit
+        final Thread thread = new Thread(() -> {
+            final GraphTraversalSource gtx2 = g.tx().begin();
+            assertEquals(1L, (long) gtx2.E().has("test-property", 1).count().next());
+        });
+        thread.start();
+        thread.join();
+
+        gtx.tx().commit();
+
+        final GraphTraversalSource gtx3 = g.tx().begin();
+        assertEquals(0L, (long) gtx3.E().has("test-property", 1).count().next());
+        assertEquals(0L, (long) gtx3.E().count().next());
+
+        countElementsInNewThreadTx(g, 2, 0);
+
+        final Map<Object, Set<TinkerElementContainer<?>>> index =
+                (Map<Object, Set<TinkerElementContainer<?>>>) ((TinkerTransactionalIndex) g.edgeIndex).index.get("test-property");
+        assertNotNull(index);
+        // should be only vertex vid in set
+        assertEquals(0, index.size());
+    }
+
+    @Test
+    public void shouldCreateIndexForNullProperty() throws InterruptedException {
+        final TinkerStorageGraph g = TinkerStorageGraph.open();
+        g.createIndex("test-property", Edge.class);
+        g.allowNullPropertyValues = true;
+        final Integer nullValue = null;
+
+        final GraphTraversalSource gtx = g.tx().begin();
+
+        final TinkerVertex v1 = (TinkerVertex) gtx.addV().next();
+        final TinkerVertex v2 = (TinkerVertex) gtx.addV().next();
+        final TinkerEdge edge = (TinkerEdge) gtx.addE(EDGE_LABEL).property("test-property", nullValue).
+                from(v1).to(v2).next();
+
+        assertEquals(1L, (long) gtx.E().has("test-property", nullValue).count().next());
+        assertEquals(1L, (long) gtx.E().count().next());
+
+        // in another thread index not updated yet
+        final Thread thread = new Thread(() -> {
+            final GraphTraversalSource gtx2 = g.tx().begin();
+            assertEquals(0L, (long) gtx2.E().has("test-property", nullValue).count().next());
+            assertEquals(0L, (long) gtx2.E().count().next());
+        });
+        thread.start();
+        thread.join();
+
+        gtx.tx().commit();
+
+        final GraphTraversalSource gtx3 = g.tx().begin();
+        assertEquals(1L, (long) gtx3.E().has("test-property", nullValue).count().next());
+        assertEquals(1L, (long) gtx3.E().count().next());
+
+        countElementsInNewThreadTx(g, 2, 1);
+
+        final Map<Object, Set<TinkerElementContainer<?>>> index =
+                (Map<Object, Set<TinkerElementContainer<?>>>) ((TinkerTransactionalIndex) g.edgeIndex).index.get("test-property");
+        assertNotNull(index);
+        // should be only vertex vid in set
+        assertEquals(1, index.size());
+        assertEquals(1, index.get(AbstractTinkerIndex.IndexedNull.instance()).size());
+        assertEquals(edge.id(), index.get(AbstractTinkerIndex.IndexedNull.instance()).iterator().next().get().id());
+    }
+
+    @Test
+    public void shouldRemoveIndexForNullProperty() throws InterruptedException {
+        final TinkerStorageGraph g = TinkerStorageGraph.open();
+        g.createIndex("test-property", Edge.class);
+        final Integer nullValue = null;
+
+        final GraphTraversalSource gtx = g.tx().begin();
+
+        // create initial edge with indexed property
+        final TinkerVertex v1 = (TinkerVertex) gtx.addV().next();
+        final TinkerVertex v2 = (TinkerVertex) gtx.addV().next();
+        final TinkerEdge edge = (TinkerEdge) gtx.addE(EDGE_LABEL).property("test-property", 1).
+                from(v1).to(v2).next();
+
+        gtx.tx().commit();
+
+        // remove property from index
+        gtx.E(edge.id()).property("test-property", nullValue).iterate();
+
+        assertEquals(0L, (long) gtx.E().has("test-property", 1).count().next());
+        assertEquals(1L, (long) gtx.E().count().next());
+
+        // in another thread index not updated yet
+        final Thread thread = new Thread(() -> {
+            final GraphTraversalSource gtx2 = g.tx().begin();
+            assertEquals(1L, (long) gtx2.E().has("test-property", 1).count().next());
+            assertEquals(1L, (long) gtx2.E().count().next());
+        });
+        thread.start();
+        thread.join();
+
+        gtx.tx().commit();
+
+        final GraphTraversalSource gtx3 = g.tx().begin();
+        assertEquals(0L, (long) gtx3.E().has("test-property", nullValue).count().next());
+        assertEquals(1L, (long) gtx3.E().count().next());
+
+        countElementsInNewThreadTx(g, 2, 1);
+
+        final Map<Object, Set<TinkerElementContainer<?>>> index =
+                (Map<Object, Set<TinkerElementContainer<?>>>) ((TinkerTransactionalIndex) g.edgeIndex).index.get("test-property");
+        assertNotNull(index);
+        // should be only vertex vid in set
+        assertEquals(0, index.size());
+    }
+
+    // tests for cloning elements
+
+    @Test
+    public void vertexCloneTest() {
+        final TinkerVertex vertex = new TinkerVertex(123, "label", TinkerStorageGraph.open());
+        final TinkerVertexProperty vp = new TinkerVertexProperty(vertex, "test", "qq");
+        final TinkerEdge edge = new TinkerEdge(1, vertex, "label", vertex);
+        vertex.properties = new ConcurrentHashMap<>();
+        vertex.properties.put("test", new ArrayList<>());
+        vertex.properties.get("test").add(vp);
+        vertex.inEdgesId = new ConcurrentHashMap<>();
+        vertex.inEdgesId.put("label", ConcurrentHashMap.newKeySet());
+        vertex.inEdgesId.get("label").add(edge);
+
+        final TinkerVertex copy = (TinkerVertex) vertex.clone();
+        vertex.properties.get("test").remove(vp);
+        assertEquals(1, copy.properties.get("test").size());
+        vertex.inEdgesId.get("label").remove(edge);
+        assertEquals(1, copy.inEdgesId.get("label").size());
+    }
+
+    @Test
+    public void edgeCloneTest() {
+        final TinkerStorageGraph g = TinkerStorageGraph.open();
+        final TinkerVertex v1 = (TinkerVertex) g.addVertex();
+        final TinkerVertex v2 = (TinkerVertex) g.addVertex();
+        final TinkerEdge edge = new TinkerEdge(3, v1, "label", v2);
+        final TinkerProperty property = new TinkerProperty(edge, "test", "qq");
+        edge.properties = new ConcurrentHashMap<>();
+        edge.properties.put(property.key(), property);
+
+        final TinkerEdge copy = (TinkerEdge) edge.clone();
+        edge.properties.remove(property.key());
+        assertEquals(1, copy.properties.size());
+    }
+
+    // utility methods
+
+    private void countElementsInNewThreadTx(final TinkerStorageGraph g, final long verticesCount, final long edgesCount) throws InterruptedException {
+        final AtomicLong vCount = new AtomicLong(-1);
+        final AtomicLong eCount = new AtomicLong(-1);
+        final Thread thread = new Thread(() -> {
+            final GraphTraversalSource gtx = g.tx().begin();
+            vCount.set(gtx.V().count().next());
+            eCount.set(gtx.E().count().next());
+        });
+        thread.start();
+        thread.join();
+
+        assertEquals(verticesCount, vCount.get());
+        assertEquals(edgesCount, eCount.get());
+    }
+
+    @Test
+    public void shouldNotAllowDirtyReadsOfVertexForReadOnlyTransaction() throws InterruptedException {
+        final TinkerStorageGraph g = TinkerStorageGraph.open();
+        final GraphTraversalSource gtx = g.tx().begin();
+
+        gtx.addV().next();
+
+        final AtomicLong gtx2Read = new AtomicLong(-1);
+        final Thread thread = new Thread(() -> {
+            final GraphTraversalSource gtx2 = g.tx().begin();
+
+            gtx2Read.set(gtx2.V().count().next());
+        });
+        thread.start();
+        thread.join();
+
+        assertEquals(0, gtx2Read.get());
+        assertEquals(1, (long) gtx.V().count().next());
+    }
+
+    @Test
+    public void shouldNotAllowDirtyReadsOfVertexDropForReadOnlyTransaction() throws InterruptedException {
+        final TinkerStorageGraph g = TinkerStorageGraph.open();
+        final GraphTraversalSource gtx = g.tx().begin();
+
+        gtx.addV().next();
+        gtx.tx().commit();
+
+        gtx.V().drop().iterate();
+
+        final AtomicLong gtx2Read = new AtomicLong(-1);
+        final Thread thread = new Thread(() -> {
+            final GraphTraversalSource gtx2 = g.tx().begin();
+
+            gtx2Read.set(gtx2.V().count().next());
+        });
+        thread.start();
+        thread.join();
+
+        assertEquals(1, gtx2Read.get());
+        assertEquals(0, (long) gtx.V().count().next());
+    }
+
+    @Test
+    public void shouldNotAllowDirtyReadsOfEdgeForReadOnlyTransaction() throws InterruptedException {
+        final TinkerStorageGraph g = TinkerStorageGraph.open();
+        final GraphTraversalSource gtx = g.tx().begin();
+
+        final Vertex v1 = gtx.addV().next();
+        final Vertex v2 = gtx.addV().next();
+        gtx.addE("test").from(v1).to(v2).iterate();
+
+        final AtomicLong gtx2Read = new AtomicLong(-1);
+        final Thread thread = new Thread(() -> {
+            final GraphTraversalSource gtx2 = g.tx().begin();
+
+            gtx2Read.set(gtx2.E().count().next());
+        });
+        thread.start();
+        thread.join();
+
+        assertEquals(0, gtx2Read.get());
+        assertEquals(1, (long) gtx.E().count().next());
+    }
+
+    @Test
+    public void shouldNotAllowDirtyReadsOfEdgeDropForReadOnlyTransaction() throws InterruptedException {
+        final TinkerStorageGraph g = TinkerStorageGraph.open();
+        final GraphTraversalSource gtx = g.tx().begin();
+
+        final Vertex v1 = gtx.addV().next();
+        final Vertex v2 = gtx.addV().next();
+        gtx.addE("test").from(v1).to(v2).iterate();
+        gtx.tx().commit();
+
+        gtx.E().drop().iterate();
+
+        final AtomicLong gtx2Read = new AtomicLong(-1);
+        final Thread thread = new Thread(() -> {
+            final GraphTraversalSource gtx2 = g.tx().begin();
+
+            gtx2Read.set(gtx2.E().count().next());
+        });
+        thread.start();
+        thread.join();
+
+        assertEquals(1, gtx2Read.get());
+        assertEquals(0, (long) gtx.E().count().next());
+    }
+
+    @Test
+    public void shouldNotAllowDirtyReadsOfVertexPropertyAddForReadOnlyTransaction() throws InterruptedException {
+        final TinkerStorageGraph g = TinkerStorageGraph.open();
+        final GraphTraversalSource gtx = g.tx().begin();
+
+        gtx.addV().property("a", 1).iterate();
+        gtx.tx().commit();
+
+        gtx.V().property("b", 2).iterate();
+
+        final AtomicLong gtx2Read = new AtomicLong(-1);
+        final Thread thread = new Thread(() -> {
+            final GraphTraversalSource gtx2 = g.tx().begin();
+
+            gtx2Read.set(gtx2.V().properties().count().next());
+        });
+        thread.start();
+        thread.join();
+
+        assertEquals(1, gtx2Read.get());
+        assertEquals(2, (long) gtx.V().properties().count().next());
+    }
+
+    @Test
+    public void shouldNotAllowDirtyReadsOfVertexPropertyDropForReadOnlyTransaction() throws InterruptedException {
+        final TinkerStorageGraph g = TinkerStorageGraph.open();
+        final GraphTraversalSource gtx = g.tx().begin();
+
+        gtx.addV().property("a", 1).iterate();
+        gtx.tx().commit();
+
+        gtx.V().properties().drop().iterate();
+
+        final AtomicLong gtx2Read = new AtomicLong(-1);
+        final Thread thread = new Thread(() -> {
+            final GraphTraversalSource gtx2 = g.tx().begin();
+
+            gtx2Read.set(gtx2.V().properties().count().next());
+        });
+        thread.start();
+        thread.join();
+
+        assertEquals(1, gtx2Read.get());
+        assertEquals(0, (long) gtx.V().properties().count().next());
+    }
+
+    @Test
+    public void shouldNotAllowDirtyReadsOfVertexPropertyUpdateForReadOnlyTransaction() throws InterruptedException {
+        final TinkerStorageGraph g = TinkerStorageGraph.open();
+        final GraphTraversalSource gtx = g.tx().begin();
+
+        gtx.addV().property("a", 1L).iterate();
+        gtx.tx().commit();
+
+        gtx.V().property("a", 2L).iterate();
+
+        final AtomicLong gtx2Read = new AtomicLong(-1);
+        final Thread thread = new Thread(() -> {
+            final GraphTraversalSource gtx2 = g.tx().begin();
+
+            gtx2Read.set((long) gtx2.V().values("a").next());
+        });
+        thread.start();
+        thread.join();
+
+        assertEquals(1, gtx2Read.get());
+        assertEquals(2, (long) gtx.V().values("a").next());
+    }
+
+    @Test
+    public void shouldNotAllowDirtyReadsOfEdgePropertyAddForReadOnlyTransaction() throws InterruptedException {
+        final TinkerStorageGraph g = TinkerStorageGraph.open();
+        final GraphTraversalSource gtx = g.tx().begin();
+
+        final Vertex v1 = gtx.addV().next();
+        final Vertex v2 = gtx.addV().next();
+        gtx.addE("test").from(v1).to(v2).iterate();
+        gtx.tx().commit();
+
+        gtx.E().property("a", 1).iterate();
+
+        final AtomicLong gtx2Read = new AtomicLong(-1);
+        final Thread thread = new Thread(() -> {
+            final GraphTraversalSource gtx2 = g.tx().begin();
+
+            gtx2Read.set(gtx2.E().properties().count().next());
+        });
+        thread.start();
+        thread.join();
+
+        assertEquals(0, gtx2Read.get());
+        assertEquals(1, (long) gtx.E().properties().count().next());
+    }
+
+    @Test
+    public void shouldNotAllowDirtyReadsOfEdgePropertyDropForReadOnlyTransaction() throws InterruptedException {
+        final TinkerStorageGraph g = TinkerStorageGraph.open();
+        final GraphTraversalSource gtx = g.tx().begin();
+
+        final Vertex v1 = gtx.addV().next();
+        final Vertex v2 = gtx.addV().next();
+        gtx.addE("test").from(v1).to(v2).property("a", 1).iterate();
+        gtx.tx().commit();
+
+        gtx.E().properties().drop().iterate();
+
+        final AtomicLong gtx2Read = new AtomicLong(-1);
+        final Thread thread = new Thread(() -> {
+            final GraphTraversalSource gtx2 = g.tx().begin();
+
+            gtx2Read.set(gtx2.E().properties().count().next());
+        });
+        thread.start();
+        thread.join();
+
+        assertEquals(1, gtx2Read.get());
+        assertEquals(0, (long) gtx.E().properties().count().next());
+    }
+
+    @Test
+    public void shouldNotAllowDirtyReadsOfEdgePropertyUpdateForReadOnlyTransaction() throws InterruptedException {
+        final TinkerStorageGraph g = TinkerStorageGraph.open();
+        final GraphTraversalSource gtx = g.tx().begin();
+
+        final Vertex v1 = gtx.addV().next();
+        final Vertex v2 = gtx.addV().next();
+        gtx.addE("test").from(v1).to(v2).property("a", 1L).iterate();
+        gtx.tx().commit();
+
+        gtx.E().property("a", 2L).iterate();
+
+        final AtomicLong gtx2Read = new AtomicLong(-1);
+        final Thread thread = new Thread(() -> {
+            final GraphTraversalSource gtx2 = g.tx().begin();
+
+            gtx2Read.set((long) gtx2.E().values("a").next());
+        });
+        thread.start();
+        thread.join();
+
+        assertEquals(1, gtx2Read.get());
+        assertEquals(2, (long) gtx.E().values("a").next());
+    }
+
+    @Test
+    public void shouldHandleAddingPropertyWhenOtherTxDeleteEdge() throws InterruptedException {
+        final TinkerStorageGraph g = TinkerStorageGraph.open();
+        final GraphTraversalSource gtx = g.tx().begin();
+
+        final Vertex v1 = gtx.addV().next();
+        final Vertex v2 = gtx.addV().next();
+        final Edge edge = gtx.addE(EDGE_LABEL).from(v1).to(v2).next();
+        gtx.tx().commit();
+
+        // tx1 try to add property
+        gtx.E(edge.id()).property("test", 1).iterate();
+
+        // tx2 in same time delete edge used by tx1
+        final Thread thread = new Thread(() -> {
+            final GraphTraversalSource gtx2 = g.tx().begin();
+            gtx2.E(edge.id()).drop().iterate();
+            gtx2.tx().commit();
+        });
+        thread.start();
+        thread.join();
+
+        try {
+            gtx.tx().commit();
+            fail("should throw TransactionException");
+        } catch (TransactionException e) {
+
+        }
+
+        assertEquals(2, (long) gtx.V().count().next());
+        assertEquals(0, (long) gtx.E().count().next());
+
+        countElementsInNewThreadTx(g, 2, 0);
+    }
+
+    //tx1 adds a property to v1, tx2 deletes v1
+    @Test
+    public void shouldHandleAddingPropertyWhenOtherTxDeleteVertex() throws InterruptedException {
+        final TinkerStorageGraph g = TinkerStorageGraph.open();
+        final GraphTraversalSource gtx = g.tx().begin();
+
+        final Vertex v1 = gtx.addV().next();
+        gtx.tx().commit();
+
+        // tx1 try to add property
+        gtx.V(v1.id()).property("test", 1).iterate();
+
+        // tx2 in same time delete vertex used by tx1
+        final Thread thread = new Thread(() -> {
+            final GraphTraversalSource gtx2 = g.tx().begin();
+            gtx2.V(v1.id()).drop().iterate();
+            gtx2.tx().commit();
+        });
+        thread.start();
+        thread.join();
+
+        try {
+            gtx.tx().commit();
+            fail("should throw TransactionException");
+        } catch (TransactionException e) {
+
+        }
+
+        assertEquals(0, (long) gtx.V().count().next());
+        assertEquals(0, (long) gtx.E().count().next());
+
+        countElementsInNewThreadTx(g, 0, 0);
+    }
+
+    @Test
+    public void shouldDeleteEdgeOnCommit() throws InterruptedException {
+        final TinkerStorageGraph g = TinkerStorageGraph.open();
+        final GraphTraversalSource gtx = g.tx().begin();
+
+        final Vertex v1 = gtx.addV().next();
+        final Vertex v2 = gtx.addV().next();
+        gtx.addE(EDGE_LABEL).from(v1).to(v2).next();
+        gtx.tx().commit();
+
+        assertEquals(2, (long) gtx.V().count().next());
+        assertEquals(1, (long) gtx.E().count().next());
+
+        gtx.E().hasLabel(EDGE_LABEL).drop().iterate();
+
+        assertEquals(2, (long) gtx.V().count().next());
+        assertEquals(0, (long) gtx.E().count().next());
+
+        // test count in other thread transaction
+        final Thread thread = new Thread(() -> {
+            final GraphTraversalSource gtx2 = g.tx().begin();
+            assertEquals(2L, (long) gtx2.V().count().next());
+            assertEquals(1L, (long) gtx2.E().count().next());
+        });
+        thread.start();
+        thread.join();
+
+        gtx.tx().commit();
+
+        assertEquals(2, (long) gtx.V().count().next());
+        assertEquals(0, (long) gtx.E().count().next());
+
+        countElementsInNewThreadTx(g, 2, 0);
+    }
+
+    @Test
+    public void shouldHandleConcurrentChangeForProperty() throws InterruptedException {
+        final TinkerStorageGraph g = TinkerStorageGraph.open();
+        final GraphTraversalSource gtx = g.tx().begin();
+
+        final Vertex v1 = gtx.addV().next();
+        final Vertex v2 = gtx.addV().next();
+        final Edge edge = gtx.addE(EDGE_LABEL).from(v1).to(v2).next();
+        gtx.tx().commit();
+
+        // change test property
+        gtx.E(edge.id()).property("test", 1).iterate();
+
+        // change property in other tx
+        final Thread thread = new Thread(() -> {
+            final GraphTraversalSource gtx2 = g.tx().begin();
+            gtx2.E(edge.id()).property("test", 2).iterate();
+            gtx2.tx().commit();
+        });
+        thread.start();
+        thread.join();
+
+        try {
+            gtx.tx().commit();
+            fail("should throw TransactionException");
+        } catch (TransactionException e) {
+
+        }
+
+        // should be only 1 edge with updated property
+        assertEquals(1L, (long) gtx.E(edge.id()).count().next());
+        assertEquals(2, gtx.E(edge.id()).values("test").next());
+    }
+
+    // tx1 adds an edge from v1 to v2, tx2 deletes v1 or v2
+    @Test
+    public void shouldHandleAddingEdgeWhenOtherTxDeleteVertex() throws InterruptedException {
+        final TinkerStorageGraph g = TinkerStorageGraph.open();
+        final GraphTraversalSource gtx = g.tx().begin();
+
+        final Vertex v1 = gtx.addV().next();
+        final Vertex v2 = gtx.addV().next();
+        gtx.tx().commit();
+
+        // tx1 try to add Edge
+        gtx.addE("test").from(v1).to(v2).iterate();
+
+        // tx2 in same time delete one of vertices used by tx1
+        final Thread thread = new Thread(() -> {
+            final GraphTraversalSource gtx2 = g.tx().begin();
+            gtx2.V(v1.id()).drop().iterate();
+            gtx2.tx().commit();
+        });
+        thread.start();
+        thread.join();
+
+        try {
+            gtx.tx().commit();
+            fail("should throw TransactionException");
+        } catch (TransactionException e) {
+
+        }
+
+        assertEquals(1, (long) gtx.V().count().next());
+        assertEquals(0, (long) gtx.E().count().next());
+
+        countElementsInNewThreadTx(g, 1, 0);
+    }
+
+    @Test
+    public void shouldHandleConcurrentChangeForVertexProperty() throws InterruptedException {
+        final TinkerStorageGraph g = TinkerStorageGraph.open();
+        final GraphTraversalSource gtx = g.tx().begin();
+
+        final Vertex v1 = gtx.addV().next();
+        gtx.tx().commit();
+
+        // change test property
+        gtx.V(v1.id()).property("test", 1).iterate();
+
+        // change property in other tx
+        final Thread thread = new Thread(() -> {
+            final GraphTraversalSource gtx2 = g.tx().begin();
+            gtx2.V(v1.id()).property("test", 2).iterate();
+            gtx2.tx().commit();
+        });
+        thread.start();
+        thread.join();
+
+        try {
+            gtx.tx().commit();
+            fail("should throw TransactionException");
+        } catch (TransactionException e) {
+
+        }
+
+        // should be only 1 vertex with updated property
+        assertEquals(1L, (long) gtx.V().count().next());
+        assertEquals(2, gtx.V(v1.id()).values("test").next());
+    }
+
+    @Test
+    public void shouldHandleConcurrentDeleteEdge() throws InterruptedException {
+        final TinkerStorageGraph g = TinkerStorageGraph.open();
+        final GraphTraversalSource gtx = g.tx().begin();
+
+        final Vertex v1 = gtx.addV().next();
+        final Vertex v2 = gtx.addV().next();
+        gtx.addE(EDGE_LABEL).from(v1).to(v2).next();
+        gtx.tx().commit();
+
+        assertEquals(2, (long) gtx.V().count().next());
+        assertEquals(1, (long) gtx.E().count().next());
+
+        gtx.E().hasLabel(EDGE_LABEL).drop().iterate();
+
+        assertEquals(2, (long) gtx.V().count().next());
+        assertEquals(0, (long) gtx.E().count().next());
+
+        // other tx try to remove same edge
+        final Thread thread = new Thread(() -> {
+            final GraphTraversalSource gtx2 = g.tx().begin();
+            assertEquals(2L, (long) gtx2.V().count().next());
+            assertEquals(1L, (long) gtx2.E().count().next());
+
+            // try to remove edge
+            gtx2.E().hasLabel(EDGE_LABEL).drop().iterate();
+
+            // should be ok
+            assertEquals(2, (long) gtx2.V().count().next());
+            assertEquals(0, (long) gtx2.E().count().next());
+
+            gtx2.tx().commit();
+        });
+        thread.start();
+        thread.join();
+
+        // try do delete in initial tx
+        try {
+            gtx.tx().commit();
+            fail("should throw TransactionException");
+        } catch (TransactionException e) {
+
+        }
+
+        assertEquals(2, (long) gtx.V().count().next());
+        assertEquals(0, (long) gtx.E().count().next());
+
+        countElementsInNewThreadTx(g, 2, 0);
+    }
+
+    // tx1 adds a new vertex v1, tx2 adds the same vertex
+    @Test
+    public void shouldHandleAddingSameVertexInDifferentTx() throws InterruptedException {
+        final TinkerStorageGraph g = TinkerStorageGraph.open();
+        final GraphTraversalSource gtx = g.tx().begin();
+
+        final Vertex v1 = gtx.addV().next();
+
+        // tx2 in same time add vertex with same id
+        final Thread thread = new Thread(() -> {
+            final GraphTraversalSource gtx2 = g.tx().begin();
+            gtx2.addV().property(T.id, v1.id()).iterate();
+            gtx2.tx().commit();
+        });
+        thread.start();
+        thread.join();
+
+        try {
+            gtx.tx().commit();
+            fail("should throw TransactionException");
+        } catch (TransactionException e) {
+
+        }
+
+        assertEquals(1, (long) gtx.V().count().next());
+        assertEquals(0, (long) gtx.E().count().next());
+
+        countElementsInNewThreadTx(g, 1, 0);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void shouldThrowExceptionWhenTryToAddVertexWithUsedId() {
+        final TinkerStorageGraph g = TinkerStorageGraph.open();
+        final GraphTraversalSource gtx = g.tx().begin();
+
+        // add vertex
+        final Vertex v1 = gtx.addV().next();
+        gtx.tx().commit();
+
+        // try to add vertex with same id
+        gtx.addV().property(T.id, v1.id()).iterate();
+        gtx.tx().commit();
+    }
+
+    @Test
+    public void shouldHandleConcurrentVertexDelete() throws InterruptedException {
+        final TinkerStorageGraph g = TinkerStorageGraph.open();
+        final GraphTraversalSource gtx = g.tx().begin();
+
+        final Vertex v1 = gtx.addV().next();
+        gtx.tx().commit();
+
+        gtx.V(v1.id()).drop().iterate();
+
+        // other tx try to remove same vertex
+        final Thread thread = new Thread(() -> {
+            final GraphTraversalSource gtx2 = g.tx().begin();
+
+            gtx2.V(v1.id()).drop().iterate();
+
+            // should be ok
+            assertEquals(0, (long) gtx2.V().count().next());
+            assertEquals(0, (long) gtx2.E().count().next());
+
+            gtx2.tx().commit();
+        });
+        thread.start();
+        thread.join();
+
+        // try do delete in initial tx
+        try {
+            gtx.tx().commit();
+            fail("should throw TransactionException");
+        } catch (TransactionException e) {
+
+        }
+        assertEquals(0, (long) gtx.V().count().next());
+        assertEquals(0, (long) gtx.E().count().next());
+
+        countElementsInNewThreadTx(g, 0, 0);
+    }
+
+    @Test
+    public void shouldHandleConcurrentChangeForVertexMetaProperty() throws InterruptedException {
+        final TinkerStorageGraph g = TinkerStorageGraph.open();
+        final GraphTraversalSource gtx = g.tx().begin();
+
+        final Vertex v1 = gtx.addV().property("test", 1).next();
+        gtx.tx().commit();
+
+        // change meta property
+        gtx.V(v1.id()).properties("test").property("meta1", "tx1").iterate();
+
+        // change same property in other tx
+        final Thread thread = new Thread(() -> {
+            final GraphTraversalSource gtx2 = g.tx().begin();
+            gtx2.V(v1.id()).properties("test").property("meta2", "tx2").iterate();
+            gtx2.tx().commit();
+        });
+        thread.start();
+        thread.join();
+
+        try {
+            gtx.tx().commit();
+            fail("should throw TransactionException");
+        } catch (TransactionException e) {
+
+        }
+
+        // tx2 committed first and wins; tx1 conflicted and rolled back, so its meta1 was never persisted
+        assertEquals(1L, (long) gtx.V().count().next());
+        assertEquals(1L, (long) gtx.V(v1.id()).properties("test").properties().count().next());
+        assertEquals("tx2", gtx.V(v1.id()).properties("test").values("meta2").next());
+        assertFalse(gtx.V(v1.id()).properties("test").values("meta1").hasNext());
+    }
+
+    @Test
+    public void shouldReopenClosedTransaction() {
+        final TinkerStorageGraph g = TinkerStorageGraph.open();
+        final GraphTraversalSource gtx = g.tx().begin();
+        gtx.addV().iterate();
+        gtx.tx().commit();
+
+        gtx.addV().iterate();
+        assertTrue(gtx.tx().isOpen());
+        gtx.tx().commit();
+
+        final GraphTraversalSource gtx2 = g.tx().begin();
+        assertEquals(2L, (long) gtx2.V().count().next());
+    }
+
+    @Test
+    public void shouldBeIdempotentAndNonLossyWhenBeginCalledWhileOpen() {
+        final TinkerStorageGraph g = TinkerStorageGraph.open();
+        final GraphTraversalSource gtx = g.tx().begin();
+
+        // stage an uncommitted change in the open transaction
+        gtx.addV().iterate();
+        assertTrue(gtx.tx().isOpen());
+        assertEquals(1L, (long) gtx.V().count().next());
+
+        // calling begin() again while already open must be idempotent and non-lossy: it must NOT
+        // start a new transaction or discard the in-flight one, so the staged change still exists
+        final GraphTraversalSource gtx2 = g.tx().begin();
+        assertTrue(gtx.tx().isOpen());
+        assertEquals(1L, (long) gtx2.V().count().next());
+
+        // the change is part of one continuous transaction - committing once persists exactly it
+        gtx.tx().commit();
+        final GraphTraversalSource gtx3 = g.tx().begin();
+        assertEquals(1L, (long) gtx3.V().count().next());
+    }
+
+    @Test
+    public void shouldHandleAddingPropertyWhenOtherTxAttemptsDeleteThenRollsback() throws InterruptedException {
+        final TinkerStorageGraph g = TinkerStorageGraph.open();
+        final GraphTraversalSource gtx = g.tx().begin();
+
+        final Vertex v1 = gtx.addV().next();
+        gtx.tx().commit();
+
+        // tx1 try to add property
+        gtx.V(v1.id()).property("test", 1).iterate();
+
+        // tx2 in same time delete vertex used by tx1
+        final Thread thread = new Thread(() -> {
+            final GraphTraversalSource gtx2 = g.tx().begin();
+            gtx2.V(v1.id()).drop().iterate();
+            gtx2.tx().rollback();
+        });
+        thread.start();
+        thread.join();
+
+        gtx.tx().commit();
+
+        assertEquals(1, (long) gtx.V().count().next());
+        assertEquals(1, gtx.V(v1.id()).values("test").next());
+
+        countElementsInNewThreadTx(g, 1, 0);
+    }
+
+    // tx1 adds vertex v1, tx2 removes vertex v1
+    @Test
+    public void shouldHandleAddingVertexWhenOtherTxTryToDeleteSameVertex() throws InterruptedException {
+        final TinkerStorageGraph g = TinkerStorageGraph.open();
+        final GraphTraversalSource gtx = g.tx().begin();
+
+        final Vertex v1 = gtx.addV().next();
+
+        // tx2 in same time try to delete same vertex
+        final Thread thread = new Thread(() -> {
+            final GraphTraversalSource gtx2 = g.tx().begin();
+            gtx2.V(v1.id()).drop().iterate();
+
+            assertEquals(0, (long) gtx.V().count().next());
+            assertEquals(0, (long) gtx.E().count().next());
+            gtx2.tx().commit();
+        });
+        thread.start();
+        thread.join();
+
+        gtx.tx().commit();
+
+        assertEquals(1, (long) gtx.V().count().next());
+        assertEquals(0, (long) gtx.E().count().next());
+
+        countElementsInNewThreadTx(g, 1, 0);
+    }
+
+    @Test
+    public void shouldHandleSequenceOfCreateReadDeleteCreateSameVertex() {
+        final TinkerStorageGraph graph = TinkerStorageGraph.open();
+        final GraphTraversalSource g = graph.traversal();
+
+        g.addV().property(T.id, 1).next();
+        graph.tx().commit();
+        g.V().next();
+        graph.tx().commit();
+        g.V().drop().iterate();
+        graph.tx().commit();
+
+        assertEquals(false, graph.hasVertex(1));
+
+        g.addV().property(T.id, 1).next();
+        graph.tx().commit();
+
+        assertFalse(graph.getVertices().get(1).inUse());
+        assertEquals(true, graph.hasVertex(1));
+    }
+
+    @Test
+    public void shouldHandleCorrectlyHandleCountForChangedAndReadElement() {
+        final TinkerStorageGraph graph = TinkerStorageGraph.open();
+        final GraphTraversalSource g = graph.traversal();
+
+        g.addV().property(T.id, 1).next();
+        graph.tx().commit();
+        TinkerElementContainer vertex = graph.getVertices().get(1);
+
+        g.V().next();
+        g.V().property("prop", 5).next();
+        g.V().next();
+        g.V().property("prop2", "foo").next();
+        assertTrue(vertex.isChanged());
+        assertTrue(vertex.isRead());
+        assertTrue(vertex.inUse());
+
+        graph.tx().commit();
+        assertFalse(vertex.isChanged());
+        assertFalse(vertex.isRead());
+
+        assertFalse(vertex.inUse());
+    }
+
+    @Test
+    public void shouldAllowDropAddVertexInSameTransaction() {
+        final TinkerStorageGraph g = TinkerStorageGraph.open();
+        final TinkerTransaction tx = (TinkerTransaction) g.tx();
+
+        // create initial vertex with a property
+        final GraphTraversalSource gtx = tx.begin();
+        Vertex vertex = gtx.addV().property(T.id, vid).property(PROPERTY_NAME, "test").next();
+        // add self-referencing edge
+        gtx.addE(EDGE_LABEL).from(vertex).to(vertex).next();
+        gtx.tx().commit();
+
+        verifyCommittedSingleVertex(g, "test");
+        assertEquals(1, g.getEdgesCount());
+        final long originalVersion = g.getVertices().get(vid).getUnmodified().version();
+
+        // drop the vertex and re-create it without any properties or edges in the same transaction
+        final GraphTraversalSource gtx2 = tx.begin();
+        gtx2.V().drop().iterate();
+        gtx2.addV().property(T.id, vid).next();
+        gtx2.tx().commit();
+
+        verifyCommittedSingleVertex(g);
+        final TinkerVertex updatedVertex = g.getVertices().get(vid).getUnmodified();
+        assertEquals(0, g.getEdgesCount());
+        // version should have been updated
+        assertNotEquals(originalVersion, updatedVertex.version());
+    }
+
+    @Test
+    public void shouldAllowAddDropAddVertexInSameTransaction() {
+        final TinkerStorageGraph g = TinkerStorageGraph.open();
+        final TinkerTransaction tx = (TinkerTransaction) g.tx();
+
+        final GraphTraversalSource gtx = tx.begin();
+        // create vertex with a property
+        final Vertex vertex = gtx.addV().property(T.id, vid).property(PROPERTY_NAME, "test").next();
+        // add self-referencing edge
+        gtx.addE(EDGE_LABEL).from(vertex).to(vertex).next();
+        // drop vertex
+        gtx.V(vid).drop().iterate();
+        // add vertex again with different properties but no edges
+        gtx.addV().property(T.id, vid).property(PROPERTY_NAME, "updated name").next();
+        gtx.tx().commit();
+        
+        verifyCommittedSingleVertex(g, "updated name");
+        assertEquals(0, g.getEdgesCount());
+    }
+
+    @Test
+    public void shouldAllowAddDropAddDropVertexInSameTransaction() {
+        final TinkerStorageGraph g = TinkerStorageGraph.open();
+        final TinkerTransaction tx = (TinkerTransaction) g.tx();
+
+        final GraphTraversalSource gtx = tx.begin();
+        // create vertex with a property
+        final Vertex vertex = gtx.addV().property(T.id, vid).property(PROPERTY_NAME, "test").next();
+        // add self-referencing edge
+        gtx.addE(EDGE_LABEL).from(vertex).to(vertex).next();
+        // drop vertex
+        gtx.V(vid).drop().iterate();
+        // add vertex again with different properties but no edges
+        gtx.addV().property(T.id, vid).property(PROPERTY_NAME, "updated name").next();
+        // drop the vertex again
+        gtx.V(vid).drop().iterate();
+        gtx.tx().commit();
+        
+        assertEquals(0, g.getVerticesCount());
+        assertEquals(0, g.getEdgesCount());
+    }
+
+    @Test
+    public void shouldAllowAddDropAddDropVertexInMultipleTransactions() {
+        final TinkerStorageGraph g = TinkerStorageGraph.open();
+        final TinkerTransaction tx = (TinkerTransaction) g.tx();
+
+        // first transaction
+        final GraphTraversalSource gtx1 = tx.begin();
+        // create vertex with a property
+        final Vertex vertex = gtx1.addV().property(T.id, vid).property(PROPERTY_NAME, "test").next();
+        // add self-referencing edge
+        gtx1.addE(EDGE_LABEL).from(vertex).to(vertex).next();
+        // drop vertex
+        gtx1.V(vid).drop().iterate();
+        gtx1.tx().commit();
+
+        assertEquals(0, g.getVerticesCount());
+        assertEquals(0, g.getEdgesCount());
+
+        // second transaction
+        final GraphTraversalSource gtx2 = tx.begin();
+        // add vertex again with different properties but no edges
+        gtx2.addV().property(T.id, vid).property(PROPERTY_NAME, "updated name").next();
+        // drop the vertex again
+        gtx2.V(vid).drop().iterate();
+        gtx2.tx().commit();
+
+        assertEquals(0, g.getVerticesCount());
+        assertEquals(0, g.getEdgesCount());
+    }
+
+    @Test
+    public void shouldAllowDropAddUniqueVertexInConcurrentTransactions() {
+        final TinkerStorageGraph g = TinkerStorageGraph.open();
+        final TinkerTransaction tx = (TinkerTransaction) g.tx();
+
+        // create first vertex and commit
+        final GraphTraversalSource gtx = tx.begin();
+        gtx.addV().property(T.id, vid).next();
+        gtx.tx().commit();
+        verifyCommittedSingleVertex(g);
+        
+        // drop and add but don't commit
+        gtx.V(vid).drop().iterate();
+        gtx.addV().property(T.id, vid).property(PROPERTY_NAME, "main thread").next();
+        
+        // in another thread add, drop, add a different vertex and commit
+        int vid2 = (int) vid + 1;
+        runInNewThread(() -> {
+            final GraphTraversalSource gtx2 = g.tx().begin();
+            gtx2.addV().property(T.id, vid2).next();
+            gtx2.V(vid2).drop().iterate();
+            gtx2.addV().property(T.id, vid2).property(PROPERTY_NAME, "another thread").next();
+            gtx2.tx().commit();
+        });
+
+        // commit the drop add
+        gtx.tx().commit();
+        // both vertices should exist
+        assertEquals(2, g.getVerticesCount());
+        assertEquals("main thread", g.getVertices().get(vid).getUnmodified().properties.get(PROPERTY_NAME).get(0).value());
+        assertEquals("another thread", g.getVertices().get(vid2).getUnmodified().properties.get(PROPERTY_NAME).get(0).value());
+    }
+
+    @Test
+    public void shouldPreventDropAddVertexInConcurrentTransactions() {
+        final TinkerStorageGraph g = TinkerStorageGraph.open();
+        final TinkerTransaction tx = (TinkerTransaction) g.tx();
+
+        // create initial vertex and commit transaction
+        final GraphTraversalSource gtx = tx.begin();
+        gtx.addV().property(T.id, vid).property(PROPERTY_NAME, "original").next();
+        gtx.tx().commit();
+        verifyCommittedSingleVertex(g, "original");
+
+        // drop the vertex and add it back but don't commit
+        gtx.V(vid).drop().iterate();
+        gtx.addV().property(T.id, vid).property(PROPERTY_NAME, "should fail!").next();
+
+        // drop the vertex and add it back in another thread and commit
+        runInNewThread(() -> {
+            final GraphTraversalSource gtx2 = g.tx().begin();
+            gtx2.V(vid).drop().iterate();
+            gtx2.addV().property(T.id, vid).property(PROPERTY_NAME, "updated").next();
+            gtx2.tx().commit();
+        });
+
+        // try to commit the drop and add in main thread - should fail
+        try {
+            gtx.tx().commit();
+            fail("should throw TransactionException");
+        } catch (TransactionException e) {
+            assertEquals("Conflict: element modified in another transaction", e.getMessage());
+            verifyCommittedSingleVertex(g, "updated");
+        }
+    }
+
+    @Test
+    public void shouldPreventDropUpdateVertexInConcurrentTransactions() {
+        final TinkerStorageGraph g = TinkerStorageGraph.open();
+        final TinkerTransaction tx = (TinkerTransaction) g.tx();
+
+        // create initial vertex and commit transaction
+        final GraphTraversalSource gtx = tx.begin();
+        gtx.addV().property(T.id, vid).property(PROPERTY_NAME, "original").next();
+        gtx.tx().commit();
+        verifyCommittedSingleVertex(g, "original");
+        
+        // drop but don't commit
+        gtx.V(vid).drop().iterate();
+        
+        // modify the vertex in another thread and commit
+        runInNewThread(() -> {
+            final GraphTraversalSource gtx2 = g.tx().begin();
+            gtx2.V(vid).property(PROPERTY_NAME, "updated").next();
+            gtx2.tx().commit();
+        });
+        
+        // try to commit the drop vertex - should fail
+        try {
+            gtx.tx().commit();
+            fail("should throw TransactionException");
+        } catch (TransactionException e) {
+            assertEquals("Conflict: element modified in another transaction", e.getMessage());
+            verifyCommittedSingleVertex(g, "updated");
+        }
+    }
+
+    @Test
+    public void readVertexShouldNotConflictWithDropAddUpdateVertexInSeparateTransaction() throws InterruptedException {
+        final TinkerStorageGraph graph = TinkerStorageGraph.open();
+        final GraphTraversalSource g = graph.traversal();
+        final GraphTraversalSource gtx = g.tx().begin();
+        final AtomicReference<AssertionError> validationException = new AtomicReference<>();
+
+        // commit the initial vertex
+        gtx.addV().property(T.id, vid).next();
+        gtx.tx().commit();
+
+        // reader threads which are constantly reading the vertex ids in a separate transaction
+        CountDownLatch signal = new CountDownLatch(1);
+        List<Thread> readers = startInNewThreads(() -> {
+            while (signal.getCount() > 0) {
+                List<Object> vertexIds = g.V().id().toList();
+                // vertexIds should be empty or have a single id equal to the vertexId
+                if (validationException.get() == null && vertexIds.size() > 1 || (vertexIds.size() == 1 && !vertexIds.get(0).equals(vid))) {
+                    validationException.set(new AssertionError("Unexpected vertexIds: " + vertexIds));
+                }
+            }
+        }, 2);
+
+        // drop, add, update the same vertex a number of times to validate that the reader thread should not interfere with the updates
+        for (int i = 0; i < 50; i++) {
+            Thread.sleep(50);
+            g.V(vid).drop().iterate();
+            g.tx().commit();
+            Thread.sleep(50);
+            g.addV().property(T.id, vid).next();
+            g.tx().commit();
+            g.V(vid).property(VertexProperty.Cardinality.single, "name", "test").next();
+            g.tx().commit();
+            g.V(vid).property(VertexProperty.Cardinality.single, "name", "updated").next();
+            g.tx().commit();
+        }
+
+        // stop the reader thread
+        signal.countDown();
+        readers.forEach(t -> {
+            try {
+                t.join();
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        });
+
+        verifyCommittedSingleVertex(graph, "updated");
+        if (validationException.get() != null) {
+            throw validationException.get();
+        }
+    }
+
+    @Test
+    public void readEdgeShouldNotConflictWithDropAddUpdateEdgeInSeparateTransaction() throws InterruptedException {
+        final TinkerStorageGraph graph = TinkerStorageGraph.open();
+        final GraphTraversalSource g = graph.traversal();
+        final GraphTraversalSource gtx = g.tx().begin();
+        final AtomicReference<AssertionError> validationException = new AtomicReference<>();
+
+        // commit the initial vertex with self-referencing edge
+        Vertex vertex = gtx.addV().property(T.id, vid).next();
+        gtx.addE(EDGE_LABEL).from(vertex).to(vertex).property(T.id, EDGE_ID).next();
+        gtx.tx().commit();
+
+        // reader threads which are constantly reading the edge ids in a separate transaction
+        CountDownLatch signal = new CountDownLatch(1);
+        List<Thread> readers = startInNewThreads(() -> {
+            while (signal.getCount() > 0) {
+                List<Object> edgIds = g.E().id().toList();
+                if (validationException.get() == null && (edgIds.size() > 1 || (edgIds.size() == 1 && !edgIds.get(0).equals(EDGE_ID)))) {
+                    validationException.set(new AssertionError("Unexpected edgeIds: " + edgIds));
+                }
+
+            }
+        }, 2);
+
+        // drop, add, update the same edge a number of times to validate that the reader thread should not interfere with the updates
+        for (int i = 0; i < 50; i++) {
+            Thread.sleep(50);
+            g.E().drop().iterate();
+            g.tx().commit();
+            Thread.sleep(50);
+            Vertex v = g.V(vid).next();
+            g.addE(EDGE_LABEL).property(T.id, EDGE_ID).from(v).to(v).next();
+            g.tx().commit();
+            g.E(EDGE_ID).property(PROPERTY_WEIGHT, 10.12).next();
+            g.tx().commit();
+            g.E(EDGE_ID).property(PROPERTY_WEIGHT, 8.6).next();
+            g.tx().commit();
+        }
+
+        // stop the reader threads
+        signal.countDown();
+        readers.forEach(t -> {
+            try {
+                t.join();
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        });
+        
+        verifyCommittedSingleVertex(graph);
+        verifyCommittedSingleEdge(graph, 8.6);
+        if (validationException.get() != null) {
+            throw validationException.get();
+        }
+    }
+
+    @Test
+    public void shouldNotAllowDirtyReadsOfVertexLabelAddForReadOnlyTransaction() throws InterruptedException {
+        final TinkerStorageGraph g = openMultiLabelGraph();
+        final GraphTraversalSource gtx = g.tx().begin();
+
+        final Vertex v = gtx.addV("person").next();
+        gtx.tx().commit();
+
+        // tx1 adds a label but does not commit
+        gtx.V(v.id()).addLabel("employee").iterate();
+
+        // a read-only transaction on another thread must not observe the uncommitted label
+        final Set<String> readerLabels = readLabelsInNewThreadTx(g, v.id());
+        assertEquals(Set.of("person"), readerLabels);
+
+        // tx1 sees its own change
+        assertEquals(Set.of("person", "employee"),
+                new HashSet<>(gtx.V(v.id()).next().labels()));
+    }
+
+    @Test
+    public void shouldNotAllowDirtyReadsOfVertexLabelDropForReadOnlyTransaction() throws InterruptedException {
+        final TinkerStorageGraph g = openMultiLabelGraph();
+        final GraphTraversalSource gtx = g.tx().begin();
+
+        final Vertex v = gtx.addV("person").addLabel("employee").next();
+        gtx.tx().commit();
+
+        // tx1 drops a label but does not commit
+        gtx.V(v.id()).dropLabel("employee").iterate();
+
+        // a read-only transaction on another thread must still observe the not-yet-dropped label
+        final Set<String> readerLabels = readLabelsInNewThreadTx(g, v.id());
+        assertEquals(Set.of("person", "employee"), readerLabels);
+
+        // tx1 sees its own change
+        assertEquals(Set.of("person"),
+                new HashSet<>(gtx.V(v.id()).next().labels()));
+    }
+
+    @Test
+    public void shouldNotAllowDirtyReadsOfVertexLabelDropAllForReadOnlyTransaction() throws InterruptedException {
+        final TinkerStorageGraph g = openMultiLabelGraph();
+        final GraphTraversalSource gtx = g.tx().begin();
+
+        final Vertex v = gtx.addV("person").addLabel("employee").next();
+        gtx.tx().commit();
+
+        // tx1 drops all labels but does not commit
+        gtx.V(v.id()).dropLabels().iterate();
+
+        // a read-only transaction on another thread must still observe both labels
+        final Set<String> readerLabels = readLabelsInNewThreadTx(g, v.id());
+        assertEquals(Set.of("person", "employee"), readerLabels);
+
+        // tx1 sees the empty label set (ZERO_OR_MORE cardinality)
+        assertTrue(gtx.V(v.id()).next().labels().isEmpty());
+    }
+
+    // tx1 adds label "employee", tx2 concurrently adds label "customer" to the same vertex
+    @Test
+    public void shouldHandleConcurrentChangeForVertexLabel() throws InterruptedException {
+        final TinkerStorageGraph g = openMultiLabelGraph();
+        final GraphTraversalSource gtx = g.tx().begin();
+
+        final Vertex v = gtx.addV("person").next();
+        gtx.tx().commit();
+
+        // tx1 adds a label
+        gtx.V(v.id()).addLabel("employee").iterate();
+
+        // tx2 concurrently adds a different label and commits first
+        runInNewThread(() -> {
+            final GraphTraversalSource gtx2 = g.tx().begin();
+            gtx2.V(v.id()).addLabel("customer").iterate();
+            gtx2.tx().commit();
+        });
+
+        // tx1 must fail because the vertex was modified in another transaction
+        try {
+            gtx.tx().commit();
+            fail("should throw TransactionException");
+        } catch (TransactionException e) {
+            assertEquals("Conflict: element modified in another transaction", e.getMessage());
+        }
+
+        // committed state should reflect only tx2's change
+        assertEquals(Set.of("person", "customer"),
+                readLabelsInNewThreadTx(g, v.id()));
+    }
+
+    // tx1 drops label "employee", tx2 concurrently drops the same label
+    @Test
+    public void shouldHandleConcurrentDropOfSameVertexLabel() throws InterruptedException {
+        final TinkerStorageGraph g = openMultiLabelGraph();
+        final GraphTraversalSource gtx = g.tx().begin();
+
+        final Vertex v = gtx.addV("person").addLabel("employee").next();
+        gtx.tx().commit();
+
+        // tx1 drops the label
+        gtx.V(v.id()).dropLabel("employee").iterate();
+
+        // tx2 concurrently drops the same label and commits first
+        runInNewThread(() -> {
+            final GraphTraversalSource gtx2 = g.tx().begin();
+            gtx2.V(v.id()).dropLabel("employee").iterate();
+            gtx2.tx().commit();
+        });
+
+        // tx1 must fail because the vertex was modified in another transaction
+        try {
+            gtx.tx().commit();
+            fail("should throw TransactionException");
+        } catch (TransactionException e) {
+            assertEquals("Conflict: element modified in another transaction", e.getMessage());
+        }
+
+        // committed state should reflect only tx2's change
+        assertEquals(Set.of("person"),
+                readLabelsInNewThreadTx(g, v.id()));
+    }
+
+    // tx1 adds a label to v1, tx2 deletes v1
+    @Test
+    public void shouldHandleAddingLabelWhenOtherTxDeleteVertex() throws InterruptedException {
+        final TinkerStorageGraph g = openMultiLabelGraph();
+        final GraphTraversalSource gtx = g.tx().begin();
+
+        final Vertex v = gtx.addV("person").next();
+        gtx.tx().commit();
+
+        // tx1 adds a label
+        gtx.V(v.id()).addLabel("employee").iterate();
+
+        // tx2 concurrently deletes the vertex and commits first
+        runInNewThread(() -> {
+            final GraphTraversalSource gtx2 = g.tx().begin();
+            gtx2.V(v.id()).drop().iterate();
+            gtx2.tx().commit();
+        });
+
+        // tx1 must fail because the vertex was deleted in another transaction
+        try {
+            gtx.tx().commit();
+            fail("should throw TransactionException");
+        } catch (TransactionException e) {
+            assertEquals("Conflict: element modified in another transaction", e.getMessage());
+        }
+
+        assertEquals(0, (long) gtx.V().count().next());
+        countElementsInNewThreadTx(g, 0, 0);
+    }
+
+    // tx1 adds a label to v1, tx2 attempts to delete v1 but rolls back
+    @Test
+    public void shouldHandleAddingLabelWhenOtherTxAttemptsDeleteThenRollsback() throws InterruptedException {
+        final TinkerStorageGraph g = openMultiLabelGraph();
+        final GraphTraversalSource gtx = g.tx().begin();
+
+        final Vertex v = gtx.addV("person").next();
+        gtx.tx().commit();
+
+        // tx1 adds a label
+        gtx.V(v.id()).addLabel("employee").iterate();
+
+        // tx2 attempts to delete the vertex but rolls back
+        runInNewThread(() -> {
+            final GraphTraversalSource gtx2 = g.tx().begin();
+            gtx2.V(v.id()).drop().iterate();
+            gtx2.tx().rollback();
+        });
+
+        // tx1 should commit successfully
+        gtx.tx().commit();
+
+        assertEquals(1, (long) gtx.V().count().next());
+        assertEquals(Set.of("person", "employee"),
+                readLabelsInNewThreadTx(g, v.id()));
+    }
+
+    // tx1 adds a label to v1, tx2 concurrently updates a property of v1 - both touch the vertex
+    @Test
+    public void shouldHandleConcurrentLabelAddAndPropertyChange() throws InterruptedException {
+        final TinkerStorageGraph g = openMultiLabelGraph();
+        final GraphTraversalSource gtx = g.tx().begin();
+
+        final Vertex v = gtx.addV("person").next();
+        gtx.tx().commit();
+
+        // tx1 adds a label
+        gtx.V(v.id()).addLabel("employee").iterate();
+
+        // tx2 concurrently changes a property on the same vertex and commits first
+        runInNewThread(() -> {
+            final GraphTraversalSource gtx2 = g.tx().begin();
+            gtx2.V(v.id()).property("age", 30).iterate();
+            gtx2.tx().commit();
+        });
+
+        // tx1 must fail because the vertex was modified in another transaction
+        try {
+            gtx.tx().commit();
+            fail("should throw TransactionException");
+        } catch (TransactionException e) {
+            assertEquals("Conflict: element modified in another transaction", e.getMessage());
+        }
+
+        // committed state should reflect only tx2's property change, no "employee" label
+        final GraphTraversalSource gtx3 = g.tx().begin();
+        final Vertex committed = gtx3.V(v.id()).next();
+        assertEquals(30, (int) committed.value("age"));
+        assertFalse(committed.labels().contains("employee"));
+        assertTrue(committed.labels().contains("person"));
+    }
+
+    @Test
+    public void shouldIsolateVertexLabelCountAcrossTransactions() throws InterruptedException {
+        final TinkerStorageGraph g = openMultiLabelGraph();
+        final GraphTraversalSource gtx = g.tx().begin();
+
+        final Vertex v = gtx.addV("person").next();
+        gtx.tx().commit();
+
+        // tx1 adds a label but does not commit
+        gtx.V(v.id()).addLabel("employee").iterate();
+
+        // another transaction must not observe the uncommitted label in its counts
+        assertEquals(0L, countByLabelInNewThreadTx(g, "employee"));
+        assertEquals(1L, countByLabelInNewThreadTx(g, "person"));
+
+        // tx1 observes its own uncommitted change
+        assertEquals(1L, g.countVerticesByLabel("employee"));
+        assertEquals(1L, g.countVerticesByLabel("person"));
+
+        // rolling back tx1 must restore the committed counts
+        gtx.tx().rollback();
+        assertEquals(0L, g.countVerticesByLabel("employee"));
+        assertEquals(1L, g.countVerticesByLabel("person"));
+        assertEquals(Set.of("person"),
+                readLabelsInNewThreadTx(g, v.id()));
+    }
+
+    @Test
+    public void shouldRollbackVertexLabelDrop() throws InterruptedException {
+        final TinkerStorageGraph g = openMultiLabelGraph();
+        final GraphTraversalSource gtx = g.tx().begin();
+
+        final Vertex v = gtx.addV("person").addLabel("employee").next();
+        gtx.tx().commit();
+
+        // tx1 drops a label
+        gtx.V(v.id()).dropLabel("employee").iterate();
+        // tx1 observes its own uncommitted change
+        assertFalse(gtx.V(v.id()).next().labels().contains("employee"));
+
+        // rolling back must restore the dropped label
+        gtx.tx().rollback();
+
+        assertEquals(Set.of("person", "employee"),
+                readLabelsInNewThreadTx(g, v.id()));
+    }
+
+    private TinkerStorageGraph openMultiLabelGraph() {
+        final org.apache.commons.configuration2.Configuration config = new org.apache.commons.configuration2.BaseConfiguration();
+        config.setProperty(org.apache.tinkerpop.gremlin.structure.Graph.GRAPH, TinkerStorageGraph.class.getName());
+        config.setProperty(AbstractTinkerGraph.GREMLIN_TINKERGRAPH_VERTEX_LABEL_CARDINALITY, "ZERO_OR_MORE");
+        return TinkerStorageGraph.open(config);
+    }
+
+    private Set<String> readLabelsInNewThreadTx(final TinkerStorageGraph g, final Object id) throws InterruptedException {
+        final AtomicReference<Set<String>> result = new AtomicReference<>();
+        final Thread thread = new Thread(() -> {
+            final GraphTraversalSource gtx = g.tx().begin();
+            result.set(new HashSet<>(gtx.V(id).next().labels()));
+        });
+        thread.start();
+        thread.join();
+        return result.get();
+    }
+
+    private long countByLabelInNewThreadTx(final TinkerStorageGraph g, final String label) throws InterruptedException {
+        final AtomicLong count = new AtomicLong(-1);
+        final Thread thread = new Thread(() -> {
+            g.tx().begin();
+            count.set(g.countVerticesByLabel(label));
+        });
+        thread.start();
+        thread.join();
+        return count.get();
+    }
+
+    private void runInNewThread(final Runnable runnable) {
+        final Thread thread = new Thread(runnable);
+        thread.start();
+        try {
+            thread.join();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private List<Thread> startInNewThreads(final Runnable runnable, int numThreads) {
+        return IntStream.range(0, numThreads).mapToObj(i -> {
+            final Thread thread = new Thread(runnable);
+            thread.start();
+            return thread;
+        }).collect(Collectors.toList());
+    }
+    
+    private void verifyCommittedSingleEdge(final TinkerStorageGraph g, final Object weightValue) {
+        // graph should only have a single edge
+        assertEquals(1, g.getEdges().size());
+
+        // the single edge should have the expected id
+        final TinkerElementContainer<TinkerEdge> edgeContainer = g.getEdges().get(EDGE_ID);
+
+        // container should be committed and not have an update in progress
+        assertFalse(edgeContainer.isChanged());
+        assertFalse(edgeContainer.inUse());
+
+        // the element in the container should have the same id
+        // there are multiple ways to obtain the container element's id and they should be consistent
+        assertEquals(EDGE_ID, edgeContainer.getElementId());
+        assertEquals(EDGE_ID, edgeContainer.get().id());
+        final TinkerEdge unmodified = edgeContainer.getUnmodified();
+        assertEquals(EDGE_ID, unmodified.id());
+        assertEquals(EDGE_LABEL, unmodified.label());
+
+        if (weightValue != null) {
+            Iterator<Property<Object>> properties = unmodified.properties(PROPERTY_WEIGHT);
+            assertEquals(weightValue, properties.next().value());
+        } else {
+            assertNull(unmodified.properties);
+        }
+    }
+
+    @Test
+    public void shouldFindIndexedVertexAfterAddingEdgeToItInSameTransaction() {
+        final TinkerStorageGraph g = TinkerStorageGraph.open();
+        g.createIndex(PROPERTY_NAME, Vertex.class);
+        final GraphTraversalSource gtx = g.tx().begin();
+        gtx.addV().property(PROPERTY_NAME, "hub").iterate();
+        gtx.tx().commit();
+
+        gtx.addV().addE(EDGE_LABEL).to(__.V().has(PROPERTY_NAME, "hub")).iterate();
+
+        assertEquals(1, (long) gtx.V().has(PROPERTY_NAME, "hub").count().next());
+    }
+
+    @Test
+    public void shouldRollbackWithVertexIndexAndNoEdgeIndex() {
+        final TinkerStorageGraph g = TinkerStorageGraph.open();
+        g.createIndex(PROPERTY_NAME, Vertex.class);
+        final GraphTraversalSource gtx = g.tx().begin();
+        gtx.addV().property(PROPERTY_NAME, "a").iterate();
+
+        gtx.tx().rollback();
+
+        assertFalse(gtx.tx().isOpen());
+        assertEquals(0, (long) gtx.V().count().next());
+    }
+
+    @Test
+    public void shouldFindIndexedEdgeAfterChangingAnotherPropertyInSameTransaction() {
+        final TinkerStorageGraph g = TinkerStorageGraph.open();
+        g.createIndex(PROPERTY_NAME, Edge.class);
+        final GraphTraversalSource gtx = g.tx().begin();
+        gtx.addV().addE(EDGE_LABEL).to(__.addV()).property(PROPERTY_NAME, "link").iterate();
+        gtx.tx().commit();
+
+        gtx.E().has(PROPERTY_NAME, "link").property("weight", 1).iterate();
+
+        assertEquals(1, (long) gtx.E().has(PROPERTY_NAME, "link").count().next());
+    }
+
+    @Test
+    public void shouldRollbackWithEdgeIndexAndNoVertexIndex() {
+        final TinkerStorageGraph g = TinkerStorageGraph.open();
+        g.createIndex(PROPERTY_NAME, Edge.class);
+        final GraphTraversalSource gtx = g.tx().begin();
+        gtx.addV().addE(EDGE_LABEL).to(__.addV()).property(PROPERTY_NAME, "link").iterate();
+
+        gtx.tx().rollback();
+
+        assertFalse(gtx.tx().isOpen());
+        assertEquals(0, (long) gtx.E().has(PROPERTY_NAME, "link").count().next());
+    }
+
+    @Test
+    public void shouldNotChangeCommittedVertexOnRollbackOfWriteThroughIndexedLookup() {
+        final TinkerStorageGraph g = TinkerStorageGraph.open();
+        g.createIndex(PROPERTY_NAME, Vertex.class);
+        final GraphTraversalSource gtx = g.tx().begin();
+        final Object id = gtx.addV().property(PROPERTY_NAME, "a").property(PROPERTY_WEIGHT, 1).id().next();
+        gtx.tx().commit();
+
+        gtx.V().has(PROPERTY_NAME, "a").property(PROPERTY_WEIGHT, 2).iterate();
+        gtx.tx().rollback();
+
+        assertEquals(1, (int) g.getVertices().get(id).getUnmodified().<Integer>value(PROPERTY_WEIGHT));
+        assertEquals(1, (int) gtx.V(id).values(PROPERTY_WEIGHT).next());
+    }
+
+    @Test
+    public void shouldNotShowUncommittedWriteThroughIndexedLookupToOtherTransactions() throws InterruptedException {
+        final TinkerStorageGraph g = TinkerStorageGraph.open();
+        g.createIndex(PROPERTY_NAME, Vertex.class);
+        final GraphTraversalSource gtx = g.tx().begin();
+        final Object id = gtx.addV().property(PROPERTY_NAME, "a").property(PROPERTY_WEIGHT, 1).id().next();
+        gtx.tx().commit();
+
+        gtx.V().has(PROPERTY_NAME, "a").property(PROPERTY_WEIGHT, 2).iterate();
+
+        final AtomicReference<Object> seen = new AtomicReference<>();
+        final Thread thread = new Thread(() -> seen.set(g.traversal().V(id).values(PROPERTY_WEIGHT).next()));
+        thread.start();
+        thread.join();
+        assertEquals(1, seen.get());
+
+        gtx.tx().commit();
+        assertEquals(2, (int) g.getVertices().get(id).getUnmodified().<Integer>value(PROPERTY_WEIGHT));
+    }
+
+    @Test
+    public void shouldNotChangeCommittedEdgeOnRollbackOfWriteThroughIndexedLookup() {
+        final TinkerStorageGraph g = TinkerStorageGraph.open();
+        g.createIndex(PROPERTY_NAME, Edge.class);
+        final GraphTraversalSource gtx = g.tx().begin();
+        final Object id = gtx.addV().addE(EDGE_LABEL).to(__.addV()).
+                property(PROPERTY_NAME, "link").property(PROPERTY_WEIGHT, 1).id().next();
+        gtx.tx().commit();
+
+        gtx.E().has(PROPERTY_NAME, "link").property(PROPERTY_WEIGHT, 2).iterate();
+        gtx.tx().rollback();
+
+        assertEquals(1, (int) g.getEdges().get(id).getUnmodified().<Integer>value(PROPERTY_WEIGHT));
+        assertEquals(1, (int) gtx.E(id).values(PROPERTY_WEIGHT).next());
+    }
+
+    @Test
+    public void shouldNotChangeCommittedVertexOnRollbackOfWriteThroughReferenceKeptAcrossCommit() {
+        final TinkerStorageGraph g = TinkerStorageGraph.open();
+        final GraphTraversalSource gtx = g.tx().begin();
+        final Vertex v = gtx.addV().property(PROPERTY_WEIGHT, 1).next();
+        gtx.tx().commit();
+
+        v.property(PROPERTY_WEIGHT, 2);
+        gtx.tx().rollback();
+
+        assertEquals(1, (int) g.getVertices().get(v.id()).getUnmodified().<Integer>value(PROPERTY_WEIGHT));
+        assertEquals(1, (int) gtx.V(v.id()).values(PROPERTY_WEIGHT).next());
+    }
+
+    @Test
+    public void shouldNotChangeCommittedEdgeOnRollbackOfWriteThroughReferenceKeptAcrossCommit() {
+        final TinkerStorageGraph g = TinkerStorageGraph.open();
+        final GraphTraversalSource gtx = g.tx().begin();
+        final Edge e = gtx.addV().addE(EDGE_LABEL).to(__.addV()).property(PROPERTY_WEIGHT, 1).next();
+        gtx.tx().commit();
+
+        e.property(PROPERTY_WEIGHT, 2);
+        gtx.tx().rollback();
+
+        assertEquals(1, (int) g.getEdges().get(e.id()).getUnmodified().<Integer>value(PROPERTY_WEIGHT));
+        assertEquals(1, (int) gtx.E(e.id()).values(PROPERTY_WEIGHT).next());
+    }
+
+    @Test
+    public void shouldCommitWriteThroughReferenceKeptAcrossCommit() {
+        final TinkerStorageGraph g = TinkerStorageGraph.open();
+        final GraphTraversalSource gtx = g.tx().begin();
+        final Vertex v = gtx.addV().property(PROPERTY_WEIGHT, 1).next();
+        gtx.tx().commit();
+
+        v.property(PROPERTY_WEIGHT, 2);
+        gtx.tx().commit();
+
+        assertEquals(2, (int) g.getVertices().get(v.id()).getUnmodified().<Integer>value(PROPERTY_WEIGHT));
+        assertEquals(2, (int) gtx.V(v.id()).values(PROPERTY_WEIGHT).next());
+    }
+
+    @Test
+    public void shouldNotAllowWriteThroughReferenceKeptAcrossCommitToRemovedVertex() {
+        final TinkerStorageGraph g = TinkerStorageGraph.open();
+        final GraphTraversalSource gtx = g.tx().begin();
+        final Vertex v = gtx.addV().property(PROPERTY_WEIGHT, 1).next();
+        gtx.tx().commit();
+        gtx.V(v.id()).drop().iterate();
+        gtx.tx().commit();
+
+        try {
+            v.property(PROPERTY_WEIGHT, 2);
+            fail("Should not allow a write to a removed vertex");
+        } catch (IllegalStateException ex) {
+            assertEquals(String.format("Vertex with id %s was removed.", v.id()), ex.getMessage());
+        }
+    }
+
+    @Test
+    public void shouldNotAllowWriteThroughReferenceKeptAcrossCommitToRemovedEdge() {
+        final TinkerStorageGraph g = TinkerStorageGraph.open();
+        final GraphTraversalSource gtx = g.tx().begin();
+        final Edge e = gtx.addV().addE(EDGE_LABEL).to(__.addV()).next();
+        gtx.tx().commit();
+        gtx.E(e.id()).drop().iterate();
+        gtx.tx().commit();
+
+        try {
+            e.property(PROPERTY_WEIGHT, 2);
+            fail("Should not allow a write to a removed edge");
+        } catch (IllegalStateException ex) {
+            assertEquals(String.format("Edge with id %s was removed.", e.id()), ex.getMessage());
+        }
+    }
+
+    private void verifyCommittedSingleVertex(final TinkerStorageGraph g) {
+        verifyCommittedSingleVertex(g, null);
+    }
+
+    private void verifyCommittedSingleVertex(final TinkerStorageGraph g, final String namePropertyValue) {
+        // graph should only have a single vertex
+        assertEquals(1, g.getVertices().size());
+        
+        // the single vertex should have the expected id
+        final TinkerElementContainer<TinkerVertex> vertexContainer = g.getVertices().get(vid);
+        
+        // container should be committed and not have an update in progress
+        assertFalse(vertexContainer.isChanged());
+        assertFalse(vertexContainer.inUse());
+        
+        // the element in the container should have the same id
+        // there are multiple ways to obtain the container element's id and they should be consistent
+        assertEquals(vid, vertexContainer.getElementId());
+        assertEquals(vid, vertexContainer.get().id());
+        final TinkerVertex unmodified = vertexContainer.getUnmodified();
+        assertEquals(vid, unmodified.id());
+
+        if (namePropertyValue != null) {
+            final Map<String, List<VertexProperty>> properties = unmodified.properties;
+            assertEquals(1, properties.size());
+            final List<VertexProperty> nameProperties = properties.get(PROPERTY_NAME);
+            assertEquals(1, nameProperties.size());
+            assertEquals(namePropertyValue, nameProperties.get(0).value());
+        } else {
+            assertNull(unmodified.properties);
+        }
+    }
+}

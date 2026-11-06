@@ -58,6 +58,19 @@ public final class OrP<V> extends ConnectiveP<V> {
     }
 
     @Override
+    public boolean isResolvedEmpty() {
+        // OR short-circuits: only empty if ALL traversal-bearing children resolved empty
+        boolean anyTraversal = false;
+        for (final P<V> p : this.predicates) {
+            if (p.hasTraversal()) {
+                anyTraversal = true;
+                if (!p.isResolvedEmpty()) return false;
+            }
+        }
+        return anyTraversal;
+    }
+
+    @Override
     public String toString() {
         return "or(" + StringFactory.removeEndBrackets(this.predicates) + ")";
     }

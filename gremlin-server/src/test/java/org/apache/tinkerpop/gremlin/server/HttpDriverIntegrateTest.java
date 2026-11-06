@@ -608,7 +608,7 @@ public class HttpDriverIntegrateTest extends AbstractGremlinServerIntegrationTes
 
         try {
             final RequestOptions ro = RequestOptions.build().language("gremlin-lang").
-                    addG("gmodern").
+                    traversalSource("gmodern").
                     addParameter("x", 1).
                     addParameter("y", "knows").
                     addParameter("z", "created").

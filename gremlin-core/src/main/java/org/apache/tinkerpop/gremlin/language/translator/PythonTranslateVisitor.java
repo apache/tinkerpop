@@ -294,7 +294,7 @@ public class PythonTranslateVisitor extends AbstractTranslateVisitor {
         final String text = ctx.getText();
         final String withoutSuffix = text.substring(0, text.length() - 1);
         final String inner = removeFirstAndLastCharacters(withoutSuffix);
-        sb.append("SingleChar('").append(inner).append("')");
+        sb.append("SingleChar('").append(inner.equals("'") ? "\\'" : inner).append("')");
         return null;
     }
 
@@ -318,6 +318,24 @@ public class PythonTranslateVisitor extends AbstractTranslateVisitor {
     }
 
     @Override
+    public Void visitPdtLiteral(final GremlinParser.PdtLiteralContext ctx) {
+        if (ctx.genericMapLiteral() != null) {
+            sb.append("CompositePDT(");
+            visitStringLiteral(ctx.stringLiteral(0));
+            sb.append(", ");
+            visitGenericMapLiteral(ctx.genericMapLiteral());
+            sb.append(")");
+        } else {
+            sb.append("PrimitivePDT(");
+            visitStringLiteral(ctx.stringLiteral(0));
+            sb.append(", ");
+            visitStringLiteral(ctx.stringLiteral(1));
+            sb.append(")");
+        }
+        return null;
+    }
+
+    @Override
     public Void visitBinaryLiteral(final GremlinParser.BinaryLiteralContext ctx) {
         sb.append("base64.b64decode(");
         visitStringLiteral(ctx.stringLiteral());
@@ -336,9 +354,15 @@ public class PythonTranslateVisitor extends AbstractTranslateVisitor {
     }
 
     protected void handleStringLiteralText(final String text) {
-        sb.append("'");
-        sb.append(text);
-        sb.append("'");
+        if (text.contains("'")) {
+            sb.append("\"");
+            sb.append(text);
+            sb.append("\"");
+        } else {
+            sb.append("'");
+            sb.append(text);
+            sb.append("'");
+        }
     }
 
     static final class SymbolHelper {

@@ -113,6 +113,15 @@ export default class DateTimeSerializer {
       v.setTime(v.getTime() - utcOffset * 1000);
     }
 
+    // The DateTime wire format can carry values (e.g. extreme years near +/-999999999) that fall
+    // outside the range representable by a JavaScript Date. In those cases Date.UTC(...) returns NaN
+    // and new Date(NaN) yields an invalid Date without throwing. Reject such values here so
+    // unsupported boundary date-times fail deserialization instead of silently producing an unusable
+    // Date instance.
+    if (Number.isNaN(v.getTime())) {
+      throw new Error('DateTimeSerializer: {value} is outside the range supported by JavaScript Date');
+    }
+
     return v;
   }
 

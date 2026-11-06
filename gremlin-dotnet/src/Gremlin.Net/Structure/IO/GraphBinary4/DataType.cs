@@ -44,8 +44,7 @@ namespace Gremlin.Net.Structure.IO.GraphBinary4
         public static readonly DataType Edge = new DataType(0x0D);
         public static readonly DataType Path = new DataType(0x0E);
         public static readonly DataType Property = new DataType(0x0F);
-        // Not yet implemented
-        // public static readonly DataType Graph = new DataType(0x10);
+        public static readonly DataType Graph = new DataType(0x10);
         public static readonly DataType Vertex = new DataType(0x11);
         public static readonly DataType VertexProperty = new DataType(0x12);
         public static readonly DataType Direction = new DataType(0x18);
@@ -56,12 +55,10 @@ namespace Gremlin.Net.Structure.IO.GraphBinary4
         public static readonly DataType Binary = new DataType(0x25);
         public static readonly DataType Short = new DataType(0x26);
         public static readonly DataType Boolean = new DataType(0x27);
-        // Not yet implemented
-        // public static readonly DataType Tree = new DataType(0x2B);
+        public static readonly DataType Tree = new DataType(0x2B);
         public static readonly DataType Merge = new DataType(0x2E);
-        // Not yet implemented
-        // public static readonly DataType CompositePDT = new DataType(0xF0);
-        // public static readonly DataType PrimitivePDT = new DataType(0xF1);
+        public static readonly DataType CompositePDT = new DataType(0xF0);
+        public static readonly DataType PrimitivePDT = new DataType(0xF1);
         public static readonly DataType Char = new DataType(0x80);
         public static readonly DataType Duration = new DataType(0x81);
         public static readonly DataType Marker = new DataType(0xFD);

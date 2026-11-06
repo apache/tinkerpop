@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.server;
 
 import ch.qos.logback.classic.Level;
 import io.netty.handler.codec.http.HttpResponseStatus;
+import io.netty.handler.timeout.ReadTimeoutException;
 import nl.altindag.log.LogCaptor;
 import org.apache.tinkerpop.gremlin.TestHelper;
 import org.apache.tinkerpop.gremlin.driver.Client;
@@ -29,17 +30,27 @@ import org.apache.tinkerpop.gremlin.driver.Result;
 import org.apache.tinkerpop.gremlin.driver.ResultSet;
 import org.apache.tinkerpop.gremlin.driver.exception.NoHostAvailableException;
 import org.apache.tinkerpop.gremlin.driver.exception.ResponseException;
-import org.apache.tinkerpop.gremlin.driver.interceptor.PayloadSerializingInterceptor;
+import org.apache.tinkerpop.gremlin.driver.remote.DriverRemoteConnection;
 import org.apache.tinkerpop.gremlin.jsr223.ScriptFileGremlinPlugin;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.server.channel.HttpChannelizer;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.io.Storage;
+import org.apache.tinkerpop.gremlin.structure.io.binary.TypeSerializerRegistry;
+import org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefined;
+import org.apache.tinkerpop.gremlin.structure.io.pdt.CompositePDT;
+import org.apache.tinkerpop.gremlin.structure.io.pdt.CompositePDTAdapter;
+import org.apache.tinkerpop.gremlin.structure.io.pdt.PDTRegistry;
+import org.apache.tinkerpop.gremlin.structure.io.pdt.PrimitivePDT;
+import org.apache.tinkerpop.gremlin.server.pdt.Measurement;
+import org.apache.tinkerpop.gremlin.server.pdt.Uint32;
+import org.apache.tinkerpop.gremlin.server.pdt.Uint32Adapter;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
 import org.apache.tinkerpop.gremlin.util.ExceptionHelper;
 import org.apache.tinkerpop.gremlin.util.TimeUtil;
 import org.apache.tinkerpop.gremlin.util.function.FunctionUtils;
+import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.util.ser.GraphBinaryMessageSerializerV4;
-import org.apache.tinkerpop.gremlin.util.ser.GraphSONMessageSerializerV4;
 import org.apache.tinkerpop.gremlin.util.ser.Serializers;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -68,6 +79,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import static org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource.traversal;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
@@ -138,22 +150,22 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
                 break;
             case "shouldExecuteSessionlessScriptOnTransactionalGraph":
             case "shouldManageTransactionsInSession":
-                useTinkerTransactionGraph(settings);
+                useTinkerStorageGraph(settings);
                 break;
             case "shouldRequireAliasedGraphVariablesInStrictTransactionMode":
                 settings.strictTransactionManagement = true;
                 break;
             case "shouldAliasGraphVariablesInStrictTransactionMode":
                 settings.strictTransactionManagement = true;
-                useTinkerTransactionGraph(settings);
+                useTinkerStorageGraph(settings);
                 break;
             case "shouldProcessSessionRequestsInOrderAfterTimeout":
-                settings.evaluationTimeout = 250;
+                settings.timeoutMillis = 250;
                 settings.threadPoolWorker = 1;
                 break;
             case "shouldProcessTraversalInterruption":
             case "shouldProcessEvalInterruption":
-                settings.evaluationTimeout = 1500;
+                settings.timeoutMillis = 1500;
                 break;
         }
 
@@ -166,10 +178,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         final AtomicInteger httpRequests = new AtomicInteger(0);
 
         final Cluster cluster = TestClientFactory.build().
-                addInterceptor("counter", r -> {
-                    httpRequests.incrementAndGet();
-                    return r;
-                }).create();
+                interceptors(r -> httpRequests.incrementAndGet()).create();
 
         try {
             final Client client = cluster.connect();
@@ -187,15 +196,13 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
     public void shouldRunInterceptorsInOrder() throws Exception {
         AtomicReference<Object> body = new AtomicReference<>();
         final Cluster cluster = TestClientFactory.build().
-                addInterceptor("first", r -> {
-                    body.set(r.getBody());
-                    r.setBody(null);
-                    return r;
-                }).
-                addInterceptor("second", r -> {
-                    r.setBody(body.get());
-                    return r;
-                }).create();
+                interceptors(
+                    r -> {
+                        body.set(r.getBody());
+                        r.setBody(null);
+                    },
+                    r -> r.setBody(body.get())
+                ).create();
 
         try {
             final Client client = cluster.connect();
@@ -206,14 +213,92 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
     }
 
     @Test
-    public void shouldWorkWithGraphSONSerializer() throws Exception {
-        final Cluster cluster = TestClientFactory.build(new PayloadSerializingInterceptor(new GraphSONMessageSerializerV4()))
-                .serializer(Serializers.GRAPHSON_V4.simpleInstance()).create();
+    public void shouldAutoSerializeRequestMessageWithInterceptorMutation() throws Exception {
+        // Verifies the driver auto-serializes when an interceptor modifies the RequestMessage
+        // body but does not call serializeBody() itself.
+        final Cluster cluster = TestClientFactory.build().
+                interceptors(r -> {
+                    if (r.getBody() instanceof RequestMessage) {
+                        r.setBody(RequestMessage.build("g.inject(99)").create());
+                    }
+                }).create();
+
+        try {
+            final Client client = cluster.connect();
+            assertEquals(99, client.submit("g.inject(1)").all().get().get(0).getInt());
+        } finally {
+            cluster.close();
+        }
+    }
+
+    @Test
+    public void shouldPropagateExceptionThrownDuringInterceptor() throws Exception {
+        final AtomicInteger callCount = new AtomicInteger(0);
+        final Cluster cluster = TestClientFactory.build().
+                interceptors(r -> {
+                    // Only throw on the first request to verify recovery
+                    if (callCount.incrementAndGet() == 1) {
+                        throw new RuntimeException("interceptor broke");
+                    }
+                }).create();
+        try {
+            final Client client = cluster.connect();
+
+            // First request should fail with interceptor error
+            try {
+                client.submit("g.inject(1)").all().get();
+                fail("Should have thrown an exception");
+            } catch (Exception ex) {
+                assertTrue(ex.getCause().getMessage().contains("interceptor broke"));
+            }
+
+            // Subsequent request should succeed, proving the connection is still usable
+            assertEquals(2, client.submit("g.inject(2)").all().get().get(0).getInt());
+        } finally {
+            cluster.close();
+        }
+    }
+
+    @Test
+    public void shouldPropagateErrorWhenInterceptorSetsUnsupportedBodyType() throws Exception {
+        // This error occurs after interceptors run, when serializeBody() encounters
+        // a body that is neither RequestMessage nor byte[].
+        final AtomicInteger callCount = new AtomicInteger(0);
+        final Cluster cluster = TestClientFactory.build().
+                interceptors(r -> {
+                    if (callCount.incrementAndGet() == 1) {
+                        r.setBody(42);
+                    }
+                }).create();
+        try {
+            final Client client = cluster.connect();
+
+            // First request should fail with body type error
+            try {
+                client.submit("g.inject(1)").all().get();
+                fail("Should have thrown an exception");
+            } catch (Exception ex) {
+                final String msg = ex.getCause().getMessage();
+                assertTrue(msg.contains("Cannot serialize body of type"));
+                assertTrue(msg.contains("Integer"));
+            }
+
+            // Subsequent request should succeed, proving the connection is still usable
+            assertEquals(3, client.submit("g.inject(3)").all().get().get(0).getInt());
+        } finally {
+            cluster.close();
+        }
+    }
+
+    @Test
+    public void shouldWorkWithGraphSONResponse() throws Exception {
+        final Cluster cluster = TestClientFactory.build()
+                .responseSerializer(Serializers.GRAPHSON_V4.simpleInstance()).create();
 
         try {
             final Client client = cluster.connect();
             final RequestOptions ro = RequestOptions.build()
-                    .addG("gmodern")
+                    .traversalSource("gmodern")
                     .language("gremlin-lang")
                     .bulkResults(true)
                     .create();
@@ -224,9 +309,9 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
     }
 
     @Test
-    public void shouldWorkWithGraphSONRequestAndGraphBinaryResponse() throws Exception {
-        final Cluster cluster = TestClientFactory.build(new PayloadSerializingInterceptor(new GraphSONMessageSerializerV4()))
-                .serializer(Serializers.GRAPHBINARY_V4.simpleInstance()).create();
+    public void shouldWorkWithJsonRequestAndGraphBinaryResponse() throws Exception {
+        final Cluster cluster = TestClientFactory.build()
+                .responseSerializer(Serializers.GRAPHBINARY_V4.simpleInstance()).create();
 
         try {
             final Client client = cluster.connect();
@@ -237,9 +322,9 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
     }
 
     @Test
-    public void shouldWorkWithGraphBinaryRequestAndGraphSONResponse() throws Exception {
-        final Cluster cluster = TestClientFactory.build(new PayloadSerializingInterceptor(new GraphBinaryMessageSerializerV4()))
-                .serializer(Serializers.GRAPHSON_V4.simpleInstance()).create();
+    public void shouldWorkWithJsonRequestAndGraphSONResponse() throws Exception {
+        final Cluster cluster = TestClientFactory.build()
+                .responseSerializer(Serializers.GRAPHSON_V4.simpleInstance()).create();
 
         try {
             final Client client = cluster.connect();
@@ -255,11 +340,8 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         final AtomicInteger handshakeRequests = new AtomicInteger(0);
 
         final Cluster cluster = TestClientFactory.build().
-                maxConnectionPoolSize(1).
-                addInterceptor("counter", r -> {
-                    handshakeRequests.incrementAndGet();
-                    return r;
-                }).create();
+                maxConnections(1).
+                interceptors(r -> handshakeRequests.incrementAndGet()).create();
 
         try {
             final Client client = cluster.connect();
@@ -277,7 +359,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
     @Ignore("Reading for streaming GraphSON is not supported")
     @Test
     public void shouldReportErrorWhenRequestCantBeSerialized() throws Exception {
-        final Cluster cluster = TestClientFactory.build().serializer(Serializers.GRAPHSON_V4).create();
+        final Cluster cluster = TestClientFactory.build().responseSerializer(Serializers.GRAPHSON_V4).create();
         try {
             final Client client = cluster.connect().alias("g");
 
@@ -337,18 +419,20 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
 
     @Test
     public void shouldEventuallySucceedAfterChannelLevelError() {
+        final int readMillis = 1000;
         final Cluster cluster = TestClientFactory.build()
                 .reconnectInterval(500)
-                .maxResponseContentLength(32).create(); // Warning: compression can change the content length. Adjust as needed.
+                .readTimeoutMillis(readMillis).create();
         final Client client = cluster.connect();
 
         try {
             try {
-                client.submit("g.inject('x').repeat(concat('x')).times(512)").all().get();
-                fail("Request should have failed because it exceeded the max content length allowed");
+                // sleep on the server longer than the readTimeout so no response chunk arrives in time
+                client.submit("Thread.sleep(" + readMillis * 3 + ")", groovyRequestOptions).all().get();
+                fail("Request should have failed because the readTimeout fired before a response was received");
             } catch (Exception ex) {
                 final Throwable root = ExceptionHelper.getRootCause(ex);
-                assertThat(root.getMessage(), containsString("Response entity too large"));
+                assertThat(root, instanceOf(ReadTimeoutException.class));
             }
 
             assertEquals(2, client.submit("g.inject(2)").all().join().get(0).getInt());
@@ -565,15 +649,15 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         try {
             final Client client = cluster.connect();
 
-            final AtomicInteger checked = new AtomicInteger(0);
             final ResultSet results = client.submit("g.inject(1,2,3,4,5,6,7,8,9)");
+            // depending on timing every result may already be available on the first check (in particular with HTTP
+            // streaming over a fast loopback), so do not assert that the polling loop runs - only that all nine
+            // results ultimately arrive and the available count never exceeds the total while streaming
             while (!results.allItemsAvailable()) {
                 assertTrue(results.getAvailableItemCount() < 10);
-                checked.incrementAndGet();
                 Thread.sleep(100);
             }
 
-            assertTrue(checked.get() > 0);
             assertEquals(9, results.getAvailableItemCount());
         } finally {
             cluster.close();
@@ -703,7 +787,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         // described above in the javadoc of the test (though an equivalent number also produced it), but this has
         // been tested to much higher multiples and passes.  note that the maxWaitForConnection setting is high so
         // that the client doesn't timeout waiting for an available connection. obviously this can also be fixed
-        // by increasing the maxConnectionPoolSize.
+        // by increasing the maxConnections.
         final int requests = workerPoolSizeForDriver * 4;
         final Cluster cluster = TestClientFactory.build()
                 .workerPoolSize(workerPoolSizeForDriver)
@@ -820,7 +904,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
 
     @Test
     public void shouldWorkWithGraphBinaryV4Serialization() throws Exception {
-        final Cluster cluster = TestClientFactory.build().serializer(Serializers.GRAPHBINARY_V4).create();
+        final Cluster cluster = TestClientFactory.build().responseSerializer(Serializers.GRAPHBINARY_V4).create();
         final Client client = cluster.connect();
 
         try {
@@ -830,36 +914,6 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
             final Vertex v = r.get(0).get(DetachedVertex.class);
             assertEquals(1, v.id());
             assertEquals("person", v.label());
-        } finally {
-            cluster.close();
-        }
-    }
-
-    @Test
-    public void shouldFailClientSideWithTooLargeAResponse() {
-        final Cluster cluster = TestClientFactory.build().maxResponseContentLength(1).create();
-        final Client client = cluster.connect();
-
-        try {
-            final String fatty = IntStream.range(0, 100).mapToObj(String::valueOf).collect(Collectors.joining());
-            client.submit(String.format("g.inject('%s')", fatty)).all().get();
-            fail("Should throw an exception.");
-        } catch (Exception re) {
-            final Throwable root = ExceptionHelper.getRootCause(re);
-            assertTrue(root.getMessage().contains("Response entity too large"));
-        } finally {
-            cluster.close();
-        }
-    }
-
-    @Test
-    public void shouldSucceedClientSideWithLargeResponseIfMaxResponseContentLengthZero() throws Exception {
-        final Cluster cluster = TestClientFactory.build().maxResponseContentLength(0).create();
-        final Client client = cluster.connect();
-
-        try {
-            final String fatty = IntStream.range(0, 10000).mapToObj(String::valueOf).collect(Collectors.joining());
-            assertEquals(fatty, client.submit(String.format("g.inject('%s')", fatty)).all().get().get(0).getString());
         } finally {
             cluster.close();
         }
@@ -967,7 +1021,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
     @Test
     public void shouldBeThreadSafeToUseOneClient() throws Exception {
         final Cluster cluster = TestClientFactory.build().workerPoolSize(2)
-                .maxConnectionPoolSize(16).create();
+                .maxConnections(16).create();
         final Client client = cluster.connect();
 
         final Map<Integer, Integer> results = new ConcurrentHashMap<>();
@@ -1067,7 +1121,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
 
     @Test
     public void shouldAliasTraversalSourceVariables() throws Exception {
-        final Cluster cluster = TestClientFactory.build().serializer(Serializers.GRAPHBINARY_V4).create();
+        final Cluster cluster = TestClientFactory.build().responseSerializer(Serializers.GRAPHBINARY_V4).create();
         final Client client = cluster.connect();
         try {
             try {
@@ -1172,8 +1226,8 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
     public void shouldReturnClearExceptionCauseWhenClientIsTooBusyAndConnectionPoolIsFull() throws InterruptedException {
         int maxSize = 1;
         final Cluster cluster = TestClientFactory.build()
-                .maxConnectionPoolSize(1)
-                .connectionSetupTimeoutMillis(100)
+                .maxConnections(1)
+                .connectTimeoutMillis(100)
                 .maxWaitForConnection(150)
                 .create();
 
@@ -1264,4 +1318,231 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
             cluster.close();
         }
     }
+
+    @Test
+    public void shouldRoundTripRawPdtViaTraversal() throws Exception {
+        final Cluster cluster = TestClientFactory.build().create();
+        try {
+            final GraphTraversalSource g = traversal().with(DriverRemoteConnection.using(cluster));
+            final Map<String, Object> fields = new HashMap<>();
+            fields.put("x", 1);
+            fields.put("y", 2);
+            final CompositePDT pdt = new CompositePDT("TestPoint", fields);
+            final Object result = g.inject(pdt).next();
+
+            assertTrue(result instanceof CompositePDT);
+            final CompositePDT r = (CompositePDT) result;
+            assertEquals("TestPoint", r.getName());
+            assertEquals(1, r.getFields().get("x"));
+            assertEquals(2, r.getFields().get("y"));
+        } finally {
+            cluster.close();
+        }
+    }
+
+    @Test
+    public void shouldRoundTripRegistryPdtViaTraversal() throws Exception {
+        final PDTRegistry registry = PDTRegistry.empty();
+        registry.register(new TestPointAdapter());
+
+        final Cluster cluster = TestClientFactory.build()
+                .responseSerializer(new GraphBinaryMessageSerializerV4(TypeSerializerRegistry.INSTANCE, registry))
+                .create();
+        try {
+            final DriverRemoteConnection connection = DriverRemoteConnection.using(cluster);
+            connection.setPdtRegistry(registry);
+            final GraphTraversalSource g = traversal().with(connection);
+
+            final Object result = g.inject(new TestPoint(5, 10)).next();
+
+            assertTrue("Expected TestPoint but got: " + result.getClass().getName(), result instanceof TestPoint);
+            assertEquals(5, ((TestPoint) result).x);
+            assertEquals(10, ((TestPoint) result).y);
+        } finally {
+            cluster.close();
+        }
+    }
+
+    @Test
+    public void shouldRoundTripAnnotatedPdtViaTraversal() throws Exception {
+        final PDTRegistry registry = PDTRegistry.empty();
+        registry.register(TestAnnotatedPoint.class);
+
+        final Cluster cluster = TestClientFactory.build()
+                .responseSerializer(new GraphBinaryMessageSerializerV4(TypeSerializerRegistry.INSTANCE, registry))
+                .create();
+        try {
+            final DriverRemoteConnection connection = DriverRemoteConnection.using(cluster);
+            connection.setPdtRegistry(registry);
+            final GraphTraversalSource g = traversal().with(connection);
+
+            final Object result = g.inject(new TestAnnotatedPoint(3, 7)).next();
+
+            assertTrue("Expected TestAnnotatedPoint but got: " + result.getClass().getName(),
+                    result instanceof TestAnnotatedPoint);
+            assertEquals(3, ((TestAnnotatedPoint) result).x);
+            assertEquals(7, ((TestAnnotatedPoint) result).y);
+        } finally {
+            cluster.close();
+        }
+    }
+
+    @Test
+    public void shouldHydratePdtViaRegistryFromDriverResult() throws Exception {
+        final Cluster cluster = TestClientFactory.build().create();
+        final Client client = cluster.connect();
+        try {
+            final List<Result> results = client.submit(
+                    "g.inject(new org.apache.tinkerpop.gremlin.server.pdt.Point(9, 11))",
+                    groovyRequestOptions).all().get();
+
+            assertEquals(1, results.size());
+            final CompositePDT raw = (CompositePDT) results.get(0).getObject();
+
+            final PDTRegistry registry = PDTRegistry.empty();
+            registry.register(new TestPointAdapter());
+            final Object hydrated = registry.hydrate(raw);
+
+            assertTrue(hydrated instanceof TestPoint);
+            assertEquals(9, ((TestPoint) hydrated).x);
+            assertEquals(11, ((TestPoint) hydrated).y);
+        } finally {
+            cluster.close();
+        }
+    }
+
+    @Test
+    public void shouldStorePdtAsOriginalObjectInTinkerGraph() throws Exception {
+        final Cluster cluster = TestClientFactory.build().create();
+        final Client client = cluster.connect();
+        try {
+            client.submit(
+                    "g.addV('location').property('point', new org.apache.tinkerpop.gremlin.server.pdt.Point(3, 4)).iterate()",
+                    groovyRequestOptions).all().get();
+
+            final List<Result> results = client.submit(
+                    "g.V().hasLabel('location').values('point')",
+                    groovyRequestOptions).all().get();
+
+            assertEquals(1, results.size());
+            // Point is @ProviderDefined, so GraphBinary serializes the stored object as a CompositePDT
+            // on the wire. Without a client-side registry it is received as a raw CompositePDT.
+            final Object value = results.get(0).getObject();
+            assertTrue("Expected CompositePDT but got: " + value.getClass().getName(),
+                    value instanceof CompositePDT);
+            final CompositePDT pdt = (CompositePDT) value;
+            assertEquals("Point", pdt.getName());
+            assertEquals(3, pdt.getFields().get("x"));
+            assertEquals(4, pdt.getFields().get("y"));
+        } finally {
+            // cleanup
+            client.submit("g.V().hasLabel('location').drop().iterate()", groovyRequestOptions).all().get();
+            cluster.close();
+        }
+    }
+
+    @Test
+    public void shouldRoundTripRawPrimitivePdtViaTraversal() {
+        // Unregistered base case: with no adapter, a PrimitivePDT round-trips as-is.
+        final Cluster cluster = TestClientFactory.build().create();
+        try {
+            final GraphTraversalSource g = traversal().with(DriverRemoteConnection.using(cluster));
+            final PrimitivePDT pdt = new PrimitivePDT("UnregisteredPrimitive", "4294967295");
+            final Object result = g.inject(pdt).next();
+
+            assertTrue("Expected PrimitivePDT but got: " + result.getClass().getName(),
+                    result instanceof PrimitivePDT);
+            final PrimitivePDT r = (PrimitivePDT) result;
+            assertEquals("UnregisteredPrimitive", r.getName());
+            assertEquals("4294967295", r.getValue());
+        } finally {
+            cluster.close();
+        }
+    }
+
+    @Test
+    public void shouldRoundTripRegisteredPrimitivePdtViaTraversal() {
+        // Registered case: a raw provider object auto-dehydrates on send and auto-hydrates on receive.
+        final PDTRegistry registry = PDTRegistry.empty();
+        registry.register(new Uint32Adapter());
+
+        final Cluster cluster = TestClientFactory.build()
+                .responseSerializer(new GraphBinaryMessageSerializerV4(TypeSerializerRegistry.INSTANCE, registry))
+                .create();
+        try {
+            final DriverRemoteConnection connection = DriverRemoteConnection.using(cluster);
+            connection.setPdtRegistry(registry);
+            final GraphTraversalSource g = traversal().with(connection);
+
+            final Object result = g.inject(new Uint32(42L)).next();
+
+            assertTrue("Expected Uint32 but got: " + result.getClass().getName(), result instanceof Uint32);
+            assertEquals(42L, ((Uint32) result).getValue());
+        } finally {
+            cluster.close();
+        }
+    }
+
+    @Test
+    public void shouldRoundTripRegistryNestedPrimitivePdtViaTraversal() {
+        // Registered nested case: a composite containing a primitive PDT field, both adapters registered,
+        // auto-dehydrates recursively on send and auto-hydrates recursively on receive.
+        // Outer composite is the @ProviderDefined "Measurement" (registered by class); inner primitive
+        // uses the Uint32 adapter. Exercises recursive de/hydration across both PDT kinds.
+        final PDTRegistry registry = PDTRegistry.empty();
+        registry.register(new Uint32Adapter());
+        registry.register(Measurement.class);
+
+        final Cluster cluster = TestClientFactory.build()
+                .responseSerializer(new GraphBinaryMessageSerializerV4(TypeSerializerRegistry.INSTANCE, registry))
+                .create();
+        try {
+            final DriverRemoteConnection connection = DriverRemoteConnection.using(cluster);
+            connection.setPdtRegistry(registry);
+            final GraphTraversalSource g = traversal().with(connection);
+
+            final Object result = g.inject(new Measurement("meters", new Uint32(100L))).next();
+
+            assertTrue("Expected Measurement but got: " + result.getClass().getName(),
+                    result instanceof Measurement);
+            final Measurement m = (Measurement) result;
+            assertEquals("meters", m.unit);
+            assertTrue("Expected nested Uint32 but got: " + m.quantity.getClass().getName(),
+                    m.quantity instanceof Uint32);
+            assertEquals(100L, m.quantity.getValue());
+        } finally {
+            cluster.close();
+        }
+    }
+
+    // --- PDT helper types ---
+
+    static class TestPoint {
+        final int x, y;
+        TestPoint(final int x, final int y) { this.x = x; this.y = y; }
+    }
+
+    static class TestPointAdapter implements CompositePDTAdapter<TestPoint> {
+        // TestPoint is the client-side representation of the server-side @ProviderDefined "Point" type,
+        // so the adapter's type name matches the server type name "Point".
+        @Override public String typeName() { return "Point"; }
+        @Override public Class<TestPoint> targetClass() { return TestPoint.class; }
+        @Override public Map<String, Object> toFields(final TestPoint obj) {
+            final Map<String, Object> m = new HashMap<>();
+            m.put("x", obj.x);
+            m.put("y", obj.y);
+            return m;
+        }
+        @Override public TestPoint fromFields(final Map<String, Object> fields) {
+            return new TestPoint(((Number) fields.get("x")).intValue(), ((Number) fields.get("y")).intValue());
+        }
+    }
+
+    @ProviderDefined(name = "TestAnnotatedPoint")
+    static class TestAnnotatedPoint {
+        public int x, y;
+        public TestAnnotatedPoint() {}
+        TestAnnotatedPoint(final int x, final int y) { this.x = x; this.y = y; }
+    }
+
 }

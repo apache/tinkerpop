@@ -23,12 +23,14 @@ import org.antlr.v4.runtime.CommonTokenStream;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.PageRank;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.PeerPressure;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.ShortestPath;
+import org.apache.tinkerpop.gremlin.process.traversal.GType;
+import org.apache.tinkerpop.gremlin.process.traversal.Merge;
 import org.apache.tinkerpop.gremlin.process.traversal.Operator;
 import org.apache.tinkerpop.gremlin.process.traversal.Order;
-import org.apache.tinkerpop.gremlin.process.traversal.P;
-import org.apache.tinkerpop.gremlin.process.traversal.Pop;
+import org.apache.tinkerpop.gremlin.process.traversal.P;import org.apache.tinkerpop.gremlin.process.traversal.Pop;
 import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.DefaultGraphTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.WithOptions;
 import org.apache.tinkerpop.gremlin.structure.Column;
@@ -45,6 +47,7 @@ import java.util.LinkedHashMap;
 import java.util.function.Function;
 
 import static org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource.traversal;
+import static org.apache.tinkerpop.gremlin.util.CollectionUtil.asMap;
 import static org.apache.tinkerpop.gremlin.process.traversal.P.eq;
 import static org.apache.tinkerpop.gremlin.process.traversal.P.gt;
 import static org.apache.tinkerpop.gremlin.process.traversal.SackFunctions.Barrier.normSack;
@@ -72,6 +75,89 @@ public class TraversalMethodVisitorTest {
     private void compare(Object expected, Object actual) {
         assertEquals(((DefaultGraphTraversal) expected).asAdmin().getGremlinLang(),
                 ((DefaultGraphTraversal) actual).asAdmin().getGremlinLang());
+    }
+
+    @Test
+    public void shouldParseTraversalMethod_io_read() throws Exception {
+        compare(g.io("x").read(), eval("g.io('x').read()"));
+    }
+
+    @Test
+    public void shouldParseTraversalMethod_io_write() throws Exception {
+        compare(g.io("x").write(), eval("g.io('x').write()"));
+    }
+
+    @Test
+    public void shouldParseTraversalMethod_none_P() throws Exception {
+        compare(g.V().none(gt(2)), eval("g.V().none(gt(2))"));
+    }
+
+    @Test
+    public void shouldParseTraversalMethod_choose_P_Traversal_Traversal() throws Exception {
+        final GraphTraversal expected = g.V();
+        compare(expected.choose(gt(1), out(), in()), eval("g.V().choose(gt(1), __.out(), __.in())"));
+    }
+
+    @Test
+    public void shouldParseTraversalMethod_emit_P() throws Exception {
+        final GraphTraversal expected = g.V().repeat(out());
+        compare(expected.emit(gt(2)), eval("g.V().repeat(__.out()).emit(gt(2))"));
+    }
+
+    @Test
+    public void shouldParseTraversalMethod_filter_P() throws Exception {
+        final GraphTraversal expected = g.V();
+        compare(expected.filter(gt(2)), eval("g.V().filter(gt(2))"));
+    }
+
+    @Test
+    public void shouldParseTraversalMethod_until_P() throws Exception {
+        final GraphTraversal expected = g.V().repeat(out());
+        compare(expected.until(gt(2)), eval("g.V().repeat(__.out()).until(gt(2))"));
+    }
+
+    @Test
+    public void shouldParseTraversalMethod_option_Merge_Map() throws Exception {
+        compare(g.mergeV(new LinkedHashMap<>()).option(Merge.onCreate, new LinkedHashMap<>()),
+                eval("g.mergeV([:]).option(Merge.onCreate, [:])"));
+    }
+
+    @Test
+    public void shouldParseTraversalMethod_option_Merge_Traversal() throws Exception {
+        compare(g.mergeV(new LinkedHashMap<>()).option(Merge.onCreate, constant(new LinkedHashMap<>())),
+                eval("g.mergeV([:]).option(Merge.onCreate, __.constant([:]))"));
+    }
+
+    @Test
+    public void shouldParseTraversalMethod_option_Merge_Map_Cardinality() throws Exception {
+        compare(g.mergeV(new LinkedHashMap<>()).option(Merge.onMatch, new LinkedHashMap<>(), Cardinality.single),
+                eval("g.mergeV([:]).option(Merge.onMatch, [:], Cardinality.single)"));
+    }
+
+    @Test
+    public void shouldParseTraversalMethod_option_Predicate_Traversal() throws Exception {
+        compare(g.V().branch(values("age")).option(gt(1), out()),
+                eval("g.V().branch(__.values('age')).option(gt(1), __.out())"));
+    }
+
+    @Test
+    public void shouldParseTraversalMethod_connectedComponent() throws Exception {
+        compare(g.V().connectedComponent(), eval("g.V().connectedComponent()"));
+    }
+
+    @Test
+    public void shouldParseTraversalMethod_asBool() throws Exception {
+        compare(g.V().values("x").asBool(), eval("g.V().values('x').asBool()"));
+    }
+
+    @Test
+    public void shouldParseTraversalMethod_asNumber_Empty() throws Exception {
+        compare(g.V().values("x").asNumber(), eval("g.V().values('x').asNumber()"));
+    }
+
+    @Test
+    public void shouldParseTraversalMethod_asNumber_traversalGType() throws Exception {
+        compare(g.V().values("x").asNumber(GType.INT), eval("g.V().values('x').asNumber(GType.int)"));
     }
 
     @Test
@@ -105,6 +191,104 @@ public class TraversalMethodVisitorTest {
     @Test
     public void shouldParseTraversalMethod_addV_Traversal() throws Exception {
         compare(g.addV(V().hasLabel("person").label()), eval("g.addV(V().hasLabel(\"person\").label())"));
+    }
+
+    @Test
+    public void shouldParseTraversalMethod_addV_MultipleLabels() throws Exception {
+        // mid-traversal multi-label addV
+        compare(g.V().addV("dog", "pet"), eval("g.V().addV(\"dog\",\"pet\")"));
+    }
+
+    @Test
+    public void shouldParseTraversalMethod_addV_MultipleLabelsThree() throws Exception {
+        // mid-traversal multi-label addV with three labels
+        compare(g.V().addV("dog", "pet", "animal"), eval("g.V().addV(\"dog\",\"pet\",\"animal\")"));
+    }
+
+    @Test
+    public void shouldParseSourceSpawnMethod_addV_MultipleLabels() throws Exception {
+        // source-spawned multi-label addV produces same structure as mid-traversal
+        compare(g.addV("dog", "pet"), eval("g.addV(\"dog\",\"pet\")"));
+    }
+
+    @Test
+    public void shouldParseSourceSpawnMethod_addV_MultipleLabelsThree() throws Exception {
+        // source-spawned multi-label addV with three labels
+        compare(g.addV("dog", "pet", "animal"), eval("g.addV(\"dog\",\"pet\",\"animal\")"));
+    }
+
+    @Test
+    public void shouldParseTraversalMethod_addV_TraversalVarargs() throws Exception {
+        // mid-traversal multi-label addV with traversal varargs
+        compare(g.V().addV(constant("a"), constant("b")), eval("g.V().addV(constant(\"a\"),constant(\"b\"))"));
+    }
+
+    @Test
+    public void shouldParseTraversalMethod_addV_TraversalVarargsThree() throws Exception {
+        // mid-traversal multi-label addV with three traversals
+        compare(g.V().addV(constant("a"), constant("b"), constant("c")), eval("g.V().addV(constant(\"a\"),constant(\"b\"),constant(\"c\"))"));
+    }
+
+    @Test
+    public void shouldParseSourceSpawnMethod_addV_TraversalVarargs() throws Exception {
+        // source-spawned multi-label addV with traversal varargs
+        compare(g.addV(constant("a"), constant("b")), eval("g.addV(constant(\"a\"),constant(\"b\"))"));
+    }
+
+    @Test
+    public void shouldParseSourceSpawnMethod_addV_TraversalVarargsThree() throws Exception {
+        // source-spawned multi-label addV with three traversals
+        compare(g.addV(constant("a"), constant("b"), constant("c")), eval("g.addV(constant(\"a\"),constant(\"b\"),constant(\"c\"))"));
+    }
+
+    @Test
+    public void shouldParseTraversalMethod_addLabel_String() throws Exception {
+        compare(g.V().addLabel("dog"), eval("g.V().addLabel(\"dog\")"));
+    }
+
+    @Test
+    public void shouldParseTraversalMethod_addLabel_MultipleLabels() throws Exception {
+        compare(g.V().addLabel("dog", "pet"), eval("g.V().addLabel(\"dog\",\"pet\")"));
+    }
+
+    @Test
+    public void shouldParseTraversalMethod_addLabel_Traversal() throws Exception {
+        compare(g.V().addLabel(constant("dog")), eval("g.V().addLabel(constant(\"dog\"))"));
+    }
+
+    @Test
+    public void shouldParseTraversalMethod_addLabel_TraversalVarargs() throws Exception {
+        compare(g.V().addLabel(constant("a"), constant("b")), eval("g.V().addLabel(constant(\"a\"),constant(\"b\"))"));
+    }
+
+    @Test
+    public void shouldParseTraversalMethod_addLabel_TraversalVarargsThree() throws Exception {
+        compare(g.V().addLabel(constant("a"), constant("b"), constant("c")), eval("g.V().addLabel(constant(\"a\"),constant(\"b\"),constant(\"c\"))"));
+    }
+
+    @Test
+    public void shouldParseTraversalMethod_dropLabel_String() throws Exception {
+        compare(g.V().dropLabel("dog"), eval("g.V().dropLabel(\"dog\")"));
+    }
+
+    @Test
+    public void shouldParseTraversalMethod_dropLabel_MultipleLabels() throws Exception {
+        compare(g.V().dropLabel("dog", "pet"), eval("g.V().dropLabel(\"dog\",\"pet\")"));
+    }
+
+    @Test
+    public void shouldParseTraversalMethod_dropLabel_Traversal() throws Exception {
+        compare(g.V().dropLabel(constant("dog")), eval("g.V().dropLabel(constant(\"dog\"))"));
+    }
+
+    @Test
+    public void shouldParseTraversalMethod_dropLabel_TraversalVarargs() throws Exception {
+        compare(g.V().dropLabel(constant("a"), constant("b")), eval("g.V().dropLabel(constant(\"a\"),constant(\"b\"))"));
+    }
+
+    @Test
+    public void shouldParseTraversalMethod_dropLabel_TraversalVarargsThree() throws Exception {
+        compare(g.V().dropLabel(constant("a"), constant("b"), constant("c")), eval("g.V().dropLabel(constant(\"a\"),constant(\"b\"),constant(\"c\"))"));
     }
 
     @Test
@@ -603,6 +787,20 @@ public class TraversalMethodVisitorTest {
     @Test
     public void shouldParseTraversalMethod_match() throws Exception {
         compare(g.V().match(as("a"), as("b")), eval("g.V().match(as(\"a\"), as(\"b\"))"));
+    }
+
+    @Test
+    public void shouldParseTraversalMethod_match_string() throws Exception {
+        compare(g.V().match("MATCH (a:person)-[:knows]->(b:person)"),
+                eval("g.V().match(\"MATCH (a:person)-[:knows]->(b:person)\")"));
+    }
+
+    @Test
+    public void shouldParseTraversalMethod_match_string_map() throws Exception {
+        compare(g.V().match("MATCH (p:person {name: $who})-[:knows]->(f:person)", asMap("who", "marko")),
+                eval("g.V().match(\"MATCH (p:person {name: $who})-[:knows]->(f:person)\",[\"who\":\"marko\"])"));
+        compare(g.V().match("MATCH (p:person {age: $age})-[:knows]->(f:person)", asMap("age", 29)),
+                eval("g.V().match(\"MATCH (p:person {age: $age})-[:knows]->(f:person)\",[\"age\":29])"));
     }
 
     @Test

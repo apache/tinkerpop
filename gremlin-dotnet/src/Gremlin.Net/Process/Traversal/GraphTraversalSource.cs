@@ -24,6 +24,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using Gremlin.Net.Driver;
 using Gremlin.Net.Process.Remote;
 using Gremlin.Net.Process.Traversal.Strategy.Decoration;
 using Gremlin.Net.Structure;
@@ -39,8 +42,6 @@ namespace Gremlin.Net.Process.Traversal
     public class GraphTraversalSource
     {
         private readonly IRemoteConnection? _connection;
-
-        public bool IsSessionBound => _connection is { IsSessionBound: true };
         
         /// <summary>
         ///     Gets or sets the traversal strategies associated with this graph traversal source.
@@ -103,8 +104,14 @@ namespace Gremlin.Net.Process.Traversal
 
             optionsStrategy = existingOptions[existingOptions.Count - 1];
             optionsStrategy.Configuration[key] = value;
-            return new GraphTraversalSource(new List<ITraversalStrategy>(TraversalStrategies),
+            var source = new GraphTraversalSource(new List<ITraversalStrategy>(TraversalStrategies),
                 GremlinLang.Clone());
+            // Render multilabel/singlelabel in gremlin text (temporary until these options are removed)
+            if (key == "multilabel" || key == "singlelabel")
+            {
+                source.GremlinLang.Append($".with(\"{key}\")");
+            }
+            return source;
         }
 
 
@@ -267,19 +274,116 @@ namespace Gremlin.Net.Process.Traversal
                 GremlinLang.Clone(), remoteConnection);
 
         /// <summary>
-        ///     Spawns a new <see cref="RemoteTransaction"/> object that can then start and stop a transaction.
+        ///     Returns the <see cref="RemoteTransaction"/> for this traversal source. If the source is
+        ///     already bound to a transaction, the existing transaction is returned.
         /// </summary>
-        /// <returns>The spawned transaction.</returns>
-        /// <exception cref="InvalidOperationException">Thrown if this traversal source is already bound to a session.</exception>
+        /// <returns>The transaction.</returns>
         public RemoteTransaction Tx()
         {
-            // you can't do g.tx().begin().tx() - no child transactions
-            if (IsSessionBound)
-            {
-                throw new InvalidOperationException(
-                    "This GraphTraversalSource is already bound to a transaction - child transactions are not supported");
-            }
             return _connection!.Tx(this);
+        }
+
+        /// <summary>
+        ///     Runs a unit of work inside a transaction whose lifecycle is managed automatically.
+        ///     A transaction is started via <c>this.Tx().BeginAsync()</c>, the supplied
+        ///     <paramref name="txWork"/> is invoked with the transaction-bound
+        ///     <see cref="GraphTraversalSource"/> (<c>gtx</c>), and the transaction is then committed
+        ///     on normal completion or rolled back on any failure.
+        ///
+        ///     This is a single-shot wrapper (no retry): exactly one
+        ///     begin → run → commit/rollback sequence is performed. Only <c>gtx</c> is in scope inside
+        ///     the body; the non-transactional source must not be used. If <paramref name="txWork"/>
+        ///     throws, the transaction is rolled back and the original exception is re-thrown unchanged.
+        ///     If the commit fails, a rollback is attempted for server-side hygiene and the commit error
+        ///     is propagated. A failed rollback during cleanup is swallowed so it never replaces the
+        ///     primary (body or commit) error.
+        /// </summary>
+        /// <param name="txWork">
+        ///     The unit of work to run against the transaction-bound <c>gtx</c>.
+        /// </param>
+        /// <param name="cancellationToken">The token to cancel the operation.</param>
+        /// <returns>A <see cref="Task"/> that completes when the transaction has been committed.</returns>
+        public async Task ExecuteInTxAsync(Func<GraphTraversalSource, Task> txWork,
+            CancellationToken cancellationToken = default)
+            => await EvaluateInTxAsync<object?>(async gtx =>
+            {
+                await txWork(gtx).ConfigureAwait(false);
+                return null;
+            }, cancellationToken).ConfigureAwait(false);
+
+        /// <summary>
+        ///     Runs a value-returning unit of work inside a transaction whose lifecycle is managed
+        ///     automatically. A transaction is started via <c>this.Tx().BeginAsync()</c>, the supplied
+        ///     <paramref name="txWork"/> is invoked with the transaction-bound
+        ///     <see cref="GraphTraversalSource"/> (<c>gtx</c>), and the transaction is then committed
+        ///     on normal completion or rolled back on any failure.
+        ///
+        ///     This is a single-shot wrapper (no retry): exactly one
+        ///     begin → run → commit/rollback sequence is performed. Only <c>gtx</c> is in scope inside
+        ///     the body; the non-transactional source must not be used. The value produced by
+        ///     <paramref name="txWork"/> is returned to the caller after a successful commit. If
+        ///     <paramref name="txWork"/> throws, the transaction is rolled back and the original
+        ///     exception is re-thrown unchanged. If the commit fails, a rollback is attempted for
+        ///     server-side hygiene and the commit error is propagated. A failed rollback during cleanup
+        ///     is swallowed so it never replaces the primary (body or commit) error.
+        /// </summary>
+        /// <typeparam name="T">The type of value produced by <paramref name="txWork"/>.</typeparam>
+        /// <param name="txWork">
+        ///     The unit of work to run against the transaction-bound <c>gtx</c>. Its result is returned
+        ///     to the caller once the transaction commits.
+        /// </param>
+        /// <param name="cancellationToken">The token to cancel the operation.</param>
+        /// <returns>The value produced by <paramref name="txWork"/>.</returns>
+        public async Task<T> EvaluateInTxAsync<T>(Func<GraphTraversalSource, Task<T>> txWork,
+            CancellationToken cancellationToken = default)
+        {
+            var tx = this.Tx();
+            var gtx = await tx.BeginAsync(cancellationToken).ConfigureAwait(false);
+            T result;
+            // Phase 1: run the user's work. If it throws, roll back and rethrow the body error - the
+            // throw below exits the method, so a failed body never reaches the commit in phase 2.
+            try
+            {
+                result = await txWork(gtx).ConfigureAwait(false);
+            }
+            catch (Exception)
+            {
+                try
+                {
+                    // No cancellation token: if the body failed because the token was cancelled,
+                    // honoring it here would abort the cleanup rollback before it is sent.
+                    await tx.RollbackAsync().ConfigureAwait(false);
+                }
+                catch (Exception)
+                {
+                    // Rollback cleanup failure is swallowed so the original body error stays primary.
+                }
+                throw;
+            }
+
+            // Phase 2: the body succeeded, so commit. A separate try because this failure mode is
+            // distinct (commit, not body): we still roll back for server-side hygiene, then rethrow
+            // the commit error as the primary error.
+            try
+            {
+                await tx.CommitAsync(cancellationToken).ConfigureAwait(false);
+            }
+            catch (Exception)
+            {
+                try
+                {
+                    // No cancellation token: honoring a cancelled token here would abort the
+                    // cleanup rollback before it is sent, leaving the transaction open server-side.
+                    await tx.RollbackAsync().ConfigureAwait(false);
+                }
+                catch (Exception)
+                {
+                    // Rollback cleanup failure is swallowed so the commit error stays primary.
+                }
+                throw;
+            }
+
+            return result;
         }
 
         /// <summary>
@@ -356,10 +460,38 @@ namespace Gremlin.Net.Process.Traversal
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> off this graph traversal source and adds the addE step to that
         ///     traversal.
         /// </summary>
+        public GraphTraversal<Edge, Edge> AddE(GValue<string> label)
+        {
+            var traversal = new GraphTraversal<Edge, Edge>(TraversalStrategies, GremlinLang.Clone());
+            traversal.GremlinLang.AddStep("addE", label);
+            return traversal;
+        }
+
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> off this graph traversal source and adds the addE step to that
+        ///     traversal.
+        /// </summary>
         public GraphTraversal<Edge, Edge> AddE(ITraversal edgeLabelTraversal)
         {
             var traversal = new GraphTraversal<Edge, Edge>(TraversalStrategies, GremlinLang.Clone());
             traversal.GremlinLang.AddStep("addE", edgeLabelTraversal);
+            return traversal;
+        }
+
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> off this graph traversal source and adds the addE step
+        ///     with multiple labels to that traversal.
+        /// </summary>
+        public GraphTraversal<Edge, Edge> AddE(string label1, string label2, params string[] moreLabels)
+        {
+            if (label1 == null) throw new ArgumentNullException(nameof(label1));
+            if (label2 == null) throw new ArgumentNullException(nameof(label2));
+            if (moreLabels == null) throw new ArgumentNullException(nameof(moreLabels));
+
+            var traversal = new GraphTraversal<Edge, Edge>(TraversalStrategies, GremlinLang.Clone());
+            var args = new List<object>(2 + moreLabels.Length) { label1, label2 };
+            args.AddRange(moreLabels);
+            traversal.GremlinLang.AddStep("addE", args.ToArray());
             return traversal;
         }
 
@@ -377,6 +509,17 @@ namespace Gremlin.Net.Process.Traversal
             }
             var traversal = new GraphTraversal<Edge, Edge>(TraversalStrategies, GremlinLang.Clone());
             traversal.GremlinLang.AddStep("mergeE", m);
+            return traversal;
+        }
+
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> off this graph traversal source and adds the mergeE step to that
+        ///     traversal.
+        /// </summary>
+        public GraphTraversal<Edge, Edge> MergeE(GValue<IDictionary<object, object>> searchCreate)
+        {
+            var traversal = new GraphTraversal<Edge, Edge>(TraversalStrategies, GremlinLang.Clone());
+            traversal.GremlinLang.AddStep("mergeE", searchCreate);
             return traversal;
         }
 
@@ -406,10 +549,22 @@ namespace Gremlin.Net.Process.Traversal
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> off this graph traversal source and adds the addV step to that
         ///     traversal.
         /// </summary>
-        public GraphTraversal<Vertex, Vertex> AddV(string label)
+        public GraphTraversal<Vertex, Vertex> AddV(string label, params string[] additionalLabels)
         {
+            if (label == null) throw new ArgumentNullException(nameof(label));
+            if (additionalLabels == null) throw new ArgumentNullException(nameof(additionalLabels));
+
             var traversal = new GraphTraversal<Vertex, Vertex>(TraversalStrategies, GremlinLang.Clone());
-            traversal.GremlinLang.AddStep("addV", label);
+            if (additionalLabels.Length == 0)
+            {
+                traversal.GremlinLang.AddStep("addV", label);
+            }
+            else
+            {
+                var args = new List<object>(1 + additionalLabels.Length) { label };
+                args.AddRange(additionalLabels);
+                traversal.GremlinLang.AddStep("addV", args.ToArray());
+            }
             return traversal;
         }
 
@@ -417,10 +572,33 @@ namespace Gremlin.Net.Process.Traversal
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> off this graph traversal source and adds the addV step to that
         ///     traversal.
         /// </summary>
-        public GraphTraversal<Vertex, Vertex> AddV(ITraversal vertexLabelTraversal)
+        public GraphTraversal<Vertex, Vertex> AddV(GValue<string> vertexLabel)
         {
             var traversal = new GraphTraversal<Vertex, Vertex>(TraversalStrategies, GremlinLang.Clone());
-            traversal.GremlinLang.AddStep("addV", vertexLabelTraversal);
+            traversal.GremlinLang.AddStep("addV", vertexLabel);
+            return traversal;
+        }
+
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> off this graph traversal source and adds the addV step to that
+        ///     traversal.
+        /// </summary>
+        public GraphTraversal<Vertex, Vertex> AddV(ITraversal label, params ITraversal[] additionalLabels)
+        {
+            if (label == null) throw new ArgumentNullException(nameof(label));
+            if (additionalLabels == null) throw new ArgumentNullException(nameof(additionalLabels));
+
+            var traversal = new GraphTraversal<Vertex, Vertex>(TraversalStrategies, GremlinLang.Clone());
+            if (additionalLabels.Length == 0)
+            {
+                traversal.GremlinLang.AddStep("addV", label);
+            }
+            else
+            {
+                var args = new List<object>(1 + additionalLabels.Length) { label };
+                args.AddRange(additionalLabels);
+                traversal.GremlinLang.AddStep("addV", args.ToArray());
+            }
             return traversal;
         }
 
@@ -432,6 +610,17 @@ namespace Gremlin.Net.Process.Traversal
         {
             var traversal = new GraphTraversal<Vertex, Vertex>(TraversalStrategies, GremlinLang.Clone());
             traversal.GremlinLang.AddStep("mergeV", m);
+            return traversal;
+        }
+
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> off this graph traversal source and adds the mergeV step to that
+        ///     traversal.
+        /// </summary>
+        public GraphTraversal<Vertex, Vertex> MergeV(GValue<IDictionary<object, object>> searchCreate)
+        {
+            var traversal = new GraphTraversal<Vertex, Vertex>(TraversalStrategies, GremlinLang.Clone());
+            traversal.GremlinLang.AddStep("mergeV", searchCreate);
             return traversal;
         }
 
@@ -537,6 +726,29 @@ namespace Gremlin.Net.Process.Traversal
         }
 
         /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> off this graph traversal source and adds the call step to that
+        ///     traversal.
+        /// </summary>
+        public GraphTraversal<TStart, TStart> Call<TStart>(string service, GValue<IDictionary<object, object>> m)
+        {
+            var traversal = new GraphTraversal<TStart, TStart>(TraversalStrategies, GremlinLang.Clone());
+            traversal.GremlinLang.AddStep("call", service, m);
+            return traversal;
+        }
+
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> off this graph traversal source and adds the call step to that
+        ///     traversal.
+        /// </summary>
+        public GraphTraversal<TStart, TStart> Call<TStart>(string service, GValue<IDictionary<object, object>> m,
+            ITraversal childTraversal)
+        {
+            var traversal = new GraphTraversal<TStart, TStart>(TraversalStrategies, GremlinLang.Clone());
+            traversal.GremlinLang.AddStep("call", service, m, childTraversal);
+            return traversal;
+        }
+
+        /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> off this graph traversal source and adds the union step to that
         ///     traversal.
         /// </summary>
@@ -546,6 +758,33 @@ namespace Gremlin.Net.Process.Traversal
             var args = new List<object>(unionTraversals.Length);
             args.AddRange(unionTraversals);
             traversal.GremlinLang.AddStep("union", args.ToArray());
+            return traversal;
+        }
+
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> off this graph traversal source and executes a declarative
+        ///     pattern match query. The step requires a graph provider to register an execution strategy before the
+        ///     traversal can be executed.
+        /// </summary>
+        /// <param name="matchQuery">The declarative query string.</param>
+        public GraphTraversal<object, object> Match(string matchQuery)
+        {
+            var traversal = new GraphTraversal<object, object>(TraversalStrategies, GremlinLang.Clone());
+            traversal.GremlinLang.AddStep("match", matchQuery);
+            return traversal;
+        }
+
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> off this graph traversal source and executes a declarative
+        ///     pattern match query with bound parameters. The step requires a graph provider to register an execution
+        ///     strategy before the traversal can be executed.
+        /// </summary>
+        /// <param name="matchQuery">The declarative query string.</param>
+        /// <param name="parameters">The query parameters.</param>
+        public GraphTraversal<object, object> Match(string matchQuery, IDictionary<object, object> parameters)
+        {
+            var traversal = new GraphTraversal<object, object>(TraversalStrategies, GremlinLang.Clone());
+            traversal.GremlinLang.AddStep("match", matchQuery, parameters);
             return traversal;
         }
 

@@ -24,12 +24,11 @@ import (
 	"encoding/binary"
 	"fmt"
 	"io"
-	"sync"
 )
 
 const graphBinaryMimeType = "application/vnd.graphbinary-v4.0"
 
-// Serializer interface for serializers.
+// Serializer interface for serializing requests and deserializing responses.
 type Serializer interface {
 	SerializeMessage(request *RequestMessage) ([]byte, error)
 	DeserializeMessage(message []byte) (Response, error)
@@ -40,22 +39,12 @@ type GraphBinarySerializer struct {
 	ser *graphBinaryTypeSerializer
 }
 
-// CustomTypeReader user provided function to deserialize custom types
-// Deprecated: Custom type deserialization is handled by GraphBinaryDeserializer
-type CustomTypeReader func(data *[]byte, i *int) (interface{}, error)
-
 type writer func(interface{}, io.Writer, *graphBinaryTypeSerializer) error
 
 var serializers map[dataType]writer
 
-// customTypeReaderLock used to synchronize access to the customDeserializers map
-// Deprecated: Custom type deserialization is handled by GraphBinaryDeserializer
-var customTypeReaderLock = sync.RWMutex{}
-var customDeserializers map[string]CustomTypeReader
-
 func init() {
 	initSerializers()
-	customDeserializers = map[string]CustomTypeReader{}
 }
 
 func newGraphBinarySerializer(handler *logHandler) *GraphBinarySerializer {
@@ -69,27 +58,17 @@ const versionByte byte = 0x84
 
 // SerializeMessage serializes a request message into GraphBinary format.
 //
-// This method is part of the serializer interface and is used internally by the HTTP driver.
-// It is also exposed publicly to enable alternative transport protocols (gRPC, HTTP/2, etc.) to
-// serialize requests created with MakeBytecodeRequest() or MakeStringRequest().
-//
-// The serialized bytes can be transmitted over any transport protocol that supports binary data.
+// This method is part of the Serializer interface. It is no longer used by the default driver
+// flow (which now serializes requests as JSON via HttpRequest.SerializeBody), but remains
+// available for custom interceptors or alternative transport protocols that require
+// GraphBinary-encoded requests.
 //
 // Parameters:
 //   - request: The request to serialize (created via MakeBytecodeRequest or MakeStringRequest)
 //
 // Returns:
-//   - []byte: The GraphBinary-encoded request ready for transmission
+//   - serialized: The GraphBinary-encoded request bytes
 //   - error: Any serialization error encountered
-//
-// Example for alternative transports:
-//
-//	req := MakeBytecodeRequest(bytecode, "g", "")
-//	serializer := newGraphBinarySerializer(nil)
-//	bytes, err := serializer.(graphBinarySerializer).SerializeMessage(&req)
-//	// Send bytes over custom transport
-//
-// SerializeMessage serializes a request message into GraphBinary.
 func (gs *GraphBinarySerializer) SerializeMessage(request *RequestMessage) ([]byte, error) {
 	finalMessage, err := gs.buildMessage(request.Gremlin, request.Fields)
 	if err != nil {
@@ -200,6 +179,7 @@ func initSerializers() {
 		longType:       longWriter,
 		intType:        intWriter,
 		shortType:      shortWriter,
+		charType:       charWriter,
 		byteType: func(value interface{}, w io.Writer, typeSerializer *graphBinaryTypeSerializer) error {
 			return binary.Write(w, binary.BigEndian, value.(uint8))
 		},
@@ -220,10 +200,11 @@ func initSerializers() {
 		propertyType:       propertyWriter,
 		vertexPropertyType: vertexPropertyWriter,
 		pathType:           pathWriter,
+		treeType:           treeWriter,
+		graphType:          graphWriter,
 		datetimeType:       dateTimeWriter,
 		durationType:       durationWriter,
 		directionType:      enumWriter,
-		gTypeType:          enumWriter,
 		tType:              enumWriter,
 		mergeType:          enumWriter,
 		mapType:            mapWriter,
@@ -231,21 +212,7 @@ func initSerializers() {
 		setType:            setWriter,
 		byteBuffer:         byteBufferWriter,
 		markerType:         markerWriter,
+		compositePDTType:   pdtWriter,
+		primitivePDTType:   primitivePdtWriter,
 	}
-}
-
-// RegisterCustomTypeReader register a reader (deserializer) for a custom type
-// Deprecated: Custom type deserialization should be handled by extending GraphBinaryDeserializer
-func RegisterCustomTypeReader(customTypeName string, reader CustomTypeReader) {
-	customTypeReaderLock.Lock()
-	defer customTypeReaderLock.Unlock()
-	customDeserializers[customTypeName] = reader
-}
-
-// UnregisterCustomTypeReader unregister a reader (deserializer) for a custom type
-// Deprecated: Custom type deserialization should be handled by extending GraphBinaryDeserializer
-func UnregisterCustomTypeReader(customTypeName string) {
-	customTypeReaderLock.Lock()
-	defer customTypeReaderLock.Unlock()
-	delete(customDeserializers, customTypeName)
 }

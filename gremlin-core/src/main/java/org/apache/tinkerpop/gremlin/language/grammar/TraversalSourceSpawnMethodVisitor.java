@@ -19,9 +19,11 @@
 package org.apache.tinkerpop.gremlin.language.grammar;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.DefaultGraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
+import java.util.Arrays;
 import java.util.Map;
 
 /**
@@ -56,8 +58,9 @@ public class TraversalSourceSpawnMethodVisitor extends DefaultGremlinBaseVisitor
      */
     @Override
     public GraphTraversal visitTraversalSourceSpawnMethod_addE(final GremlinParser.TraversalSourceSpawnMethod_addEContext ctx) {
-        if (ctx.stringArgument() != null) {
-            final Object literalOrVar = antlr.argumentVisitor.visitStringArgument(ctx.stringArgument());
+        final GremlinParser.StringArgumentContext stringArg = ctx.stringArgument();
+        if (stringArg != null) {
+            final Object literalOrVar = antlr.argumentVisitor.visitStringArgument(stringArg);
             if (GValue.valueInstanceOf(literalOrVar, String.class)) {
                 return this.traversalSource.addE((GValue<String>) literalOrVar);
             } else {
@@ -74,19 +77,35 @@ public class TraversalSourceSpawnMethodVisitor extends DefaultGremlinBaseVisitor
      * {@inheritDoc}
      */
     @Override
-    public GraphTraversal visitTraversalSourceSpawnMethod_addV(final GremlinParser.TraversalSourceSpawnMethod_addVContext ctx) {
-        if (ctx.stringArgument() != null) {
-            final Object literalOrVar = antlr.argumentVisitor.visitStringArgument(ctx.stringArgument());
-            if (GValue.valueInstanceOf(literalOrVar, String.class)) {
-                return this.traversalSource.addV((GValue<String>) literalOrVar);
-            } else {
-                return this.traversalSource.addV((String) literalOrVar);
-            }
-        } else if (ctx.nestedTraversal() != null) {
-            return this.traversalSource.addV(anonymousVisitor.visitNestedTraversal(ctx.nestedTraversal()));
-        } else {
-            return this.traversalSource.addV();
+    public GraphTraversal visitTraversalSourceSpawnMethod_addV_Empty(final GremlinParser.TraversalSourceSpawnMethod_addV_EmptyContext ctx) {
+        return this.traversalSource.addV();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public GraphTraversal visitTraversalSourceSpawnMethod_addV_String(final GremlinParser.TraversalSourceSpawnMethod_addV_StringContext ctx) {
+        final GremlinParser.StringArgumentVarargsContext varargsCtx = ctx.stringArgumentVarargs();
+        if (varargsCtx.stringArgument().stream().anyMatch(arg -> arg.variable() != null)) {
+            final GValue<String>[] labels = antlr.argumentVisitor.parseStringVarargs(varargsCtx);
+            return this.traversalSource.addV(labels[0], Arrays.copyOfRange(labels, 1, labels.length));
         }
+        final String[] labels = varargsCtx.stringArgument().stream()
+                .map(arg -> antlr.genericVisitor.parseString(arg.stringLiteral()))
+                .toArray(String[]::new);
+        return this.traversalSource.addV(labels[0], Arrays.copyOfRange(labels, 1, labels.length));
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public GraphTraversal visitTraversalSourceSpawnMethod_addV_Traversal(final GremlinParser.TraversalSourceSpawnMethod_addV_TraversalContext ctx) {
+        final Traversal<?, ?>[] traversals = ctx.nestedTraversal().stream()
+                .map(anonymousVisitor::visitNestedTraversal)
+                .toArray(Traversal[]::new);
+        return this.traversalSource.addV(traversals[0], Arrays.copyOfRange(traversals, 1, traversals.length));
     }
 
     /**
@@ -94,7 +113,14 @@ public class TraversalSourceSpawnMethodVisitor extends DefaultGremlinBaseVisitor
      */
     @Override
     public GraphTraversal visitTraversalSourceSpawnMethod_E(final GremlinParser.TraversalSourceSpawnMethod_EContext ctx) {
-        return this.traversalSource.E(antlr.argumentVisitor.parseObjectVarargs(ctx.genericArgumentVarargs()));
+        if (ctx.nestedTraversal() != null) {
+            return this.traversalSource.E((Traversal<?, ?>) anonymousVisitor.visitNestedTraversal(ctx.nestedTraversal()));
+        }
+        final Object[] args = antlr.argumentVisitor.parseObjectVarargs(ctx.genericArgumentVarargs());
+        if (args.length == 1 && args[0] instanceof Traversal) {
+            return this.traversalSource.E((Traversal<?, ?>) args[0]);
+        }
+        return this.traversalSource.E(args);
     }
 
     /**
@@ -102,7 +128,14 @@ public class TraversalSourceSpawnMethodVisitor extends DefaultGremlinBaseVisitor
      */
     @Override
     public GraphTraversal visitTraversalSourceSpawnMethod_V(final GremlinParser.TraversalSourceSpawnMethod_VContext ctx) {
-        return this.traversalSource.V(antlr.argumentVisitor.parseObjectVarargs(ctx.genericArgumentVarargs()));
+        if (ctx.nestedTraversal() != null) {
+            return this.traversalSource.V((Traversal<?, ?>) anonymousVisitor.visitNestedTraversal(ctx.nestedTraversal()));
+        }
+        final Object[] args = antlr.argumentVisitor.parseObjectVarargs(ctx.genericArgumentVarargs());
+        if (args.length == 1 && args[0] instanceof Traversal) {
+            return this.traversalSource.V((Traversal<?, ?>) args[0]);
+        }
+        return this.traversalSource.V(args);
     }
 
     /**
@@ -223,5 +256,22 @@ public class TraversalSourceSpawnMethodVisitor extends DefaultGremlinBaseVisitor
     @Override
     public GraphTraversal visitTraversalSourceSpawnMethod_union(final GremlinParser.TraversalSourceSpawnMethod_unionContext ctx) {
         return this.traversalSource.union(antlr.tListVisitor.visitNestedTraversalList(ctx.nestedTraversalList()));
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public GraphTraversal visitTraversalSourceSpawnMethod_match_string(final GremlinParser.TraversalSourceSpawnMethod_match_stringContext ctx) {
+        return this.traversalSource.match(antlr.genericVisitor.parseString(ctx.stringLiteral()));
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public GraphTraversal visitTraversalSourceSpawnMethod_match_string_map(final GremlinParser.TraversalSourceSpawnMethod_match_string_mapContext ctx) {
+        final Map<String, Object> params = (Map<String, Object>) antlr.genericVisitor.visitGenericMapLiteral(ctx.genericMapLiteral());
+        return this.traversalSource.match(antlr.genericVisitor.parseString(ctx.stringLiteral()), params);
     }
 }

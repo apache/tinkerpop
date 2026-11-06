@@ -1,0 +1,16 @@
+{
+  "@type" : "g:Path",
+  "@value" : {
+    "labels" : {
+      "@type" : "g:List",
+      "@value" : [ {
+        "@type" : "g:Set",
+        "@value" : [ "a", "b" ]
+      } ]
+    },
+    "objects" : {
+      "@type" : "g:List",
+      "@value" : [ "marko" ]
+    }
+  }
+}

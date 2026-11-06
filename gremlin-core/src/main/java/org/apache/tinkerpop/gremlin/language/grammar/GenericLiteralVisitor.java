@@ -27,6 +27,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
+import org.apache.tinkerpop.gremlin.structure.io.pdt.PrimitivePDT;
+import org.apache.tinkerpop.gremlin.structure.io.pdt.CompositePDT;
 import org.apache.tinkerpop.gremlin.util.DatetimeHelper;
 
 import java.math.BigDecimal;
@@ -158,6 +160,20 @@ public class GenericLiteralVisitor extends DefaultGremlinBaseVisitor<Object> {
     }
 
     /**
+     * Parse a string literal varargs, and return a string array
+     */
+    public String[] parseStringVarargs(final GremlinParser.StringLiteralVarargsContext varargsContext) {
+        if (varargsContext == null) {
+            return new String[0];
+        }
+        return varargsContext.stringLiteral()
+                .stream()
+                .filter(Objects::nonNull)
+                .map(this::parseString)
+                .toArray(String[]::new);
+    }
+
+    /**
      * Parse a TraversalStrategy literal list context and return a string array
      */
     public static TraversalStrategy[] parseTraversalStrategyList(final GremlinParser.TraversalStrategyVarargsContext traversalStrategyListContext,
@@ -192,28 +208,22 @@ public class GenericLiteralVisitor extends DefaultGremlinBaseVisitor<Object> {
      * @return : return an object which is type of array of object, and each object is a Integer inside the range.
      */
     private static Object createIntegerRange(final int start, final int end, final String range) {
-        final List<Object> results = new ArrayList<>();
-        int total_result_count = Math.abs(start - end);
+        // Compute the gap between endpoints in long arithmetic so the limit check cannot be bypassed by
+        // int subtraction overflow (e.g. MIN..MAX) or by Math.abs(Integer.MIN_VALUE) remaining negative.
+        final long total_result_count = Math.abs((long) start - (long) end);
 
         // validate result count not exceeding limit
         if (total_result_count > TOTAL_INTEGER_RANGE_RESULT_COUNT_LIMIT) {
             throw new IllegalArgumentException("Range " + range + " is too wide. Current limit is " + TOTAL_INTEGER_RANGE_RESULT_COUNT_LIMIT + " items");
         }
 
-        if (start <= end) {
-            // handle start <= end
-            int cur = start;
-            while (cur <= end) {
-                results.add(cur);
-                cur++;
-            }
-        } else {
-            // handle start > end
-            int cur = start;
-            while (cur >= end) {
-                results.add(cur);
-                cur--;
-            }
+        final List<Object> results = new ArrayList<>((int) total_result_count+1);
+
+        final int step = (start <= end) ? 1 : -1;
+        int cur = start;
+        for (int i = 0; i <= total_result_count; i++) {
+            results.add(cur);
+            cur += step;
         }
 
         return results;
@@ -582,6 +592,27 @@ public class GenericLiteralVisitor extends DefaultGremlinBaseVisitor<Object> {
      * {@inheritDoc}
      */
     @Override
+    public Object visitPdtLiteral(final GremlinParser.PdtLiteralContext ctx) {
+        final String name = (String) visitStringLiteral(ctx.stringLiteral(0));
+        if (ctx.genericMapLiteral() != null) {
+            final Map<String, Object> fields = new LinkedHashMap<>();
+            final Map<?, ?> rawMap = (Map<?, ?>) visitGenericMapLiteral(ctx.genericMapLiteral());
+            for (final Map.Entry<?, ?> entry : rawMap.entrySet()) {
+                if (!(entry.getKey() instanceof String))
+                    throw new IllegalArgumentException("PDT fields map must have String keys, found: " + entry.getKey().getClass().getName());
+                fields.put((String) entry.getKey(), entry.getValue());
+            }
+            return new CompositePDT(name, fields);
+        } else {
+            final String value = (String) visitStringLiteral(ctx.stringLiteral(1));
+            return new PrimitivePDT(name, value);
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public Object visitNumericLiteral(final GremlinParser.NumericLiteralContext ctx) {
         if (ctx.floatLiteral() != null) return visitFloatLiteral(ctx.floatLiteral());
         if (ctx.integerLiteral() != null) return visitIntegerLiteral(ctx.integerLiteral());
@@ -683,7 +714,7 @@ public class GenericLiteralVisitor extends DefaultGremlinBaseVisitor<Object> {
     @Override
     public Object visitGenericRangeLiteral(final GremlinParser.GenericRangeLiteralContext ctx) {
         final int childIndexOfParameterStart = 0;
-        final int childIndexOfParameterEnd = 3;
+        final int childIndexOfParameterEnd = 2;
         final ParseTree startContext = ctx.getChild(childIndexOfParameterStart);
         final ParseTree endContext = ctx.getChild(childIndexOfParameterEnd);
 

@@ -33,6 +33,7 @@ import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceVertex;
 import org.apache.tinkerpop.gremlin.tinkergraph.services.TinkerTextSearchFactory;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
+import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerMemoryGraph;
 import org.apache.tinkerpop.gremlin.util.CollectionUtil;
 import org.junit.Before;
 import org.junit.Test;
@@ -93,7 +94,7 @@ public class TinkerGraphGremlinLangScriptEngineTest {
 
     @Parameterized.Parameters(name = "{0}")
     public static Iterable<Object[]> generateTestParameters() {
-        final TinkerGraph tinkerSearchModern = TinkerFactory.createModern();
+        final TinkerMemoryGraph tinkerSearchModern = TinkerFactory.createModern();
         tinkerSearchModern.getServiceRegistry().registerService(new TinkerTextSearchFactory(tinkerSearchModern));
 
         return Arrays.asList(new Object[][]{

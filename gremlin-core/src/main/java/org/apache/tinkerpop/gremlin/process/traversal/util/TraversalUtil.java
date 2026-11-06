@@ -23,8 +23,12 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.structure.util.CloseableIterator;
 
+import java.util.Collection;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -185,5 +189,52 @@ public final class TraversalUtil {
         traversal.reset();
         traversal.addStart(split);
         return split;
+    }
+
+    /**
+     * Resolves a list of one or more child traversals against a {@link Traverser} into a {@link Set} of
+     * {@link String} values. This encapsulates a resolution rule shared by steps that accept either a single
+     * dynamic argument or several: if exactly one {@link Traversal} is given and it produces a {@link Collection},
+     * the collection is unfolded and each of its elements must be a {@link String}; otherwise (a single scalar
+     * result, or more than one {@link Traversal}) every traversal must resolve to a single {@link String}.
+     *
+     * This is useful, for example, to steps like {@code addV()}, {@code addLabel()} and {@code dropLabel()} which
+     * all support one-or-more {@link Traversal} arguments that ultimately resolve to a set of label strings.
+     *
+     * @param traverser  the traverser to apply each traversal to
+     * @param traversals the traversals to resolve, in order; must contain at least one element
+     * @return the resolved, ordered set of strings
+     * @throws IllegalArgumentException if a traversal produces {@code null}, a non-{@link String} scalar, a
+     *                                   {@link Collection} containing a non-{@link String} element, or if a
+     *                                   {@link Collection} is produced while more than one traversal was supplied
+     */
+    public static <S> Set<String> resolveStringArguments(final Traverser.Admin<S> traverser,
+                                                           final List<Traversal.Admin<S, ?>> traversals) {
+        final Set<String> resolved = new LinkedHashSet<>();
+        final boolean single = traversals.size() == 1;
+        for (final Traversal.Admin<S, ?> traversal : traversals) {
+            final Object result = TraversalUtil.apply(traverser, traversal);
+            if (null == result) {
+                throw new IllegalArgumentException("Traversal argument must not produce null");
+            } else if (result instanceof Collection) {
+                if (!single) {
+                    throw new IllegalArgumentException(
+                            "Traversal argument must produce a scalar String when multiple traversals are provided, but got a Collection");
+                }
+                for (final Object item : (Collection<?>) result) {
+                    if (!(item instanceof String)) {
+                        throw new IllegalArgumentException("Traversal argument Collection must contain only Strings, but got: " +
+                                (item == null ? "null" : item.getClass().getName()));
+                    }
+                    resolved.add((String) item);
+                }
+            } else if (result instanceof String) {
+                resolved.add((String) result);
+            } else {
+                throw new IllegalArgumentException("Traversal argument must produce a String or Collection<String>, but got: " +
+                        result.getClass().getName());
+            }
+        }
+        return resolved;
     }
 }

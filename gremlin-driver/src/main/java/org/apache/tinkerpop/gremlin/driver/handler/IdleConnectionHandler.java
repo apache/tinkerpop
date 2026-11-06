@@ -19,27 +19,44 @@
 package org.apache.tinkerpop.gremlin.driver.handler;
 
 import io.netty.channel.ChannelDuplexHandler;
-import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.timeout.IdleStateEvent;
 import io.netty.util.AttributeKey;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.function.BooleanSupplier;
+
 /**
- * Detects {@link IdleStateEvent}s and closes the channel with the goal of releasing resources that haven't been used in a while.
+ * Detects {@link IdleStateEvent}s and closes the channel with the goal of releasing pooled connections that have not
+ * been used in a while. An idle event that fires while a request is in flight is ignored so that {@code idleTimeout}
+ * only reaps connections that are idle in the pool between requests; bounding a stalled in-flight response is the
+ * responsibility of the per-request {@code readTimeout} ({@link ReadTimeoutHandler}). This keeps the two timeouts from
+ * overlapping on the in-flight window.
  */
-@ChannelHandler.Sharable
 public class IdleConnectionHandler extends ChannelDuplexHandler {
     private static final Logger logger = LoggerFactory.getLogger(IdleConnectionHandler.class);
     public static final AttributeKey<IdleStateEvent> IDLE_STATE_EVENT = AttributeKey.valueOf("idleStateEvent");
 
+    private final BooleanSupplier requestInFlight;
+
+    public IdleConnectionHandler(final BooleanSupplier requestInFlight) {
+        this.requestInFlight = requestInFlight;
+    }
+
     /**
-     * Detects if an {@link IdleStateEvent} has occurred and closes the channel.
+     * Detects if an {@link IdleStateEvent} has occurred and closes the channel, unless a request is currently in
+     * flight, in which case the event is ignored and the channel is left to the per-request read timeout.
      */
     @Override
     public void userEventTriggered(final ChannelHandlerContext ctx, final Object evt) {
         if (evt instanceof IdleStateEvent) {
+            if (requestInFlight.getAsBoolean()) {
+                // a request is in flight - leave the in-flight window to readTimeout and do not reap the connection
+                logger.debug("Ignoring IdleStateEvent on channel {} because a request is in flight",
+                        ctx.channel().id().asShortText());
+                return;
+            }
             final IdleStateEvent e = (IdleStateEvent) evt;
             logger.info("Detected IdleStateEvent {} - closing channel {}", e, ctx.channel().id().asShortText());
             ctx.channel().attr(IDLE_STATE_EVENT).set(e);

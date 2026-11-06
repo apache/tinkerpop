@@ -16,6 +16,7 @@ KIND, either express or implied.  See the License for the
 specific language governing permissions and limitations
 under the License.
 ////
+[llms-summary="Recipe: The pattern for finding duplicate vertices is quite similar to the pattern defined in the Duplicate Edge section."]
 [[duplicate-vertex]]
 == Duplicate Vertex Detection
 

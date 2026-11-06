@@ -27,7 +27,7 @@ import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
 public abstract class TinkerElement implements Element {
 
     protected final Object id;
-    protected final String label;
+    protected String label;
     protected boolean removed = false;
     protected long currentVersion;
 

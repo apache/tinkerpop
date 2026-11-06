@@ -5,13 +5,34 @@ maintain, and validate Apache TinkerPop's graph computing framework and its mult
 
 ## Primary Guidance: Agent Skills
 
-This repository provides development guidance as an [Agent Skill](https://agentskills.io) named
-`tinkerpop-dev`. If your tool supports Agent Skills, **activate that skill** for detailed,
-task-specific instructions covering build recipes, test evaluation, coding conventions, and
-reference material for each Gremlin Language Variant.
+This repository provides development guidance as [Agent Skills](https://agentskills.io):
+`tinker-dev` for building, testing and coding conventions, `tinker-doc` for authoring and
+revising documentation, `tinker-review` for graph-based review of a pull request, and
+`tinker-merge` for merging work forward through the release branches. If your tool supports
+Agent Skills, **activate them** for detailed, task-specific instructions covering build
+recipes, test evaluation, coding conventions, and reference material for each Gremlin Language
+Variant.
 
 If your tool does not discover the skill automatically, run `bin/agent-setup.sh --list` to
 see how to configure it, or `bin/agent-setup.sh <agent>` to set up the integration.
+
+## Planning and Memory: Beads
+
+TinkerPop maintainers use **beads (`bd`)** for planning and as the project's long-term
+memory — it records not just what changed, but why: decisions made, alternatives rejected,
+directions abandoned.
+
+**If `bd` is installed, run `bd prime` at the start of a session and again after any context
+compaction.** It emits `.beads/PRIME.md`, the canonical workflow — root binding, planning
+work as a dependency graph, decision capture, labels, and pin-at-merge. Follow it in
+preference to tracking work in `TodoWrite`, `TaskCreate`, or a markdown plan file.
+
+```bash
+command -v bd >/dev/null && bd prime
+```
+
+If `bd` is not installed, skip it — nothing else in this repository depends on beads. Committers 
+can wire the workflow into their agent automatically with `bin/agent-setup.sh --contributor`.
 
 ## Canonical Documentation
 
@@ -37,9 +58,37 @@ of the form `Assisted-by: <agent>:<model>` to the commit message, where `<agent>
 only when something other than the primary agent contributed. For example, 
 `Assisted-by: Claude Code:claude-opus-4-7`, `Assisted-by: Cursor:gpt-5`, or 
 `Assisted-by: Claude Code:claude-opus-4-7 [tinkerpop-mcp]`. This aligns with the ASF's recommendation on AI 
-provenance tracking.
+provenance tracking. `Assisted-by:` is the *only* AI-provenance trailer this project uses — do not add any
+other trailer (for example `Claude-Session`, `Co-Authored-By`, `Generated-by`, or any self-improvised
+variant). If you think a change needs provenance beyond `Assisted-by:`, stop and ask rather than inventing
+a trailer.
 * *The contributor remains responsible for what they submit.* Review generated output for licensing, correctness, and 
 style before committing.
+
+## Definition of Done
+
+A change is **not done** until a full Maven validation has passed locally. Run it before
+presenting work for review — even when your targeted or unit tests already pass, and even if you
+judge a full run unnecessary. Incremental testing during development is encouraged, but it does
+**not** satisfy this gate.
+
+Match the validation to your changeset using a two-step pattern:
+
+1. Rebuild and install the whole reactor without tests, so every module picks up your changes:
+   `mvn clean install -DskipTests`
+2. Run `verify` on the modules you changed, enabling integration tests where the change warrants
+   them: `mvn verify -pl <changed-modules> [-DskipIntegrationTests=false]`
+
+Examples:
+
+- Python GLV → `mvn clean install -DskipTests` then `mvn verify -pl gremlin-python`
+- `gremlin-server` + `gremlin-driver` → `mvn clean install -DskipTests` then
+  `mvn verify -pl gremlin-driver,gremlin-server -DskipIntegrationTests=false`
+- Broad or core changes, or when unsure → `mvn clean install -DskipIntegrationTests=false`
+
+See the **Definition of Done** section of the `tinker-dev` skill for the full
+changeset-to-command mapping and per-GLV details. If you cannot run the validation (for example,
+Docker is unavailable), say so explicitly and report the change as **not validated**.
 
 ## Essential Rules
 
@@ -48,9 +97,13 @@ These rules apply to any AI/IDE assistant operating on this repository.
 ### Do
 
 - Make small, focused changes that are easy to review.
-- Run the relevant build and test commands before suggesting that a change is complete.
+- Before presenting any change as complete, satisfy the **Definition of Done** above — a full
+  Maven validation matched to your changeset, not just targeted or unit tests.
 - Update or add tests when behavior changes.
-- Update documentation and/or changelog when you change public behavior or APIs.
+- Update documentation when you change public behavior or APIs, and add a changelog entry for the net user-facing
+  change — one entry per user-facing change, not one per commit (see the `tinker-doc` skill for changelog discipline).
+- Keep commit messages short and usage-focused — what changed from a reader's perspective, not an implementation
+  play-by-play. Deep rationale belongs in the PR or code comments.
 - Follow existing patterns for code structure, documentation layout, and naming.
 - If code is ready, stop and ask to commit, push or merge manually.
 
@@ -63,7 +116,8 @@ These rules apply to any AI/IDE assistant operating on this repository.
 - Don't invent project policies, version numbers, or release names.
 - Don't remove or weaken tests to "fix" failures; adjust the implementation or test data instead.
 - Don't push to any branch.
-- Don't merge any PR or branch.
+- Don't merge any PR or branch without explicit instruction. When asked, follow the
+  `tinker-merge` skill, which merges locally and leaves the push to the operator.
 - Don't create tags or releases.
 - Don't add `@author` javadoc (or similar) tags for new files, but do not remove existing ones either.
 
@@ -71,3 +125,9 @@ These rules apply to any AI/IDE assistant operating on this repository.
 
 1. Prefer no change over an unsafe or speculative change.
 2. Ask for clarification.
+
+## Security
+
+For Apache TinkerPop's threat model — trust boundaries, in-scope / out-of-scope, the security properties
+the project does and does not provide, and known non-findings — see [SECURITY.md](SECURITY.md), which
+points to [THREAT_MODEL.md](THREAT_MODEL.md). Consult it before triaging or reporting security issues.
