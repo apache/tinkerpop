@@ -19,14 +19,13 @@
 
 import Color from "colorjs.io";
 import cytoscape from "cytoscape";
-import * as gremlin from "gremlin";
-import type { Edge, Vertex } from "gremlin/build/esm/structure/graph";
+import { traversal, DriverRemoteConnection, type Edge, type Vertex } from "gremlin";
 import { createRandomColorGenerator } from "./utils";
 
 const randomColor = createRandomColorGenerator();
 
-const g = gremlin.process.AnonymousTraversalSource.traversal().with_(
-  new gremlin.driver.DriverRemoteConnection("http://localhost:8182/gremlin")
+const g = traversal().with_(
+  new DriverRemoteConnection("http://localhost:8182/gremlin")
 );
 
 const [vertices, edges] = await Promise.all([

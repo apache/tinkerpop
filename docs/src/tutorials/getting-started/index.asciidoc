@@ -696,9 +696,7 @@ the full list of connection options.
 
 [source,javascript]
 ----
-const gremlin = require('gremlin');
-const traversal = gremlin.process.AnonymousTraversalSource.traversal;
-const DriverRemoteConnection = gremlin.driver.DriverRemoteConnection;
+const { traversal, DriverRemoteConnection } = require('gremlin');
 
 const g = traversal().with_(new DriverRemoteConnection('http://localhost:8182/gremlin'));
 

@@ -25,9 +25,9 @@ import assert from 'assert';
 import { expect } from 'chai';
 import { Graph, Vertex } from '../../lib/structure/graph.js';
 import anon from '../../lib/process/anonymous-traversal.js';
-import { P, order, direction, Traverser, Traversal } from '../../lib/process/traversal.js';
-import { statics } from '../../lib/process/graph-traversal.js';
-const V = statics.V;
+import { P, Order, Direction, Traverser, Traversal } from '../../lib/process/traversal.js';
+import { __ } from '../../lib/process/graph-traversal.js';
+const V = __.V;
 
 import { TraversalStrategies } from '../../lib/process/traversal-strategy.js';
 import { RemoteConnection } from '../../lib/driver/remote-connection.js';

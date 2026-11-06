@@ -24,8 +24,7 @@
 import { setWorldConstructor, Before, BeforeAll, AfterAll } from '@cucumber/cucumber';
 import { getConnection } from '../helper.js';
 import anon from '../../lib/process/anonymous-traversal.js';
-import { statics } from '../../lib/process/graph-traversal.js';
-const __ = statics;
+import { __ } from '../../lib/process/graph-traversal.js';
 
 const cache = {};
 

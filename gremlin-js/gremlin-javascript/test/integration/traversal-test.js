@@ -26,7 +26,7 @@ import { AssertionError } from 'assert';
 import {Edge, Vertex, VertexProperty, CompositePDT, PrimitivePDT} from '../../lib/structure/graph.js';
 import { PDTRegistry } from '../../lib/structure/PDTRegistry.js';
 import anon from '../../lib/process/anonymous-traversal.js';
-import { GraphTraversalSource, GraphTraversal, statics } from '../../lib/process/graph-traversal.js';
+import { GraphTraversalSource, GraphTraversal, __ } from '../../lib/process/graph-traversal.js';
 import {
   SubgraphStrategy, ReadOnlyStrategy, SeedStrategy, HaltedTraverserStrategy, FilterRankingStrategy,
   OptionsStrategy, ReservedKeysVerificationStrategy, EdgeLabelVerificationStrategy, MatchAlgorithmStrategy
@@ -34,7 +34,6 @@ import {
 import GremlinLang from '../../lib/process/gremlin-lang.js';
 import DriverRemoteConnection from '../../lib/driver/driver-remote-connection.js';
 import { getConnection, getDriverRemoteConnection } from '../helper.js';
-const __ = statics;
 
 let connection;
 
