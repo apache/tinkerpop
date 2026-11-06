@@ -21,7 +21,7 @@
  * @author Jorge Bay Gondra
  */
 
-import { EnumValue, Traversal, cardinality, direction } from './traversal.js';
+import { EnumValue, Traversal, Cardinality } from './traversal.js';
 import { Transaction } from './transaction.js';
 import { TraversalStrategies, VertexProgramStrategy, OptionsStrategy } from './traversal-strategy.js';
 import {Graph, Vertex} from '../structure/graph.js';
@@ -1903,7 +1903,7 @@ export class CardinalityValue extends GremlinLang {
    * @returns {CardinalityValue}
    */
   static single(value: any[]): CardinalityValue {
-    return new CardinalityValue(cardinality.single, value);
+    return new CardinalityValue(Cardinality.single, value);
   }
 
   /**
@@ -1912,7 +1912,7 @@ export class CardinalityValue extends GremlinLang {
    * @returns {CardinalityValue}
    */
   static list(value: any[]): CardinalityValue {
-    return new CardinalityValue(cardinality.list, value);
+    return new CardinalityValue(Cardinality.list, value);
   }
 
   /**
@@ -1921,7 +1921,7 @@ export class CardinalityValue extends GremlinLang {
    * @returns {CardinalityValue}
    */
   static set(value: any[]): CardinalityValue {
-    return new CardinalityValue(cardinality.set, value);
+    return new CardinalityValue(Cardinality.set, value);
   }
 }
 
@@ -1933,7 +1933,7 @@ function callOnEmptyTraversal(fnName: string, args: any[]) {
 /**
  * Contains the static method definitions
  */
-export const statics = {
+export const __ = {
   E: (...args: any[]) => callOnEmptyTraversal('E', args),
   V: (...args: any[]) => callOnEmptyTraversal('V', args),
   addE: (...args: any[]) => callOnEmptyTraversal('addE', args),

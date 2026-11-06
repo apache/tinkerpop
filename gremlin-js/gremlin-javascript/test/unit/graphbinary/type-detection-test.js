@@ -26,7 +26,7 @@
 
 import { assert } from 'chai';
 import { Graph, Vertex, Edge, Property, VertexProperty, Path } from '../../../lib/structure/graph.js';
-import { direction, t, merge } from '../../../lib/process/traversal.js';
+import { Direction, T, Merge } from '../../../lib/process/traversal.js';
 import ioc, { DataType } from '../../../lib/structure/io/binary/GraphBinary.js';
 import StreamReader from '../../../lib/structure/io/binary/internals/StreamReader.js';
 
@@ -178,18 +178,18 @@ describe('Type Detection Tests', () => {
       assert.strictEqual(result[0], DataType.PATH);
     });
 
-    it('direction.out → DIRECTION (0x18)', () => {
-      const result = anySerializer.serialize(direction.out);
+    it('Direction.OUT → DIRECTION (0x18)', () => {
+      const result = anySerializer.serialize(Direction.OUT);
       assert.strictEqual(result[0], DataType.DIRECTION);
     });
 
-    it('t.id → T (0x20)', () => {
-      const result = anySerializer.serialize(t.id);
+    it('T.id → T (0x20)', () => {
+      const result = anySerializer.serialize(T.id);
       assert.strictEqual(result[0], DataType.T);
     });
 
-    it('merge.onCreate → MERGE (0x2e)', () => {
-      const result = anySerializer.serialize(merge.onCreate);
+    it('Merge.onCreate → MERGE (0x2e)', () => {
+      const result = anySerializer.serialize(Merge.onCreate);
       assert.strictEqual(result[0], DataType.MERGE);
     });
   });
@@ -387,7 +387,7 @@ describe('Type Detection Tests', () => {
     });
 
     it('enum values', async () => {
-      const values = [direction.out, direction.in, direction.both, t.id, t.key, t.label, t.value, merge.onCreate, merge.onMatch, merge.outV, merge.inV];
+      const values = [Direction.OUT, Direction.IN, Direction.BOTH, T.id, T.key, T.label, T.value, Merge.onCreate, Merge.onMatch, Merge.outV, Merge.inV];
       for (const value of values) {
         const serialized = anySerializer.serialize(value);
         const deserialized = await anySerializer.deserialize(StreamReader.fromBuffer(serialized));

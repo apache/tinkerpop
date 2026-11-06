@@ -21,15 +21,61 @@
  * @author Jorge Bay Gondra
  */
 
-import * as t from './process/traversal.js';
-import * as gt from './process/graph-traversal.js';
-import * as strategiesModule from './process/traversal-strategy.js';
-import * as graph from './structure/graph.js';
+import {
+  Barrier,
+  Cardinality,
+  Column,
+  Direction,
+  DT,
+  EnumValue,
+  GType,
+  IO,
+  Merge,
+  Operator,
+  Order,
+  P,
+  Pick,
+  Pop,
+  Scope,
+  T,
+  TextP,
+  Traversal,
+  TraversalSideEffects,
+  Traverser,
+  WithOptions,
+} from './process/traversal.js';
+import { __, CardinalityValue, GraphTraversal, GraphTraversalSource } from './process/graph-traversal.js';
+import * as strategies from './process/traversal-strategy.js';
+import {
+  CompositePDT,
+  Edge,
+  Graph,
+  Path,
+  PrimitivePDT,
+  Property,
+  Tree,
+  Vertex,
+  VertexProperty,
+} from './structure/graph.js';
 import { PDTRegistry } from './structure/PDTRegistry.js';
-import * as rc from './driver/remote-connection.js';
+import { RemoteConnection, RemoteStrategy, RemoteTraversal } from './driver/remote-connection.js';
 import GremlinLang from './process/gremlin-lang.js';
 import { GValue } from './process/gvalue.js';
-import * as utils from './utils.js';
+import {
+  Byte,
+  Double,
+  Float,
+  Int,
+  Long,
+  Short,
+  toByte,
+  toDouble,
+  toFloat,
+  toInt,
+  toLong,
+  toShort,
+  unwrap,
+} from './utils.js';
 import DriverRemoteConnection from './driver/driver-remote-connection.js';
 import ResponseError from './driver/response-error.js';
 import Client from './driver/client.js';
@@ -38,77 +84,155 @@ import { HttpRequest } from './driver/http-request.js';
 import { basic, sigv4 } from './driver/auth.js';
 import AnonymousTraversalSource from './process/anonymous-traversal.js';
 
-export const driver = {
-  RemoteConnection: rc.RemoteConnection,
-  RemoteStrategy: rc.RemoteStrategy,
-  RemoteTraversal: rc.RemoteTraversal,
+const traversal = AnonymousTraversalSource.traversal;
+const auth = { basic, sigv4 };
+
+// Every public symbol is available as a named export of the package, e.g.
+// import { traversal, __, P, T, Order, DriverRemoteConnection } from 'gremlin';
+// and is also grouped under the driver, process and structure namespaces below.
+export * from './process/traversal-strategy.js';
+export {
+  // driver
+  RemoteConnection,
+  RemoteStrategy,
+  RemoteTraversal,
   ResponseError,
   DriverRemoteConnection,
   Client,
   ResultSet,
   HttpRequest,
-  auth: {
-    basic,
-    sigv4,
-  },
+  auth,
+  // process
+  __,
+  AnonymousTraversalSource,
+  Barrier,
+  Cardinality,
+  CardinalityValue,
+  Column,
+  Direction,
+  DT,
+  EnumValue,
+  GraphTraversal,
+  GraphTraversalSource,
+  GremlinLang,
+  GType,
+  GValue,
+  IO,
+  Merge,
+  Operator,
+  Order,
+  P,
+  Pick,
+  Pop,
+  Scope,
+  T,
+  TextP,
+  Traversal,
+  TraversalSideEffects,
+  Traverser,
+  traversal,
+  WithOptions,
+  // structure
+  CompositePDT,
+  Edge,
+  Graph,
+  Path,
+  PDTRegistry,
+  PrimitivePDT,
+  Property,
+  Tree,
+  Vertex,
+  VertexProperty,
+  Byte,
+  Double,
+  Float,
+  Int,
+  Long,
+  Short,
+  toByte,
+  toDouble,
+  toFloat,
+  toInt,
+  toLong,
+  toShort,
+  unwrap,
 };
 
-export const process = {
-  EnumValue: t.EnumValue,
-  P: t.P,
-  TextP: t.TextP,
-  Traversal: t.Traversal,
-  TraversalSideEffects: t.TraversalSideEffects,
-  TraversalStrategies: strategiesModule.TraversalStrategies,
-  TraversalStrategy: strategiesModule.TraversalStrategy,
-  Traverser: t.Traverser,
-  barrier: t.barrier,
-  cardinality: t.cardinality,
-  column: t.column,
-  direction: t.direction,
-  dt: t.dt,
-  merge: t.merge,
-  operator: t.operator,
-  order: t.order,
-  pick: t.pick,
-  pop: t.pop,
-  scope: t.scope,
-  t: t.t,
-  GraphTraversal: gt.GraphTraversal,
-  GraphTraversalSource: gt.GraphTraversalSource,
-  CardinalityValue: gt.CardinalityValue,
-  statics: gt.statics,
-  GremlinLang,
-  GValue,
-  traversal: AnonymousTraversalSource.traversal,
-  AnonymousTraversalSource,
-  withOptions: t.withOptions,
+export const driver = {
+  RemoteConnection,
+  RemoteStrategy,
+  RemoteTraversal,
+  ResponseError,
+  DriverRemoteConnection,
+  Client,
+  ResultSet,
+  HttpRequest,
+  auth,
 };
+
+const processBase = {
+  __,
+  AnonymousTraversalSource,
+  Barrier,
+  Cardinality,
+  CardinalityValue,
+  Column,
+  Direction,
+  DT,
+  EnumValue,
+  GraphTraversal,
+  GraphTraversalSource,
+  GremlinLang,
+  GType,
+  GValue,
+  IO,
+  Merge,
+  Operator,
+  Order,
+  P,
+  Pick,
+  Pop,
+  Scope,
+  T,
+  TextP,
+  Traversal,
+  TraversalSideEffects,
+  Traverser,
+  traversal,
+  WithOptions,
+};
+
+// the explicit type keeps typedoc from expanding the spread strategy module, which it cannot render
+/** @inline */
+type ProcessNamespace = typeof processBase & typeof strategies;
+
+export const process: ProcessNamespace = { ...processBase, ...strategies };
 
 export const structure = {
-  Edge: graph.Edge,
-  Graph: graph.Graph,
-  Path: graph.Path,
-  Tree: graph.Tree,
-  Property: graph.Property,
-  PrimitivePDT: graph.PrimitivePDT,
-  CompositePDT: graph.CompositePDT,
+  CompositePDT,
+  Edge,
+  Graph,
+  Path,
   PDTRegistry,
-  Vertex: graph.Vertex,
-  VertexProperty: graph.VertexProperty,
-  toLong: utils.toLong,
-  toInt: utils.toInt,
-  toFloat: utils.toFloat,
-  toDouble: utils.toDouble,
-  toShort: utils.toShort,
-  toByte: utils.toByte,
-  Int: utils.Int,
-  Float: utils.Float,
-  Double: utils.Double,
-  Short: utils.Short,
-  Byte: utils.Byte,
-  Long: utils.Long,
-  unwrap: utils.unwrap,
+  PrimitivePDT,
+  Property,
+  Tree,
+  Vertex,
+  VertexProperty,
+  Byte,
+  Double,
+  Float,
+  Int,
+  Long,
+  Short,
+  toByte,
+  toDouble,
+  toFloat,
+  toInt,
+  toLong,
+  toShort,
+  unwrap,
 };
 
-export default { driver, process, structure };
+// the default export carries the same flat names as the named exports, alongside the namespaces
+export default { ...driver, ...process, ...structure, driver, process, structure };

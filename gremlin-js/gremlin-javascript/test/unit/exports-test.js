@@ -43,18 +43,15 @@ describe('API', function () {
     assert.strictEqual(typeof glvModule.process.CardinalityValue.single, 'function');
     assert.strictEqual(typeof glvModule.process.CardinalityValue.list, 'function');
     assert.strictEqual(typeof glvModule.process.CardinalityValue.set, 'function');
-    assert.strictEqual(typeof glvModule.process.barrier, 'object');
-    assert.strictEqual(typeof glvModule.process.cardinality, 'object');
-    assert.strictEqual(typeof glvModule.process.column, 'object');
-    assert.strictEqual(typeof glvModule.process.direction, 'object');
-    assert.strictEqual(typeof glvModule.process.direction.both, 'object');
-    assert.strictEqual(glvModule.process.direction.both.elementName, 'BOTH');
-    assert.strictEqual(typeof glvModule.process.operator, 'object');
-    assert.strictEqual(typeof glvModule.process.order, 'object');
-    assert.strictEqual(typeof glvModule.process.pop, 'object');
-    assert.strictEqual(typeof glvModule.process.scope, 'object');
-    assert.strictEqual(typeof glvModule.process.t, 'object');
-    assert.ok(glvModule.process.statics);
+    for (const name of enumNames) {
+      assert.strictEqual(typeof glvModule.process[name], 'object', name);
+    }
+    assert.strictEqual(glvModule.process.Direction.BOTH.elementName, 'BOTH');
+    assert.strictEqual(glvModule.process.Direction.from_, glvModule.process.Direction.OUT);
+    assert.strictEqual(glvModule.process.Direction.to, glvModule.process.Direction.IN);
+    assert.strictEqual(glvModule.process.GType.string.elementName, 'STRING');
+    assert.strictEqual(typeof glvModule.process.__.out, 'function');
+    validateConstructor(glvModule.process, 'IO');
     validateConstructor(glvModule.process, 'AnonymousTraversalSource');
     assert.strictEqual(typeof glvModule.process.traversal, 'function');
   });
@@ -91,7 +88,39 @@ describe('API', function () {
     assert.strictEqual(typeof glvModule.driver.auth.basic, 'function');
     assert.strictEqual(typeof glvModule.driver.auth.sigv4, 'function');
   });
+  it('should not expose the pre-4.0 lowercase names', function () {
+    for (const name of ['barrier', 'cardinality', 'column', 'direction', 'dt', 'merge', 'operator', 'order', 'pick',
+                        'pop', 'scope', 't', 'statics', 'withOptions']) {
+      assert.strictEqual(glvModule.process[name], undefined, name);
+      assert.strictEqual(glvModule[name], undefined, name);
+    }
+    assert.strictEqual(glvModule.process.Direction.out, undefined);
+  });
+  it('should expose every namespaced field as a named export', function () {
+    for (const ns of ['driver', 'process', 'structure']) {
+      for (const [name, value] of Object.entries(glvModule[ns])) {
+        assert.strictEqual(glvModule[name], value, `${ns}.${name}`);
+      }
+    }
+  });
+  it('should group every named export under a namespace', function () {
+    const namespaces = ['driver', 'process', 'structure'];
+    for (const [name, value] of Object.entries(glvModule)) {
+      if (name === 'default' || namespaces.includes(name)) continue;
+      assert.ok(namespaces.some((ns) => glvModule[ns][name] === value), name);
+    }
+  });
+  it('should expose every named export on the default export', function () {
+    const named = Object.keys(glvModule).filter((name) => name !== 'default');
+    assert.deepStrictEqual(Object.keys(glvModule.default).sort(), named.sort());
+    for (const name of named) {
+      assert.strictEqual(glvModule.default[name], glvModule[name], name);
+    }
+  });
 });
+
+const enumNames = ['Barrier', 'Cardinality', 'Column', 'Direction', 'DT', 'GType', 'Merge', 'Operator', 'Order',
+                   'Pick', 'Pop', 'Scope', 'T', 'WithOptions'];
 
 function validateConstructor(parent, name) {
   assert.strictEqual(typeof parent[name], 'function');
