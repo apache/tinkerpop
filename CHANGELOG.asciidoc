@@ -290,6 +290,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Fixed the Gherkin feature test harness to assert errors raised during traversal construction.
 * Fixed bug in `TinkerTransactionGraph` where a write to an element found through an index, or through a reference kept across a commit, changed committed state directly, so it was visible to other transactions before commit and not undone by rollback.
 * Fixed `gremlin-javascript` not exporting `CardinalityValue` from `gremlin.process`.
+* Fixed bug in `TinkerTransactionGraph` where an edge could not be dropped and re-added with the same id in one transaction.
 
 [[release-3-7-7]]
 === TinkerPop 3.7.7 (Release Date: September 1, 2026)
