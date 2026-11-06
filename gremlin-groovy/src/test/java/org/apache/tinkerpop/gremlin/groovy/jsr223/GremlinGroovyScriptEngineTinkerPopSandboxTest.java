@@ -27,6 +27,8 @@ import org.codehaus.groovy.control.MultipleCompilationErrorsException;
 import org.junit.Test;
 
 import javax.script.Bindings;
+import java.util.Arrays;
+import java.util.Collections;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.junit.Assert.assertEquals;
@@ -62,6 +64,57 @@ public class GremlinGroovyScriptEngineTinkerPopSandboxTest {
         bindings.put("marko", convertToVertexId(graph, "marko"));
         assertEquals(g.V(convertToVertexId(graph, "marko")).next(), engine.eval("g.V(marko).next()", bindings));
         assertEquals(g.V(convertToVertexId(graph, "marko")).out("created").count().next(), engine.eval("g.V(marko).out(\"created\").count().next()", bindings));
+    }
+
+    /**
+     * The allow list includes {@code DefaultGroovyMethods}, so Groovy helper methods (the GDK) hosted there can be
+     * called. Groovy can move GDK methods to other host classes between versions (Groovy 5 moved array methods to
+     * {@code ArrayGroovyMethods}), which would silently flip these from allowed to "Not authorized".
+     */
+    @Test
+    public void shouldAllowGroovyHelperMethodsHostedOnDefaultGroovyMethods() throws Exception {
+        final Graph graph = TinkerFactory.createModern();
+        final GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine(
+                new CompileStaticGroovyCustomizer(TinkerPopSandboxExtension.class.getName()));
+        final Bindings bindings = engine.createBindings();
+        bindings.put("g", graph.traversal());
+
+        assertEquals(Arrays.asList(2, 4, 6), engine.eval("[1, 2, 3].collect{it * 2}", bindings));
+        assertEquals(6, engine.eval("[1, 2, 3].sum()", bindings));
+        assertEquals(3, engine.eval("([1, 2] as int[]).sum()", bindings));
+        assertEquals(Arrays.asList(1, 2), engine.eval("([1, 2] as Integer[]).collect{it}", bindings));
+        assertEquals(Collections.singletonMap("a", 1), engine.eval("[a: 1].each{k, v -> k}", bindings));
+        assertEquals(Arrays.asList(1, 2, 3, 4, 5, 6), engine.eval("g.V().toList().collect{it.id()}", bindings));
+        assertEquals("marko,vadas,lop,josh,ripple,peter", engine.eval("g.V().values('name').toList().join(',')", bindings));
+    }
+
+    /**
+     * The denial message names the exact method descriptor checked against the allow list, so a change in how Groovy
+     * resolves a call (declaring class, parameter types) shows up here.
+     */
+    @Test
+    public void shouldNameTheExactMethodThatIsNotAuthorized() throws Exception {
+        final GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine(
+                new CompileStaticGroovyCustomizer(TinkerPopSandboxExtension.class.getName()));
+        assertNotAuthorized(engine, "System.getProperty('x')", "java.lang.System#getProperty(java.lang.String)");
+        assertNotAuthorized(engine, "java.lang.Math.abs(-1)", "java.lang.Math#abs(int)");
+        assertNotAuthorized(engine, "new File('x').text", "java.io.File#<init>(java.lang.String)");
+        // String helpers live on StringGroovyMethods, which the allow list does not include
+        assertNotAuthorized(engine, "'abc'.reverse()",
+                "org.codehaus.groovy.runtime.StringGroovyMethods#reverse(java.lang.CharSequence)");
+        assertNotAuthorized(engine, "'a,b'.tokenize(',')",
+                "org.codehaus.groovy.runtime.StringGroovyMethods#tokenize(java.lang.CharSequence,java.lang.CharSequence)");
+    }
+
+    private static void assertNotAuthorized(final GremlinGroovyScriptEngine engine, final String script,
+                                            final String descriptor) {
+        try {
+            engine.eval(script);
+            fail("Should not be authorized: " + script);
+        } catch (Exception ex) {
+            assertEquals(MultipleCompilationErrorsException.class, ex.getCause().getClass());
+            assertThat(ex.getCause().getMessage(), containsString("Not authorized to call this method: " + descriptor));
+        }
     }
 
     private Object convertToVertexId(final Graph graph, final String vertexName) {

@@ -122,24 +122,28 @@ TIP: When using Gremlin-Groovy in a Groovy class file, add `static { GremlinLoad
 
 === Console Commands
 
-In addition to the standard commands of the link:http://groovy-lang.org/groovysh.html[Groovy Shell], Gremlin adds
-some other useful operations.  The following table outlines the most commonly used commands:
+In addition to the standard commands of the link:https://groovy-lang.org/groovysh.html[Groovy Shell], Gremlin adds
+some other useful operations. The Groovy Shell names its commands with a leading `/`, as in `/help`. A command may also
+be typed with a leading `:` at the start of a line, which is the form used throughout this documentation. The
+following table outlines the most commonly used commands:
 
 [width="100%",cols="3,^2,10",options="header"]
 |=========================================================
 |Command |Alias |Description
-|:help |:? |Displays list of commands and descriptions.  When followed by a command name, it will display more specific help on that particular item.
-|:exit |:x |Ends the Console session.
-|import |:i |Import a class into the Console session.
-|:cls |:C |Clear the screen of the Console.
-|:clear |:c |Sometimes the Console can get into a state where the command buffer no longer understands input (e.g. a misplaced `(` or `}`).  Use this command to clear that buffer.
-|:load |:l |Load a file or URL into the command buffer for execution.
-|:install |:+ |Imports a Maven library and its dependencies into the Console.
-|:uninstall |:- |Removes a Maven library and its dependencies. A restart of the console is required for removal to fully take effect.
+|:help |:h |Displays the list of commands and descriptions. Help for a single command is displayed with `:help /name`, as in `:help /plugin`, or by following the command with `--help`.
+|:exit |:x, :q |Ends the Console session.
+|:cls |:C |Clears the screen of the Console. `:clear` does the same.
+|:load |:l |Loads a file and executes its contents in the Console.
+|:history |:H |Lists the statements entered so far. `:history -s <n>` executes the statement numbered `<n>` again.
+|:install | |Imports a Maven library and its dependencies into the Console.
+|:uninstall | |Removes a Maven library and its dependencies. A restart of the console is required for removal to fully take effect.
 |:plugin |:pin |Plugin management functions to list, activate and deactivate available plugins.
+|:set | |Sets or lists Console preferences, as described in <<console-preferences,Console Preferences>>.
 |=========================================================
 
-NOTE: The Console also exposes the `:record` command which is inherited from the Groovy Shell.
+Classes are imported with a regular Groovy `import` statement, which the Console remembers for later lines. Pressing
+`ctrl+c` discards a statement that is still being typed, including an unfinished multi-line statement, and returns to
+a fresh prompt.
 
 === Interrupting Evaluations
 
@@ -169,7 +173,7 @@ gremlin>
 [[console-preferences]]
 === Console Preferences
 
-Preferences are set with `:set name value`.  Values can contain spaces when quoted. All preferences are reset by `:purge preferences`
+Preferences are set with `:set name value`.  Values can contain spaces when quoted.
 
 [width="100%",cols="3,^2,10",options="header"]
 |=========================================================
@@ -1682,6 +1686,7 @@ methodWhiteList:
   - java\.lang\.Void.*
   - java\.util\..*
   - org\.codehaus\.groovy\.runtime\.DefaultGroovyMethods.*
+  - org\.codehaus\.groovy\.runtime\.ArrayGroovyMethods.*
   - org\.codehaus\.groovy\.runtime\.InvokerHelper#runScript\(java\.lang\.Class,java\.lang\.String\[\]\)
   - org\.codehaus\.groovy\.runtime\.StringGroovyMethods.*
   - groovy\.lang\.Script#<init>\(groovy.lang.Binding\)

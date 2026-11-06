@@ -35,6 +35,7 @@ import org.yaml.snakeyaml.constructor.Constructor
  * methodWhiteList:
  *   - java\.util\..*
  *   - org\.codehaus\.groovy\.runtime\.DefaultGroovyMethods
+ *   - org\.codehaus\.groovy\.runtime\.ArrayGroovyMethods
  * staticVariableTypes:
  *   graph: org.apache.tinkerpop.structure.Graph
  * }

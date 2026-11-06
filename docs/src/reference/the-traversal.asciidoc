@@ -2212,9 +2212,14 @@ gremlin> g.V().has('person','name','stephen').fold().
 ......1>   coalesce(unfold(),
 ......2>            fail('stephen should exist')).
 ......3>   property('k',100)
+FailException: stephen should exist
+gremlin> g.V().has('person','name','stephen').fold().
+......1>   coalesce(unfold(),
+......2>            fail('stephen should exist')).
+......3>   property('k',100).toList()
 fail() Step Triggered
 =================================================================================================================================================
-Message > stephen should exist
+Message  > stephen should exist
 Traverser> []
   Bulk   > 1
 Traversal> fail("stephen should exist")
@@ -2222,6 +2227,9 @@ Parent   > CoalesceStep [V().has("person","name","stephen").fold().coalesce(__.u
 Metadata > {}
 =================================================================================================================================================
 ----
+
+NOTE: The Gremlin Console reports only the message of the failure when the traversal is iterated by the console
+itself. Iterating it on the line, as with `toList()` in the second form above, displays the details of the failure.
 
 The code example above exemplifies the latter use case where there is essentially an assertion that there is a vertex
 with a particular "name" value prior to updating the property "k" and explicitly failing when that vertex is not found.
@@ -4015,7 +4023,7 @@ for one event or the other:
 ----
 gremlin> g.mergeV([(T.id): 1]).
 ......1>     option(onCreate, fail("vertex did not exist")).
-......2>     option(onMatch, [modified: 2022])
+......2>     option(onMatch, [modified: 2022]).toList()
 fail() Step Triggered
 ======================================================================================================================================================================
 Message  > vertex did not exist

@@ -19,19 +19,25 @@
 
 package org.apache.tinkerpop.gremlin.console;
 
-import org.apache.groovy.groovysh.AnsiDetector
-import org.fusesource.jansi.Ansi
-import org.fusesource.jansi.AnsiConsole
+import org.jline.jansi.Ansi
+import org.jline.jansi.AnsiColors
+import org.jline.jansi.AnsiMode
+import org.jline.jansi.AnsiPrintStream
+import org.jline.jansi.AnsiType
+import org.jline.jansi.io.AnsiOutputStream
+import org.jline.terminal.spi.SystemStream
+import org.jline.terminal.spi.TerminalProvider
+
+import java.nio.charset.Charset
 
 public class Colorizer {
 
     public static void installAnsi() {
-        // must be called before IO(), since it modifies System.in
-        // Install the system adapters, replaces System.out and System.err
-        // Must be called before using IO(), because IO stores refs to System.out and System.err
-        AnsiConsole.systemInstall()
-        // Register jline ansi detector
-        Ansi.setDetector(new AnsiDetector())
+        // must be called before IO(), because IO stores refs to System.out and System.err.
+        // JLine's AnsiConsole.systemInstall(), which replaces the jansi one used with Groovy 4, writes System.err to
+        // standard output as well, so errors would mix into redirected results. each stream is wrapped here instead.
+        System.setOut(ansiStream(System.out, SystemStream.Output))
+        System.setErr(ansiStream(System.err, SystemStream.Error))
         Ansi.enabled = true
     }
 
@@ -41,5 +47,27 @@ public class Colorizer {
         } else {
             return text
         }
+    }
+
+    /**
+     * Keeps color codes when the stream is a terminal and removes them when it is redirected.
+     */
+    private static PrintStream ansiStream(final PrintStream stream, final SystemStream which) {
+        if (isTerminal(which)) return stream
+        final AnsiOutputStream strip = new AnsiOutputStream(stream, { 0 } as AnsiOutputStream.WidthSupplier,
+                AnsiMode.Strip, null, AnsiType.Redirected, AnsiColors.Colors16, Charset.defaultCharset(),
+                null, null, false)
+        return new AnsiPrintStream(strip, true)
+    }
+
+    private static boolean isTerminal(final SystemStream which) {
+        for (String provider : ["jni", "exec"]) {
+            try {
+                return TerminalProvider.load(provider).isSystemStream(which)
+            } catch (Throwable ignored) {
+                // provider not available on this platform
+            }
+        }
+        return false
     }
 }

@@ -18,8 +18,6 @@
  */
 package org.apache.tinkerpop.gremlin.console.commands
 
-import org.apache.groovy.groovysh.CommandSupport
-import org.apache.groovy.groovysh.Groovysh
 import org.apache.tinkerpop.gremlin.console.Mediator
 
 /**
@@ -27,14 +25,20 @@ import org.apache.tinkerpop.gremlin.console.Mediator
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-class ClsCommand extends CommandSupport {
+class ClsCommand extends GremlinCommand {
 
     private final Mediator mediator
 
-    public ClsCommand(final Groovysh shell, final Mediator mediator) {
-        super(shell, ":cls", ":C")
+    public ClsCommand(final Mediator mediator) {
+        super("/cls", "/C")
         this.mediator = mediator
     }
+
+    @Override
+    String description() { "Clear the screen." }
+
+    @Override
+    String usage() { "" }
 
     @Override
     def Object execute(final List<String> arguments) {

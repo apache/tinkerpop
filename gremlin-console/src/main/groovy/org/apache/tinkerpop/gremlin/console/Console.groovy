@@ -20,34 +20,47 @@ package org.apache.tinkerpop.gremlin.console
 
 import groovy.cli.picocli.CliBuilder
 import groovy.cli.picocli.OptionAccessor
-import jline.TerminalFactory
-import jline.console.history.FileHistory
-import org.apache.groovy.groovysh.ExitNotification
-import org.apache.groovy.groovysh.Groovysh
-import org.apache.groovy.groovysh.InteractiveShellRunner
-import org.apache.groovy.groovysh.commands.SetCommand
-import org.apache.tinkerpop.gremlin.console.commands.ClsCommand
-import org.apache.tinkerpop.gremlin.console.commands.GremlinSetCommand
-import org.apache.tinkerpop.gremlin.console.commands.InstallCommand
-import org.apache.tinkerpop.gremlin.console.commands.PluginCommand
-import org.apache.tinkerpop.gremlin.console.commands.UninstallCommand
+import groovy.transform.ThreadInterrupt
+import org.apache.groovy.groovysh.GroovyshOptions
+import org.apache.groovy.groovysh.Main
+import org.apache.groovy.groovysh.jline.GroovyEngine
+import org.apache.groovy.groovysh.jline.GroovySystemRegistry
+import org.apache.tinkerpop.gremlin.console.commands.UsageException
 import org.apache.tinkerpop.gremlin.groovy.loaders.GremlinLoader
 import org.apache.tinkerpop.gremlin.jsr223.CoreGremlinPlugin
 import org.apache.tinkerpop.gremlin.jsr223.GremlinPlugin
 import org.apache.tinkerpop.gremlin.jsr223.ImportCustomizer
 import org.apache.tinkerpop.gremlin.process.traversal.Failure
-import org.apache.tinkerpop.gremlin.process.traversal.Traverser
-import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalExplanation
 import org.apache.tinkerpop.gremlin.structure.Edge
 import org.apache.tinkerpop.gremlin.structure.T
 import org.apache.tinkerpop.gremlin.structure.Vertex
 import org.apache.tinkerpop.gremlin.util.Gremlin
 import org.apache.tinkerpop.gremlin.util.iterator.ArrayIterator
+import org.codehaus.groovy.control.CompilerConfiguration
+import org.codehaus.groovy.control.customizers.ASTTransformationCustomizer
 import org.codehaus.groovy.tools.shell.IO
-import org.fusesource.jansi.Ansi
-import sun.misc.Signal
-import sun.misc.SignalHandler
+import org.jline.jansi.Ansi
+import org.jline.builtins.Options.HelpException
+import org.jline.reader.LineReader
+import org.jline.reader.Widget
+import org.jline.reader.impl.DefaultHighlighter
+import org.jline.reader.impl.DefaultParser
+import org.jline.reader.impl.LineReaderImpl
+import org.jline.shell.Command
+import org.jline.shell.CommandGroup
+import org.jline.shell.CommandSession
+import org.jline.terminal.Terminal
+import org.jline.terminal.TerminalBuilder
+
+import java.lang.reflect.UndeclaredThrowableException
+import java.nio.file.Path
+import java.nio.file.Paths
+import java.util.function.BiConsumer
+import java.util.function.Consumer
+import java.util.function.Predicate
+import java.util.function.Supplier
+
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
@@ -55,16 +68,30 @@ class Console {
     static {
         // this is necessary so that terminal doesn't lose focus to AWT
         System.setProperty("java.awt.headless", "true")
+        if (System.getProperty("groovysh.interpreterMode") == null)
+            System.setProperty("groovysh.interpreterMode", "false")
         Colorizer.installAnsi()
     }
 
     private static final String ELLIPSIS = "..."
 
+    static final Map<String, String> COMMAND_ALIASES = [
+            "/l": "/load",
+            "/H": "/history",
+            "/a": "/alias",
+            "/g": "/grab",
+            "/D": "/doc",
+            "/n": "/inspect",
+            "/quit": "/exit"]
+
     private Iterator tempIterator = Collections.emptyIterator()
+    private boolean showOutput = false
 
     private final IO io
-    private final Groovysh groovy
     private final boolean interactive
+    private final GroovyEngine engine
+    private final CommandGroup commands
+    private LineReader reader
 
     public Console(final IO io, final List<List<String>> scriptsAndArgs, final boolean interactive) {
         this.io = io
@@ -75,6 +102,7 @@ class Console {
             io.out.println("         " + Colorizer.render(Preferences.gremlinColor, "\\,,,/"))
             io.out.println("         " + Colorizer.render(Preferences.gremlinColor, "(o o)"))
             io.out.println("" + Colorizer.render(Preferences.gremlinColor, "-----oOOo-(" + Gremlin.majorVersion() + ")-oOOo-----"))
+            io.out.flush()
         }
 
         final Mediator mediator = new Mediator(this)
@@ -82,59 +110,15 @@ class Console {
         // make sure that remotes are closed on jvm shutdown
         addShutdownHook { mediator.close() }
 
-        // try to grab ctrl+c to interrupt an evaluation.
-        final Thread main = Thread.currentThread()
-        Signal.handle(new Signal("INT"), new SignalHandler() {
-            @Override
-            void handle(final Signal signal) {
-                if (mediator.evaluating.get()) {
-                    io.out.println("Execution interrupted by ctrl+c")
-                    main.interrupt()
-                }
-            }
-        })
-
-        groovy = new GremlinGroovysh(mediator, io)
-
-        def commandsToRemove = groovy.getRegistry().commands().findAll { it instanceof SetCommand }
-        commandsToRemove.each { groovy.getRegistry().remove(it) }
-        groovy.register(new GremlinSetCommand(groovy))
-        groovy.register(new UninstallCommand(groovy, mediator))
-        groovy.register(new InstallCommand(groovy, mediator))
-        groovy.register(new PluginCommand(groovy, mediator))
-        groovy.register(new ClsCommand(groovy, mediator))
-
-        // hide output temporarily while imports execute
-        showShellEvaluationOutput(false)
-
-        org.codehaus.groovy.control.customizers.ImportCustomizer ic = new org.codehaus.groovy.control.customizers.ImportCustomizer()
-        def imports = (ImportCustomizer) CoreGremlinPlugin.instance().getCustomizers("gremlin-groovy").get()[0]
-        ic.addStarImports(imports.getClassPackages().collect() { it.getName() }.toArray(new String[0]))
-        ic.addStaticStars(imports.getMethodClasses().collect() { it.getCanonicalName() }.toArray(new String[0]))
-        ic.addStaticStars(imports.getEnumClasses().collect() { it.getCanonicalName() }.toArray(new String[0]))
-        ic.addStaticStars(imports.getFieldClasses().collect() { it.getCanonicalName() }.toArray(new String[0]))
-        groovy.getCompilerConfiguration().addCompilationCustomizers(ic)
-
-        final InteractiveShellRunner runner = new InteractiveShellRunner(groovy, handlePrompt)
-        runner.reader.setHandleUserInterrupt(false)
-        runner.reader.setHandleLitteralNext(false)
-        runner.setErrorHandler(handleError)
-        try {
-            final FileHistory history = new FileHistory(new File(ConsoleFs.HISTORY_FILE))
-            groovy.setHistory(history)
-            runner.setHistory(history)
-        } catch (IOException ignored) {
-            io.err.println(Colorizer.render(Preferences.errorColor, "Unable to create history file: " + ConsoleFs.HISTORY_FILE))
-        }
+        engine = createEngine()
 
         GremlinLoader.load()
 
         // check for available plugins on the path and track them by plugin class name
         def activePlugins = Mediator.readPluginState()
-        ServiceLoader.load(GremlinPlugin, groovy.getInterp().getClassLoader()).each { plugin ->
+        ServiceLoader.load(GremlinPlugin, engine.getClassLoader()).each { plugin ->
             if (!mediator.availablePlugins.containsKey(plugin.class.name)) {
-                def pluggedIn = new PluggedIn((GremlinPlugin) plugin, groovy, io, false)
-
+                def pluggedIn = new PluggedIn((GremlinPlugin) plugin, engine, false)
                 mediator.availablePlugins.put(plugin.class.name, pluggedIn)
                 pluggedIn.activate()
             }
@@ -143,17 +127,15 @@ class Console {
         // if there are active plugins then initialize them in the order that they are listed
         activePlugins.each { pluginName ->
             def pluggedIn = mediator.availablePlugins[pluginName]
-
             if (pluggedIn != null) {
                 pluggedIn.activate()
-
                 if (!io.quiet)
                     io.out.println(Colorizer.render(Preferences.infoColor, "plugin activated: " + pluggedIn.getPlugin().getName()))
             } else if (!io.quiet) {
                 io.out.println(Colorizer.render(Preferences.infoColor, "invalid plugin: " + pluginName + " -- removing reference to this plugin."))
-
             }
         }
+        io.out.flush()
 
         // remove any "uninstalled" plugins from plugin state as it means they were installed, activated, but not
         // deactivated, and are thus hanging about (e.g. user deleted the plugin directories to uninstall). checking
@@ -162,67 +144,104 @@ class Console {
         if (activePlugins.size() != mediator.activePlugins().size())
             mediator.writePluginState()
 
-        try {
-            // if the init script contains :x command it will throw an ExitNotification so init script execution
-            // needs to appear in the try/catch
-            if (scriptsAndArgs != null && !scriptsAndArgs.isEmpty()) executeInShell(scriptsAndArgs)
+        commands = GremlinCommands.create(mediator, engine)
 
-            // start iterating results to show as output
-            showShellEvaluationOutput(true)
+        if (scriptsAndArgs != null && !scriptsAndArgs.isEmpty()) executeInShell(scriptsAndArgs, commands)
 
-            runner.run()
-        } catch (ExitNotification ignored) {
-            // occurs on exit
-        } catch (Throwable t) {
-            t.printStackTrace()
-        } finally {
-            // shutdown hook defined above will kill any open remotes
-            System.exit(0)
-        }
+        showOutput = true
+    }
+
+    /**
+     * Runs the shell on the terminal until the session ends and returns its exit code.
+     */
+    int start(final Terminal terminal, final Path historyFile = Paths.get(ConsoleFs.HISTORY_FILE)) {
+        final GroovyshOptions options = GroovyshOptions.builder()
+                .engine(engine)
+                .terminal(terminal)
+                .showBanner(false)
+                .prompt({ interactive ? Colorizer.render(Preferences.inputPromptColor, Preferences.inputPrompt + ' ') : "" } as Supplier<String>)
+                .historyFile(historyFile)
+                .groups(commands)
+                .resultHandler({ printer, result -> handleResultIterate(result) } as GroovyshOptions.ResultHandler)
+                .errorHandler({ Throwable err, Consumer<Throwable> trace ->
+                    // groovysh ends the session if this throws
+                    try {
+                        // command help arrives as an exception; groovysh prints it
+                        if (err instanceof HelpException)
+                            trace.accept(err)
+                        else if (err instanceof UsageException)
+                            io.err.println(Colorizer.render(Preferences.errorColor, err.message))
+                        else
+                            handleError(err)
+                    } catch (Throwable t) {
+                        io.err.println(Colorizer.render(Preferences.errorColor, "An undefined error has occurred: " + err))
+                    }
+                } as GroovyshOptions.ErrorHandler)
+                .onReaderReady({ LineReader r, GroovySystemRegistry registry ->
+                    this.reader = r
+                    r.setHighlighter(new DefaultHighlighter())
+                    // the "......1> " continuation prompt
+                    r.setVariable(LineReader.SECONDARY_PROMPT_PATTERN, "%P.%N> ")
+                    // short forms of old console commands that have a groovysh 6 equivalent
+                    COMMAND_ALIASES.each { alias, command -> registry.invoke("/alias", alias, command) }
+                    final Predicate<String> isCommand = { String c -> registry.hasCommand(c) || registry.isCommandAlias(c) } as Predicate<String>
+                    r.setCompleter(new ColonCommandCompleter(r.getCompleter(), isCommand))
+                    // wait for more input after a line such as "g.V()." that ends too early
+                    ((LineReaderImpl) r).setParser(new StatementParser(r.getParser(), engine.getCompilerConfiguration(), isCommand))
+                    if (r.terminal.type == Terminal.TYPE_DUMB || r.terminal.type == Terminal.TYPE_DUMB_COLOR)
+                        readPipedInput(r)
+                } as BiConsumer<LineReader, GroovySystemRegistry>)
+                .build()
+
+        return Main.start(options, new String[0])
+    }
+
+    /**
+     * Creates the engine statements run in, with the core Gremlin imports. {@code @ThreadInterrupt} lets ctrl+c stop
+     * a running statement.
+     */
+    static GroovyEngine createEngine() {
+        final CompilerConfiguration compilerConfig = new CompilerConfiguration(CompilerConfiguration.DEFAULT)
+        compilerConfig.addCompilationCustomizers(new ASTTransformationCustomizer(ThreadInterrupt.class))
+        org.codehaus.groovy.control.customizers.ImportCustomizer ic = new org.codehaus.groovy.control.customizers.ImportCustomizer()
+        def imports = (ImportCustomizer) CoreGremlinPlugin.instance().getCustomizers("gremlin-groovy").get()[0]
+        ic.addStarImports(imports.getClassPackages().collect() { it.getName() }.toArray(new String[0]))
+        ic.addStaticStars(imports.getMethodClasses().collect() { it.getCanonicalName() }.toArray(new String[0]))
+        ic.addStaticStars(imports.getEnumClasses().collect() { it.getCanonicalName() }.toArray(new String[0]))
+        ic.addStaticStars(imports.getFieldClasses().collect() { it.getCanonicalName() }.toArray(new String[0]))
+        compilerConfig.addCompilationCustomizers(ic)
+        return new GroovyEngine(Console.class.classLoader, new Binding(), compilerConfig)
+    }
+
+    /**
+     * Adjusts the reader for input that is piped in rather than typed.
+     */
+    private static void readPipedInput(final LineReader r) {
+        // piped input brings its own closing brackets
+        r.option(LineReader.Option.INSERT_BRACKET, false)
+
+        // without a redraw, the continuation prompts of a piped statement appear only once it is complete
+        final Widget accept = r.widgets.get(LineReader.ACCEPT_LINE)
+        r.widgets.put(LineReader.ACCEPT_LINE, {
+            final int before = r.buffer.length()
+            final boolean accepted = accept.apply()
+            if (r.buffer.length() > before) r.callWidget(LineReader.REDISPLAY)
+            return accepted
+        } as Widget)
     }
 
     def showShellEvaluationOutput(final boolean show) {
-        if (show)
-            groovy.setResultHook(handleResultIterate)
-        else
-            groovy.setResultHook(handleResultShowNothing)
+        showOutput = show
     }
 
-    private def handlePrompt = { 
-        if (interactive) {
-            int lineNo = groovy.buffers.current().size() 
-            if (lineNo > 0 ) {
-                String lineStr = lineNo.toString() + ">"
-                int pad = Preferences.inputPrompt.length()
-                return Colorizer.render(Preferences.inputPromptColor, lineStr.toString().padLeft(pad, '.') + ' ')
-            } else {
-                return Colorizer.render(Preferences.inputPromptColor, Preferences.inputPrompt + ' ')
-            }
-        } else {
-            return ""
-        }
-    }
-
-    private def handleResultShowNothing = { args -> null }
-
-    private def handleResultIterate = { result ->
-
-        try {
-            // necessary to save persist history to file
-            groovy.getHistory().flush()
-        } catch (IOException e) {
-            throw new RuntimeException(e.getMessage(), e)
-        }
+    private void handleResultIterate(final Object result) {
+        if (!showOutput) return
 
         while (true) {
             // give ctrl+c a chance
             Thread.yield()
 
-            // if this is true then ctrl+c was triggered
-            if (Thread.interrupted()) {
-                this.tempIterator = Collections.emptyIterator()
-                return null
-            }
+            if (interruptedWhilePrinting()) return
 
             if (this.tempIterator.hasNext()) {
                 int counter = 0
@@ -230,17 +249,13 @@ class Console {
                     // give ctrl+c a chance
                     Thread.yield()
 
-                    // if this is true then ctrl+c was triggered
-                    if (Thread.interrupted()) {
-                        this.tempIterator = Collections.emptyIterator()
-                        return null
-                    }
+                    if (interruptedWhilePrinting()) return
 
                     printResult(tempIterator.next())
                     counter++
                 }
                 if (this.tempIterator.hasNext())
-                    io.out.println(Colorizer.render(Preferences.resultPromptColor,ELLIPSIS))
+                    println(Colorizer.render(Preferences.resultPromptColor, ELLIPSIS))
                 this.tempIterator = Collections.emptyIterator()
                 break
             } else {
@@ -259,33 +274,33 @@ class Console {
                         this.tempIterator = (Iterator) result
                         if (!this.tempIterator.hasNext()) {
                             this.tempIterator = Collections.emptyIterator()
-                            return null
+                            return
                         }
                     } else if (result instanceof Iterable) {
                         this.tempIterator = ((Iterable) result).iterator()
                         if (!this.tempIterator.hasNext()) {
                             this.tempIterator = Collections.emptyIterator()
-                            return null
+                            return
                         }
                     } else if (result instanceof Object[]) {
                         this.tempIterator = new ArrayIterator((Object[]) result)
                         if (!this.tempIterator.hasNext()) {
                             this.tempIterator = Collections.emptyIterator()
-                            return null
+                            return
                         }
                     } else if (result instanceof Map) {
                         this.tempIterator = ((Map) result).entrySet().iterator()
                         if (!this.tempIterator.hasNext()) {
                             this.tempIterator = Collections.emptyIterator()
-                            return null
+                            return
                         }
                     } else if (result instanceof TraversalExplanation) {
-                        final int width = TerminalFactory.get().getWidth()
-                        io.out.println(Colorizer.render(Preferences.resultPromptColor,(buildResultPrompt() + result.prettyPrint(width < 20 ? 80 : width))))
-                        return null
+                        final int width = reader == null ? 80 : reader.terminal.width
+                        println(Colorizer.render(Preferences.resultPromptColor,(buildResultPrompt() + result.prettyPrint(width < 20 ? 80 : width))))
+                        return
                     } else {
                         printResult(result)
-                        return null
+                        return
                     }
                 } catch (final Exception e) {
                     this.tempIterator = Collections.emptyIterator()
@@ -293,25 +308,35 @@ class Console {
                 }
             }
         }
+        System.out.flush()
+    }
+
+    /**
+     * Whether ctrl+c was pressed while results were printing, in which case the rest of the results are dropped.
+     */
+    private boolean interruptedWhilePrinting() {
+        if (!Thread.interrupted()) return false
+        this.tempIterator = Collections.emptyIterator()
+        io.out.println("Execution interrupted by ctrl+c")
+        return true
     }
 
     /**
      * Clears the console screen.
      */
     def clear() {
-        io.out.println("\033[H\033[2J")
+        println("\033[H\033[2J")
     }
 
     def printResult(def object) {
         final String prompt = Colorizer.render(Preferences.resultPromptColor, buildResultPrompt())
         // if preference is set to empty string then don't print any result
         if (object != null) {
-            io.out.println(prompt + colorizeResult(object))
-        } else {
-            if (!Preferences.emptyResult.isEmpty()) {
-                io.out.println(prompt + Preferences.emptyResult)
-            }
+            println(prompt + colorizeResult(object))
+        } else if (!Preferences.emptyResult.isEmpty()) {
+            println(prompt + Preferences.emptyResult)
         }
+        System.out.flush()
     }
 
     def colorizeResult = { object ->
@@ -323,13 +348,12 @@ class Console {
             List<String> buf = new ArrayList<>()
             def pathIter = object.iterator()
             while (pathIter.hasNext()) {
-                Object n = pathIter.next()
-                buf.add(colorizeResult(n))
+                buf.add(colorizeResult(pathIter.next()))
             }
             return ("[" + buf.join(",") + "]")
         } else if (object instanceof Map) {
             List<String> buf = new ArrayList<>()
-            object.each{k, v ->
+            object.each { k, v ->
                 buf.add(colorizeResult(k) + ":" + colorizeResult(v))
             }
             return ("[" + buf.join(",") + "]")
@@ -344,67 +368,63 @@ class Console {
         }
     }
 
-    private def handleError = { err ->
+    private void handleError(Throwable e) {
         this.tempIterator = Collections.emptyIterator()
-        if (err instanceof Throwable) {
-            try {
-                final Throwable e = (Throwable) err
 
-                // special rendering for Failure
-                if ((err instanceof Failure)) {
-                    def fail = (Failure) err
-                    io.err.println(Colorizer.render(Preferences.errorColor, fail.format()))
-                } else {
-                    String message = e.getMessage()
-                    if (null != message) {
-                        message = message.replace("startup failed:", "")
-                        io.err.println(Colorizer.render(Preferences.errorColor, message.trim()))
-                    } else {
-                        io.err.println(Colorizer.render(Preferences.errorColor, e))
-                    }
+        // ctrl+c interrupts the running statement. inside a closure that implements an interface, e.g. one coerced
+        // with "as Iterator", the InterruptedException arrives wrapped.
+        if (e instanceof UndeclaredThrowableException && e.cause instanceof InterruptedException)
+            e = e.cause
+        if (e instanceof InterruptedException)
+            io.out.println("Execution interrupted by ctrl+c")
 
-                    // provide a hint in the case of a stackoverflow as it can be common when running large Gremlin
-                    // scripts and it isn't immediately apparent what the error might mean in this context especially
-                    // if the user isn't familiar with the JVM. it really can only be a hint since we can't be completely
-                    // sure it arose as a result of a long Gremlin traversal.
-                    if (err instanceof StackOverflowError) {
-                        io.err.println(Colorizer.render(Preferences.errorColor,
-                                "A StackOverflowError can indicate that the Gremlin traversal being executed is too long. If " +
-                                        "you have a single Gremlin statement that is \"long\", you may break it up into " +
-                                        "multiple separate commands, re-write the traversal to operate on a stream of " +
-                                        "input via inject() rather than literals, or attempt to increase the -Xss setting" +
-                                        "of the Gremlin Console by modifying gremlin.sh."));
-                    }
-
-                    if (interactive) {
-                        io.err.println(Colorizer.render(Preferences.infoColor, "Type ':help' or ':h' for help."))
-                        io.err.print(Colorizer.render(Preferences.errorColor, "Display stack trace? [yN]"))
-                        io.err.flush()
-                        String line = new BufferedReader(io.in).readLine()
-                        if (null == line)
-                            line = ""
-                        io.err.print(line.trim())
-                        io.err.println()
-                        if (line.trim().equals("y") || line.trim().equals("Y")) {
-                            e.printStackTrace(io.err)
-                        }
-                    } else {
-                        e.printStackTrace(io.err)
-                        System.exit(1)
-                    }
-                }
-            } catch (Exception ignored) {
-                io.err.println(Colorizer.render(Preferences.errorColor, "An undefined error has occurred: " + err))
-                if (!interactive) System.exit(1)
-            }
-        } else {
-            io.err.println(Colorizer.render(Preferences.errorColor, "An undefined error has occurred: " + err.toString()))
-            if (!interactive) System.exit(1)
+        if (e instanceof Failure) {
+            io.err.println(Colorizer.render(Preferences.errorColor, ((Failure) e).format()))
+            return
         }
 
-        groovy.buffers.current().clear()
+        String message = e.getMessage()
+        if (null != message) {
+            message = message.replace("startup failed:", "")
+            io.err.println(Colorizer.render(Preferences.errorColor, message.trim()))
+        } else {
+            io.err.println(Colorizer.render(Preferences.errorColor, e))
+        }
 
-        return null
+        // provide a hint in the case of a stackoverflow as it can be common when running large Gremlin
+        // scripts and it isn't immediately apparent what the error might mean in this context especially
+        // if the user isn't familiar with the JVM. it really can only be a hint since we can't be completely
+        // sure it arose as a result of a long Gremlin traversal.
+        if (e instanceof StackOverflowError) {
+            io.err.println(Colorizer.render(Preferences.errorColor,
+                    "A StackOverflowError can indicate that the Gremlin traversal being executed is too long. If " +
+                            "you have a single Gremlin statement that is \"long\", you may break it up into " +
+                            "multiple separate commands, re-write the traversal to operate on a stream of " +
+                            "input via inject() rather than literals, or attempt to increase the -Xss setting" +
+                            "of the Gremlin Console by modifying gremlin.sh."))
+        }
+
+        io.err.println(Colorizer.render(Preferences.infoColor, "Type ':help' or ':h' for help."))
+        io.err.print(Colorizer.render(Preferences.errorColor, "Display stack trace? [yN]"))
+        io.err.flush()
+
+        // ctrl+c leaves the interrupt flag set, which would make reading the answer fail
+        Thread.interrupted()
+        String line
+        if (reader != null) {
+            reader.setVariable(LineReader.DISABLE_HISTORY, true)
+            try {
+                line = reader.readLine("")
+            } catch (Exception ignored) {
+                line = ""
+            } finally {
+                reader.setVariable(LineReader.DISABLE_HISTORY, false)
+            }
+        } else {
+            line = new BufferedReader(new InputStreamReader(System.in)).readLine()
+        }
+        if (null == line) line = ""
+        if (line.trim().equalsIgnoreCase("y")) e.printStackTrace(io.err)
     }
 
     private static String buildResultPrompt() {
@@ -419,16 +439,21 @@ class Console {
         return Preferences.resultPrompt
     }
 
-    private void executeInShell(final List<List<String>> scriptsAndArgs) {
-        scriptsAndArgs.eachWithIndex { scriptAndArgs, idx ->
+    /**
+     * Runs the -i and -e scripts line by line, collecting lines until they form a statement that compiles. A line
+     * starting with ":" is a console command.
+     */
+    private void executeInShell(final List<List<String>> scriptsAndArgs, final CommandGroup commands) {
+        final StatementParser statements = StatementParser.forScripts(engine.getCompilerConfiguration())
+        scriptsAndArgs.each { scriptAndArgs ->
             final String scriptFile = scriptAndArgs[0]
             try {
                 // check if this script comes with arguments. if so then set them up in an "args" bundle
                 if (scriptAndArgs.size() > 1) {
                     List<String> args = scriptAndArgs.subList(1, scriptAndArgs.size())
-                    groovy.execute("args = [\"" + args.join('\",\"') + "\"]")
+                    engine.execute("args = [\"" + args.join('\",\"') + "\"]")
                 } else {
-                    groovy.execute("args = []")
+                    engine.execute("args = []")
                 }
 
                 File file = new File(scriptFile)
@@ -438,21 +463,33 @@ class Console {
                         file = new File(userWorkingDir, scriptFile)
                     }
                 }
+                // read first, so a missing file is reported as such below
+                final List<String> lines = file.readLines()
                 int lineNumber = 0
-                def lines = file.readLines()
-                for (String line : lines) {
-                    try {
+                String line = null
+                final List<String> statement = []
+                try {
+                    for (String next : lines) {
+                        line = next
                         lineNumber++
-                        groovy.execute(line)
-                    } catch (Exception ex) {
-                        io.err.println(Colorizer.render(Preferences.errorColor, "Error in $scriptFile at [$lineNumber: $line] - ${ex.message}"))
-                        if (interactive)
-                            break
-                        else {
-                            ex.printStackTrace(io.err)
-                            System.exit(1)
+                        if (line.trim().isEmpty() && statement.isEmpty()) continue
+                        if (statement.isEmpty() && line.trim().startsWith(":")) {
+                            executeCommand(line.trim(), commands)
+                            continue
                         }
-
+                        statement << line
+                        final String text = statement.join(System.lineSeparator())
+                        if (statements.isUnfinished(text)) continue
+                        statement.clear()
+                        engine.execute(text)
+                    }
+                    if (!statement.isEmpty())
+                        throw new IllegalArgumentException("the statement is not finished at the end of the file")
+                } catch (Exception ex) {
+                    io.err.println(Colorizer.render(Preferences.errorColor, "Error in $scriptFile at [$lineNumber: $line] - ${ex.message}"))
+                    if (!interactive) {
+                        ex.printStackTrace(io.err)
+                        System.exit(1)
                     }
                 }
             } catch (FileNotFoundException ignored) {
@@ -466,6 +503,22 @@ class Console {
 
         if (!interactive) System.exit(0)
     }
+
+    /**
+     * Runs a console command from a script. Only the Gremlin commands and the exit commands are available, as
+     * groovysh's own commands do not exist until the shell starts.
+     */
+    private static void executeCommand(final String line, final CommandGroup commands) {
+        final List<String> words = new DefaultParser().parse(line, line.length()).words().findAll { !it.isEmpty() }
+        final String name = "/" + words[0].substring(1)
+        if (name in EXIT_COMMANDS) System.exit(0)
+
+        final Command command = commands.command(name)
+        if (command == null) throw new IllegalArgumentException("${words[0]} cannot be used in a script")
+        command.execute(new CommandSession(), words.drop(1) as String[])
+    }
+
+    private static final List<String> EXIT_COMMANDS = ["/x", "/exit", "/q", "/quit"]
 
     public static void main(final String[] args) {
 
@@ -526,7 +579,9 @@ class Console {
         }
 
         def scriptAndArgs = parseArgs(options.e ? ["-e", "--execute"] : ["-i", "--interactive"], args, cli)
-        new Console(io, scriptAndArgs, !options.e)
+        final Console console = new Console(io, scriptAndArgs, !options.e)
+        // built here so JLine doesn't send terminal capability queries at startup
+        System.exit(console.start(TerminalBuilder.builder().name("gremlin").graphemeCluster(false).build()))
     }
 
     /**

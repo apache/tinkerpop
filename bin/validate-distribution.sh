@@ -205,7 +205,8 @@ echo "OK"
 
 if [ "${TYPE}" = "CONSOLE" ]; then
   echo -n "* testing script evaluation ... "
-  SCRIPT="x = org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory.createModern().traversal().V().count().next(); println x; x"
+  # "def" because the console reports a null result for a line that starts with an assignment
+  SCRIPT="def x = org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory.createModern().traversal().V().count().next(); println x; x"
   SCRIPT_FILENAME="test.groovy"
   SCRIPT_PATH="${TMP_DIR}/${SCRIPT_FILENAME}"
   echo ${SCRIPT} > ${SCRIPT_PATH}

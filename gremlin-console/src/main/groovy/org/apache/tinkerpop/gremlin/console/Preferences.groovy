@@ -22,8 +22,6 @@ package org.apache.tinkerpop.gremlin.console;
 import java.util.prefs.PreferenceChangeEvent
 import java.util.prefs.PreferenceChangeListener
 
-import org.apache.groovy.groovysh.Groovysh
-import org.codehaus.groovy.tools.shell.IO
 
 public class Preferences {
 
@@ -85,7 +83,7 @@ public class Preferences {
     public static final String PREF_RESULT_PROMPT_DEFAULT = "==>"
     public static String  resultPrompt = PREF_RESULT_PROMPT_DEFAULT
 
-    public static final String PREF_COLORS = Groovysh.COLORS_PREFERENCE_KEY
+    public static final String PREF_COLORS = "colors"
     public static final Boolean PREF_COLORS_DEFAULT = true;
     public static boolean colors = PREF_COLORS_DEFAULT
 
@@ -93,80 +91,10 @@ public class Preferences {
     public static final Boolean PREF_WARNINGS_DEFAULT = true
     public static boolean warnings = PREF_WARNINGS_DEFAULT
 
+    /**
+     * Loads the preferences and keeps them up to date as they change.
+     */
     public static void expandoMagic() {
-
-        // Override all GroovySH Preference methods
-        org.codehaus.groovy.tools.shell.util.Preferences.getMetaClass().'static'.getShowLastResult = {
-            return STORE.getBoolean(org.codehaus.groovy.tools.shell.util.Preferences.SHOW_LAST_RESULT_KEY, true);
-        }
-
-        org.codehaus.groovy.tools.shell.util.Preferences.getMetaClass().'static'.getSanitizeStackTrace = {
-            return STORE.getBoolean(org.codehaus.groovy.tools.shell.util.Preferences.SANITIZE_STACK_TRACE_KEY, true);
-        }
-
-        org.codehaus.groovy.tools.shell.util.Preferences.getMetaClass().'static'.getEditor = {
-            return STORE.get(org.codehaus.groovy.tools.shell.util.Preferences.EDITOR_KEY, System.getenv("EDITOR"));
-        }
-
-        org.codehaus.groovy.tools.shell.util.Preferences.getMetaClass().'static'.getParserFlavor = {
-            return STORE.get(org.codehaus.groovy.tools.shell.util.Preferences.PARSER_FLAVOR_KEY, org.codehaus.groovy.tools.shell.util.Preferences.PARSER_RIGID);
-        }
-
-        //
-        // Store Access
-        //
-
-        org.codehaus.groovy.tools.shell.util.Preferences.getMetaClass().'static'.keys =  {
-            return STORE.keys();
-        }
-
-        org.codehaus.groovy.tools.shell.util.Preferences.getMetaClass().'static'.get = { String name, String defaultValue ->
-            return STORE.get(name, defaultValue);
-        }
-
-        org.codehaus.groovy.tools.shell.util.Preferences.getMetaClass().'static'.get = { String name ->
-            return get(name, null);
-        }
-
-        org.codehaus.groovy.tools.shell.util.Preferences.getMetaClass().'static'.put = { String name, String value ->
-            STORE.put(name, value);
-        }
-
-        org.codehaus.groovy.tools.shell.util.Preferences.getMetaClass().'static'.clear =  { STORE.clear(); }
-
-        org.codehaus.groovy.tools.shell.util.Preferences.getMetaClass().'static'.addChangeListener = { PreferenceChangeListener listener ->
-            STORE.addPreferenceChangeListener(listener);
-        }
-
-        // reinstall change handler
-        String tmp = STORE.get(org.codehaus.groovy.tools.shell.util.Preferences.VERBOSITY_KEY, IO.Verbosity.INFO.name);
-        try {
-            org.codehaus.groovy.tools.shell.util.Preferences.verbosity = IO.Verbosity.forName(tmp);
-        }
-        catch (IllegalArgumentException e) {
-            org.codehaus.groovy.tools.shell.util.Preferences.verbosity = IO.Verbosity.INFO;
-            STORE.remove(org.codehaus.groovy.tools.shell.util.Preferences.VERBOSITY_KEY);
-        }
-
-        org.codehaus.groovy.tools.shell.util.Preferences.addChangeListener(new PreferenceChangeListener() {
-                    public void preferenceChange(final PreferenceChangeEvent event) {
-                        if (event.getKey().equals(org.codehaus.groovy.tools.shell.util.Preferences.VERBOSITY_KEY)) {
-                            String name = event.getNewValue();
-
-                            if (name == null) {
-                                name = IO.Verbosity.INFO.name;
-                            }
-
-                            try {
-                                org.codehaus.groovy.tools.shell.util.Preferences.verbosity = IO.Verbosity.forName(name);
-                            }
-                            catch (Exception e) {
-                                event.getNode().put(event.getKey(), org.codehaus.groovy.tools.shell.util.Preferences.verbosity.name);
-                            }
-                        }
-                    }
-                });
-
         // Gremlin Handlers
 
         // Initial Load
@@ -177,7 +105,7 @@ public class Preferences {
     }
 
     private static installPropertyListeners() {
-        org.codehaus.groovy.tools.shell.util.Preferences.addChangeListener(new PreferenceChangeListener() {
+        STORE.addPreferenceChangeListener(new PreferenceChangeListener() {
                     @Override
                     void preferenceChange(PreferenceChangeEvent evt) {
                         if (evt.key == PREFERENCE_ITERATION_MAX && null != evt.newValue) {
@@ -193,7 +121,7 @@ public class Preferences {
                     }
                 })
 
-        org.codehaus.groovy.tools.shell.util.Preferences.addChangeListener(new PreferenceChangeListener() {
+        STORE.addPreferenceChangeListener(new PreferenceChangeListener() {
                     @Override
                     void preferenceChange(PreferenceChangeEvent evt) {
                         if (evt.key == PREF_GREMLIN_COLOR) {

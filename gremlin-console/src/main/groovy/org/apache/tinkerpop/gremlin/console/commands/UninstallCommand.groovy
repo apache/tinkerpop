@@ -18,8 +18,6 @@
  */
 package org.apache.tinkerpop.gremlin.console.commands
 
-import org.apache.groovy.groovysh.CommandSupport
-import org.apache.groovy.groovysh.Groovysh
 import org.apache.tinkerpop.gremlin.console.ConsoleFs
 import org.apache.tinkerpop.gremlin.console.Mediator
 
@@ -28,13 +26,25 @@ import org.apache.tinkerpop.gremlin.console.Mediator
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-class UninstallCommand extends CommandSupport {
+class UninstallCommand extends GremlinCommand {
 
     private final Mediator mediator
 
-    public UninstallCommand(final Groovysh shell, final Mediator mediator) {
-        super(shell, ":uninstall", ":-")
+    public UninstallCommand(final Mediator mediator) {
+        super("/uninstall")
         this.mediator = mediator
+    }
+
+    @Override
+    String description() { "Uninstall a Maven library and its dependencies from the Gremlin Console" }
+
+    @Override
+    String usage() { "<module>" }
+
+    @Override
+    String help() {
+        "Uninstall a Maven library and its dependencies from the Gremlin Console, by removing it from the path.  " +
+                "A restart of the Console is required to complete the un-installation."
     }
 
     @Override

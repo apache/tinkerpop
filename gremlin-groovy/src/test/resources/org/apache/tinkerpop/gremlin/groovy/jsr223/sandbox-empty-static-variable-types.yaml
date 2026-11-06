@@ -39,6 +39,7 @@ methodWhiteList:
   - java\.lang\.Void.*
   - java\.util\..*
   - org\.codehaus\.groovy\.runtime\.DefaultGroovyMethods.*
+  - org\.codehaus\.groovy\.runtime\.ArrayGroovyMethods.*
   - org\.codehaus\.groovy\.runtime\.InvokerHelper#runScript\(java\.lang\.Class,java\.lang\.String\[\]\)
   - org\.codehaus\.groovy\.runtime\.StringGroovyMethods.*
   - groovy\.lang\.Script#<init>\(groovy.lang.Binding\)

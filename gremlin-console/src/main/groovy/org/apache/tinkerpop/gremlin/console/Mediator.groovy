@@ -18,8 +18,6 @@
  */
 package org.apache.tinkerpop.gremlin.console
 
-import java.util.concurrent.atomic.AtomicBoolean
-
 import org.apache.commons.lang3.StringUtils
 
 /**
@@ -28,18 +26,9 @@ import org.apache.commons.lang3.StringUtils
 class Mediator {
     public final Map<String, PluggedIn> availablePlugins = [:]
 
-    /**
-     * Determines when the Console is evaluating/iterating input/result.
-     */
-    public AtomicBoolean evaluating = new AtomicBoolean(false)
-
     private final Console console
 
     private static String LINE_SEP = System.getProperty("line.separator")
-
-    public static final String IMPORT_SPACE = "import "
-    public static final String IMPORT_STATIC_SPACE = "import static "
-    public static final String IMPORT_WILDCARD = ".*"
 
     public Mediator(final Console console) {
         this.console = console
