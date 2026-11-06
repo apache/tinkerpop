@@ -2199,12 +2199,32 @@ $ docker run -p 8182:8182 tinkerpop/gremlin-server:x.y.z
 ----
 
 Arguments provided with `docker run` are forwarded to the script that starts Gremlin Server. This allows for example
-to use an alternative config file:
+to start the server with one of the alternative configuration files that ship with the image, such as the one that
+loads the "modern" toy graph:
 
 [source,bash]
 ----
-$ docker run tinkerpop/gremlin-server:x.y.z conf/gremlin-server-secure.yaml
+$ docker run -p 8182:8182 tinkerpop/gremlin-server:x.y.z conf/gremlin-server-modern.yaml
 ----
+
+Configuration paths are resolved relative to the server's working directory inside the container,
+`/opt/gremlin-server`, which contains the distribution's `conf` directory. A configuration file that is not part of the
+image, along with any resources it references, can be supplied by mounting it into that directory with `-v`. The
+`conf/gremlin-server-secure.yaml` configuration is an example that requires this: it enables SSL but ships with its
+keystore settings commented out, so the server will not start until a keystore is provided. Both the keystore and a
+custom configuration that references it can be mounted in this way:
+
+[source,bash]
+----
+$ docker run -p 8182:8182 \
+    -v /path/to/server.jks:/opt/gremlin-server/server.jks \
+    -v /path/to/gremlin-server-secure.yaml:/opt/gremlin-server/conf/gremlin-server-secure.yaml \
+    tinkerpop/gremlin-server:x.y.z conf/gremlin-server-secure.yaml
+----
+
+The `tinkerpop/gremlin-server` image is published on Docker Hub for released versions of TinkerPop. Development
+versions, such as `SNAPSHOT` builds, are not published there, and the corresponding image has to be built from source
+before it can be run.
 
 [[gremlin-plugins]]
 [llms-summary="Extending the Gremlin Console and Server with plugins that add dependencies, DSLs, and bindings; covers the plugins that ship with TinkerPop."]
