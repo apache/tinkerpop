@@ -30,6 +30,7 @@ import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedProperty;
 import org.javatuples.Pair;
 import org.junit.Test;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -155,6 +156,56 @@ public class ElementHelperTest {
     @Test
     public void shouldNotFindTheLabelValue() {
         assertFalse(ElementHelper.getLabelValue("test", 321, "xyz", "friend", "testagain", "that").isPresent());
+    }
+    @Test
+    public void shouldFindTheLabelValueForLabelsToken() {
+        assertEquals("friend", ElementHelper.getLabelValue("test", 321, T.labels, "friend").get());
+    }
+    @Test
+    public void shouldFindTheLabelsValueForEitherToken() {
+        assertEquals(Set.of("a", "b"), ElementHelper.getLabelsValue("test", 321, T.label, Set.of("a", "b")).get());
+        assertEquals(Set.of("a", "b"), ElementHelper.getLabelsValue("test", 321, T.labels, Set.of("a", "b")).get());
+        assertEquals(Set.of("a"), ElementHelper.getLabelsValue(T.labels, "a").get());
+        assertFalse(ElementHelper.getLabelsValue("test", 321).isPresent());
+    }
+    @Test
+    public void shouldUseFirstLabelWhenTheSameTokenRepeats() {
+        assertEquals(Set.of("a"), ElementHelper.getLabelsValue(T.labels, "a", T.labels, "b").get());
+    }
+    @Test(expected = IllegalArgumentException.class)
+    public void shouldNotAllowBothLabelAndLabelsTokens() {
+        ElementHelper.getLabelsValue(T.labels, "a", "test", 321, T.label, "b");
+    }
+    @Test(expected = IllegalArgumentException.class)
+    public void shouldNotAllowNonStringInLabelSet() {
+        ElementHelper.asLabelSet(List.of("a", 1));
+    }
+    @Test(expected = IllegalArgumentException.class)
+    public void shouldNotAllowNonStringNonCollectionLabelSet() {
+        ElementHelper.asLabelSet(1);
+    }
+    @Test(expected = IllegalArgumentException.class)
+    public void shouldNotAllowNullInLabelSet() {
+        ElementHelper.asLabelSet(Arrays.asList("a", null));
+    }
+    @Test(expected = IllegalArgumentException.class)
+    public void shouldNotAllowInvalidLabelInLabelSet() {
+        ElementHelper.asLabelSet(List.of("a", ""));
+    }
+    @Test
+    public void shouldConvertToEdgeLabel() {
+        assertEquals("knows", ElementHelper.asEdgeLabel("knows").get());
+        assertEquals("knows", ElementHelper.asEdgeLabel(Set.of("knows")).get());
+        assertEquals("knows", ElementHelper.asEdgeLabel(List.of("knows", "knows")).get());
+        assertFalse(ElementHelper.asEdgeLabel(Set.of()).isPresent());
+    }
+    @Test(expected = IllegalArgumentException.class)
+    public void shouldNotAllowMultipleEdgeLabels() {
+        ElementHelper.asEdgeLabel(List.of("knows", "likes"));
+    }
+    @Test(expected = IllegalArgumentException.class)
+    public void shouldNotAllowNonStringEdgeLabel() {
+        ElementHelper.asEdgeLabel(List.of(1));
     }
 
     @Test(expected = ClassCastException.class)

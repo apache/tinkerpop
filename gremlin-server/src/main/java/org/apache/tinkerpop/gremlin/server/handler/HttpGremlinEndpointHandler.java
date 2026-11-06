@@ -75,7 +75,6 @@ import javax.script.ScriptException;
 import javax.script.SimpleBindings;
 import java.lang.reflect.UndeclaredThrowableException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -126,13 +125,11 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
     protected static final Set<String> INVALID_PARAMETERS_KEYS = new HashSet<>();
 
     static {
-        INVALID_PARAMETERS_KEYS.addAll(Arrays.asList(
-                T.id.name(), T.key.name(),
-                T.label.name(), T.value.name(),
-                T.id.getAccessor(), T.key.getAccessor(),
-                T.label.getAccessor(), T.value.getAccessor(),
-                T.id.getAccessor().toUpperCase(), T.key.getAccessor().toUpperCase(),
-                T.label.getAccessor().toUpperCase(), T.value.getAccessor().toUpperCase()));
+        for (T enumItem : T.values()) {
+            INVALID_PARAMETERS_KEYS.add(enumItem.name());
+            INVALID_PARAMETERS_KEYS.add(enumItem.getAccessor());
+            INVALID_PARAMETERS_KEYS.add(enumItem.getAccessor().toUpperCase());
+        }
 
         for (Column enumItem : Column.values()) {
             INVALID_PARAMETERS_KEYS.add(enumItem.name());

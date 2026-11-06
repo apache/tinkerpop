@@ -18,8 +18,10 @@
  */
 package org.apache.tinkerpop.gremlin.tinkergraph.process.traversal.step.sideEffect;
 
+import org.apache.tinkerpop.gremlin.process.traversal.Merge;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.WithOptions;
+import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.T;
@@ -30,6 +32,9 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.Arrays;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -184,7 +189,7 @@ public class LabelMutationStepTest {
         final Vertex v = g.addV("person").addLabel("employee").next();
         final GraphTraversalSource gml = g.with("multilabel");
         final Map<Object, Object> map = gml.V(v).valueMap(true).next();
-        final Object labelValue = map.get(T.label);
+        final Object labelValue = map.get(T.labels);
         assertThat(labelValue, instanceOf(Set.class));
         final Set<String> labels = (Set<String>) labelValue;
         assertThat(labels, containsInAnyOrder("person", "employee"));
@@ -227,10 +232,118 @@ public class LabelMutationStepTest {
         final Vertex v = g.addV("person").addLabel("employee").next();
         final GraphTraversalSource gml = g.with("multilabel");
         final Map<Object, Object> map = gml.V(v).elementMap().next();
-        final Object labelValue = map.get(T.label);
+        final Object labelValue = map.get(T.labels);
         assertThat(labelValue, instanceOf(Set.class));
         final Set<String> labels = (Set<String>) labelValue;
         assertThat(labels, containsInAnyOrder("person", "employee"));
+    }
+
+    // --- mergeV T.labels symmetry tests ---
+
+    @Test
+    public void shouldCreateMultiLabelVertexWithMergeVUsingLabelsToken() {
+        final Map<Object, Object> merge = new LinkedHashMap<>();
+        merge.put(T.labels, new LinkedHashSet<>(Arrays.asList("person", "employee")));
+        final Vertex v = g.mergeV(merge).next();
+        assertThat(v.labels(), containsInAnyOrder("person", "employee"));
+    }
+
+    @Test
+    public void shouldMatchExistingVertexByLabelsToken() {
+        final Vertex v = g.addV("person").addLabel("employee").next();
+        final Map<Object, Object> merge = new LinkedHashMap<>();
+        merge.put(T.labels, new LinkedHashSet<>(Arrays.asList("person", "employee")));
+        // T.labels normalizes to T.label and drives an AND label match, resolving to the existing vertex
+        final Vertex merged = g.mergeV(merge).next();
+        assertThat(merged.id(), is(v.id()));
+        assertThat(g.V().count().next(), is(1L));
+    }
+
+    @Test
+    public void shouldMatchExistingVertexWhenMergeVFedMultilabelElementMap() {
+        final Vertex v = g.addV("person").addLabel("employee").property("name", "marko").next();
+        final GraphTraversalSource gml = g.with("multilabel");
+        // multilabel elementMap keys the label set under T.labels; feeding it straight back into
+        // mergeV must resolve to the same vertex (T.labels treated as a synonym for T.label).
+        final Map<Object, Object> elementMap = gml.V(v).elementMap().next();
+        final Vertex merged = g.mergeV(elementMap).next();
+        assertThat(merged.id(), is(v.id()));
+        assertThat(merged.labels(), containsInAnyOrder("person", "employee"));
+    }
+
+    @Test
+    public void shouldApplyLabelsTokenOnMatch() {
+        final Vertex v = g.addV("person").property("name", "marko").next();
+        final Map<Object, Object> search = new LinkedHashMap<>();
+        search.put(T.label, "person");
+        final Map<Object, Object> onMatch = new LinkedHashMap<>();
+        onMatch.put(T.labels, new LinkedHashSet<>(Arrays.asList("employee", "manager")));
+        g.mergeV(search).option(Merge.onMatch, onMatch).iterate();
+        assertThat(v.labels(), containsInAnyOrder("person", "employee", "manager"));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void shouldRejectBothLabelAndLabelsInMergeV() {
+        final Map<Object, Object> merge = new LinkedHashMap<>();
+        merge.put(T.label, "person");
+        merge.put(T.labels, new LinkedHashSet<>(Arrays.asList("employee")));
+        g.mergeV(merge).iterate();
+    }
+
+    // --- addV / addVertex T.labels create symmetry tests ---
+
+    @Test
+    public void shouldCreateVertexWithLabelsTokenViaAddV() {
+        final Vertex v = g.addV().property(T.labels, new LinkedHashSet<>(Arrays.asList("person", "employee"))).next();
+        assertThat(v.labels(), containsInAnyOrder("person", "employee"));
+    }
+
+    @Test
+    public void shouldCreateVertexWithLabelsTokenViaGraphAddVertex() {
+        final Vertex v = graph.addVertex(T.labels, new LinkedHashSet<>(Arrays.asList("person", "employee")), "name", "marko");
+        assertThat(v.labels(), containsInAnyOrder("person", "employee"));
+        // T.labels must drive the label set, not be attached as a property
+        assertThat(v.value("name"), is("marko"));
+    }
+
+    @Test
+    public void shouldCreateZeroLabelVertexWithEmptyLabelsToken() {
+        // graph is ZERO_OR_MORE, so an empty label set is permitted on create
+        final Vertex v = graph.addVertex(T.labels, new LinkedHashSet<String>());
+        assertThat(v.labels(), hasSize(0));
+    }
+
+    @Test
+    public void shouldCreateZeroLabelVertexWithEmptyLabelsTokenViaAddV() {
+        // an explicit empty T.labels set on addV() behaves like graph.addVertex(T.labels, []) under ZERO_OR_MORE
+        final Vertex v = g.addV().property(T.labels, new LinkedHashSet<String>()).next();
+        assertThat(v.labels(), hasSize(0));
+    }
+
+    @Test
+    public void shouldCreateZeroLabelVertexWithEmptyLabelTokenViaAddV() {
+        // the same holds for an explicit empty collection under the singular T.label token
+        final Vertex v = g.addV().property(T.label, new LinkedHashSet<String>()).next();
+        assertThat(v.labels(), hasSize(0));
+    }
+
+    @Test
+    public void shouldCreateZeroLabelVertexWithEmptyLabelsTokenViaMidTraversalAddV() {
+        // mid-traversal addV() defers to the graph's LabelCardinality the same way the start step does
+        final Vertex v = g.inject(1).addV().property(T.labels, new LinkedHashSet<String>()).next();
+        assertThat(v.labels(), hasSize(0));
+        assertThat(g.inject(1).addV().next().labels(), hasSize(0));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void shouldRejectBothLabelAndLabelsOnGraphAddVertex() {
+        graph.addVertex(T.label, "person", T.labels, new LinkedHashSet<>(Arrays.asList("employee")));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void shouldRejectLabelSetTwiceViaAddVArgAndLabelsProperty() {
+        // supplying a label via the addV() argument and again via T.labels is rejected (label already set)
+        g.addV("person").property(T.labels, new LinkedHashSet<>(Arrays.asList("employee"))).iterate();
     }
 
     // --- GraphTraversalSource multi-label addV test ---
@@ -279,6 +392,59 @@ public class LabelMutationStepTest {
         assertThat(g.V().hasLabel("person").hasLabel("employee").toList(), hasSize(1));
         // hasLabel("person").hasLabel("nonexistent") is AND  - vertex doesn't have "nonexistent"
         assertThat(g.V().hasLabel("person").hasLabel("nonexistent").toList(), hasSize(0));
+    }
+
+    // --- edges: T.labels is accepted with at most one label ---
+
+    @Test
+    public void shouldCreateEdgeWithSingleLabelSetViaAddE() {
+        final Vertex v = g.addV("person").next();
+        // addE("edge") gives the default label, which property(T.labels) may still replace
+        final Edge e = g.V(v).addE(Edge.DEFAULT_LABEL).to(v).property(T.labels, Set.of("knows")).next();
+        assertThat(e.labels(), is(Set.of("knows")));
+    }
+
+    @Test
+    public void shouldKeepDefaultEdgeLabelForEmptyLabelsViaAddE() {
+        final Vertex v = g.addV("person").next();
+        final Edge e = g.V(v).addE(Edge.DEFAULT_LABEL).to(v).property(T.labels, Set.of()).next();
+        assertThat(e.labels(), is(Set.of(Edge.DEFAULT_LABEL)));
+    }
+
+    @Test
+    public void shouldRoundTripEdgeElementMapThroughMergeE() {
+        final Vertex v = g.addV("person").next();
+        g.V(v).addE("knows").to(v).iterate();
+        final Map<Object, Object> m = g.with("multilabel").E().elementMap().next();
+        final Map<Object, Object> merge = new LinkedHashMap<>();
+        merge.put(T.labels, m.get(T.labels));
+        merge.put(Direction.OUT, ((Map<?, ?>) m.get(Direction.OUT)).get(T.id));
+        merge.put(Direction.IN, ((Map<?, ?>) m.get(Direction.IN)).get(T.id));
+        g.mergeE(merge).iterate();
+        assertThat(g.E().toList(), hasSize(1));
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void shouldRejectLabelChangeOnMatchViaMergeE() {
+        final Vertex v = g.addV("person").next();
+        g.V(v).addE("knows").to(v).iterate();
+        final Map<Object, Object> merge = new LinkedHashMap<>();
+        merge.put(T.label, "knows");
+        merge.put(Direction.OUT, v.id());
+        merge.put(Direction.IN, v.id());
+        g.mergeE(merge).option(Merge.onMatch, Map.of(T.labels, "likes")).iterate();
+    }
+
+    @Test
+    public void shouldLetOnCreateLabelThroughEmptySearchLabelsViaMergeE() {
+        // mergeE normalizes its maps on its own path, so the mergeV feature scenario does not cover it
+        final Vertex v = g.addV("person").next();
+        final Map<Object, Object> merge = new LinkedHashMap<>();
+        merge.put(T.labels, Set.of());
+        merge.put(Direction.OUT, v.id());
+        merge.put(Direction.IN, v.id());
+        final Edge e = g.mergeE(merge).option(Merge.onCreate, Map.of(T.labels, "knows")).next();
+        assertThat(e.label(), is("knows"));
     }
 
     // --- index consistency: add → drop → re-add cycle ---

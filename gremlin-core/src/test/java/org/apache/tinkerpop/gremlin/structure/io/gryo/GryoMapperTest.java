@@ -82,6 +82,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -787,6 +788,30 @@ public class GryoMapperTest {
         assertEquals(startingWith, serializeDeserialize(startingWith, TextP.class));
         final TextP regex = TextP.regex("meh");
         assertEquals(regex, serializeDeserialize(regex, TextP.class));
+    }
+
+    @Test
+    public void shouldHandleT() throws Exception {
+        for (final org.apache.tinkerpop.gremlin.structure.T t : org.apache.tinkerpop.gremlin.structure.T.values()) {
+            assertEquals(t, serializeDeserialize(t, org.apache.tinkerpop.gremlin.structure.T.class));
+        }
+    }
+
+    @Test
+    public void shouldKeepWireEncodingOfPreExistingT() throws Exception {
+        // Kryo's default enum serializer writes the ordinal (as a varint, offset by one for null) after the reference
+        // marker. New T tokens must be appended so that bytes written for the existing tokens by earlier versions
+        // still decode to the same token.
+        final Kryo kryo = builder.get().create().createMapper();
+        final org.apache.tinkerpop.gremlin.structure.T[] preExisting = {
+                org.apache.tinkerpop.gremlin.structure.T.label, org.apache.tinkerpop.gremlin.structure.T.id,
+                org.apache.tinkerpop.gremlin.structure.T.key, org.apache.tinkerpop.gremlin.structure.T.value};
+        for (int ordinal = 0; ordinal < preExisting.length; ordinal++) {
+            final Output out = new Output(16);
+            kryo.writeObject(out, preExisting[ordinal]);
+            assertArrayEquals(preExisting[ordinal].name(),
+                    new byte[]{KRYO_NOT_NULL, (byte) (ordinal + 1)}, out.toBytes());
+        }
     }
 
     public <T> T serializeDeserialize(final Object o, final Class<T> clazz) throws Exception {

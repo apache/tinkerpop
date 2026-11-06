@@ -630,6 +630,19 @@ public class TraversalMethodVisitorTest {
     }
 
     @Test
+    public void shouldParseTraversalMethod_has_T_labels() throws Exception {
+        compare(g.V().has(T.labels, "person"), eval("g.V().has(labels, 'person')"));
+        compare(g.V().has(T.labels, "person"), eval("g.V().has(T.labels, 'person')"));
+        compare(g.V().has(T.labels, P.within("a", "b")), eval("g.V().has(labels, within('a', 'b'))"));
+    }
+
+    @Test
+    public void shouldParseTraversalMethod_by_T_labels() throws Exception {
+        compare(g.V().project("l").by(T.labels), eval("g.V().project('l').by(labels)"));
+        compare(g.V().project("l").by(T.labels), eval("g.V().project('l').by(T.labels)"));
+    }
+
+    @Test
     public void shouldParseTraversalMethod_has_T_P() throws Exception {
         compare(g.V().has(T.id, eq("asd")), eval("g.V().has(id, eq('asd'))"));
     }
