@@ -38,7 +38,7 @@ Recipes assume general familiarity with Gremlin and the Apache TinkerPop™ stac
 link:https://tinkerpop.apache.org/docs/x.y.z/tutorials/getting-started[Getting Started] tutorial and the
 link:https://tinkerpop.apache.org/docs/x.y.z/tutorials/the-gremlin-console/[The Gremlin Console] tutorial.
 
-[llms-summary="Recipes covering common traversal tasks — between-vertices patterns, centrality, collections, connected components, cycle detection, pagination, recommendation, shortest path, trees, and more."]
+[llms-summary="Recipes covering common traversal tasks — between-vertices patterns, centrality, collections, cycle detection, pagination, recommendation, shortest path, trees, and more."]
 = Traversal Recipes
 
 include::between-vertices.asciidoc[]
@@ -46,8 +46,6 @@ include::between-vertices.asciidoc[]
 include::centrality.asciidoc[]
 
 include::collections.asciidoc[]
-
-include::connected-components.asciidoc[]
 
 include::cycle-detection.asciidoc[]
 
