@@ -186,25 +186,25 @@ void main() {
   group('SigV4Signer.deriveSigningKey', () {
     test('produces exactly 32 bytes (256 bits)', () {
       final k = SigV4Signer.deriveSigningKey(
-          'wJalrXUtnFEMI/K7MDENG+bPxRfiCYEXAMPLEKEY', '20150830', 'service-region', 'service-name');
+          'wJalrXUtnFEMI/K7MDENG+bPxRfiCYEXAMPLEKEY', '20150830', 'service-region-1', 'service-name');
       expect(k.length, 32);
     });
 
     test('is deterministic for same inputs', () {
-      final k1 = SigV4Signer.deriveSigningKey('S', '20240101', 'service-region', 'service-name');
-      final k2 = SigV4Signer.deriveSigningKey('S', '20240101', 'service-region', 'service-name');
+      final k1 = SigV4Signer.deriveSigningKey('S', '20240101', 'service-region-1', 'service-name');
+      final k2 = SigV4Signer.deriveSigningKey('S', '20240101', 'service-region-1', 'service-name');
       expect(k1, equals(k2));
     });
 
     test('differs when date changes', () {
-      final k1 = SigV4Signer.deriveSigningKey('S', '20240101', 'service-region', 'service-name');
-      final k2 = SigV4Signer.deriveSigningKey('S', '20240102', 'service-region', 'service-name');
+      final k1 = SigV4Signer.deriveSigningKey('S', '20240101', 'service-region-1', 'service-name');
+      final k2 = SigV4Signer.deriveSigningKey('S', '20240102', 'service-region-1', 'service-name');
       expect(k1, isNot(equals(k2)));
     });
 
     test('differs when region changes', () {
-      final k1 = SigV4Signer.deriveSigningKey('S', '20240101', 'service-region', 'service-name');
-      final k2 = SigV4Signer.deriveSigningKey('S', '20240101', 'other-service-region', 'service-name');
+      final k1 = SigV4Signer.deriveSigningKey('S', '20240101', 'service-region-1', 'service-name');
+      final k2 = SigV4Signer.deriveSigningKey('S', '20240101', 'service-region-2', 'service-name');
       expect(k1, isNot(equals(k2)));
     });
   });
@@ -213,9 +213,9 @@ void main() {
   // SigV4Signer.sign
   // -------------------------------------------------------------------------
   group('SigV4Signer.sign', () {
-    final signer = SigV4Signer(region: 'service-region', service: 'service-name');
+    final signer = SigV4Signer(region: 'service-region-1', service: 'service-name');
     final uri = Uri.parse(
-        'http://localhost:8182/gremlin');
+        'https://host.example.com/gremlin');
     final fixedNow = DateTime.utc(2024, 1, 15, 12, 0, 0);
     final headers = <String, dynamic>{
       'Content-Type': 'application/vnd.graphbinary-v4.0'
@@ -258,7 +258,7 @@ void main() {
         now: fixedNow,
       );
       expect(r['Authorization'],
-          contains('Credential=AKIDEXAMPLE/20240115/service-region/service-name/aws4_request,'));
+          contains('Credential=AKIDEXAMPLE/20240115/service-region-1/service-name/aws4_request,'));
     });
 
     test('Authorization SignedHeaders includes content-type;host;x-amz-date', () {
@@ -394,7 +394,7 @@ void main() {
         accessKeyId: 'AKIDEXAMPLE',
         secretAccessKey: 'wJalrXUtnFEMI/K7MDENG+bPxRfiCYEXAMPLEKEY',
       )),
-      region: 'service-region',
+      region: 'service-region-1',
       service: 'service-name',
     );
 
@@ -402,7 +402,7 @@ void main() {
       final adapter = _CapturingAdapter();
       final dio = _buildDio(auth, adapter);
       await dio.post<void>(
-        'http://localhost:8182/gremlin',
+        'https://host.example.com/gremlin',
         data: Uint8List(0),
         options: Options(
           headers: {'Content-Type': 'application/vnd.graphbinary-v4.0'},
@@ -418,7 +418,7 @@ void main() {
       final adapter = _CapturingAdapter();
       final dio = _buildDio(auth, adapter);
       await dio.post<void>(
-        'http://localhost:8182/gremlin',
+        'https://host.example.com/gremlin',
         data: Uint8List(0),
         options: Options(
           headers: {'Content-Type': 'application/vnd.graphbinary-v4.0'},
@@ -433,7 +433,7 @@ void main() {
       final adapter = _CapturingAdapter();
       final dio = _buildDio(auth, adapter);
       await dio.post<void>(
-        'http://localhost:8182/gremlin',
+        'https://host.example.com/gremlin',
         data: Uint8List(0),
         options: Options(
           headers: {'Content-Type': 'application/vnd.graphbinary-v4.0'},
@@ -451,13 +451,13 @@ void main() {
           secretAccessKey: 'SECRET',
           sessionToken: 'SESS_TOKEN_XYZ',
         )),
-        region: 'service-region',
+        region: 'service-region-1',
         service: 'service-name',
       );
       final adapter = _CapturingAdapter();
       final dio = _buildDio(authWithToken, adapter);
       await dio.post<void>(
-        'http://localhost:8182/gremlin',
+        'https://host.example.com/gremlin',
         data: Uint8List(0),
         options: Options(
           headers: {'Content-Type': 'application/vnd.graphbinary-v4.0'},
@@ -471,14 +471,14 @@ void main() {
     test('rejects request when credentials provider throws', () async {
       final badAuth = SigV4Auth(
         credentials: EnvironmentCredentialsProvider({}),
-        region: 'service-region',
+        region: 'service-region-1',
         service: 'service-name',
       );
       final adapter = _CapturingAdapter();
       final dio = _buildDio(badAuth, adapter);
       await expectLater(
         dio.post<void>(
-          'http://localhost:8182/gremlin',
+          'https://host.example.com/gremlin',
           data: Uint8List(0),
         ),
         throwsA(isA<DioException>()),
@@ -496,7 +496,7 @@ void main() {
           accessKeyId: 'K',
           secretAccessKey: 'S',
         )),
-        region: 'service-region',
+        region: 'service-region-1',
         service: 'execute-api',
       );
       expect(auth.service, 'execute-api');
@@ -507,7 +507,7 @@ void main() {
   // SigV4Signer URI signing: host header and path/query coverage
   // -------------------------------------------------------------------------
   group('SigV4Signer URI signing', () {
-    final signer = SigV4Signer(region: 'service-region', service: 'service-name');
+    final signer = SigV4Signer(region: 'service-region-1', service: 'service-name');
     final now = DateTime.utc(2024, 1, 15, 12, 0, 0);
     final headers = <String, dynamic>{'Content-Type': 'application/json'};
 

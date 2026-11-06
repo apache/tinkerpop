@@ -71,7 +71,7 @@ test('sigv4 auth throws a clear browser-specific error instead of pulling in the
   const message = await page.evaluate(() => {
     const { gremlin } = (window as any).__gremlinBrowserSmoke;
     try {
-      gremlin.driver.auth.sigv4('us-east-1', 'neptune-db');
+      gremlin.driver.auth.sigv4('service-region-1', 'service-name');
       return 'no error thrown';
     } catch (err) {
       return (err as Error).message;

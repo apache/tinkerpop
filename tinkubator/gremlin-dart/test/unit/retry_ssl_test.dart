@@ -265,7 +265,7 @@ void main() {
           accessKeyId: 'AKID',
           secretAccessKey: 'SECRET',
         )),
-        region: 'service-region',
+        region: 'service-region-1',
         service: 'service-name',
       );
       final cluster = Cluster.build().auth(auth).create();

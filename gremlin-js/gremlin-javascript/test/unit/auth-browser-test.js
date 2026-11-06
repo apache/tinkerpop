@@ -36,7 +36,7 @@ describe('auth (browser)', function () {
 
   describe('sigv4', function () {
     it('throws immediately instead of silently failing on first request', function () {
-      assert.throws(() => sigv4('us-east-1', 'neptune-db'), (err) => {
+      assert.throws(() => sigv4('service-region-1', 'service-name'), (err) => {
         assert.ok(err instanceof Error);
         assert.ok(/not supported in the browser/i.test(err.message));
         return true;

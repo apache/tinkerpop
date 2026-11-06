@@ -53,7 +53,7 @@ describe('auth', function () {
 
   describe('sigv4', function () {
     function createMockRequest() {
-      return new HttpRequest('POST', 'https://localhost:8182/gremlin', {
+      return new HttpRequest('POST', 'https://host.example.com/gremlin', {
         'accept': 'application/vnd.graphbinary-v4.0',
         'content-type': 'application/json',
       }, Buffer.from('{"gremlin":"g.V()"}'));
@@ -68,13 +68,13 @@ describe('auth', function () {
       const request = createMockRequest();
       assert.strictEqual(request.headers['authorization'], undefined);
 
-      const interceptor = sigv4('xx-dummy-1', 'test-service', mockProvider);
+      const interceptor = sigv4('service-region-1', 'service-name', mockProvider);
       await interceptor(request);
 
       assert.ok(request.headers['x-amz-date']);
       const authHeader = request.headers['authorization'];
       assert.ok(authHeader.startsWith('AWS4-HMAC-SHA256 Credential=MOCK_ACCESS_KEY'));
-      assert.ok(authHeader.includes('xx-dummy-1/test-service/aws4_request'));
+      assert.ok(authHeader.includes('service-region-1/service-name/aws4_request'));
       assert.ok(authHeader.includes('Signature='));
     });
 
@@ -86,7 +86,7 @@ describe('auth', function () {
         sessionToken: 'MOCK_SESSION_TOKEN',
       });
 
-      const interceptor = sigv4('xx-dummy-1', 'test-service', providerWithToken);
+      const interceptor = sigv4('service-region-1', 'service-name', providerWithToken);
       await interceptor(request);
 
       assert.strictEqual(request.headers['x-amz-security-token'], 'MOCK_SESSION_TOKEN');
@@ -100,7 +100,7 @@ describe('auth', function () {
       // Capture the headers present before signing (accept + content-type)
       const preSignKeys = Object.keys(request.headers);
 
-      const interceptor = sigv4('xx-dummy-1', 'test-service', mockProvider);
+      const interceptor = sigv4('service-region-1', 'service-name', mockProvider);
       await interceptor(request);
 
       // The original headers must still be present (not dropped by wholesale replacement)
@@ -128,7 +128,7 @@ describe('auth', function () {
     // (accept-encoding, content-type, ...) are never signed, and the session token is signed only
     // when session credentials are used.
     function createRequestWithTransportHeaders() {
-      return new HttpRequest('POST', 'https://example.com:8182/gremlin', {
+      return new HttpRequest('POST', 'https://host.example.com/gremlin', {
         'accept': 'application/vnd.graphbinary-v4.0',
         'content-type': 'application/json',
         'accept-encoding': 'deflate',
@@ -138,7 +138,7 @@ describe('auth', function () {
 
     it('should sign only the minimal header set for basic credentials', async function () {
       const request = createRequestWithTransportHeaders();
-      const interceptor = sigv4('region-1', 'example-service', mockProvider);
+      const interceptor = sigv4('service-region-1', 'service-name', mockProvider);
       await interceptor(request);
 
       // smithy's SignatureV4 includes x-amz-content-sha256 in the signed set; that is its
@@ -154,7 +154,7 @@ describe('auth', function () {
         sessionToken: 'MOCK_SESSION_TOKEN',
       });
       const request = createRequestWithTransportHeaders();
-      const interceptor = sigv4('region-1', 'example-service', providerWithToken);
+      const interceptor = sigv4('service-region-1', 'service-name', providerWithToken);
       await interceptor(request);
 
       assert.strictEqual(signedHeaders(request.headers['authorization']),

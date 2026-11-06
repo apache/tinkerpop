@@ -94,14 +94,15 @@ class EnvironmentCredentialsProvider implements AwsCredentialsProvider {
 ///
 /// ```dart
 /// final cluster = Cluster.build()
-///     .addContactPoint('localhost')
-///     .port(8182)
+///     .addContactPoint('host.example.com')
+///     .port(443)
+///     .enableSsl(true)
 ///     .auth(SigV4Auth(
 ///       credentials: StaticCredentialsProvider(AwsCredentials(
 ///         accessKeyId: 'AKID',
 ///         secretAccessKey: 'SECRET',
 ///       )),
-///       region: 'service-region',
+///       region: 'service-region-1',
 ///       service: 'service-name',
 ///     ))
 ///     .create();

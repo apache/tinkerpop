@@ -35,7 +35,7 @@ import (
 const graphBinaryMimeType = "application/vnd.graphbinary-v4.0"
 
 func createMockRequest() *gremlingo.HttpRequest {
-	req, _ := gremlingo.NewHttpRequest("POST", "https://test_url:8182/gremlin")
+	req, _ := gremlingo.NewHttpRequest("POST", "https://host.example.com/gremlin")
 	req.Headers.Set("Content-Type", graphBinaryMimeType)
 	req.Headers.Set("Accept", graphBinaryMimeType)
 	req.Body = []byte(`{"gremlin":"g.V()"}`)
@@ -87,14 +87,14 @@ func TestSigV4(t *testing.T) {
 			accessKey: "MOCK_ID",
 			secretKey: "MOCK_KEY",
 		}
-		interceptor := SigV4WithCredentials("gremlin-east-1", "tinkerpop-sigv4", provider)
+		interceptor := SigV4WithCredentials("service-region-1", "service-name", provider)
 		err := interceptor(req)
 
 		assert.NoError(t, err)
 		assert.NotEmpty(t, req.Headers.Get("X-Amz-Date"))
 		authHeader := req.Headers.Get("Authorization")
 		assert.True(t, strings.HasPrefix(authHeader, "AWS4-HMAC-SHA256 Credential=MOCK_ID"))
-		assert.Contains(t, authHeader, "gremlin-east-1/tinkerpop-sigv4/aws4_request")
+		assert.Contains(t, authHeader, "service-region-1/service-name/aws4_request")
 		assert.Contains(t, authHeader, "Signature=")
 	})
 
@@ -107,14 +107,14 @@ func TestSigV4(t *testing.T) {
 			secretKey:    "MOCK_KEY",
 			sessionToken: "MOCK_TOKEN",
 		}
-		interceptor := SigV4WithCredentials("gremlin-east-1", "tinkerpop-sigv4", provider)
+		interceptor := SigV4WithCredentials("service-region-1", "service-name", provider)
 		err := interceptor(req)
 
 		assert.NoError(t, err)
 		assert.Equal(t, "MOCK_TOKEN", req.Headers.Get("X-Amz-Security-Token"))
 		authHeader := req.Headers.Get("Authorization")
 		assert.True(t, strings.HasPrefix(authHeader, "AWS4-HMAC-SHA256 Credential="))
-		assert.Contains(t, authHeader, "gremlin-east-1/tinkerpop-sigv4/aws4_request")
+		assert.Contains(t, authHeader, "service-region-1/service-name/aws4_request")
 	})
 
 	t.Run("auto-serializes *RequestMessage before signing", func(t *testing.T) {
@@ -122,9 +122,9 @@ func TestSigV4(t *testing.T) {
 			accessKey: "MOCK_ID",
 			secretKey: "MOCK_KEY",
 		}
-		interceptor := SigV4WithCredentials("gremlin-east-1", "tinkerpop-sigv4", provider)
+		interceptor := SigV4WithCredentials("service-region-1", "service-name", provider)
 
-		req, err := gremlingo.NewHttpRequest("POST", "https://test_url:8182/gremlin")
+		req, err := gremlingo.NewHttpRequest("POST", "https://host.example.com/gremlin")
 		assert.NoError(t, err)
 		req.Headers.Set("Content-Type", "application/json")
 		req.Headers.Set("Accept", graphBinaryMimeType)
@@ -163,7 +163,7 @@ func TestSigV4SignedHeaders(t *testing.T) {
 	// A default-port (443) https URL so the test also covers host:port stripping: the signed Host
 	// must be the bare hostname, matching what a spec-compliant verifier reconstructs.
 	newRequest := func() *gremlingo.HttpRequest {
-		req, err := gremlingo.NewHttpRequest("POST", "https://example.com:443/gremlin")
+		req, err := gremlingo.NewHttpRequest("POST", "https://host.example.com:443/gremlin")
 		assert.NoError(t, err)
 		// Seed transport-managed and content headers that must NOT end up signed.
 		req.Headers.Set("Accept", graphBinaryMimeType)
@@ -177,7 +177,7 @@ func TestSigV4SignedHeaders(t *testing.T) {
 	t.Run("basic credentials sign only host, date, content-sha256", func(t *testing.T) {
 		req := newRequest()
 		provider := &mockCredentialsProvider{accessKey: "MOCK_ID", secretKey: "MOCK_KEY"}
-		err := SigV4WithCredentials("region-1", "example-service", provider)(req)
+		err := SigV4WithCredentials("service-region-1", "service-name", provider)(req)
 		assert.NoError(t, err)
 
 		signedHeaders := signedHeadersFromAuth(req.Headers.Get("Authorization"))
@@ -189,13 +189,13 @@ func TestSigV4SignedHeaders(t *testing.T) {
 		assert.NotContains(t, signedHeaders, "x-amz-security-token")
 
 		// The signed (and sent) Host must omit the default :443 port.
-		assert.Equal(t, "example.com", req.URL.Host)
+		assert.Equal(t, "host.example.com", req.URL.Host)
 	})
 
 	t.Run("session credentials also sign the security token", func(t *testing.T) {
 		req := newRequest()
 		provider := &mockCredentialsProvider{accessKey: "MOCK_ID", secretKey: "MOCK_KEY", sessionToken: "MOCK_TOKEN"}
-		err := SigV4WithCredentials("region-1", "example-service", provider)(req)
+		err := SigV4WithCredentials("service-region-1", "service-name", provider)(req)
 		assert.NoError(t, err)
 
 		signedHeaders := signedHeadersFromAuth(req.Headers.Get("Authorization"))
@@ -212,10 +212,10 @@ func TestSigV4HostPortStripping(t *testing.T) {
 		url      string
 		wantHost string
 	}{
-		{"https://example.com:443/gremlin", "example.com"},
-		{"http://example.com:80/gremlin", "example.com"},
-		{"https://example.com:8182/gremlin", "example.com:8182"},
-		{"https://example.com/gremlin", "example.com"},
+		{"https://host.example.com:443/gremlin", "host.example.com"},
+		{"http://host.example.com:80/gremlin", "host.example.com"},
+		{"https://host.example.com:8182/gremlin", "host.example.com:8182"},
+		{"https://host.example.com/gremlin", "host.example.com"},
 		{"https://[::1]:443/gremlin", "[::1]"},
 		{"https://[2001:db8::1]:443/gremlin", "[2001:db8::1]"},
 		{"https://[::1]:8182/gremlin", "[::1]:8182"},
@@ -227,7 +227,7 @@ func TestSigV4HostPortStripping(t *testing.T) {
 			req.Body = []byte(`{"gremlin":"g.V()"}`)
 			provider := &mockCredentialsProvider{accessKey: "MOCK_ID", secretKey: "MOCK_KEY"}
 
-			err = SigV4WithCredentials("region-1", "example-service", provider)(req)
+			err = SigV4WithCredentials("service-region-1", "service-name", provider)(req)
 			assert.NoError(t, err)
 			assert.Equal(t, tc.wantHost, req.URL.Host)
 			// The mutated URL must remain parseable (an IPv6 host that lost its brackets would

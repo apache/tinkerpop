@@ -128,7 +128,7 @@ namespace Gremlin.Net.UnitTest.Driver
 
         private static HttpRequestContext CreateSigv4TestContext(byte[]? body = null)
         {
-            return new HttpRequestContext("POST", new Uri("https://example.com:8182/gremlin"),
+            return new HttpRequestContext("POST", new Uri("https://host.example.com/gremlin"),
                 new Dictionary<string, string>
                 {
                     { "Content-Type", "application/vnd.graphbinary-v4.0" },
@@ -140,7 +140,7 @@ namespace Gremlin.Net.UnitTest.Driver
         [Fact]
         public async Task SigV4AuthShouldAddRequiredHeaders()
         {
-            var interceptor = Auth.Sigv4("gremlin-east-1", "tinkerpop-sigv4", TestBasicCredentials);
+            var interceptor = Auth.Sigv4("service-region-1", "service-name", TestBasicCredentials);
             var context = CreateSigv4TestContext();
 
             await interceptor(context);
@@ -154,19 +154,19 @@ namespace Gremlin.Net.UnitTest.Driver
         [Fact]
         public async Task SigV4AuthShouldHaveCorrectAuthorizationPrefix()
         {
-            var interceptor = Auth.Sigv4("gremlin-west-2", "tinkerpop-sigv4", TestBasicCredentials);
+            var interceptor = Auth.Sigv4("service-region-1", "service-name", TestBasicCredentials);
             var context = CreateSigv4TestContext();
 
             await interceptor(context);
 
             Assert.StartsWith("AWS4-HMAC-SHA256 Credential=MOCK_ID", context.Headers["Authorization"]);
-            Assert.Contains("gremlin-west-2/tinkerpop-sigv4/aws4_request", context.Headers["Authorization"]);
+            Assert.Contains("service-region-1/service-name/aws4_request", context.Headers["Authorization"]);
         }
 
         [Fact]
         public async Task SigV4AuthShouldAddSessionTokenForTemporaryCredentials()
         {
-            var interceptor = Auth.Sigv4("gremlin-east-1", "tinkerpop-sigv4", TestSessionCredentials);
+            var interceptor = Auth.Sigv4("service-region-1", "service-name", TestSessionCredentials);
             var context = CreateSigv4TestContext();
 
             await interceptor(context);
@@ -178,7 +178,7 @@ namespace Gremlin.Net.UnitTest.Driver
         [Fact]
         public async Task SigV4AuthShouldNotAddSessionTokenForPermanentCredentials()
         {
-            var interceptor = Auth.Sigv4("gremlin-east-1", "tinkerpop-sigv4", TestBasicCredentials);
+            var interceptor = Auth.Sigv4("service-region-1", "service-name", TestBasicCredentials);
             var context = CreateSigv4TestContext();
 
             await interceptor(context);
@@ -190,7 +190,7 @@ namespace Gremlin.Net.UnitTest.Driver
         public async Task SigV4AuthContentHashShouldMatchBodySha256()
         {
             var body = new byte[] { 0x84, 0x00, 0xFD, 0x01 };
-            var interceptor = Auth.Sigv4("gremlin-east-1", "tinkerpop-sigv4", TestBasicCredentials);
+            var interceptor = Auth.Sigv4("service-region-1", "service-name", TestBasicCredentials);
             var context = CreateSigv4TestContext(body);
 
             await interceptor(context);
@@ -204,7 +204,7 @@ namespace Gremlin.Net.UnitTest.Driver
         [Fact]
         public async Task SigV4AuthShouldHandleEmptyBody()
         {
-            var interceptor = Auth.Sigv4("gremlin-east-1", "tinkerpop-sigv4", TestBasicCredentials);
+            var interceptor = Auth.Sigv4("service-region-1", "service-name", TestBasicCredentials);
             var context = CreateSigv4TestContext(Array.Empty<byte>());
 
             await interceptor(context);
@@ -217,19 +217,24 @@ namespace Gremlin.Net.UnitTest.Driver
         [Fact]
         public async Task SigV4AuthShouldSetCorrectHost()
         {
-            var interceptor = Auth.Sigv4("gremlin-east-1", "tinkerpop-sigv4", TestBasicCredentials);
-            var context = CreateSigv4TestContext();
+            var interceptor = Auth.Sigv4("service-region-1", "service-name", TestBasicCredentials);
+            var context = new HttpRequestContext("POST", new Uri("https://host.example.com:8182/gremlin"),
+                new Dictionary<string, string>
+                {
+                    { "Content-Type", "application/vnd.graphbinary-v4.0" },
+                },
+                new byte[] { 0x84, 0x00 });
 
             await interceptor(context);
 
-            Assert.Equal("example.com", context.Headers["Host"]);
+            Assert.Equal("host.example.com", context.Headers["Host"]);
         }
 
         [Fact]
         public async Task SigV4AuthShouldThrowWhenBodyIsNotByteArray()
         {
-            var interceptor = Auth.Sigv4("gremlin-east-1", "tinkerpop-sigv4", TestBasicCredentials);
-            var context = new HttpRequestContext("POST", new Uri("https://example.com:8182/gremlin"),
+            var interceptor = Auth.Sigv4("service-region-1", "service-name", TestBasicCredentials);
+            var context = new HttpRequestContext("POST", new Uri("https://host.example.com/gremlin"),
                 new Dictionary<string, string>
                 {
                     { "Content-Type", "application/vnd.graphbinary-v4.0" },
@@ -247,7 +252,7 @@ namespace Gremlin.Net.UnitTest.Driver
         // only when session credentials are used.
         private static HttpRequestContext CreateSigv4ContextWithTransportHeaders()
         {
-            return new HttpRequestContext("POST", new Uri("https://example.com:8182/gremlin"),
+            return new HttpRequestContext("POST", new Uri("https://host.example.com/gremlin"),
                 new Dictionary<string, string>
                 {
                     { "Accept", "application/vnd.graphbinary-v4.0" },
@@ -270,7 +275,7 @@ namespace Gremlin.Net.UnitTest.Driver
         [Fact]
         public async Task SigV4AuthShouldSignOnlyMinimalHeaderSetForBasicCredentials()
         {
-            var interceptor = Auth.Sigv4("region-1", "example-service", TestBasicCredentials);
+            var interceptor = Auth.Sigv4("service-region-1", "service-name", TestBasicCredentials);
             var context = CreateSigv4ContextWithTransportHeaders();
 
             await interceptor(context);
@@ -283,7 +288,7 @@ namespace Gremlin.Net.UnitTest.Driver
         [Fact]
         public async Task SigV4AuthShouldSignSecurityTokenForSessionCredentials()
         {
-            var interceptor = Auth.Sigv4("region-1", "example-service", TestSessionCredentials);
+            var interceptor = Auth.Sigv4("service-region-1", "service-name", TestSessionCredentials);
             var context = CreateSigv4ContextWithTransportHeaders();
 
             await interceptor(context);

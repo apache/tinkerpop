@@ -49,10 +49,10 @@ import static software.amazon.awssdk.http.auth.aws.internal.signer.util.SignerCo
 import static software.amazon.awssdk.http.auth.aws.internal.signer.util.SignerConstant.X_AMZ_SECURITY_TOKEN;
 
 public class Sigv4Test {
-    private static final String REGION = "region-1";
+    private static final String REGION = "service-region-1";
     private static final String SERVICE_NAME = "service-name";
-    private static final String HOST = "localhost";
-    private static final String URI_WITH_QUERY_PARAMS = "http://" + HOST + ":8182?a=1&b=2";
+    private static final String HOST = "host.example.com";
+    private static final String URI_WITH_QUERY_PARAMS = "https://" + HOST + "/gremlin?a=1&b=2";
     private static final String KEY = "foo";
     private static final String SECRET = "bar";
     @Rule

@@ -117,11 +117,11 @@ the standard AWS environment variables with `EnvironmentCredentialsProvider`:
 
 ```dart
 final conn = DriverRemoteConnection(
-  'http://localhost:8182/gremlin',
+  'https://host.example.com/gremlin',
   ConnectionOptions(
     auth: SigV4Auth(
       credentials: EnvironmentCredentialsProvider(),
-      region: 'service-region',
+      region: 'service-region-1',
       service: 'service-name',
     ),
   ),

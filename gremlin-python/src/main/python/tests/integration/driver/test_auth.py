@@ -26,7 +26,7 @@ from gremlin_python.driver.http_request import HttpRequest
 def create_mock_request():
     return HttpRequest(
         method="POST",
-        url="https://test_url:8182/gremlin",
+        url="https://host.example.com/gremlin",
         headers={
             'content-type': 'application/vnd.graphbinary-v4.0',
             'accept': 'application/vnd.graphbinary-v4.0',
@@ -51,10 +51,10 @@ class TestAuth(object):
         assert 'X-Amz-Date' not in mock_request.headers
         os.environ['AWS_ACCESS_KEY_ID'] = 'MOCK_ID'
         os.environ['AWS_SECRET_ACCESS_KEY'] = 'MOCK_KEY'
-        sigv4('gremlin-east-1', 'tinkerpop-sigv4')(mock_request)
+        sigv4('service-region-1', 'service-name')(mock_request)
         assert mock_request.headers['X-Amz-Date'] is not None
         assert mock_request.headers['Authorization'].startswith('AWS4-HMAC-SHA256 Credential=MOCK_ID')
-        assert 'gremlin-east-1/tinkerpop-sigv4/aws4_request' in mock_request.headers['Authorization']
+        assert 'service-region-1/service-name/aws4_request' in mock_request.headers['Authorization']
         assert 'Signature=' in mock_request.headers['Authorization']
 
     def test_sigv4_auth_request_session_token(self):
@@ -65,9 +65,9 @@ class TestAuth(object):
         os.environ['AWS_ACCESS_KEY_ID'] = 'MOCK_ID'
         os.environ['AWS_SECRET_ACCESS_KEY'] = 'MOCK_KEY'
         os.environ['AWS_SESSION_TOKEN'] = 'MOCK_TOKEN'
-        sigv4('gremlin-east-1', 'tinkerpop-sigv4')(mock_request)
+        sigv4('service-region-1', 'service-name')(mock_request)
         assert mock_request.headers['X-Amz-Date'] is not None
         assert mock_request.headers['Authorization'].startswith('AWS4-HMAC-SHA256 Credential=')
         assert mock_request.headers['X-Amz-Security-Token'] == 'MOCK_TOKEN'
-        assert 'gremlin-east-1/tinkerpop-sigv4/aws4_request' in mock_request.headers['Authorization']
+        assert 'service-region-1/service-name/aws4_request' in mock_request.headers['Authorization']
         assert 'Signature=' in mock_request.headers['Authorization']

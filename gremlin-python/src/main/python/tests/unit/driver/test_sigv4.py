@@ -50,7 +50,7 @@ def _make_request():
     # signed.
     return HttpRequest(
         method="POST",
-        url="https://example.com:443/gremlin",
+        url="https://host.example.com:443/gremlin",
         headers={
             "accept": "application/vnd.graphbinary-v4.0",
             "content-type": "application/json",
@@ -67,7 +67,7 @@ class TestSigV4SignedHeaders:
         creds = Credentials(access_key=ACCESS_KEY, secret_key=SECRET_KEY, token=None)
         request = _make_request()
 
-        sigv4("region-1", "example-service", credentials=creds)(request)
+        sigv4("service-region-1", "service-name", credentials=creds)(request)
 
         assert _signed_headers(request) == "host;x-amz-date"
 
@@ -75,7 +75,7 @@ class TestSigV4SignedHeaders:
         creds = Credentials(access_key=ACCESS_KEY, secret_key=SECRET_KEY, token="MOCK_TOKEN")
         request = _make_request()
 
-        sigv4("region-1", "example-service", credentials=creds)(request)
+        sigv4("service-region-1", "service-name", credentials=creds)(request)
 
         assert _signed_headers(request) == "host;x-amz-date;x-amz-security-token"
         lower = {k.lower(): v for k, v in request.headers.items()}

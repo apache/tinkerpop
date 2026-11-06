@@ -222,10 +222,10 @@ remote, err := gremlingo.NewDriverRemoteConnection("https://localhost:8182/greml
   })
 
 // SigV4 authentication
-remote, err := gremlingo.NewDriverRemoteConnection("https://localhost:8182/gremlin",
+remote, err := gremlingo.NewDriverRemoteConnection("https://host.example.com/gremlin",
   func(settings *gremlingo.DriverRemoteConnectionSettings) {
     settings.Interceptors = []gremlingo.RequestInterceptor{
-      auth.SigV4("service-region", "service-name"),
+      auth.SigV4("service-region-1", "service-name"),
     }
   })
 ----
@@ -1972,8 +1972,8 @@ When no `credentialsProvider` is supplied, the default credential provider chain
 [source,javascript]
 ----
 const { auth } = gremlin.driver;
-const g = traversal().with_(new DriverRemoteConnection('http://localhost:8182/gremlin', {
-  interceptors: auth.sigv4("service-region", "service-name")
+const g = traversal().with_(new DriverRemoteConnection('https://host.example.com/gremlin', {
+  interceptors: auth.sigv4("service-region-1", "service-name")
 }));
 ----
 
@@ -2750,9 +2750,9 @@ using var client = new GremlinClient(server,
     interceptors: new[] { Auth.Basic("username", "password") });
 
 // SigV4 authentication
-var server = new GremlinServer("localhost", 8182, enableSsl: true);
+var server = new GremlinServer("host.example.com", 443, enableSsl: true);
 using var client = new GremlinClient(server,
-    interceptors: new[] { Auth.Sigv4("service-region", "service-name") });
+    interceptors: new[] { Auth.Sigv4("service-region-1", "service-name") });
 ----
 
 If you authenticate to a remote <<connecting-gremlin-server,Gremlin Server>> or
@@ -3491,7 +3491,7 @@ g = traversal().with_(DriverRemoteConnection(
 
 # SigV4 authentication
 g = traversal().with_(DriverRemoteConnection(
-    'http://localhost:8182/gremlin', 'g', auth=sigv4('service-region', 'service-name')))
+    'https://host.example.com/gremlin', 'g', auth=sigv4('service-region-1', 'service-name')))
 ----
 
 If you authenticate to a remote <<connecting-gremlin-server,Gremlin Server>> or

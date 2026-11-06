@@ -95,7 +95,7 @@ public class GremlinServerAuthIntegrateTest extends AbstractGremlinServerIntegra
         final AtomicReference<HttpRequest> httpRequest = new AtomicReference<>();
         final Cluster cluster = TestClientFactory.build()
                 .interceptors(
-                    sigv4("us-west2", credentialsProvider, "service-name"),
+                    sigv4("service-region-1", credentialsProvider, "service-name"),
                     r -> httpRequest.set(r)
                 )
                 .create();
@@ -106,7 +106,7 @@ public class GremlinServerAuthIntegrateTest extends AbstractGremlinServerIntegra
         assertNotNull(headers.get("X-Amz-Date"));
         assertThat(headers.get("Authorization"), startsWith("AWS4-HMAC-SHA256 Credential=I am AWSAccessKeyId"));
         assertThat(headers.get("Authorization"),
-                allOf(containsString("/us-west2/service-name/aws4_request"), containsString("Signature=")));
+                allOf(containsString("/service-region-1/service-name/aws4_request"), containsString("Signature=")));
 
         cluster.close();
     }

@@ -297,7 +297,7 @@ class TestSigV4CredentialsProvider:
     def _fake_request(self):
         req = MagicMock()
         req.method = 'POST'
-        req.url = 'http://localhost:8182/gremlin'
+        req.url = 'https://host.example.com/gremlin'
         req.serialize_body.return_value = b'{}'
         req.headers = {}
         return req
@@ -311,7 +311,7 @@ class TestSigV4CredentialsProvider:
         with patch('botocore.auth.SigV4Auth') as MockAuth:
             signer = MockAuth.return_value
             signer.add_auth = MagicMock()
-            interceptor = sigv4('us-east-1', 'neptune-db', credentials=provider)
+            interceptor = sigv4('service-region-1', 'service-name', credentials=provider)
             req = self._fake_request()
             interceptor(req)
 
@@ -331,7 +331,7 @@ class TestSigV4CredentialsProvider:
 
         with patch('botocore.auth.SigV4Auth') as MockAuth:
             MockAuth.return_value.add_auth = MagicMock()
-            interceptor = sigv4('us-east-1', 'neptune-db', credentials=FakeSession())
+            interceptor = sigv4('service-region-1', 'service-name', credentials=FakeSession())
             interceptor(self._fake_request())
 
         args, _ = MockAuth.call_args
@@ -345,7 +345,7 @@ class TestSigV4CredentialsProvider:
                 patch('botocore.auth.SigV4Auth') as MockAuth:
             MockSession.return_value.get_credentials.return_value = resolved
             MockAuth.return_value.add_auth = MagicMock()
-            interceptor = sigv4('us-east-1', 'neptune-db')
+            interceptor = sigv4('service-region-1', 'service-name')
             interceptor(self._fake_request())
 
         # With no provider supplied, credentials must be resolved from the AWS
