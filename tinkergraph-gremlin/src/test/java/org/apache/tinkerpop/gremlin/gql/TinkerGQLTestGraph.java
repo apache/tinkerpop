@@ -42,24 +42,44 @@ import java.util.function.Function;
 import static org.junit.Assert.assertEquals;
 
 /**
- * A test {@link Graph} that stands in for a provider in front of a real graph. It counts every
- * iterator it hands out from {@link Graph#vertices(Object...)}, {@link Graph#edges(Object...)},
- * {@link Graph.Index#queryVertexIndex} and {@link Vertex#edges}, how many of them were closed,
- * how many {@code close()} calls they received, and how many elements were read from them. It can
- * be told to report unknown ({@code Long.MAX_VALUE}) label counts, to scan vertices in id order,
- * to fail a vertex's next {@code edges()} call, to fail a vertex scan part way, to park the
- * calling thread in a chosen {@code edges()} call until it is interrupted, to report a self-loop
- * once rather than twice from {@code edges(Direction.BOTH)}, to report a self-loop's two
- * {@code edges(Direction.BOTH)} incidences with the vertex's other edges between them, or to fail a
- * vertex's next {@code edges(Direction.BOTH)} iterator from {@code next()} once it has reported
- * every edge.
+ * Test infrastructure for the TinkerGQL match engine ({@link DefaultGqlPlanner} and
+ * {@link DefaultGqlExecutor}): a {@link Graph} that wraps a real graph and stands in for a
+ * provider's {@link Graph} implementation that lacks TinkerGraph's guarantees.
  *
- * <p>Vertices and edges reached through it are proxies of the real elements, so that the
- * executor's later {@code edges()} calls also come through the probe. They are equal to, and
- * hash like, the real elements.</p>
+ * <p>The engine runs against any provider's graph, but its tests run against TinkerGraph, which
+ * hides several classes of bug. Its iterators hold no resources, so a leaked iterator goes
+ * unnoticed. It never fails mid-iteration, it knows every label count, and it reports a self-loop
+ * twice from {@code edges(Direction.BOTH)}. This class removes those guarantees one at a time,
+ * and it records how the engine used the graph's iterators, so a test can assert that the engine
+ * uses the {@link Graph} API correctly rather than only checking the rows it gets back. It does
+ * three things:</p>
+ * <ul>
+ *   <li><b>Observes:</b> it counts the iterators handed out by {@link Graph#vertices(Object...)},
+ *       {@link Graph#edges(Object...)}, {@link Graph.Index#queryVertexIndex} and
+ *       {@link Vertex#edges}, how many were closed, any repeat {@code close()} calls, and how many
+ *       elements were read. These counts back the engine's claims to be lazy and to close every
+ *       iterator it opens.</li>
+ *   <li><b>Behaves like other {@link Graph} implementations:</b> it can report unknown
+ *       ({@code Long.MAX_VALUE}) label counts, scan vertices in id order, report a self-loop once
+ *       from {@code edges(Direction.BOTH)}, or report a self-loop's two incidences with the
+ *       vertex's other edges between them.</li>
+ *   <li><b>Injects faults:</b> it can fail a vertex's next {@code edges()} call, fail a vertex scan
+ *       part way, fail a vertex's next {@code edges(Direction.BOTH)} iterator from {@code next()}
+ *       once it has reported every edge, or park the caller in a chosen {@code edges()} call until
+ *       it is interrupted, so interrupt tests need no sleeps.</li>
+ * </ul>
+ *
+ * <p>Vertices and edges reached through it are proxies of the real elements, so the engine's
+ * later {@code edges()} calls also come through the testGraph. They are equal to, and hash like, the
+ * real elements.</p>
+ *
+ * <p>It lives in {@code tinkergraph-gremlin} rather than {@code gql-gremlin} because the engine's
+ * tests need a real graph to wrap. {@code tinkergraph-gremlin} depends on {@code gql-gremlin}, so
+ * the reverse test dependency would form a module cycle. The class itself depends only on the
+ * {@link Graph} API.</p>
  */
 @SuppressWarnings("unchecked")
-public final class ProbeGraph {
+public final class TinkerGQLTestGraph {
 
     private final Graph base;
     private final Graph graph;
@@ -80,7 +100,7 @@ public final class ProbeGraph {
     private int parkAtEdgesCall = -1;
     private CountDownLatch parked;
 
-    public ProbeGraph(final Graph base) {
+    public TinkerGQLTestGraph(final Graph base) {
         this.base = base;
         this.graph = (Graph) Proxy.newProxyInstance(Graph.class.getClassLoader(),
                 new Class<?>[]{Graph.class}, this::invokeGraph);
@@ -92,13 +112,13 @@ public final class ProbeGraph {
     }
 
     /** Makes {@code countEdgesByLabel} return {@code Long.MAX_VALUE}, the {@link Graph} default, for every label. */
-    public ProbeGraph withUnknownEdgeCounts() {
+    public TinkerGQLTestGraph withUnknownEdgeCounts() {
         unknownEdgeCounts = true;
         return this;
     }
 
     /** Makes a full {@code vertices()} scan return the vertices in ascending id order, so seed order is fixed. */
-    public ProbeGraph withVerticesInIdOrder() {
+    public TinkerGQLTestGraph withVerticesInIdOrder() {
         verticesInIdOrder = true;
         return this;
     }
@@ -108,7 +128,7 @@ public final class ProbeGraph {
      * out-edges followed by its in-edges that are not self-loops, rather than once as an out-edge
      * and once as an in-edge as the base graph may.
      */
-    public ProbeGraph withSelfLoopsReportedOnce() {
+    public TinkerGQLTestGraph withSelfLoopsReportedOnce() {
         selfLoopsReportedOnce = true;
         return this;
     }
@@ -118,7 +138,7 @@ public final class ProbeGraph {
      * other edges, then its self-loops again, so each self-loop is reported twice with the other
      * edges, when there are any, between its two reports rather than next to each other.
      */
-    public ProbeGraph withSelfLoopsReportedAroundOtherEdges() {
+    public TinkerGQLTestGraph withSelfLoopsReportedAroundOtherEdges() {
         selfLoopsReportedAroundOtherEdges = true;
         return this;
     }
@@ -128,19 +148,19 @@ public final class ProbeGraph {
      * that, once it has reported every edge, still answers {@code true} from {@code hasNext()} and
      * then throws {@link InjectedFailure} from {@code next()}, once.
      */
-    public ProbeGraph failNextBothEdgesAtEnd(final Vertex vertex) {
+    public TinkerGQLTestGraph failNextBothEdgesAtEnd(final Vertex vertex) {
         failBothEdgesAtEndFor.add(vertex.id());
         return this;
     }
 
     /** Makes {@code countVerticesByLabel(label)} return {@code Long.MAX_VALUE}, the {@link Graph} default. */
-    public ProbeGraph withUnknownVertexCount(final String label) {
+    public TinkerGQLTestGraph withUnknownVertexCount(final String label) {
         unknownVertexLabels.add(label);
         return this;
     }
 
     /** Makes the next {@code edges()} call on {@code vertex} throw {@link InjectedFailure}, once. */
-    public ProbeGraph failNextEdgesCall(final Vertex vertex) {
+    public TinkerGQLTestGraph failNextEdgesCall(final Vertex vertex) {
         failNextEdgesFor.add(vertex.id());
         return this;
     }
@@ -149,7 +169,7 @@ public final class ProbeGraph {
      * Makes the next full {@code vertices()} scan throw {@link InjectedFailure} from {@code next()}
      * after it has returned {@code count} vertices, once.
      */
-    public ProbeGraph failVertexScanAfter(final int count) {
+    public TinkerGQLTestGraph failVertexScanAfter(final int count) {
         failVertexScanAfter = count;
         return this;
     }
@@ -161,41 +181,41 @@ public final class ProbeGraph {
      * caller sees the interrupt at its next {@link Thread#interrupted()} check. This lets a test
      * interrupt a search at a known point without sleeping.
      */
-    public ProbeGraph parkAtEdgesCall(final int call, final CountDownLatch reached) {
+    public TinkerGQLTestGraph parkAtEdgesCall(final int call, final CountDownLatch reached) {
         parkAtEdgesCall = call;
         parked = reached;
         return this;
     }
 
-    /** How many provider iterators the probe has handed out. */
+    /** How many graph iterators this graph has handed out. */
     public int opened() {
         return opened.get();
     }
 
-    /** How many of the handed-out provider iterators have been closed. */
+    /** How many of the handed-out graph iterators have been closed. */
     public int closed() {
         return closed.get();
     }
 
-    /** How many {@code close()} calls the handed-out provider iterators received, repeats included. */
+    /** How many {@code close()} calls the handed-out graph iterators received, repeats included. */
     public int closeCalls() {
         return closeCalls.get();
     }
 
-    /** How many elements have been read from the handed-out provider iterators. */
+    /** How many elements have been read from the handed-out graph iterators. */
     public int read() {
         return read.get();
     }
 
-    /** How many {@code Graph.Index.queryVertexIndex} calls the probe has served. */
+    /** How many {@code Graph.Index.queryVertexIndex} calls this graph has served. */
     public int indexQueries() {
         return indexQueries.get();
     }
 
-    /** Asserts that every handed-out provider iterator was closed, and closed exactly once. */
+    /** Asserts that every handed-out graph iterator was closed, and closed exactly once. */
     public void assertAllClosedOnce(final String message) {
-        assertEquals(message + ": every provider iterator must be closed", opened(), closed());
-        assertEquals(message + ": no provider iterator may be closed twice", closed(), closeCalls());
+        assertEquals(message + ": every graph iterator must be closed", opened(), closed());
+        assertEquals(message + ": no graph iterator may be closed twice", closed(), closeCalls());
     }
 
     /** The exception thrown by a {@link #failNextEdgesCall(Vertex) failed} {@code edges()} call or vertex scan. */
@@ -231,7 +251,7 @@ public final class ProbeGraph {
                     @Override
                     public Iterator<Vertex> queryVertexIndex(final String key, final Object value) {
                         indexQueries.incrementAndGet();
-                        return counting(index.queryVertexIndex(key, value), ProbeGraph.this::wrapVertex);
+                        return counting(index.queryVertexIndex(key, value), TinkerGQLTestGraph.this::wrapVertex);
                     }
 
                     @Override
@@ -284,12 +304,12 @@ public final class ProbeGraph {
                                     both = (Iterator<Edge>) forward(v, method, args);
                                 }
                                 if (failBothEdgesAtEndFor.remove(v.id())) both = new FailingAtEnd<>(both);
-                                return counting(both, ProbeGraph.this::wrapEdge);
+                                return counting(both, TinkerGQLTestGraph.this::wrapEdge);
                             }
-                            return counting((Iterator<Edge>) forward(v, method, args), ProbeGraph.this::wrapEdge);
+                            return counting((Iterator<Edge>) forward(v, method, args), TinkerGQLTestGraph.this::wrapEdge);
                         }
                         if (method.getName().equals("vertices"))
-                            return counting((Iterator<Vertex>) forward(v, method, args), ProbeGraph.this::wrapVertex);
+                            return counting((Iterator<Vertex>) forward(v, method, args), TinkerGQLTestGraph.this::wrapVertex);
                         return forward(v, method, args);
                     }
                 });
@@ -304,7 +324,7 @@ public final class ProbeGraph {
                         final Object result = forward(e, method, args);
                         if (result instanceof Vertex) return wrapVertex((Vertex) result);
                         if (method.getName().equals("vertices"))
-                            return new Mapped<>((Iterator<Vertex>) result, ProbeGraph.this::wrapVertex);
+                            return new Mapped<>((Iterator<Vertex>) result, TinkerGQLTestGraph.this::wrapVertex);
                         return result;
                     }
                 });
@@ -434,7 +454,7 @@ public final class ProbeGraph {
     }
 
     /**
-     * A counted provider iterator. It counts once as closed however often it is closed, and every
+     * A counted graph iterator. It counts once as closed however often it is closed, and every
      * {@code close()} call, repeats included, is counted separately in {@link #closeCalls()}.
      */
     private final class Counting<T> extends Mapped<T> implements CloseableIterator<T> {

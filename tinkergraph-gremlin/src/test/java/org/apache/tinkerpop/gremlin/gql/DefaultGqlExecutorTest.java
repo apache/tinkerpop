@@ -1755,19 +1755,19 @@ public class DefaultGqlExecutorTest {
     public void testInterruptStopsUnboundedWalkThatNeverEmits() throws Exception {
         // No vertex matches the target predicate, so the walk explores every trail without
         // producing a row and only the checks inside the candidate loops can observe the interrupt.
-        // The probe parks the worker inside the 20th edges() call, which is deep in the first
+        // The test graph parks the worker inside the 20th edges() call, which is deep in the first
         // seed's walk, and the test interrupts it there, so the interrupt lands mid-walk.
         addCompleteDigraph(8);
         final CountDownLatch inWalk = new CountDownLatch(1);
-        final ProbeGraph probe = new ProbeGraph(graph).parkAtEdgesCall(20, inWalk);
-        final GqlMatchPlan plan = new DefaultGqlPlanner(probe.graph())
+        final TinkerGQLTestGraph testGraph = new TinkerGQLTestGraph(graph).parkAtEdgesCall(20, inWalk);
+        final GqlMatchPlan plan = new DefaultGqlPlanner(testGraph.graph())
                 .plan("MATCH (a:Person)-[r:KNOWS]->+(b:Person {missing: 1})");
         final AtomicReference<Throwable> thrown = new AtomicReference<>();
         final AtomicReference<Boolean> produced = new AtomicReference<>(false);
 
         final Thread worker = new Thread(() -> {
             try {
-                produced.set(new DefaultGqlExecutor(probe.graph()).execute(plan).hasNext());
+                produced.set(new DefaultGqlExecutor(testGraph.graph()).execute(plan).hasNext());
             } catch (final Throwable t) {
                 thrown.set(t);
             }
@@ -1783,7 +1783,7 @@ public class DefaultGqlExecutorTest {
             assertFalse("the walk must not have produced a row", produced.get());
             assertTrue("expected TraversalInterruptedException but got " + thrown.get(),
                     thrown.get() instanceof TraversalInterruptedException);
-            probe.assertAllClosedOnce("after the interrupt");
+            testGraph.assertAllClosedOnce("after the interrupt");
         } finally {
             worker.interrupt();
         }
@@ -1816,16 +1816,16 @@ public class DefaultGqlExecutorTest {
     @Test(timeout = 10000)
     public void testFirstRowOfUnboundedWalkOnDenseGraphIsPrompt() {
         // The full result is astronomically large. Pulled lazily, the first row costs one seed
-        // read from the vertex scan and one edge read from that seed's edges(): two provider
+        // read from the vertex scan and one edge read from that seed's edges(): two graph
         // iterators opened and two elements read.
         addCompleteDigraph(10);
-        final ProbeGraph probe = new ProbeGraph(graph);
-        final GqlMatchPlan plan = new DefaultGqlPlanner(probe.graph()).plan("MATCH (a:Person)-[r:KNOWS]->+(b:Person)");
-        final Iterator<GqlRow> iter = new DefaultGqlExecutor(probe.graph()).execute(plan);
+        final TinkerGQLTestGraph testGraph = new TinkerGQLTestGraph(graph);
+        final GqlMatchPlan plan = new DefaultGqlPlanner(testGraph.graph()).plan("MATCH (a:Person)-[r:KNOWS]->+(b:Person)");
+        final Iterator<GqlRow> iter = new DefaultGqlExecutor(testGraph.graph()).execute(plan);
         assertTrue(iter.hasNext());
         final GqlRow row = iter.next();
-        assertEquals("provider iterators opened for the first row", 2, probe.opened());
-        assertEquals("elements read for the first row", 2, probe.read());
+        assertEquals("graph iterators opened for the first row", 2, testGraph.opened());
+        assertEquals("elements read for the first row", 2, testGraph.read());
 
         // The complete digraph has exactly one a -> b edge, so r is that edge alone.
         final Vertex a = (Vertex) row.getScalar(plan.getIndex("a"));
@@ -1833,7 +1833,7 @@ public class DefaultGqlExecutorTest {
         assertEquals(graph.traversal().V(a.id()).outE("KNOWS").where(__.inV().hasId(b.id())).toList(),
                 row.getGroup(plan.getIndex("r")));
         CloseableIterator.closeIterator(iter);
-        probe.assertAllClosedOnce("after closing early");
+        testGraph.assertAllClosedOnce("after closing early");
     }
 
     @Test(timeout = 60000)
@@ -2010,9 +2010,9 @@ public class DefaultGqlExecutorTest {
         final Edge s = a.addEdge("L", a);
         final Edge e = a.addEdge("L", b);
 
-        // A separate probe for the check, so its unclosed iterators do not count against the match.
-        assertEquals("the probe must report a's loop once under BOTH", 2, IteratorUtils.count(
-                new ProbeGraph(graph).withSelfLoopsReportedOnce().graph().vertices(a.id()).next()
+        // A separate test graph for the check, so its unclosed iterators do not count against the match.
+        assertEquals("the test graph must report a's loop once under BOTH", 2, IteratorUtils.count(
+                new TinkerGQLTestGraph(graph).withSelfLoopsReportedOnce().graph().vertices(a.id()).next()
                         .edges(Direction.BOTH, "L")));
         assertEquals("TinkerGraph reports a's loop twice under BOTH", 3,
                 IteratorUtils.count(a.edges(Direction.BOTH, "L")));
@@ -2027,14 +2027,14 @@ public class DefaultGqlExecutorTest {
                 List.of(a, List.of(s, e), b),
                 List.of(b, List.of(e), a),
                 List.of(b, List.of(e, s), a));
-        final ProbeGraph probe = new ProbeGraph(graph).withSelfLoopsReportedOnce();
-        for (final Graph g : new Graph[]{graph, probe.graph()}) {
+        final TinkerGQLTestGraph testGraph = new TinkerGQLTestGraph(graph).withSelfLoopsReportedOnce();
+        for (final Graph g : new Graph[]{graph, testGraph.graph()}) {
             final GqlMatchPlan singlePlan = new DefaultGqlPlanner(g).plan("MATCH (a:P)-[r:L]-(b:P)");
             assertEquals(single, tuples(materialize(new DefaultGqlExecutor(g).execute(singlePlan), singlePlan), "a", "r", "b"));
             final GqlMatchPlan walkPlan = new DefaultGqlPlanner(g).plan("MATCH (a:P)-[r:L]-{1,2}(b:P)");
             assertEquals(walk, tuples(materialize(new DefaultGqlExecutor(g).execute(walkPlan), walkPlan), "a", "r", "b"));
         }
-        probe.assertAllClosedOnce("after the matches");
+        testGraph.assertAllClosedOnce("after the matches");
     }
 
     @Test(timeout = 10000)
@@ -2049,22 +2049,22 @@ public class DefaultGqlExecutorTest {
         final Edge e = a.addEdge("L", b);
         final Edge f = c.addEdge("L", a);
 
-        final ProbeGraph probe = new ProbeGraph(graph).withSelfLoopsReportedAroundOtherEdges();
-        // A separate probe for the check, so its unclosed iterators do not count against the match.
-        assertEquals("the probe must report a's loop first and last, with e and f between", List.of(s, e, f, s),
-                IteratorUtils.list(new ProbeGraph(graph).withSelfLoopsReportedAroundOtherEdges().graph()
+        final TinkerGQLTestGraph testGraph = new TinkerGQLTestGraph(graph).withSelfLoopsReportedAroundOtherEdges();
+        // A separate test graph for the check, so its unclosed iterators do not count against the match.
+        assertEquals("the test graph must report a's loop first and last, with e and f between", List.of(s, e, f, s),
+                IteratorUtils.list(new TinkerGQLTestGraph(graph).withSelfLoopsReportedAroundOtherEdges().graph()
                         .vertices(a.id()).next().edges(Direction.BOTH, "L")));
 
-        final GqlMatchPlan singlePlan = new DefaultGqlPlanner(probe.graph()).plan("MATCH (a:P)-[r:L]-(b:P)");
+        final GqlMatchPlan singlePlan = new DefaultGqlPlanner(testGraph.graph()).plan("MATCH (a:P)-[r:L]-(b:P)");
         assertEquals(expectedTuples(
                 List.of(a, s, a),
                 List.of(a, e, b),
                 List.of(a, f, c),
                 List.of(b, e, a),
                 List.of(c, f, a)),
-                tuples(materialize(new DefaultGqlExecutor(probe.graph()).execute(singlePlan), singlePlan), "a", "r", "b"));
+                tuples(materialize(new DefaultGqlExecutor(testGraph.graph()).execute(singlePlan), singlePlan), "a", "r", "b"));
 
-        final GqlMatchPlan walkPlan = new DefaultGqlPlanner(probe.graph()).plan("MATCH (a:P)-[r:L]-{1,2}(b:P)");
+        final GqlMatchPlan walkPlan = new DefaultGqlPlanner(testGraph.graph()).plan("MATCH (a:P)-[r:L]-{1,2}(b:P)");
         assertEquals(expectedTuples(
                 List.of(a, List.of(s), a),
                 List.of(a, List.of(s, e), b),
@@ -2077,25 +2077,25 @@ public class DefaultGqlExecutorTest {
                 List.of(c, List.of(f), a),
                 List.of(c, List.of(f, s), a),
                 List.of(c, List.of(f, e), b)),
-                tuples(materialize(new DefaultGqlExecutor(probe.graph()).execute(walkPlan), walkPlan), "a", "r", "b"));
-        probe.assertAllClosedOnce("after the matches");
+                tuples(materialize(new DefaultGqlExecutor(testGraph.graph()).execute(walkPlan), walkPlan), "a", "r", "b"));
+        testGraph.assertAllClosedOnce("after the matches");
     }
 
     @Test(timeout = 10000)
     public void testUndirectedSelfLoopDedupFailsLoudlyWhenProviderThrowsWhileSkippingRepeat() {
-        // a carries only loop s, which TinkerGraph's edges(BOTH) reports twice. The probe's
+        // a carries only loop s, which TinkerGraph's edges(BOTH) reports twice. The test graph's
         // edges(BOTH) iterator for a throws from next() after both reports, so the failure comes
         // while the dedup is skipping s's repeat and reading on. It must propagate, a later
-        // hasNext() or next() must fail rather than resume, and every provider iterator must be
+        // hasNext() or next() must fail rather than resume, and every graph iterator must be
         // closed once.
         final Vertex a = graph.addVertex("P");
         final Edge s = a.addEdge("L", a);
-        final ProbeGraph probe = new ProbeGraph(graph).failNextBothEdgesAtEnd(a);
-        final GqlMatchPlan plan = new DefaultGqlPlanner(probe.graph()).plan("MATCH (a:P)-[r:L]-(b:P)");
+        final TinkerGQLTestGraph testGraph = new TinkerGQLTestGraph(graph).failNextBothEdgesAtEnd(a);
+        final GqlMatchPlan plan = new DefaultGqlPlanner(testGraph.graph()).plan("MATCH (a:P)-[r:L]-(b:P)");
         final int aIdx = plan.getIndex("a");
         final int rIdx = plan.getIndex("r");
         final int bIdx = plan.getIndex("b");
-        final Iterator<GqlRow> iter = new DefaultGqlExecutor(probe.graph()).execute(plan);
+        final Iterator<GqlRow> iter = new DefaultGqlExecutor(testGraph.graph()).execute(plan);
 
         assertTrue(iter.hasNext());
         final GqlRow row = iter.next();
@@ -2104,31 +2104,31 @@ public class DefaultGqlExecutorTest {
         assertEquals(a, row.getScalar(bIdx));
         try {
             iter.hasNext();
-            fail("the provider's next() exception must propagate");
-        } catch (final ProbeGraph.InjectedFailure expected) {
+            fail("the graph iterator's next() exception must propagate");
+        } catch (final TinkerGQLTestGraph.InjectedFailure expected) {
             // expected
         }
-        probe.assertAllClosedOnce("every provider iterator must be closed after the failure");
+        testGraph.assertAllClosedOnce("every graph iterator must be closed after the failure");
 
         for (int i = 0; i < 2; i++) {
             try {
                 iter.hasNext();
                 fail("hasNext() after a failure must not resume the search");
             } catch (final IllegalStateException expected) {
-                assertTrue(expected.getCause() instanceof ProbeGraph.InjectedFailure);
+                assertTrue(expected.getCause() instanceof TinkerGQLTestGraph.InjectedFailure);
             }
         }
         try {
             iter.next();
             fail("next() after a failure must not resume the search");
         } catch (final IllegalStateException expected) {
-            assertTrue(expected.getCause() instanceof ProbeGraph.InjectedFailure);
+            assertTrue(expected.getCause() instanceof TinkerGQLTestGraph.InjectedFailure);
         }
-        probe.assertAllClosedOnce("no provider iterator may be opened or closed again after the failure");
+        testGraph.assertAllClosedOnce("no graph iterator may be opened or closed again after the failure");
     }
 
     @Test(timeout = 10000)
-    public void testProviderIteratorsClosedUnderUndirectedSelfLoopDedup() {
+    public void testGraphIteratorsClosedUnderUndirectedSelfLoopDedup() {
         final Vertex a = graph.addVertex("P");
         final Vertex b = graph.addVertex("P");
         a.addEdge("L", a);
@@ -2136,18 +2136,18 @@ public class DefaultGqlExecutorTest {
         a.addEdge("L", b);
         final String query = "MATCH (x:P)-[:L]-(y:P)-[r:L]-{1,2}(z:P)";
 
-        final ProbeGraph drained = new ProbeGraph(graph);
+        final TinkerGQLTestGraph drained = new TinkerGQLTestGraph(graph);
         final GqlMatchPlan plan = new DefaultGqlPlanner(drained.graph()).plan(query);
         assertFalse(materialize(new DefaultGqlExecutor(drained.graph()).execute(plan), plan).isEmpty());
         assertTrue(drained.opened() > 1);
         drained.assertAllClosedOnce("after the match");
 
-        final ProbeGraph early = new ProbeGraph(graph);
+        final TinkerGQLTestGraph early = new TinkerGQLTestGraph(graph);
         final GqlMatchPlan earlyPlan = new DefaultGqlPlanner(early.graph()).plan(query);
         final Iterator<GqlRow> iter = new DefaultGqlExecutor(early.graph()).execute(earlyPlan);
         assertTrue(iter.hasNext());
         iter.next();
-        assertTrue("the search must hold provider iterators open mid-way", early.opened() > early.closed());
+        assertTrue("the search must hold graph iterators open mid-way", early.opened() > early.closed());
         CloseableIterator.closeIterator(iter);
         early.assertAllClosedOnce("after closing early");
     }
@@ -2846,7 +2846,7 @@ public class DefaultGqlExecutorTest {
     }
 
     // -------------------------------------------------------------------------
-    // Provider exceptions, provider iterator closing, plain-before-quantified tiebreak
+    // Graph exceptions, graph iterator closing, plain-before-quantified tiebreak
     // -------------------------------------------------------------------------
 
     /** a -A-> b -B-> c. Returns {a, b, c}. */
@@ -2860,42 +2860,42 @@ public class DefaultGqlExecutorTest {
     }
 
     @Test(timeout = 10000)
-    public void testProviderEdgesFailureFailsLoudlyOnLaterHasNext() {
+    public void testGraphEdgesFailureFailsLoudlyOnLaterHasNext() {
         // b.edges() fails once, while the B step is being expanded from b with y = b bound. The
         // failed search cannot be resumed without dropping or repeating rows, so a later
-        // hasNext() must not quietly continue, and every provider iterator must be closed.
+        // hasNext() must not quietly continue, and every graph iterator must be closed.
         final Vertex[] v = addABChain();
-        final ProbeGraph probe = new ProbeGraph(graph).withVerticesInIdOrder().failNextEdgesCall(v[1]);
-        final GqlMatchPlan plan = new DefaultGqlPlanner(probe.graph()).plan("MATCH (x)-[:A]->(y)-[:B]->(z)");
+        final TinkerGQLTestGraph testGraph = new TinkerGQLTestGraph(graph).withVerticesInIdOrder().failNextEdgesCall(v[1]);
+        final GqlMatchPlan plan = new DefaultGqlPlanner(testGraph.graph()).plan("MATCH (x)-[:A]->(y)-[:B]->(z)");
         assertEquals("x", plan.getSeedVariable());
-        final Iterator<GqlRow> iter = new DefaultGqlExecutor(probe.graph()).execute(plan);
+        final Iterator<GqlRow> iter = new DefaultGqlExecutor(testGraph.graph()).execute(plan);
 
         try {
             iter.hasNext();
-            fail("the provider's edges() exception must propagate");
-        } catch (final ProbeGraph.InjectedFailure expected) {
+            fail("the graph's edges() exception must propagate");
+        } catch (final TinkerGQLTestGraph.InjectedFailure expected) {
             // expected
         }
-        assertTrue(probe.opened() > 0);
-        probe.assertAllClosedOnce("every provider iterator must be closed after the failure");
+        assertTrue(testGraph.opened() > 0);
+        testGraph.assertAllClosedOnce("every graph iterator must be closed after the failure");
 
         for (int i = 0; i < 2; i++) {
             try {
                 iter.hasNext();
                 fail("hasNext() after a failure must not resume the search");
             } catch (final IllegalStateException expected) {
-                assertTrue(expected.getCause() instanceof ProbeGraph.InjectedFailure);
+                assertTrue(expected.getCause() instanceof TinkerGQLTestGraph.InjectedFailure);
             }
         }
         try {
             iter.next();
             fail("next() after a failure must not resume the search");
         } catch (final IllegalStateException expected) {
-            assertTrue(expected.getCause() instanceof ProbeGraph.InjectedFailure);
+            assertTrue(expected.getCause() instanceof TinkerGQLTestGraph.InjectedFailure);
         }
 
         // The failure was injected once, so a fresh run of the same plan returns the one row.
-        final List<Map<String, Element>> rows = materialize(new DefaultGqlExecutor(probe.graph()).execute(plan), plan);
+        final List<Map<String, Element>> rows = materialize(new DefaultGqlExecutor(testGraph.graph()).execute(plan), plan);
         assertEquals(1, rows.size());
         assertEquals(v[0], rows.get(0).get("x"));
         assertEquals(v[1], rows.get(0).get("y"));
@@ -2912,49 +2912,49 @@ public class DefaultGqlExecutorTest {
         }
     }
 
-    /** A plain step followed by a quantified one, so both frame types open provider iterators. */
+    /** A plain step followed by a quantified one, so both frame types open graph iterators. */
     private static final String PLAIN_THEN_QUANTIFIED = "MATCH (x:V)-[:L]->(y:V)-[r:L]->{1,2}(z:V)";
 
     @Test(timeout = 10000)
-    public void testProviderIteratorsClosedWhenDrained() {
+    public void testGraphIteratorsClosedWhenDrained() {
         addLChain();
-        final ProbeGraph probe = new ProbeGraph(graph);
-        final GqlMatchPlan plan = new DefaultGqlPlanner(probe.graph()).plan(PLAIN_THEN_QUANTIFIED);
+        final TinkerGQLTestGraph testGraph = new TinkerGQLTestGraph(graph);
+        final GqlMatchPlan plan = new DefaultGqlPlanner(testGraph.graph()).plan(PLAIN_THEN_QUANTIFIED);
         // x -> y is one of 4 edges, so y is b, c, d or e; from there the walk takes 1 or 2 further
         // edges: 1 + 1 + 1 + 0 one-hop and 1 + 1 + 0 + 0 two-hop walks, 5 rows in all.
-        assertEquals(5, materialize(new DefaultGqlExecutor(probe.graph()).execute(plan), plan).size());
-        assertTrue(probe.opened() > 1);
-        probe.assertAllClosedOnce("after the match");
+        assertEquals(5, materialize(new DefaultGqlExecutor(testGraph.graph()).execute(plan), plan).size());
+        assertTrue(testGraph.opened() > 1);
+        testGraph.assertAllClosedOnce("after the match");
     }
 
     @Test(timeout = 10000)
-    public void testProviderIteratorsClosedWhenClosedEarly() {
+    public void testGraphIteratorsClosedWhenClosedEarly() {
         addLChain();
-        final ProbeGraph probe = new ProbeGraph(graph);
-        final GqlMatchPlan plan = new DefaultGqlPlanner(probe.graph()).plan(PLAIN_THEN_QUANTIFIED);
-        final Iterator<GqlRow> iter = new DefaultGqlExecutor(probe.graph()).execute(plan);
+        final TinkerGQLTestGraph testGraph = new TinkerGQLTestGraph(graph);
+        final GqlMatchPlan plan = new DefaultGqlPlanner(testGraph.graph()).plan(PLAIN_THEN_QUANTIFIED);
+        final Iterator<GqlRow> iter = new DefaultGqlExecutor(testGraph.graph()).execute(plan);
 
         assertTrue(iter.hasNext());
         iter.next();
-        assertTrue("the search must hold provider iterators open mid-way", probe.opened() > probe.closed());
+        assertTrue("the search must hold graph iterators open mid-way", testGraph.opened() > testGraph.closed());
         assertTrue(iter instanceof CloseableIterator);
         CloseableIterator.closeIterator(iter);
-        probe.assertAllClosedOnce("after the match");
+        testGraph.assertAllClosedOnce("after the match");
         assertFalse("a closed search has no more rows", iter.hasNext());
         CloseableIterator.closeIterator(iter);
-        probe.assertAllClosedOnce("close() must be idempotent");
+        testGraph.assertAllClosedOnce("close() must be idempotent");
     }
 
     @Test(timeout = 10000)
-    public void testProviderIteratorsClosedOnInterrupt() {
+    public void testGraphIteratorsClosedOnInterrupt() {
         addLChain();
-        final ProbeGraph probe = new ProbeGraph(graph);
-        final GqlMatchPlan plan = new DefaultGqlPlanner(probe.graph()).plan(PLAIN_THEN_QUANTIFIED);
-        final Iterator<GqlRow> iter = new DefaultGqlExecutor(probe.graph()).execute(plan);
+        final TinkerGQLTestGraph testGraph = new TinkerGQLTestGraph(graph);
+        final GqlMatchPlan plan = new DefaultGqlPlanner(testGraph.graph()).plan(PLAIN_THEN_QUANTIFIED);
+        final Iterator<GqlRow> iter = new DefaultGqlExecutor(testGraph.graph()).execute(plan);
 
         assertTrue(iter.hasNext());
         iter.next();
-        assertTrue(probe.opened() > probe.closed());
+        assertTrue(testGraph.opened() > testGraph.closed());
         try {
             Thread.currentThread().interrupt();
             iter.hasNext();
@@ -2964,7 +2964,7 @@ public class DefaultGqlExecutorTest {
         } finally {
             Thread.interrupted();
         }
-        probe.assertAllClosedOnce("after the match");
+        testGraph.assertAllClosedOnce("after the match");
         try {
             iter.hasNext();
             fail("hasNext() after an interrupt must not resume the search");
@@ -2975,28 +2975,28 @@ public class DefaultGqlExecutorTest {
 
     @Test(timeout = 10000)
     public void testSeedScanFailureClosesSeedIterator() {
-        // The seed scan fails on its first vertex. execute() must not read from the provider, so
+        // The seed scan fails on its first vertex. execute() must not read from the graph, so
         // the failure surfaces from hasNext(), whose failure path closes the seed iterator,
         // rather than escaping from execute() with the scan left open.
         addLChain();
-        final ProbeGraph probe = new ProbeGraph(graph).failVertexScanAfter(0);
-        final GqlMatchPlan plan = new DefaultGqlPlanner(probe.graph()).plan(PLAIN_THEN_QUANTIFIED);
-        final Iterator<GqlRow> iter = new DefaultGqlExecutor(probe.graph()).execute(plan);
-        assertEquals("execute() opens only the seed scan", 1, probe.opened());
-        assertEquals("execute() must not read from the seed scan", 0, probe.read());
+        final TinkerGQLTestGraph testGraph = new TinkerGQLTestGraph(graph).failVertexScanAfter(0);
+        final GqlMatchPlan plan = new DefaultGqlPlanner(testGraph.graph()).plan(PLAIN_THEN_QUANTIFIED);
+        final Iterator<GqlRow> iter = new DefaultGqlExecutor(testGraph.graph()).execute(plan);
+        assertEquals("execute() opens only the seed scan", 1, testGraph.opened());
+        assertEquals("execute() must not read from the seed scan", 0, testGraph.read());
 
         try {
             iter.hasNext();
             fail("the seed scan's exception must propagate");
-        } catch (final ProbeGraph.InjectedFailure expected) {
+        } catch (final TinkerGQLTestGraph.InjectedFailure expected) {
             // expected
         }
-        probe.assertAllClosedOnce("after the seed scan failed");
+        testGraph.assertAllClosedOnce("after the seed scan failed");
         try {
             iter.hasNext();
             fail("hasNext() after a failure must not resume the search");
         } catch (final IllegalStateException expected) {
-            assertTrue(expected.getCause() instanceof ProbeGraph.InjectedFailure);
+            assertTrue(expected.getCause() instanceof TinkerGQLTestGraph.InjectedFailure);
         }
     }
 
@@ -3005,10 +3005,10 @@ public class DefaultGqlExecutorTest {
         // The scan fails when asked for the second seed, after the first seed's rows, so both the
         // seed iterator and the frames' edge iterators have been opened before the failure.
         addLChain();
-        final ProbeGraph probe = new ProbeGraph(graph).withVerticesInIdOrder().failVertexScanAfter(1);
-        final GqlMatchPlan plan = new DefaultGqlPlanner(probe.graph()).plan(PLAIN_THEN_QUANTIFIED);
+        final TinkerGQLTestGraph testGraph = new TinkerGQLTestGraph(graph).withVerticesInIdOrder().failVertexScanAfter(1);
+        final GqlMatchPlan plan = new DefaultGqlPlanner(testGraph.graph()).plan(PLAIN_THEN_QUANTIFIED);
         assertEquals("x", plan.getSeedVariable());
-        final Iterator<GqlRow> iter = new DefaultGqlExecutor(probe.graph()).execute(plan);
+        final Iterator<GqlRow> iter = new DefaultGqlExecutor(testGraph.graph()).execute(plan);
 
         // The first seed, a, gives y = b and walks b -> c and b -> c -> d.
         int rows = 0;
@@ -3018,20 +3018,20 @@ public class DefaultGqlExecutorTest {
                 rows++;
             }
             fail("the seed scan's exception must propagate");
-        } catch (final ProbeGraph.InjectedFailure expected) {
+        } catch (final TinkerGQLTestGraph.InjectedFailure expected) {
             // expected
         }
         assertEquals("the first seed's rows come before the failure", 2, rows);
-        assertTrue(probe.opened() > 1);
-        probe.assertAllClosedOnce("after the seed scan failed");
+        assertTrue(testGraph.opened() > 1);
+        testGraph.assertAllClosedOnce("after the seed scan failed");
     }
 
     /** Indexes {@code n} and names the head of the L chain, so the seed comes from an index lookup. */
-    private GqlMatchPlan indexSeededPlan(final ProbeGraph probe) {
+    private GqlMatchPlan indexSeededPlan(final TinkerGQLTestGraph testGraph) {
         graph.createIndex("n", Vertex.class);
         addLChain();
         graph.traversal().V().not(__.inE("L")).next().property("n", "head");
-        final GqlMatchPlan plan = new DefaultGqlPlanner(probe.graph())
+        final GqlMatchPlan plan = new DefaultGqlPlanner(testGraph.graph())
                 .plan("MATCH (x:V {n: 'head'})-[:L]->(y:V)-[r:L]->{1,2}(z:V)");
         assertEquals("x", plan.getSeedVariable());
         return plan;
@@ -3039,27 +3039,27 @@ public class DefaultGqlExecutorTest {
 
     @Test(timeout = 10000)
     public void testIndexSeededIteratorsClosedWhenDrained() {
-        final ProbeGraph probe = new ProbeGraph(graph);
-        final GqlMatchPlan plan = indexSeededPlan(probe);
+        final TinkerGQLTestGraph testGraph = new TinkerGQLTestGraph(graph);
+        final GqlMatchPlan plan = indexSeededPlan(testGraph);
         // head -> b, then b -> c and b -> c -> d.
-        assertEquals(2, materialize(new DefaultGqlExecutor(probe.graph()).execute(plan), plan).size());
-        assertEquals("the seed must come from the index", 1, probe.indexQueries());
-        assertTrue(probe.opened() > 1);
-        probe.assertAllClosedOnce("after the index-seeded match");
+        assertEquals(2, materialize(new DefaultGqlExecutor(testGraph.graph()).execute(plan), plan).size());
+        assertEquals("the seed must come from the index", 1, testGraph.indexQueries());
+        assertTrue(testGraph.opened() > 1);
+        testGraph.assertAllClosedOnce("after the index-seeded match");
     }
 
     @Test(timeout = 10000)
     public void testIndexSeededIteratorsClosedWhenClosedEarly() {
-        final ProbeGraph probe = new ProbeGraph(graph);
-        final GqlMatchPlan plan = indexSeededPlan(probe);
-        final Iterator<GqlRow> iter = new DefaultGqlExecutor(probe.graph()).execute(plan);
+        final TinkerGQLTestGraph testGraph = new TinkerGQLTestGraph(graph);
+        final GqlMatchPlan plan = indexSeededPlan(testGraph);
+        final Iterator<GqlRow> iter = new DefaultGqlExecutor(testGraph.graph()).execute(plan);
 
         assertTrue(iter.hasNext());
         iter.next();
-        assertEquals("the seed must come from the index", 1, probe.indexQueries());
-        assertTrue("the search must hold provider iterators open mid-way", probe.opened() > probe.closed());
+        assertEquals("the seed must come from the index", 1, testGraph.indexQueries());
+        assertTrue("the search must hold graph iterators open mid-way", testGraph.opened() > testGraph.closed());
         CloseableIterator.closeIterator(iter);
-        probe.assertAllClosedOnce("after closing the index-seeded match early");
+        testGraph.assertAllClosedOnce("after closing the index-seeded match early");
     }
 
     /**
@@ -3087,15 +3087,15 @@ public class DefaultGqlExecutorTest {
      * started: B is attempted once in all, at m2. Expanding B first would walk m1's chain to q2
      * and only then fail on A, attempting B twice before the first row.
      */
-    private void assertPlainStepExpandedFirst(final ProbeGraph probe, final Vertex[] v) {
-        final GqlMatchPlan plan = new DefaultGqlPlanner(probe.graph()).plan("MATCH (m:M)-[:B]->{2,3}(q:Q), (m)-[:A]->(p:P)");
+    private void assertPlainStepExpandedFirst(final TinkerGQLTestGraph testGraph, final Vertex[] v) {
+        final GqlMatchPlan plan = new DefaultGqlPlanner(testGraph.graph()).plan("MATCH (m:M)-[:B]->{2,3}(q:Q), (m)-[:A]->(p:P)");
         assertEquals("m", plan.getSeedVariable());
         final ExtensionStep a = plan.getSteps().stream().filter(s -> "A".equals(s.getEdgeLabel())).findFirst().orElseThrow();
         final ExtensionStep b = plan.getSteps().stream().filter(s -> "B".equals(s.getEdgeLabel())).findFirst().orElseThrow();
         assertFalse(a.isQuantified());
         assertTrue(b.isQuantified());
 
-        final Iterator<GqlRow> iter = new DefaultGqlExecutor(probe.graph()).execute(plan);
+        final Iterator<GqlRow> iter = new DefaultGqlExecutor(testGraph.graph()).execute(plan);
         assertTrue(iter.hasNext());
         final GqlRow row = iter.next();
         assertEquals(v[1], row.getScalar(plan.getIndex("m")));
@@ -3114,8 +3114,8 @@ public class DefaultGqlExecutorTest {
         // over B costs min(4, 4) * 3 = 12, so A is cheaper. The tiebreak is pinned by
         // testPlainStepExpandedBeforeQuantifiedStepWithDefaultLabelCounts, where both cost MAX.
         final Vertex[] v = addPlainAndQuantifiedFromTwoAnchors();
-        final ProbeGraph probe = new ProbeGraph(graph).withVerticesInIdOrder();
-        assertPlainStepExpandedFirst(probe, v);
+        final TinkerGQLTestGraph testGraph = new TinkerGQLTestGraph(graph).withVerticesInIdOrder();
+        assertPlainStepExpandedFirst(testGraph, v);
     }
 
     @Test(timeout = 10000)
@@ -3124,11 +3124,11 @@ public class DefaultGqlExecutorTest {
         // planner keeps B, written first, ahead of A. Only the plain-before-quantified tiebreak
         // puts A first. M keeps its real count so the planner can choose a seed.
         final Vertex[] v = addPlainAndQuantifiedFromTwoAnchors();
-        final ProbeGraph probe = new ProbeGraph(graph).withVerticesInIdOrder()
+        final TinkerGQLTestGraph testGraph = new TinkerGQLTestGraph(graph).withVerticesInIdOrder()
                 .withUnknownEdgeCounts().withUnknownVertexCount("P").withUnknownVertexCount("Q");
-        final GqlMatchPlan plan = new DefaultGqlPlanner(probe.graph()).plan("MATCH (m:M)-[:B]->{2,3}(q:Q), (m)-[:A]->(p:P)");
+        final GqlMatchPlan plan = new DefaultGqlPlanner(testGraph.graph()).plan("MATCH (m:M)-[:B]->{2,3}(q:Q), (m)-[:A]->(p:P)");
         assertEquals(List.of("B", "A"), plan.getSteps().stream().map(ExtensionStep::getEdgeLabel).collect(Collectors.toList()));
         for (final ExtensionStep s : plan.getSteps()) assertEquals(Long.MAX_VALUE, s.getEstimatedCost());
-        assertPlainStepExpandedFirst(probe, v);
+        assertPlainStepExpandedFirst(testGraph, v);
     }
 }
