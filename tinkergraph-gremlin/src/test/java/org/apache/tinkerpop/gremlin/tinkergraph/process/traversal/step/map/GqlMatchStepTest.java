@@ -26,7 +26,7 @@ import org.apache.tinkerpop.gremlin.gql.GqlMatchPlan;
 import org.apache.tinkerpop.gremlin.gql.GqlMatchStep;
 import org.apache.tinkerpop.gremlin.gql.GqlPlanner;
 import org.apache.tinkerpop.gremlin.gql.GqlRow;
-import org.apache.tinkerpop.gremlin.gql.ProbeGraph;
+import org.apache.tinkerpop.gremlin.gql.TinkerGQLTestGraph;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
@@ -894,31 +894,31 @@ public class GqlMatchStepTest {
 
     @Test(timeout = 10000)
     public void testLimitOneOnUnboundedUndirectedWalkOverDenseGraphIsPrompt() {
-        // The number of trails on a complete graph is astronomically large, so the provider work
+        // The number of trails on a complete graph is astronomically large, so the work against the graph
         // for limit(1) is bounded only if the executor produces rows on demand rather than
         // buffering a seed's whole search. The first row needs one seed and one edge; limit()
         // may pull one more row before it stops, which is one more hop.
         buildCompleteKnowsGraph(10);
-        final ProbeGraph probe = new ProbeGraph(graph);
+        final TinkerGQLTestGraph testGraph = new TinkerGQLTestGraph(graph);
 
-        final List<Object> rows = probing(probe).<Integer>inject(1)
+        final List<Object> rows = matchingThrough(testGraph).<Integer>inject(1)
                 .match("MATCH (a:person)-[]-+(b:person)").select("b").limit(1).toList();
         assertEquals(1, rows.size());
-        assertTrue("provider iterators opened: " + probe.opened(), probe.opened() <= 3);
-        assertTrue("provider elements read: " + probe.read(), probe.read() <= 3);
-        probe.assertAllClosedOnce("after limit(1)");
+        assertTrue("graph iterators opened: " + testGraph.opened(), testGraph.opened() <= 3);
+        assertTrue("graph elements read: " + testGraph.read(), testGraph.read() <= 3);
+        testGraph.assertAllClosedOnce("after limit(1)");
     }
 
     @Test(timeout = 30000)
     public void testInterruptStopsUnboundedWalkThroughTraversal() throws Exception {
         // A traversal thread running an unbounded undirected walk over a dense graph is parked by
-        // the probe inside an edges() call deep in the walk, then interrupted. The interrupt must
+        // the test graph inside an edges() call deep in the walk, then interrupted. The interrupt must
         // surface from the traversal as TraversalInterruptedException, and the executor must
-        // release its provider iterators.
+        // release its graph iterators.
         buildCompleteKnowsGraph(8);
         final CountDownLatch inWalk = new CountDownLatch(1);
-        final ProbeGraph probe = new ProbeGraph(graph).parkAtEdgesCall(20, inWalk);
-        final Traversal<?, ?> t = probing(probe).inject(1).match("MATCH (a)-[]-+(b)");
+        final TinkerGQLTestGraph testGraph = new TinkerGQLTestGraph(graph).parkAtEdgesCall(20, inWalk);
+        final Traversal<?, ?> t = matchingThrough(testGraph).inject(1).match("MATCH (a)-[]-+(b)");
         final AtomicReference<Throwable> thrown = new AtomicReference<>();
 
         final Thread worker = new Thread(() -> {
@@ -938,7 +938,7 @@ public class GqlMatchStepTest {
             assertFalse("the traversal must stop after interruption", worker.isAlive());
             assertTrue("expected TraversalInterruptedException but got " + thrown.get(),
                     thrown.get() instanceof TraversalInterruptedException);
-            probe.assertAllClosedOnce("after the interrupt");
+            testGraph.assertAllClosedOnce("after the interrupt");
         } finally {
             worker.interrupt();
         }
@@ -1076,55 +1076,55 @@ public class GqlMatchStepTest {
     }
 
     // -------------------------------------------------------------------------
-    // Closing the executor's provider iterators
+    // Closing the executor's graph iterators
     // -------------------------------------------------------------------------
 
-    /** A source whose match() steps plan and execute through {@code probe}, counting provider iterators. */
-    private GraphTraversalSource probing(final ProbeGraph probe) {
+    /** A source whose match() steps plan and execute through {@code testGraph}, counting graph iterators. */
+    private GraphTraversalSource matchingThrough(final TinkerGQLTestGraph testGraph) {
         return graph.traversal().withStrategies(GqlDeclarativeMatchStrategy.create(
-                new DefaultGqlPlanner(probe.graph()), new DefaultGqlExecutor(probe.graph())));
+                new DefaultGqlPlanner(testGraph.graph()), new DefaultGqlExecutor(testGraph.graph())));
     }
 
     /** A 6-vertex knows chain matched as a plain step then a walk, so every frame type opens iterators. */
     private static final String PLAIN_THEN_WALK_QUERY = "MATCH (a:person)-[:knows]->(b:person)-[r:knows]->{1,2}(c:person)";
 
     @Test(timeout = 10000)
-    public void shouldCloseProviderIteratorsWhenMatchIsDrained() {
+    public void shouldCloseGraphIteratorsWhenMatchIsDrained() {
         buildKnowsChain(5);
-        final ProbeGraph probe = new ProbeGraph(graph);
+        final TinkerGQLTestGraph testGraph = new TinkerGQLTestGraph(graph);
         // Two incoming traversers, so the step replaces its row iterator once.
-        assertEquals(14, probing(probe).inject(1, 2).match(PLAIN_THEN_WALK_QUERY).toList().size());
-        assertTrue(probe.opened() > 0);
-        probe.assertAllClosedOnce("after the match");
+        assertEquals(14, matchingThrough(testGraph).inject(1, 2).match(PLAIN_THEN_WALK_QUERY).toList().size());
+        assertTrue(testGraph.opened() > 0);
+        testGraph.assertAllClosedOnce("after the match");
     }
 
     @Test(timeout = 10000)
-    public void shouldCloseProviderIteratorsWhenLimitStopsMatchEarly() {
+    public void shouldCloseGraphIteratorsWhenLimitStopsMatchEarly() {
         buildKnowsChain(5);
         for (final boolean spawn : new boolean[]{true, false}) {
-            final ProbeGraph probe = new ProbeGraph(graph);
-            final GraphTraversalSource gp = probing(probe);
+            final TinkerGQLTestGraph testGraph = new TinkerGQLTestGraph(graph);
+            final GraphTraversalSource gp = matchingThrough(testGraph);
             final Traversal<?, Map<String, Object>> t = spawn
                     ? gp.match(PLAIN_THEN_WALK_QUERY).limit(1)
                     : gp.inject(1).match(PLAIN_THEN_WALK_QUERY).limit(1);
             assertEquals(1, t.toList().size());
-            assertTrue(probe.opened() > 0);
-            probe.assertAllClosedOnce("spawn=" + spawn);
+            assertTrue(testGraph.opened() > 0);
+            testGraph.assertAllClosedOnce("spawn=" + spawn);
         }
     }
 
     @Test(timeout = 10000)
-    public void shouldCloseProviderIteratorsWhenTraversalClosedAfterInterrupt() throws Exception {
+    public void shouldCloseGraphIteratorsWhenTraversalClosedAfterInterrupt() throws Exception {
         // AbstractStep.next() checks the interrupt before it calls processNextStart(), so the
         // interrupt is thrown by the step layer and the executor never sees it: its iterators are
         // still open afterwards. This tests that Traversal.close() closes the step, which closes
         // the executor's row iterator. The executor's own interrupt path is covered in
-        // DefaultGqlExecutorTest.testProviderIteratorsClosedOnInterrupt.
+        // DefaultGqlExecutorTest.testGraphIteratorsClosedOnInterrupt.
         buildKnowsChain(5);
-        final ProbeGraph probe = new ProbeGraph(graph);
-        final Traversal<?, Map<String, Object>> t = probing(probe).match(PLAIN_THEN_WALK_QUERY);
+        final TinkerGQLTestGraph testGraph = new TinkerGQLTestGraph(graph);
+        final Traversal<?, Map<String, Object>> t = matchingThrough(testGraph).match(PLAIN_THEN_WALK_QUERY);
         t.next();
-        assertTrue("the match must hold provider iterators open mid-way", probe.opened() > probe.closed());
+        assertTrue("the match must hold graph iterators open mid-way", testGraph.opened() > testGraph.closed());
         try {
             Thread.currentThread().interrupt();
             t.next();
@@ -1134,23 +1134,23 @@ public class GqlMatchStepTest {
         } finally {
             Thread.interrupted();
         }
-        assertTrue("the step layer threw before the executor ran", probe.opened() > probe.closed());
+        assertTrue("the step layer threw before the executor ran", testGraph.opened() > testGraph.closed());
         t.close();
-        probe.assertAllClosedOnce("after the match");
+        testGraph.assertAllClosedOnce("after the match");
     }
 
     @Test(timeout = 10000)
-    public void shouldCloseProviderIteratorsOnReset() {
+    public void shouldCloseGraphIteratorsOnReset() {
         buildKnowsChain(5);
-        final ProbeGraph probe = new ProbeGraph(graph);
-        final Traversal.Admin<?, Map<String, Object>> t = probing(probe).match(PLAIN_THEN_WALK_QUERY).asAdmin();
+        final TinkerGQLTestGraph testGraph = new TinkerGQLTestGraph(graph);
+        final Traversal.Admin<?, Map<String, Object>> t = matchingThrough(testGraph).match(PLAIN_THEN_WALK_QUERY).asAdmin();
         t.next();
-        assertTrue(probe.opened() > probe.closed());
+        assertTrue(testGraph.opened() > testGraph.closed());
         t.reset();
-        probe.assertAllClosedOnce("after the match");
+        testGraph.assertAllClosedOnce("after the match");
         // After the reset the step runs the match afresh.
         assertEquals(7, t.toList().size());
-        probe.assertAllClosedOnce("after the match");
+        testGraph.assertAllClosedOnce("after the match");
     }
 
     @Test(timeout = 10000)
@@ -1159,8 +1159,8 @@ public class GqlMatchStepTest {
         // pulling after close(). The step must stay finished rather than run the match again,
         // until reset() makes it runnable.
         buildKnowsChain(5);
-        final ProbeGraph probe = new ProbeGraph(graph);
-        final Traversal.Admin<?, Map<String, Object>> t = probing(probe).match(PLAIN_THEN_WALK_QUERY).asAdmin();
+        final TinkerGQLTestGraph testGraph = new TinkerGQLTestGraph(graph);
+        final Traversal.Admin<?, Map<String, Object>> t = matchingThrough(testGraph).match(PLAIN_THEN_WALK_QUERY).asAdmin();
         t.applyStrategies();
         @SuppressWarnings("unchecked")
         final GqlMatchStep<Object> step = (GqlMatchStep<Object>) t.getStartStep();
@@ -1168,11 +1168,11 @@ public class GqlMatchStepTest {
 
         assertTrue(step.hasNext());
         step.next();
-        final int openedBeforeClose = probe.opened();
+        final int openedBeforeClose = testGraph.opened();
         step.close();
-        probe.assertAllClosedOnce("after close()");
+        testGraph.assertAllClosedOnce("after close()");
         assertFalse("a closed spawn step must not run the match again", step.hasNext());
-        assertEquals("no provider iterator may be opened after close()", openedBeforeClose, probe.opened());
+        assertEquals("no graph iterator may be opened after close()", openedBeforeClose, testGraph.opened());
 
         step.reset();
         int rows = 0;
@@ -1181,7 +1181,7 @@ public class GqlMatchStepTest {
             rows++;
         }
         assertEquals("after reset() the step runs the match afresh", 7, rows);
-        probe.assertAllClosedOnce("after the rerun");
+        testGraph.assertAllClosedOnce("after the rerun");
     }
 
     @Test(timeout = 10000)
