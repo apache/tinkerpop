@@ -19,10 +19,9 @@
 
 import assert from 'assert';
 import { Buffer } from 'buffer';
-import { GraphTraversalSource, statics as __, CardinalityValue } from '../../lib/process/graph-traversal.js';
-import { P, TextP, t as T, order as Order, scope as Scope, column as Column,
-         operator as Operator, pop as Pop, cardinality as Cardinality,
-         withOptions as WithOptions, direction } from '../../lib/process/traversal.js';
+import { GraphTraversalSource, __, CardinalityValue } from '../../lib/process/graph-traversal.js';
+import { P, TextP, T, Order, Scope, Column, Operator, Pop, Cardinality,
+         WithOptions, Direction } from '../../lib/process/traversal.js';
 import { ReadOnlyStrategy, SubgraphStrategy, OptionsStrategy,
          PartitionStrategy, SeedStrategy } from '../../lib/process/traversal-strategy.js';
 import { Graph, Vertex, CompositePDT, PrimitivePDT } from '../../lib/structure/graph.js';
@@ -284,7 +283,7 @@ describe('GremlinLang', function () {
       // #122 - P.not
       [g.V().has('age',P.not(P.eq(5))), "g.V().has('age',not(eq(5)))"],
       // #123 - Direction aliases from_ and to mapped to OUT and IN
-      [g.V().to(direction.from_, 'knows').to(direction.in, 'created'),
+      [g.V().to(Direction.from_, 'knows').to(Direction.IN, 'created'),
        "g.V().to(Direction.OUT,'knows').to(Direction.IN,'created')"],
       // #124 - from_/to with Vertex ID extraction
       [g.addE('knows').from_(new Vertex(1, 'person')).to(new Vertex(2, 'person')),
@@ -293,10 +292,10 @@ describe('GremlinLang', function () {
       [g.inject('foo').V(1, new Vertex(2, 'person')),
        "g.inject('foo').V(1,2)"],
       // #126 - mergeE with Vertex ID extraction in Map (source step)
-      [g.mergeE(new Map([['label', 'knows'], [direction.out, new Vertex(1, 'person')], [direction.in, new Vertex(2, 'person')]])),
+      [g.mergeE(new Map([['label', 'knows'], [Direction.OUT, new Vertex(1, 'person')], [Direction.IN, new Vertex(2, 'person')]])),
        "g.mergeE(['label':'knows',(Direction.OUT):1,(Direction.IN):2])"],
       // #127 - mergeE with Vertex ID extraction in Map (mid-traversal)
-      [g.inject('foo').mergeE(new Map([['label', 'knows'], [direction.out, new Vertex(1, 'person')], [direction.in, new Vertex(2, 'person')]])),
+      [g.inject('foo').mergeE(new Map([['label', 'knows'], [Direction.OUT, new Vertex(1, 'person')], [Direction.IN, new Vertex(2, 'person')]])),
        "g.inject('foo').mergeE(['label':'knows',(Direction.OUT):1,(Direction.IN):2])"],
     ];
 

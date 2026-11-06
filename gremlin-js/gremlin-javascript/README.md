@@ -39,9 +39,7 @@ can connect.
 A typical connection to a server running on "localhost" that supports the Gremlin Server protocol looks like this:
 
 ```javascript
-const gremlin = require('gremlin');
-const traversal = gremlin.process.AnonymousTraversalSource.traversal;
-const DriverRemoteConnection = gremlin.driver.DriverRemoteConnection;
+const { traversal, DriverRemoteConnection } = require('gremlin');
 
 const g = traversal().with_(new DriverRemoteConnection('http://localhost:8182/gremlin'));
 ```
@@ -50,12 +48,10 @@ Some graph providers may require additional request customization to connect. Th
 for these cases. For example, to connect with basic authentication:
 
 ```javascript
-const gremlin = require('gremlin');
-const traversal = gremlin.process.AnonymousTraversalSource.traversal;
-const DriverRemoteConnection = gremlin.driver.DriverRemoteConnection;
+const { traversal, DriverRemoteConnection, auth } = require('gremlin');
 
 const g = traversal().with_(new DriverRemoteConnection('http://localhost:8182/gremlin', {
-  interceptors: gremlin.driver.auth.basic('username', 'password')
+  interceptors: auth.basic('username', 'password')
 }));
 ```
 
@@ -88,8 +84,7 @@ Gremlin variant for that language.
 
 ```javascript
 /* if we want to assign our own ID and properties to this vertex */
-const { t: { id } } = gremlin.process;
-const { cardinality: { single } } = gremlin.process;
+const { T, Cardinality } = require('gremlin');
 
 /**
  * Create a new vertex with Id, Label and properties
@@ -98,8 +93,8 @@ const { cardinality: { single } } = gremlin.process;
  */
 const createVertex = async (vertexId, vlabel) => {
   const vertex = await g.addV(vlabel)
-    .property(id, vertexId)
-    .property(single, 'name', 'Apache')
+    .property(T.id, vertexId)
+    .property(Cardinality.single, 'name', 'Apache')
     .property('lastname', 'Tinkerpop') // default database cardinality
     .next();
 
@@ -137,7 +132,7 @@ const listByLabelAndName = async (vlabel, name) => {
 
 ## Update Vertex
 ```javascript
-const { cardinality: { single } } = gremlin.process;
+const { Cardinality } = require('gremlin');
 
 /**
  * Update Vertex Properties
@@ -145,7 +140,7 @@ const { cardinality: { single } } = gremlin.process;
  * @param {String} name Vertex Name Property
  */
 const updateVertex = async (vertexId, label, name) => {
-  const vertex = await g.V(vertexId).property(single, 'name', name).next();
+  const vertex = await g.V(vertexId).property(Cardinality.single, 'name', name).next();
   return vertex.value;
 };
 ```

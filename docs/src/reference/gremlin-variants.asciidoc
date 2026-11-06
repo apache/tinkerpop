@@ -2025,58 +2025,40 @@ set explicitly if desired.
 [[gremlin-javascript-imports]]
 === Common Imports
 
-There are a number of classes, functions and tokens that are typically used with Gremlin. The following imports
-provide most of the typical functionality required to use Gremlin.
+There are a number of classes, functions and tokens that are typically used with Gremlin. Each of them is a named
+export of the `gremlin` package, so a single import provides most of the typical functionality required to use
+Gremlin.
 
 ==== ES Modules
 
 [source,javascript]
 ----
-import gremlin from 'gremlin';
-
-const traversal = gremlin.process.AnonymousTraversalSource.traversal;
-const __ = gremlin.process.statics;
-const DriverRemoteConnection = gremlin.driver.DriverRemoteConnection;
-const { P: p, TextP: textp, column, direction, pick, pop, order, scope, t, cardinality, CardinalityValue } = gremlin.process;
+import { traversal, __, P, TextP, T, Cardinality, CardinalityValue, Column, Direction, Order, Pick, Pop, Scope,
+         DriverRemoteConnection } from 'gremlin';
 ----
 
 ==== CommonJS
 
 [source,javascript]
 ----
-const gremlin = require('gremlin');
-const traversal = gremlin.process.AnonymousTraversalSource.traversal;
-const __ = gremlin.process.statics;
-const DriverRemoteConnection = gremlin.driver.DriverRemoteConnection;
-const column = gremlin.process.column
-const direction = gremlin.process.direction
-const Direction = {
-  BOTH: direction.both,
-  IN: direction.in,
-  OUT: direction.out,
-  from_: direction.out,
-  to: direction.in,
-}
-const p = gremlin.process.P
-const textp = gremlin.process.TextP
-const pick = gremlin.process.pick
-const pop = gremlin.process.pop
-const order = gremlin.process.order
-const scope = gremlin.process.scope
-const t = gremlin.process.t
-const cardinality = gremlin.process.cardinality
-const CardinalityValue = gremlin.process.CardinalityValue
+const { traversal, __, P, TextP, T, Cardinality, CardinalityValue, Column, Direction, Order, Pick, Pop, Scope,
+        DriverRemoteConnection } = require('gremlin');
 ----
 
-By defining these imports it becomes possible to write Gremlin in the more shorthand, canonical style that is
-demonstrated in most examples found here in the documentation:
+The same symbols remain grouped under the `driver`, `process` and `structure` namespaces of the package, as in
+`gremlin.process.Order`, for code that prefers namespaced access.
+
+Tokens are named as they are in Gremlin itself. Enumerations such as `T`, `Order` and `Cardinality` are objects whose
+members carry the Gremlin name, as in `T.id`, `Order.desc` and `Cardinality.list`, and `Direction` uses `Direction.OUT`,
+`Direction.IN` and `Direction.BOTH`. Anonymous traversals are spawned from `+__+`. With these imports, Gremlin written
+in JavaScript reads the same as the canonical examples found throughout the documentation:
 
 [source,javascript]
 ----
-const { P: { gt } } = gremlin.process;
-const { order: { desc } } = gremlin.process;
-g.V().hasLabel('person').has('age',gt(30)).order().by('age',desc).toList()
+g.V().hasLabel('person').has('age', P.gt(30)).order().by('age', Order.desc).toList()
 ----
+
+Individual members may still be destructured for brevity, as in `const { gt } = P;`.
 
 [[gremlin-javascript-configuration]]
 === Configuration
@@ -2212,9 +2194,12 @@ To remove a listener, use `removeListener(event, handler)` with the same handler
 
 In order to add and remove <<traversalstrategy,traversal strategies>> from a traversal source, Gremlin-Javascript has a
 `TraversalStrategy` class along with a collection of subclasses that mirror the standard Gremlin-Java strategies.
+Each strategy class is a named export of the `gremlin` package.
 
 [source,javascript]
 ----
+import { InlineFilterStrategy, SeedStrategy } from 'gremlin';
+
 // use the class name for the strategy directly for withoutStrategies()
 g.withoutStrategies(InlineFilterStrategy);
 

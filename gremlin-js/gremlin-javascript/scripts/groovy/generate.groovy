@@ -54,10 +54,10 @@ radishGremlinFile.withWriter('UTF-8') { Writer writer ->
     writer.writeLine("//********************************************************************************\n\n")
 
     writer.writeLine(
-                    'import * as graphTraversalModule from \'../../lib/process/graph-traversal.js\';\n' +
-                    'import * as traversalModule from \'../../lib/process/traversal.js\';\n' +
                     'import { Buffer } from \'buffer\';\n' +
-                    'import { TraversalStrategies, VertexProgramStrategy, OptionsStrategy, PartitionStrategy, \n' +
+                    'import { __, Barrier, Cardinality, CardinalityValue, Column, Direction, DT, GType, IO, Merge, \n' +
+                    '        Operator, Order, P, Pick, Pop, Scope, T, TextP, WithOptions, \n' +
+                    '        TraversalStrategies, VertexProgramStrategy, OptionsStrategy, PartitionStrategy, \n' +
                     '        ReadOnlyStrategy, GraphFilterStrategy, SeedStrategy, SubgraphStrategy, ProductiveByStrategy, \n' +
                     '        LambdaRestrictionStrategy, StandardVerificationStrategy, VertexProgramRestrictionStrategy, \n' +
                     '        ComputerVerificationStrategy, MessagePassingReductionStrategy, ProfileStrategy, InlineFilterStrategy, \n' +
@@ -66,32 +66,7 @@ radishGremlinFile.withWriter('UTF-8') { Writer writer ->
                     '        AdjacentToIncidentStrategy, ReservedKeysVerificationStrategy, RepeatUnrollStrategy, \n' +
                     '        PathRetractionStrategy, PathProcessorStrategy, OrderLimitStrategy, MatchPredicateStrategy, \n' +
                     '        LazyBarrierStrategy, EarlyLimitStrategy, IncidentToAdjacentStrategy, IdentityRemovalStrategy, \n' +
-                    '        HaltedTraverserStrategy, FilterRankingStrategy } from \'../../lib/process/traversal-strategy.js\';\n' +
-                    'const __ = graphTraversalModule.statics;\n' +
-                    'const Barrier = traversalModule.barrier\n' +
-                    'const Cardinality = traversalModule.cardinality\n' +
-                    'const CardinalityValue = graphTraversalModule.CardinalityValue;\n' +
-                    'const Column = traversalModule.column\n' +
-                    'const Direction = {\n' +
-                    '    BOTH: traversalModule.direction.both,\n' +
-                    '    IN: traversalModule.direction.in,\n' +
-                    '    OUT: traversalModule.direction.out,\n' +
-                    '    from_: traversalModule.direction.out,\n' +
-                    '    to: traversalModule.direction.in\n' +
-                    '};\n' +
-                    'const IO = traversalModule.IO;\n' +
-                    'const DT = traversalModule.dt;\n' +
-                    'const GType = traversalModule.gType;\n' +
-                    'const Merge = traversalModule.merge;\n' +
-                    'const P = traversalModule.P;\n' +
-                    'const Pick = traversalModule.pick\n' +
-                    'const Pop = traversalModule.pop\n' +
-                    'const Order = traversalModule.order\n' +
-                    'const Operator = traversalModule.operator\n' +
-                    'const Scope = traversalModule.scope\n' +
-                    'const T = traversalModule.t\n' +
-                    'const TextP = traversalModule.TextP\n' +
-                    'const WithOptions = traversalModule.withOptions\n'
+                    '        HaltedTraverserStrategy, FilterRankingStrategy } from \'../../lib/index.js\';\n'
     )
 
     // some traversals may require a static translation if the translator can't handle them for some reason

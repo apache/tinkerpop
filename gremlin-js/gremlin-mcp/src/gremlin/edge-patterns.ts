@@ -25,13 +25,13 @@
  */
 
 import { Effect } from 'effect';
-import { process } from 'gremlin';
+import { __ } from 'gremlin';
 import type { EdgePattern } from './models/index.js';
 import { executeGremlinQuery } from './query-utils.js';
 import type { GremlinQueryError } from '../errors.js';
 import type { GraphTraversalSource } from './types.js';
 
-const { inV, outV, label } = process.statics;
+const { inV, outV, label } = __;
 
 /**
  * Raw pattern data from Gremlin project() query.

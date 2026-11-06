@@ -28,7 +28,7 @@ import {
   CompositePDT,
   PrimitivePDT
 } from '../../../lib/structure/graph.js';
-import { direction, merge, t } from '../../../lib/process/traversal.js';
+import { Direction, Merge, T } from '../../../lib/process/traversal.js';
 
 /*
  * Unsupported types (no map entries, .gbin files exist but types not implemented):
@@ -226,12 +226,12 @@ model['meta-vertexproperty'] = new VertexProperty(1, 'person', 'stephen', [new P
 model['set-cardinality-vertexproperty'] = new VertexProperty(1, 'person', new Set(['stephen', 'marko']), [new Property('a', 'b')]);
 
 // Enum values
-model['id-t'] = t.id;
-model['out-direction'] = direction.out;
-model['merge-on-create'] = merge.onCreate;
-model['merge-on-match'] = merge.onMatch;
-model['merge-out-v'] = merge.outV;
-model['merge-in-v'] = merge.inV;
+model['id-t'] = T.id;
+model['out-direction'] = Direction.OUT;
+model['merge-on-create'] = Merge.onCreate;
+model['merge-on-match'] = Merge.onMatch;
+model['merge-out-v'] = Merge.outV;
+model['merge-in-v'] = Merge.inV;
 
 // Complex vertex with properties (from .gbin deserialization structure)
 const name = new VertexProperty(0, 'name', 'marko');

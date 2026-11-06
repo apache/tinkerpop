@@ -20,7 +20,7 @@
 import assert from 'assert';
 import { Vertex, Edge, VertexProperty, CompositePDT, PrimitivePDT } from '../../lib/structure/graph.js';
 import { getClient, serverUrl } from '../helper.js';
-import { cardinality } from '../../lib/process/traversal.js';
+import { Cardinality } from '../../lib/process/traversal.js';
 import Client from '../../lib/driver/client.js';
 import { Int, Double } from '../../lib/utils.js';
 

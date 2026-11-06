@@ -24,10 +24,10 @@
 //********************************************************************************
 
 
-import * as graphTraversalModule from '../../lib/process/graph-traversal.js';
-import * as traversalModule from '../../lib/process/traversal.js';
 import { Buffer } from 'buffer';
-import { TraversalStrategies, VertexProgramStrategy, OptionsStrategy, PartitionStrategy, 
+import { __, Barrier, Cardinality, CardinalityValue, Column, Direction, DT, GType, IO, Merge, 
+        Operator, Order, P, Pick, Pop, Scope, T, TextP, WithOptions, 
+        TraversalStrategies, VertexProgramStrategy, OptionsStrategy, PartitionStrategy, 
         ReadOnlyStrategy, GraphFilterStrategy, SeedStrategy, SubgraphStrategy, ProductiveByStrategy, 
         LambdaRestrictionStrategy, StandardVerificationStrategy, VertexProgramRestrictionStrategy, 
         ComputerVerificationStrategy, MessagePassingReductionStrategy, ProfileStrategy, InlineFilterStrategy, 
@@ -36,32 +36,7 @@ import { TraversalStrategies, VertexProgramStrategy, OptionsStrategy, PartitionS
         AdjacentToIncidentStrategy, ReservedKeysVerificationStrategy, RepeatUnrollStrategy, 
         PathRetractionStrategy, PathProcessorStrategy, OrderLimitStrategy, MatchPredicateStrategy, 
         LazyBarrierStrategy, EarlyLimitStrategy, IncidentToAdjacentStrategy, IdentityRemovalStrategy, 
-        HaltedTraverserStrategy, FilterRankingStrategy } from '../../lib/process/traversal-strategy.js';
-const __ = graphTraversalModule.statics;
-const Barrier = traversalModule.barrier
-const Cardinality = traversalModule.cardinality
-const CardinalityValue = graphTraversalModule.CardinalityValue;
-const Column = traversalModule.column
-const Direction = {
-    BOTH: traversalModule.direction.both,
-    IN: traversalModule.direction.in,
-    OUT: traversalModule.direction.out,
-    from_: traversalModule.direction.out,
-    to: traversalModule.direction.in
-};
-const IO = traversalModule.IO;
-const DT = traversalModule.dt;
-const GType = traversalModule.gType;
-const Merge = traversalModule.merge;
-const P = traversalModule.P;
-const Pick = traversalModule.pick
-const Pop = traversalModule.pop
-const Order = traversalModule.order
-const Operator = traversalModule.operator
-const Scope = traversalModule.scope
-const T = traversalModule.t
-const TextP = traversalModule.TextP
-const WithOptions = traversalModule.withOptions
+        HaltedTraverserStrategy, FilterRankingStrategy } from '../../lib/index.js';
 
 const gremlins = {
     g_V_branchXlabel_isXpersonX_countX_optionX1__ageX_optionX0__langX_optionX0__nameX: [function({g, xx1, xx2}) { return g.V().branch(__.label().is("person").count()).option(xx1, __.values("age")).option(xx2, __.values("lang")).option(xx2, __.values("name")) }], 
