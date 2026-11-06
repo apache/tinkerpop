@@ -186,25 +186,25 @@ void main() {
   group('SigV4Signer.deriveSigningKey', () {
     test('produces exactly 32 bytes (256 bits)', () {
       final k = SigV4Signer.deriveSigningKey(
-          'wJalrXUtnFEMI/K7MDENG+bPxRfiCYEXAMPLEKEY', '20150830', 'us-east-1', 'iam');
+          'wJalrXUtnFEMI/K7MDENG+bPxRfiCYEXAMPLEKEY', '20150830', 'service-region', 'service-name');
       expect(k.length, 32);
     });
 
     test('is deterministic for same inputs', () {
-      final k1 = SigV4Signer.deriveSigningKey('S', '20240101', 'us-east-1', 'neptune-db');
-      final k2 = SigV4Signer.deriveSigningKey('S', '20240101', 'us-east-1', 'neptune-db');
+      final k1 = SigV4Signer.deriveSigningKey('S', '20240101', 'service-region', 'service-name');
+      final k2 = SigV4Signer.deriveSigningKey('S', '20240101', 'service-region', 'service-name');
       expect(k1, equals(k2));
     });
 
     test('differs when date changes', () {
-      final k1 = SigV4Signer.deriveSigningKey('S', '20240101', 'us-east-1', 'neptune-db');
-      final k2 = SigV4Signer.deriveSigningKey('S', '20240102', 'us-east-1', 'neptune-db');
+      final k1 = SigV4Signer.deriveSigningKey('S', '20240101', 'service-region', 'service-name');
+      final k2 = SigV4Signer.deriveSigningKey('S', '20240102', 'service-region', 'service-name');
       expect(k1, isNot(equals(k2)));
     });
 
     test('differs when region changes', () {
-      final k1 = SigV4Signer.deriveSigningKey('S', '20240101', 'us-east-1', 'neptune-db');
-      final k2 = SigV4Signer.deriveSigningKey('S', '20240101', 'eu-west-1', 'neptune-db');
+      final k1 = SigV4Signer.deriveSigningKey('S', '20240101', 'service-region', 'service-name');
+      final k2 = SigV4Signer.deriveSigningKey('S', '20240101', 'other-service-region', 'service-name');
       expect(k1, isNot(equals(k2)));
     });
   });
@@ -213,9 +213,9 @@ void main() {
   // SigV4Signer.sign
   // -------------------------------------------------------------------------
   group('SigV4Signer.sign', () {
-    final signer = SigV4Signer(region: 'us-east-1', service: 'neptune-db');
+    final signer = SigV4Signer(region: 'service-region', service: 'service-name');
     final uri = Uri.parse(
-        'https://db.cluster-xyz.us-east-1.neptune.amazonaws.com:8182/gremlin');
+        'http://localhost:8182/gremlin');
     final fixedNow = DateTime.utc(2024, 1, 15, 12, 0, 0);
     final headers = <String, dynamic>{
       'Content-Type': 'application/vnd.graphbinary-v4.0'
@@ -258,7 +258,7 @@ void main() {
         now: fixedNow,
       );
       expect(r['Authorization'],
-          contains('Credential=AKIDEXAMPLE/20240115/us-east-1/neptune-db/aws4_request,'));
+          contains('Credential=AKIDEXAMPLE/20240115/service-region/service-name/aws4_request,'));
     });
 
     test('Authorization SignedHeaders includes content-type;host;x-amz-date', () {
@@ -394,15 +394,15 @@ void main() {
         accessKeyId: 'AKIDEXAMPLE',
         secretAccessKey: 'wJalrXUtnFEMI/K7MDENG+bPxRfiCYEXAMPLEKEY',
       )),
-      region: 'us-east-1',
-      service: 'neptune-db',
+      region: 'service-region',
+      service: 'service-name',
     );
 
     test('adds Authorization header', () async {
       final adapter = _CapturingAdapter();
       final dio = _buildDio(auth, adapter);
       await dio.post<void>(
-        'https://cluster.us-east-1.neptune.amazonaws.com:8182/gremlin',
+        'http://localhost:8182/gremlin',
         data: Uint8List(0),
         options: Options(
           headers: {'Content-Type': 'application/vnd.graphbinary-v4.0'},
@@ -418,7 +418,7 @@ void main() {
       final adapter = _CapturingAdapter();
       final dio = _buildDio(auth, adapter);
       await dio.post<void>(
-        'https://cluster.us-east-1.neptune.amazonaws.com:8182/gremlin',
+        'http://localhost:8182/gremlin',
         data: Uint8List(0),
         options: Options(
           headers: {'Content-Type': 'application/vnd.graphbinary-v4.0'},
@@ -433,7 +433,7 @@ void main() {
       final adapter = _CapturingAdapter();
       final dio = _buildDio(auth, adapter);
       await dio.post<void>(
-        'https://cluster.us-east-1.neptune.amazonaws.com:8182/gremlin',
+        'http://localhost:8182/gremlin',
         data: Uint8List(0),
         options: Options(
           headers: {'Content-Type': 'application/vnd.graphbinary-v4.0'},
@@ -451,13 +451,13 @@ void main() {
           secretAccessKey: 'SECRET',
           sessionToken: 'SESS_TOKEN_XYZ',
         )),
-        region: 'us-east-1',
-        service: 'neptune-db',
+        region: 'service-region',
+        service: 'service-name',
       );
       final adapter = _CapturingAdapter();
       final dio = _buildDio(authWithToken, adapter);
       await dio.post<void>(
-        'https://cluster.us-east-1.neptune.amazonaws.com:8182/gremlin',
+        'http://localhost:8182/gremlin',
         data: Uint8List(0),
         options: Options(
           headers: {'Content-Type': 'application/vnd.graphbinary-v4.0'},
@@ -471,13 +471,14 @@ void main() {
     test('rejects request when credentials provider throws', () async {
       final badAuth = SigV4Auth(
         credentials: EnvironmentCredentialsProvider({}),
-        region: 'us-east-1',
+        region: 'service-region',
+        service: 'service-name',
       );
       final adapter = _CapturingAdapter();
       final dio = _buildDio(badAuth, adapter);
       await expectLater(
         dio.post<void>(
-          'https://cluster.us-east-1.neptune.amazonaws.com:8182/gremlin',
+          'http://localhost:8182/gremlin',
           data: Uint8List(0),
         ),
         throwsA(isA<DioException>()),
@@ -489,24 +490,13 @@ void main() {
   // SigV4Auth defaults
   // -------------------------------------------------------------------------
   group('SigV4Auth', () {
-    test('default service is neptune-db', () {
-      final auth = SigV4Auth(
-        credentials: StaticCredentialsProvider(const AwsCredentials(
-          accessKeyId: 'K',
-          secretAccessKey: 'S',
-        )),
-        region: 'us-east-1',
-      );
-      expect(auth.service, 'neptune-db');
-    });
-
     test('custom service is stored', () {
       final auth = SigV4Auth(
         credentials: StaticCredentialsProvider(const AwsCredentials(
           accessKeyId: 'K',
           secretAccessKey: 'S',
         )),
-        region: 'us-east-1',
+        region: 'service-region',
         service: 'execute-api',
       );
       expect(auth.service, 'execute-api');
@@ -517,7 +507,7 @@ void main() {
   // SigV4Signer URI signing: host header and path/query coverage
   // -------------------------------------------------------------------------
   group('SigV4Signer URI signing', () {
-    final signer = SigV4Signer(region: 'us-east-1', service: 'neptune-db');
+    final signer = SigV4Signer(region: 'service-region', service: 'service-name');
     final now = DateTime.utc(2024, 1, 15, 12, 0, 0);
     final headers = <String, dynamic>{'Content-Type': 'application/json'};
 

@@ -94,15 +94,15 @@ class EnvironmentCredentialsProvider implements AwsCredentialsProvider {
 ///
 /// ```dart
 /// final cluster = Cluster.build()
-///     .addContactPoint('db.cluster-xyz.us-east-1.neptune.amazonaws.com')
+///     .addContactPoint('localhost')
 ///     .port(8182)
-///     .enableSsl(true)
 ///     .auth(SigV4Auth(
 ///       credentials: StaticCredentialsProvider(AwsCredentials(
 ///         accessKeyId: 'AKID',
 ///         secretAccessKey: 'SECRET',
 ///       )),
-///       region: 'us-east-1',
+///       region: 'service-region',
+///       service: 'service-name',
 ///     ))
 ///     .create();
 /// ```
@@ -110,12 +110,13 @@ class SigV4Auth extends AuthOptions {
   final AwsCredentialsProvider credentials;
   final String region;
 
-  /// AWS service name.  Use `'neptune-db'` for Amazon Neptune (default).
+  /// Service name used in the SigV4 credential scope.  The value is defined by
+  /// the SigV4-secured system being called.
   final String service;
 
   SigV4Auth({
     required this.credentials,
     required this.region,
-    this.service = 'neptune-db',
+    required this.service,
   });
 }
