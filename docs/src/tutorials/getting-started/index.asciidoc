@@ -604,10 +604,13 @@ underlying graph database that you've chosen.
 This tutorial focused on Gremlin usage within the
 link:https://tinkerpop.apache.org/docs/x.y.z/tutorials/the-gremlin-console/[Gremlin Console] which means that the
 examples were Groovy-based and oriented toward the JVM. Gremlin, however, is far from being a Java-only library.
-TinkerPop natively supports a number of different programming languages, making it possible to execute all of the
-examples presented in this tutorial with little modification. These different language implementations of Gremlin are
+TinkerPop natively supports a number of different programming languages, so a traversal written for one of them reads
+almost identically in the others. These different language implementations of Gremlin are
 referred to as link:https://tinkerpop.apache.org/docs/x.y.z/reference/#gremlin-drivers-variants[Gremlin Language Variants] and
 they help make Gremlin more accessible and easier to use for those who do not use Java as their primary programming
+language.
+
+The same traversal that earlier added two vertices and a `knows` edge between them is shown below in each supported
 language.
 
 [gremlin-groovy]
@@ -645,6 +648,63 @@ g.V(v1).addE('knows').to(v2).property('weight',0.75).iterate()
 v1, err := g.AddV("person").Property("name", "marko").Next()
 v2, err := g.AddV("person").Property("name", "stephen").Next()
 g.V(v1).AddE("knows").To(v2).Property("weight", 0.75).Iterate()
+----
+
+On its own, a snippet like the ones above is only the body of a program. Before it can run, the chosen variant has to be
+installed and its traversal source `g` connected to a running
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#gremlin-server[Gremlin Server], after which the traversal is
+written much as it appears here. The minimal setup for Python and JavaScript is shown below. The
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#gremlin-drivers-variants[Gremlin Language Variants] reference
+covers the remaining variants and every connection option, and complete runnable programs for each language are
+maintained in the link:https://github.com/apache/tinkerpop/tree/master/gremlin-examples[gremlin-examples] directory.
+
+For Python, the `gremlinpython` package is installed from PyPI.
+
+[source,shell]
+----
+pip install gremlinpython
+----
+
+The traversal source `g` is connected to the server, after which the traversal body reads as it did above. See the
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#gremlin-python-connecting[Gremlin-Python] reference for the full
+list of connection options.
+
+[source,python]
+----
+from gremlin_python.process.anonymous_traversal import traversal
+from gremlin_python.driver.driver_remote_connection import DriverRemoteConnection
+
+g = traversal().with_(DriverRemoteConnection('http://localhost:8182/gremlin','g'))
+
+v1 = g.addV('person').property('name','marko').next()
+v2 = g.addV('person').property('name','stephen').next()
+g.V(v1).addE('knows').to(v2).property('weight',0.75).iterate()
+----
+
+For JavaScript, the `gremlin` package is installed from npm.
+
+[source,shell]
+----
+npm install gremlin
+----
+
+The connection pattern is the same, with one important difference. The terminating steps of a traversal, such as
+`next()` and `iterate()`, return Promises in JavaScript, so they are awaited inside an `async` function and the awaited
+result is read through its `value` property. See the
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#gremlin-javascript-connecting[Gremlin-JavaScript] reference for
+the full list of connection options.
+
+[source,javascript]
+----
+const gremlin = require('gremlin');
+const traversal = gremlin.process.AnonymousTraversalSource.traversal;
+const DriverRemoteConnection = gremlin.driver.DriverRemoteConnection;
+
+const g = traversal().with_(new DriverRemoteConnection('http://localhost:8182/gremlin'));
+
+const v1 = await g.addV('person').property('name','marko').next();
+const v2 = await g.addV('person').property('name','stephen').next();
+await g.V(v1.value).addE('knows').to(v2.value).property('weight',0.75).iterate();
 ----
 
 === Conclusion
