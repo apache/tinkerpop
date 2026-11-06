@@ -60,6 +60,33 @@ than on the vertex. The graph variables `creator`, `lastModified`, and `comment`
 metadata about the graph as a whole and fall outside the node and edge type definitions. Both are
 demonstrated in the examples below.
 
+=== Loading the Crew Graph
+
+The examples that follow assume a traversal source `g` bound to the crew graph. There are two ways
+to obtain one. The first builds the graph in memory with the `TinkerFactory` helper, which
+configures a graph that stores list-valued vertex properties and populates it directly.
+
+[gremlin-groovy]
+----
+graph = TinkerFactory.createTheCrew()
+g = traversal().with(graph)
+----
+
+The second reads the shipped `data/tinkerpop-crew.json` dataset, which is serialized in GraphSON.
+Each person's `location` is a multi-property that holds several values under a single key, so the
+receiving graph must store vertex properties as lists by default, which a
+`gremlin.tinkergraph.defaultVertexPropertyCardinality` of `list` provides. A default `TinkerGraph`
+would instead keep only the last `location` value read for each person.
+
+[gremlin-groovy]
+----
+conf = new BaseConfiguration()
+conf.setProperty("gremlin.tinkergraph.defaultVertexPropertyCardinality", "list")
+graph = TinkerGraph.open(conf)
+g = traversal().with(graph)
+g.io("data/tinkerpop-crew.json").read().iterate()
+----
+
 === Examples
 
 Because `location` is a multi-property whose values carry meta-properties, the current location of
