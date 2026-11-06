@@ -3468,6 +3468,9 @@ the "g" provided to the `DriverRemoteConnection` corresponds to the name of a `G
 g = traversal().with_(DriverRemoteConnection('http://localhost:8182/gremlin','g'))
 ----
 
+The `traversal()` and `DriverRemoteConnection` references used throughout this section come from the imports listed
+in <<gremlin-python-imports,Common Imports>>.
+
 If you need to send additional headers on each HTTP request, set them via a request interceptor rather than a
 connection parameter. Pass a callable to the `interceptors` keyword argument that mutates the request headers in
 place. See <<gremlin-python-interceptors, RequestInterceptor>> for details.
@@ -3485,6 +3488,8 @@ SigV4 authentication are provided as built-in options.
 
 [source,python]
 ----
+from gremlin_python.driver.auth import basic, sigv4
+
 # Plain text authentication
 g = traversal().with_(DriverRemoteConnection(
     'http://localhost:8182/gremlin', 'g', auth=basic('stephen', 'password')))
@@ -3504,7 +3509,7 @@ traversals to complete is acceptable, it might be helpful to set `max_connection
 See the <<python-configuration,Configuration>> section just below.  Examples where this could apply are serverless cloud functions or WSGI
 worker processes.
 
-Some connection options can also be set on individual requests made through the using `with()` step on the
+Some connection options can also be set on individual requests made through the `with_()` step on the
 `TraversalSource`. For instance to set request timeout to 500 milliseconds:
 
 [source,python]
@@ -3512,12 +3517,30 @@ Some connection options can also be set on individual requests made through the 
 vertices = g.with_('timeoutMillis', 500).V().out('knows').to_list()
 ----
 
-The following options are allowed on a per-request basis in this fashion: `batchSize`, `bulkResults`, `language`,
-`materializeProperties`, and `timeoutMillis`.
+The following options are allowed on a per-request basis in this fashion:
+
+[width="100%",cols="3,3,4,10",options="header"]
+|=========================================================
+|Option |Type |Default |Description
+|`batchSize` |integer |Connection `batch_size` (`64`) |The number of results to include in each response chunk, overriding the server's `resultIterationBatchSize`.
+|`bulkResults` |boolean |`True` through `DriverRemoteConnection`, otherwise `False` |Whether the server bulks repeated results before sending them. Applies only to the GraphBinary serializer.
+|`language` |string |`gremlin-lang` |The name of the server `ScriptEngine` used to parse the request.
+|`materializeProperties` |string (`all` or `tokens`) |`all` |Whether each returned element carries all of its properties (`all`) or only its id and label (`tokens`).
+|`timeoutMillis` |integer |Server-configured query timeout |The maximum time in milliseconds the request is allowed to execute before the server cancels it.
+|=========================================================
 
 NOTE: When submitting traversals through `DriverRemoteConnection`, `bulkResults` defaults to `True` per-request
 to optimize result transfer. This does not apply to direct `Client.submit()` calls, where `bulkResults` must be
-set explicitly if desired.
+set explicitly through the `request_options` argument if desired.
+
+[source,python]
+----
+from gremlin_python.driver.client import Client
+
+client = Client('http://localhost:8182/gremlin', 'g')
+result_set = client.submit('g.V().out("knows")', request_options={'bulkResults': True})
+results = result_set.all().result()
+----
 
 anchor:python-imports[]
 [[gremlin-python-imports]]
