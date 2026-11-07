@@ -132,6 +132,13 @@ data to the graph.
 
 NOTE: TinkerGraph is distributed with Gremlin Server and is therefore automatically available to it for configuration.
 
+NOTE: Calling `close()` on a TinkerGraph ends its use. Once closed, the graph throws an `IllegalStateException` for any
+use of the `Graph` API, for a new traversal, and for a write through an element obtained before the graph was closed.
+Reads through such elements, and traversals or iterators that were already being consumed, still see the data as it
+stood at close but none of the changes made by a graph opened later on the same storage location. A `Transaction`
+obtained before close can still be rolled back, or committed if it made no changes. The graph must be opened again to
+continue working with its data.
+
 === Data Types
 
 TinkerGraph can store any Java `Object` for a property value. It is therefore important to take note of the types of

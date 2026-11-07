@@ -307,7 +307,7 @@ public final class TinkerStorageGraph extends AbstractTinkerGraph {
     ////////////// STRUCTURE API METHODS //////////////////
 
     @Override
-    public Vertex addVertex(final Object... keyValues) {
+    protected Vertex doAddVertex(final Object... keyValues) {
         ElementHelper.legalPropertyKeyValueArray(keyValues);
 
         Object idValue = vertexIdManager.convert(ElementHelper.getIdValue(keyValues).orElse(null));
@@ -346,7 +346,7 @@ public final class TinkerStorageGraph extends AbstractTinkerGraph {
     }
 
     @Override
-    public void removeVertex(final Object vertexId) {
+    protected void doRemoveVertex(final Object vertexId) {
         if (!vertices.containsKey(vertexId)) return;
 
         // vertex can be deleted in other thread, so need to double-check
@@ -356,7 +356,7 @@ public final class TinkerStorageGraph extends AbstractTinkerGraph {
     }
 
     @Override
-    public void touch(final TinkerVertex vertex) {
+    protected void doTouch(final TinkerVertex vertex) {
         if (null == vertex) return;
 
         final TinkerElementContainer<TinkerVertex> container = vertices.get(vertex.id());
@@ -373,7 +373,7 @@ public final class TinkerStorageGraph extends AbstractTinkerGraph {
     }
 
     @Override
-    public void touch(final TinkerEdge edge) {
+    protected void doTouch(final TinkerEdge edge) {
         if (null == edge) return;
 
         final TinkerElementContainer<TinkerEdge> container = edges.get(edge.id());
@@ -390,7 +390,7 @@ public final class TinkerStorageGraph extends AbstractTinkerGraph {
     }
 
     @Override
-    public Edge addEdge(final TinkerVertex outVertex, final TinkerVertex inVertex, final String label, final Object... keyValues) {
+    protected Edge doAddEdge(final TinkerVertex outVertex, final TinkerVertex inVertex, final String label, final Object... keyValues) {
         ElementHelper.validateLabel(label);
         ElementHelper.legalPropertyKeyValueArray(keyValues);
 
@@ -432,7 +432,7 @@ public final class TinkerStorageGraph extends AbstractTinkerGraph {
     }
 
     @Override
-    public void removeEdge(final Object edgeId) {
+    protected void doRemoveEdge(final Object edgeId) {
         if (!edges.containsKey(edgeId)) return;
 
         final TinkerElementContainer<TinkerEdge> container = edges.get(edgeId);
@@ -481,7 +481,7 @@ public final class TinkerStorageGraph extends AbstractTinkerGraph {
      *                                      reopened, and the cleared data may return then
      */
     @Override
-    public void clear() {
+    protected void doClear() {
         if (null == storage) {
             clearInMemory();
             return;
@@ -522,7 +522,7 @@ public final class TinkerStorageGraph extends AbstractTinkerGraph {
         // either marked and removed here, or missed and kept, and in both cases memory and the store agree.
         clearContainers(vertices);
         clearContainers(edges);
-        super.clear();
+        super.doClear();
     }
 
     private static <T extends TinkerElement> void clearContainers(final Map<Object, TinkerElementContainer<T>> elements) {
@@ -613,7 +613,7 @@ public final class TinkerStorageGraph extends AbstractTinkerGraph {
     }
 
     @Override
-    public Transaction tx() {
+    protected Transaction doTx() {
         return transaction;
     }
 
@@ -623,12 +623,12 @@ public final class TinkerStorageGraph extends AbstractTinkerGraph {
     }
 
     @Override
-    public int getVerticesCount() {
+    protected int doGetVerticesCount() {
         return (int) vertices.entrySet().stream().filter(v -> v.getValue().get() != null).count();
     }
 
     @Override
-    public boolean hasVertex(Object id) {
+    protected boolean doHasVertex(Object id) {
         return null != vertex(id);
     }
 
@@ -650,12 +650,12 @@ public final class TinkerStorageGraph extends AbstractTinkerGraph {
     }
 
     @Override
-    public int getEdgesCount() {
+    protected int doGetEdgesCount() {
         return (int) edges.entrySet().stream().filter(v -> v.getValue().get() != null).count();
     }
 
     @Override
-    public long countVerticesByLabel(final String label) {
+    protected long doCountVerticesByLabel(final String label) {
         if (label == null) return getVerticesCount();
         return vertices.values().stream()
                 .filter(c -> c.get() != null && c.get().labels().contains(label))
@@ -663,7 +663,7 @@ public final class TinkerStorageGraph extends AbstractTinkerGraph {
     }
 
     @Override
-    public long countEdgesByLabel(final String label) {
+    protected long doCountEdgesByLabel(final String label) {
         if (label == null) return getEdgesCount();
         return edges.values().stream()
                 .filter(c -> c.get() != null && c.get().labels().contains(label))
@@ -671,7 +671,7 @@ public final class TinkerStorageGraph extends AbstractTinkerGraph {
     }
 
     @Override
-    public boolean hasEdge(Object id) {
+    protected boolean doHasEdge(Object id) {
         return null != edge(id);
     }
 
@@ -694,24 +694,24 @@ public final class TinkerStorageGraph extends AbstractTinkerGraph {
     }
 
     @Override
-    public Vertex vertex(final Object vertexId) {
+    protected Vertex doVertex(final Object vertexId) {
         final TinkerElementContainer<TinkerVertex> container = vertices.get(vertexIdManager.convert(vertexId));
-        return container == null ? null : container.getWithClone((TinkerTransaction) tx());
+        return container == null ? null : container.getWithClone((TinkerTransaction) doTx());
     }
 
     @Override
-    public Iterator<Vertex> vertices(final Object... vertexIds) {
+    protected Iterator<Vertex> doVertices(final Object... vertexIds) {
         return createElementIterator(Vertex.class, vertices, vertexIdManager, vertexIds);
     }
 
     @Override
-    public Edge edge(final Object edgeId) {
+    protected Edge doEdge(final Object edgeId) {
         final TinkerElementContainer<TinkerEdge> container = edges.get(edgeIdManager.convert(edgeId));
-        return container == null ? null : container.getWithClone((TinkerTransaction) tx());
+        return container == null ? null : container.getWithClone((TinkerTransaction) doTx());
     }
 
     @Override
-    public Iterator<Edge> edges(final Object... edgeIds) {
+    protected Iterator<Edge> doEdges(final Object... edgeIds) {
         return createElementIterator(Edge.class, edges, edgeIdManager, edgeIds);
     }
 
@@ -720,13 +720,13 @@ public final class TinkerStorageGraph extends AbstractTinkerGraph {
                                                                   final IdManager idManager,
 
                                                                   final Object... ids) {
-        this.tx().readWrite();
+        doTx().readWrite();
 
         final Iterator<T> iterator;
         if (0 == ids.length) {
             iterator = new TinkerGraphIterator<>(
                     // todo: clone only if traversal contains mutating steps
-                    elements.values().stream().map(c -> (T) c.getWithClone((TinkerTransaction) tx())).filter(e -> e != null).iterator());
+                    elements.values().stream().map(c -> (T) c.getWithClone((TinkerTransaction) doTx())).filter(e -> e != null).iterator());
         } else {
             final List<Object> idList = Arrays.asList(ids);
 
@@ -739,7 +739,7 @@ public final class TinkerStorageGraph extends AbstractTinkerGraph {
                 if (null == id) return null;
                 final Object iid = clazz.isAssignableFrom(id.getClass()) ? clazz.cast(id).id() : idManager.convert(id);
                 final TinkerElementContainer<C> container = elements.get(iid);
-                return container == null ? null : (T) container.getWithClone((TinkerTransaction) tx());
+                return container == null ? null : (T) container.getWithClone((TinkerTransaction) doTx());
             }).iterator(), Objects::nonNull));
         }
         return TinkerHelper.inComputerMode(this) ?
@@ -899,7 +899,7 @@ public final class TinkerStorageGraph extends AbstractTinkerGraph {
      * @param <E>          The type of the element class
      */
     @Override
-    public <E extends Element> void createIndex(final String key, final Class<E> elementClass) {
+    protected <E extends Element> void doCreateIndex(final String key, final Class<E> elementClass) {
         checkIndexesCanChange("created");
         if (Vertex.class.isAssignableFrom(elementClass)) {
             if (null == this.vertexIndex) this.vertexIndex = new TinkerTransactionalIndex<>(this, TinkerVertex.class);
@@ -921,7 +921,7 @@ public final class TinkerStorageGraph extends AbstractTinkerGraph {
      * @param <E>          The type of the element class
      */
     @Override
-    public <E extends Element> void dropIndex(final String key, final Class<E> elementClass) {
+    protected <E extends Element> void doDropIndex(final String key, final Class<E> elementClass) {
         checkIndexesCanChange("dropped");
         if (Vertex.class.isAssignableFrom(elementClass)) {
             if (null != this.vertexIndex) this.vertexIndex.dropKeyIndex(key);

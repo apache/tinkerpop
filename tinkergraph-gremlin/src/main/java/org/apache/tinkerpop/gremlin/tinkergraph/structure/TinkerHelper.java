@@ -123,7 +123,7 @@ public final class TinkerHelper {
         return outEdgeIds.size() == 0 && inEdgeIds.size() == 0
                 ? Collections.emptyIterator()
                 : Stream.concat(outEdgeIds.stream(), inEdgeIds.stream())
-                    .map(id -> ((AbstractTinkerGraph) vertex.graph()).edge(id))
+                    .map(id -> ((AbstractTinkerGraph) vertex.graph()).doEdge(id))
                     .filter(v -> v != null)
                     .map(v -> (TinkerEdge) v).iterator();
     }
@@ -179,9 +179,9 @@ public final class TinkerHelper {
 
         final List<Vertex> vertices = new ArrayList<>();
         if (inEdgesIds.size() != 0)
-            vertex.graph().edges(inEdgesIds.toArray()).forEachRemaining(edge -> vertices.add(edge.inVertex()));
+            ((AbstractTinkerGraph) vertex.graph()).doEdges(inEdgesIds.toArray()).forEachRemaining(edge -> vertices.add(edge.inVertex()));
         if (outEdgesIds.size() != 0)
-            vertex.graph().edges(outEdgesIds.toArray()).forEachRemaining(edge -> vertices.add(edge.outVertex()));
+            ((AbstractTinkerGraph) vertex.graph()).doEdges(outEdgesIds.toArray()).forEachRemaining(edge -> vertices.add(edge.outVertex()));
 
         return vertices.size() == 0
                 ? Collections.emptyIterator()

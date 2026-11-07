@@ -179,12 +179,12 @@ public class TinkerEdge extends TinkerElement implements Edge {
 
     @Override
     public Vertex outVertex() {
-        return isTxMode ? graph.vertex(outVertexId) : outVertex;
+        return isTxMode ? graph.doVertex(outVertexId) : outVertex;
     }
 
     @Override
     public Vertex inVertex() {
-        return isTxMode ? graph.vertex(inVertexId) : inVertex;
+        return isTxMode ? graph.doVertex(inVertexId) : inVertex;
     }
 
     @Override
