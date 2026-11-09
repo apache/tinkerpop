@@ -67,7 +67,10 @@ public class AddVertexStepPlaceholder<S> extends AbstractAddVertexStepPlaceholde
         } else if (label instanceof GValue) {
             step = new AddVertexStep<>(traversal, ((GValue<String>) label).get());
         } else {
-            step = new AddVertexStep<>(traversal, (String) label);
+            // When userProvidedLabel is false, label may be the default from the placeholder
+            // hierarchy. Pass null so AddVertexStep does not inject T.label.
+            final String labelStr = hasUserProvidedLabel() ? (String) label : null;
+            step = new AddVertexStep<>(traversal, labelStr);
         }
         super.configureConcreteStep(step);
         return step;

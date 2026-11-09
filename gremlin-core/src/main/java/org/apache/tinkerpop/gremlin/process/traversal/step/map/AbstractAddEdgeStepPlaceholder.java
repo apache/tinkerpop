@@ -24,6 +24,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.lambda.GValueConstantTrave
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.Event;
 import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.T;
+import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
 import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceVertex;
 
 import java.util.Collection;
@@ -49,6 +51,21 @@ public abstract class AbstractAddEdgeStepPlaceholder<S> extends AbstractAddEleme
     @Override
     protected String getDefaultLabel() {
         return Edge.DEFAULT_LABEL;
+    }
+
+    /**
+     * Edges always carry exactly one label, so a label collection, as given with {@link T#labels} or
+     * {@link T#label}, is reduced to that label. An empty collection leaves the current label unchanged.
+     *
+     * @throws IllegalArgumentException if the collection holds more than one label or a non-{@code String}
+     */
+    @Override
+    public void setLabel(final Object label) {
+        if (label instanceof Collection) {
+            ElementHelper.asEdgeLabel(label).ifPresent(super::setLabel);
+            return;
+        }
+        super.setLabel(label);
     }
 
     @Override

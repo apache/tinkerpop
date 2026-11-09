@@ -20,6 +20,8 @@ package org.apache.tinkerpop.gremlin.structure;
 
 import org.junit.Test;
 
+import java.util.Collections;
+
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -31,6 +33,11 @@ public class TTest {
     @Test
     public void shouldGetLabelEnumFromString() {
         assertEquals(T.label, T.fromString(T.label.getAccessor()));
+    }
+
+    @Test
+    public void shouldGetLabelsEnumFromString() {
+        assertEquals(T.labels, T.fromString(T.labels.getAccessor()));
     }
 
     @Test
@@ -59,6 +66,14 @@ public class TTest {
         when(e.label()).thenReturn("knows");
 
         assertEquals("knows", T.label.apply(e));
+    }
+
+    @Test
+    public void shouldApplyLabelsOnElement() {
+        final Element e = mock(Element.class);
+        when(e.labels()).thenReturn(Collections.singleton("knows"));
+
+        assertEquals(Collections.singleton("knows"), T.labels.apply(e));
     }
 
     @Test

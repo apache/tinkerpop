@@ -156,3 +156,54 @@ Feature: Step - labels()
       | m[{"name":"bitsy","labels":"l[animal,mammal,nocturnal]"}] |
       | m[{"name":"splash","labels":"l[animal,aquatic,endangered,mammal,nocturnal]"}] |
       | m[{"name":"tinker","labels":"l[animal,endangered,mammal,nocturnal]"}] |
+
+  Scenario: g_V_hasXname_markoX_projectXlabelsX_byXT_labelsX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().has("name", "marko").project("labels").by(T.labels)
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | m[{"labels": "s[person]"}] |
+
+  @MultiLabel
+  Scenario: g_V_hasXname_tuxX_projectXlabelsX_byXT_labelsX
+    Given the zoo graph
+    And the traversal of
+      """
+      g.V().has("name", "tux").project("labels").by(T.labels)
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | m[{"labels": "s[animal,bird,aquatic,endangered]"}] |
+
+  Scenario: g_V_hasXT_labels_personX_valuesXnameX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().has(T.labels, "person").values("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | marko |
+      | vadas |
+      | josh |
+      | peter |
+
+  @MultiLabel
+  Scenario: g_withXmultilabelX_V_hasXT_labels_withinXbird_reptileXX_valuesXnameX
+    Given the zoo graph
+    And the traversal of
+      """
+      g.with("multilabel").V().has(T.labels, P.within("bird", "reptile")).values("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | tux |
+      | atlas |
+      | monty |

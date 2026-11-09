@@ -242,8 +242,9 @@ public abstract class AbstractAddElementStepPlaceholder<S, E extends Element, X 
 
     @Override
     public void setLabel(Object label) {
+        validateLabelType(label);
         if (!this.label.equals(this.getDefaultLabel())) {
-            throw new IllegalArgumentException(String.format("Element T.label has already been set to [%s] and cannot be overridden with [%s]",
+            throw new IllegalArgumentException(String.format("Element label has already been set to %s and cannot be overridden with %s",
                     this.label, label));
         }
         if (label instanceof Traversal) {
@@ -275,6 +276,37 @@ public abstract class AbstractAddElementStepPlaceholder<S, E extends Element, X 
         }
     }
 
+    /**
+     * Rejects a label that is not a {@code String}, a {@link Traversal} or a {@link GValue} holding a {@code String},
+     * or a collection of them, with the same message the merge steps and {@code graph.addVertex()} give, instead of a
+     * later {@code ClassCastException}.
+     */
+    private static void validateLabelType(final Object label) {
+        if (label instanceof Collection) {
+            for (final Object l : (Collection<?>) label) {
+                if (!isLabelLike(l))
+                    throw new IllegalArgumentException(String.format(
+                            "A label collection must contain only Strings - found: %s", typeName(l)));
+            }
+        } else if (label instanceof GValue && ((GValue<?>) label).get() instanceof Collection) {
+            // a parameter may hold a whole label collection, as T.labels allows
+            validateLabelType(((GValue<?>) label).get());
+        } else if (!isLabelLike(label)) {
+            throw new IllegalArgumentException(String.format(
+                    "A label value must be a String or Collection<String> - found: %s", typeName(label)));
+        }
+    }
+
+    private static boolean isLabelLike(final Object l) {
+        return l instanceof String || l instanceof Traversal ||
+                (l instanceof GValue && ((GValue<?>) l).get() instanceof String);
+    }
+
+    private static String typeName(final Object o) {
+        final Object v = o instanceof GValue ? ((GValue<?>) o).get() : o;
+        return null == v ? "null" : v.getClass().getSimpleName();
+    }
+
     @Override
     public void addProperty(Object key, Object value) {
         if (key instanceof GValue) {
@@ -286,7 +318,8 @@ public abstract class AbstractAddElementStepPlaceholder<S, E extends Element, X 
         if (value instanceof GValue) {
             traversal.getGValueManager().register((GValue<?>) value);
         }
-        if (key == T.label) {
+        // T.labels is the multi-label form of T.label and sets the element label the same way
+        if (key == T.label || key == T.labels) {
             setLabel(value);
             return;
         }

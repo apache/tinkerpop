@@ -29,6 +29,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.function.BiPredicate;
 import java.util.function.Predicate;
 
@@ -39,6 +40,8 @@ public class HasContainer implements Serializable, Cloneable, Predicate<Element>
 
     private String key;
     private P predicate;
+
+    private static final Set<String> LABEL_KEYS = Set.of(T.label.getAccessor(), T.labels.getAccessor());
 
     private final boolean testingIdString;
 
@@ -55,7 +58,8 @@ public class HasContainer implements Serializable, Cloneable, Predicate<Element>
         if (this.key != null) {
             if (this.key.equals(T.id.getAccessor()))
                 return testingIdString ? testIdAsString(element) : testId(element);
-            if (this.key.equals(T.label.getAccessor()))
+            // has(T.label, P) and has(T.labels, P) both filter on label and test identically (see isLabelKey)
+            if (isLabelKey())
                 return testLabel(element);
         }
 
@@ -131,6 +135,21 @@ public class HasContainer implements Serializable, Cloneable, Predicate<Element>
 
     public final String getKey() {
         return this.key;
+    }
+
+    /**
+     * Whether this container filters on an element's label, i.e. its key is {@link T#label} or its multi-label
+     * form {@link T#labels}. Both filter on the element's full label set and test identically, so callers that
+     * recognize label filters - optimization strategies, and providers deciding whether a label index applies -
+     * should use this rather than comparing {@link #getKey()} to one token's accessor, which would miss the other
+     * spelling. The key itself is preserved, so a caller that must distinguish the two tokens still can via
+     * {@link #getKey()}.
+     *
+     * @since 4.0.0
+     */
+    public boolean isLabelKey() {
+        // Set.of() rejects null lookups, and a HasContainer may have a null key
+        return this.key != null && LABEL_KEYS.contains(this.key);
     }
 
     public final void setKey(final String key) {

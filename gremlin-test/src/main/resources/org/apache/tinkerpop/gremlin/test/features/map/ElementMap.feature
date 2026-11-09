@@ -61,12 +61,12 @@ Feature: Step - elementMap()
     When iterated to list
     Then the result should be unordered
       | result |
-      | m[{"t[id]": "v[marko].id", "t[label]": "s[person]", "name": "marko", "age": 29}] |
-      | m[{"t[id]": "v[josh].id", "t[label]": "s[person]", "name": "josh", "age": 32}] |
-      | m[{"t[id]": "v[peter].id", "t[label]": "s[person]", "name": "peter", "age": 35}] |
-      | m[{"t[id]": "v[vadas].id", "t[label]": "s[person]", "name": "vadas", "age": 27}] |
-      | m[{"t[id]": "v[lop].id", "t[label]": "s[software]", "name": "lop", "lang": "java"}] |
-      | m[{"t[id]": "v[ripple].id", "t[label]": "s[software]", "name": "ripple", "lang": "java"}] |
+      | m[{"t[id]": "v[marko].id", "t[labels]": "s[person]", "name": "marko", "age": 29}] |
+      | m[{"t[id]": "v[josh].id", "t[labels]": "s[person]", "name": "josh", "age": 32}] |
+      | m[{"t[id]": "v[peter].id", "t[labels]": "s[person]", "name": "peter", "age": 35}] |
+      | m[{"t[id]": "v[vadas].id", "t[labels]": "s[person]", "name": "vadas", "age": 27}] |
+      | m[{"t[id]": "v[lop].id", "t[labels]": "s[software]", "name": "lop", "lang": "java"}] |
+      | m[{"t[id]": "v[ripple].id", "t[labels]": "s[software]", "name": "ripple", "lang": "java"}] |
 
   Scenario: g_V_elementMapXname_ageX
     Given the modern graph
@@ -122,7 +122,7 @@ Feature: Step - elementMap()
     When iterated to list
     Then the result should be unordered
       | result |
-      | m[{"t[id]": "v[marko].id", "t[label]": "s[person]", "name": "marko", "age": 29}] |
+      | m[{"t[id]": "v[marko].id", "t[labels]": "s[person]", "name": "marko", "age": 29}] |
 
   @MultiLabel @SingleLabelDefault
   Scenario: g_V_elementMap_single_label_default
@@ -152,7 +152,7 @@ Feature: Step - elementMap()
     When iterated to list
     Then the result should be unordered
       | result |
-      | m[{"t[id]": "v[tux].id", "t[label]": "s[animal,bird,aquatic,endangered]", "name": "tux", "species": "african penguin"}] |
+      | m[{"t[id]": "v[tux].id", "t[labels]": "s[animal,bird,aquatic,endangered]", "name": "tux", "species": "african penguin"}] |
 
   @MultiLabel @MultiLabelDefault
   Scenario: g_V_elementMap_multi_label_default
@@ -168,7 +168,7 @@ Feature: Step - elementMap()
     When iterated to list
     Then the result should be unordered
       | result |
-      | m[{"t[id]": "v[marko].id", "t[label]": "s[person,employee]", "name": "marko"}] |
+      | m[{"t[id]": "v[marko].id", "t[labels]": "s[person,employee]", "name": "marko"}] |
 
   @MultiLabel @MultiLabelDefault
   Scenario: g_withXsinglelabelX_V_elementMap_multi_label_default
@@ -198,7 +198,7 @@ Feature: Step - elementMap()
     When iterated to list
     Then the result should be unordered
       | result |
-      | m[{"t[id]": "v[marko].id", "t[label]": "s[person]", "name": "marko"}] |
+      | m[{"t[id]": "v[marko].id", "t[labels]": "s[person]", "name": "marko"}] |
 
   @MultiLabel
   Scenario: g_withXsinglelabelX_V_elementMap_zero_label_vertex
@@ -230,7 +230,7 @@ Feature: Step - elementMap()
     When iterated to list
     Then the result should be unordered
       | result |
-      | m[{"t[id]": "v[nobody].id", "t[label]": "s[]", "name": "nobody"}] |
+      | m[{"t[id]": "v[nobody].id", "t[labels]": "s[]", "name": "nobody"}] |
 
   @MultiLabel @MultiLabelDefault
   Scenario: g_V_elementMap_zero_label_vertex_multi_label_default
@@ -246,7 +246,7 @@ Feature: Step - elementMap()
     When iterated to list
     Then the result should be unordered
       | result |
-      | m[{"t[id]": "v[nobody].id", "t[label]": "s[]", "name": "nobody"}] |
+      | m[{"t[id]": "v[nobody].id", "t[labels]": "s[]", "name": "nobody"}] |
 
   @MultiLabel @SingleLabelDefault
   Scenario: g_V_elementMap_zero_label_vertex_single_label_default
@@ -274,7 +274,7 @@ Feature: Step - elementMap()
     When iterated to list
     Then the result should be unordered
       | result |
-      | m[{"t[id]": "e[atlas-livesIn->lagoon].id", "t[label]": "s[livesIn]", "since": 2018, "D[OUT]": "m[{\\"t[id]\\": \\"v[atlas].id\\", \\"t[label]\\": \\"s[animal,reptile,aquatic,endangered]\\"}]", "D[IN]": "m[{\\"t[id]\\": \\"v[lagoon].id\\", \\"t[label]\\": \\"s[habitat,aquatic]\\"}]"}] |
+      | m[{"t[id]": "e[atlas-livesIn->lagoon].id", "t[labels]": "s[livesIn]", "since": 2018, "D[OUT]": "m[{\\"t[id]\\": \\"v[atlas].id\\", \\"t[labels]\\": \\"s[animal,reptile,aquatic,endangered]\\"}]", "D[IN]": "m[{\\"t[id]\\": \\"v[lagoon].id\\", \\"t[labels]\\": \\"s[habitat,aquatic]\\"}]"}] |
 
   @GraphComputerVerificationReferenceOnly @MultiLabel @MultiLabelDefault
   Scenario: g_E_elementMap_multi_label_default
@@ -290,7 +290,7 @@ Feature: Step - elementMap()
     When iterated to list
     Then the result should be unordered
       | result |
-      | m[{"t[id]": "e[marko-knows->josh].id", "t[label]": "s[knows]", "weight": "d[0.5].d", "D[OUT]": "m[{\\"t[id]\\": \\"v[marko].id\\", \\"t[label]\\": \\"s[person]\\"}]", "D[IN]": "m[{\\"t[id]\\": \\"v[josh].id\\", \\"t[label]\\": \\"s[person]\\"}]"}] |
+      | m[{"t[id]": "e[marko-knows->josh].id", "t[labels]": "s[knows]", "weight": "d[0.5].d", "D[OUT]": "m[{\\"t[id]\\": \\"v[marko].id\\", \\"t[labels]\\": \\"s[person]\\"}]", "D[IN]": "m[{\\"t[id]\\": \\"v[josh].id\\", \\"t[labels]\\": \\"s[person]\\"}]"}] |
 
   @GraphComputerVerificationReferenceOnly @MultiLabel @SingleLabelDefault
   Scenario: g_E_elementMap_single_label_default

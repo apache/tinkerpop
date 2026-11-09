@@ -22,6 +22,7 @@ __author__ = 'Marko A. Rodriguez (http://markorodriguez.com)'
 from decimal import Decimal
 
 from gremlin_python import statics
+from gremlin_python.process.graph_traversal import __
 from gremlin_python.process.traversal import Cardinality
 from gremlin_python.process.traversal import P
 from gremlin_python.process.traversal import Pop
@@ -38,6 +39,13 @@ class TestStatics(object):
         #
         assert isinstance(first, Pop)
         assert first == Pop.first
+        statics.unload_statics(globals())
+
+    def test_labels_is_the_step(self):
+        # the labels() step keeps the bare name, so T.labels must be written in full when statics are loaded
+        statics.load_statics(globals())
+        assert callable(labels)
+        assert labels() == __.labels()
         statics.unload_statics(globals())
 
     def test_singlebyte(self):

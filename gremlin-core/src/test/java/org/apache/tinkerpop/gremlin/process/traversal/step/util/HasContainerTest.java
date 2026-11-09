@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.util;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
+import org.apache.tinkerpop.gremlin.structure.T;
 import org.junit.Test;
 
 import static org.hamcrest.CoreMatchers.is;
@@ -29,6 +30,8 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsNot.not;
 import static org.hamcrest.core.IsSame.sameInstance;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Tests for {@link HasContainer}, including traversal-bearing predicates and lifecycle methods.
@@ -36,6 +39,18 @@ import static org.junit.Assert.assertEquals;
  * (e.g. {@code P.eq(traversal)}); the container exposes this via {@link HasContainer#hasTraversal()}.
  */
 public class HasContainerTest {
+
+    @Test
+    public void shouldKeepLabelsTokenAsItsOwnKey() {
+        // has(T.labels, ...) keeps the ~labels key rather than being rewritten to ~label, so a provider can
+        // tell the two apart via getKey(), while isLabelKey() recognizes both as label filters.
+        final HasContainer labels = new HasContainer(T.labels.getAccessor(), P.eq("person"));
+        assertEquals(T.labels.getAccessor(), labels.getKey());
+        assertTrue(labels.isLabelKey());
+        assertTrue(new HasContainer(T.label.getAccessor(), P.eq("person")).isLabelKey());
+        assertFalse(new HasContainer("name", P.eq("marko")).isLabelKey());
+        assertFalse(new HasContainer(null, P.eq("marko")).isLabelKey());
+    }
 
     @Test
     public void shouldReturnFalseForHasTraversalWithLiteralPredicate() {

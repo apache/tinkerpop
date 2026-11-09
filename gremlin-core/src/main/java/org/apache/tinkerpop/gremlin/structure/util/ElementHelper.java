@@ -230,56 +230,102 @@ public final class ElementHelper {
     }
 
     /**
-     * Extracts the value of the {@link T#label} key from the list of arguments.
+     * Extracts the value of the {@link T#label} key, or its multi-label form {@link T#labels}, from the list of
+     * arguments as a single label.
      *
      * @param keyValues a list of key/value pairs
-     * @return the value associated with {@link T#label}
+     * @return the value associated with {@link T#label}/{@link T#labels}
      * @throws ClassCastException   if the value of the label is not a {@link String}
      * @throws NullPointerException if the value for the {@link T#label} key is {@code null}
      */
     public static Optional<String> getLabelValue(final Object... keyValues) {
-        for (int i = 0; i < keyValues.length; i = i + 2) {
-            if (keyValues[i].equals(T.label)) {
-                ElementHelper.validateLabel((String) keyValues[i + 1]);
-                return Optional.of((String) keyValues[i + 1]);
-            }
-        }
-        return Optional.empty();
+        final int i = labelValueIndex(keyValues);
+        if (i < 0)
+            return Optional.empty();
+        // Cast directly so a non-String value yields ClassCastException, per this method's contract.
+        ElementHelper.validateLabel((String) keyValues[i]);
+        return Optional.of((String) keyValues[i]);
     }
 
     /**
-     * Extracts the value of the {@link T#label} key from the list of arguments as a {@link Set} of labels.
-     * Supports both single {@link String} values and {@link java.util.Collection} values for multi-label vertices.
+     * Extracts the value of the {@link T#label} key, or its multi-label form {@link T#labels}, from the list of
+     * arguments as a {@link Set} of labels. The value may be a single {@link String} or a {@link Collection} of
+     * them for multi-label vertices.
      *
      * @param keyValues a list of key/value pairs
-     * @return the labels associated with {@link T#label}, or empty if not present
+     * @return the labels associated with {@link T#label}/{@link T#labels}, or empty if not present
+     * @throws IllegalArgumentException if both {@link T#label} and {@link T#labels} are present or the value is
+     *                                  not a {@link String} or {@link Collection} of them
      * @since 4.0.0
      */
     public static Optional<Set<String>> getLabelsValue(final Object... keyValues) {
-        for (int i = 0; i < keyValues.length; i = i + 2) {
-            if (keyValues[i].equals(T.label)) {
-                final Object labelValue = keyValues[i + 1];
-                if (labelValue instanceof String) {
-                    ElementHelper.validateLabel((String) labelValue);
-                    final Set<String> labels = new LinkedHashSet<>();
-                    labels.add((String) labelValue);
-                    return Optional.of(labels);
-                } else if (labelValue instanceof Collection) {
-                    final Set<String> labels = new LinkedHashSet<>();
-                    for (final Object l : (Collection<?>) labelValue) {
-                        if (!(l instanceof String)) {
-                            throw new IllegalArgumentException("T.label collection must contain only Strings");
-                        }
-                        ElementHelper.validateLabel((String) l);
-                        labels.add((String) l);
-                    }
-                    return Optional.of(labels);
-                } else {
-                    throw new IllegalArgumentException("T.label value must be String or Collection<String>");
-                }
+        final int i = labelValueIndex(keyValues);
+        return i < 0 ? Optional.empty() : Optional.of(asLabelSet(keyValues[i]));
+    }
+
+    /**
+     * Converts a label value, a single {@link String} or a {@link Collection} of them, to a validated
+     * {@link Set} of labels.
+     *
+     * @throws IllegalArgumentException if the value is not a {@link String} or {@link Collection} of them, or a
+     *                                  label is invalid
+     * @since 4.0.0
+     */
+    public static Set<String> asLabelSet(final Object labelValue) {
+        final Set<String> labels = new LinkedHashSet<>();
+        if (labelValue instanceof String) {
+            validateLabel((String) labelValue);
+            labels.add((String) labelValue);
+        } else if (labelValue instanceof Collection) {
+            for (final Object l : (Collection<?>) labelValue) {
+                if (!(l instanceof String))
+                    throw new IllegalArgumentException(String.format(
+                            "A label collection must contain only Strings - found: %s",
+                            null == l ? "null" : l.getClass().getSimpleName()));
+                validateLabel((String) l);
+                labels.add((String) l);
             }
+        } else {
+            throw new IllegalArgumentException(String.format(
+                    "A label value must be a String or Collection<String> - found: %s",
+                    null == labelValue ? "null" : labelValue.getClass().getSimpleName()));
         }
-        return Optional.empty();
+        return labels;
+    }
+
+    /**
+     * Converts a label value to the single label of an edge. An edge always has exactly one label, so the value must
+     * be a {@link String} or a {@link Collection} holding one. An empty {@link Collection} means no label was given,
+     * as it does for vertices, so the edge gets the default label.
+     *
+     * @return the edge label, or empty if the value is an empty {@link Collection}
+     * @throws IllegalArgumentException if the value is not a {@link String} or {@link Collection} of them, holds more
+     *                                  than one label, or a label is invalid
+     * @since 4.0.0
+     */
+    public static Optional<String> asEdgeLabel(final Object labelValue) {
+        final Set<String> labels = asLabelSet(labelValue);
+        if (labels.size() > 1)
+            throw new IllegalArgumentException(String.format("An edge has exactly one label - found %s", labels));
+        return labels.stream().findFirst();
+    }
+
+    /**
+     * Finds the index of the value for the first {@link T#label} or {@link T#labels} key, or -1 if neither is
+     * present. The two keys are interchangeable, so supplying both is ambiguous and rejected.
+     */
+    private static int labelValueIndex(final Object... keyValues) {
+        int index = -1;
+        for (int i = 0; i < keyValues.length; i = i + 2) {
+            final Object k = keyValues[i];
+            if (!k.equals(T.label) && !k.equals(T.labels))
+                continue;
+            if (index < 0)
+                index = i + 1;
+            else if (!k.equals(keyValues[index - 1]))
+                throw new IllegalArgumentException("A label may be specified with either T.label or T.labels, but not both");
+        }
+        return index;
     }
 
     /**
@@ -305,8 +351,16 @@ public final class ElementHelper {
     }
 
     /**
-     * Assign key/value pairs as properties to an {@link Element}.  If the value of {@link T#id} or
-     * {@link T#label} is in the set of pairs, then they are ignored.
+     * Determines if a key from a key/value array is {@link T#id}, {@link T#label} or {@link T#labels}, which describe
+     * the element itself rather than one of its properties.
+     */
+    private static boolean isIdOrLabelKey(final Object key) {
+        return key.equals(T.id) || key.equals(T.label) || key.equals(T.labels);
+    }
+
+    /**
+     * Assign key/value pairs as properties to an {@link Element}.  If the value of {@link T#id},
+     * {@link T#label} or {@link T#labels} is in the set of pairs, then they are ignored.
      *
      * @param element           the graph element to assign the {@code propertyKeyValues}
      * @param propertyKeyValues the key/value pairs to assign to the {@code element}
@@ -323,7 +377,7 @@ public final class ElementHelper {
                 element.graph().features().vertex().properties().supportsNullPropertyValues();
 
         for (int i = 0; i < propertyKeyValues.length; i = i + 2) {
-            if (!propertyKeyValues[i].equals(T.id) && !propertyKeyValues[i].equals(T.label))
+            if (!isIdOrLabelKey(propertyKeyValues[i]))
                 if (!allowNullPropertyValues && null == propertyKeyValues[i + 1])
                     element.properties(((String) propertyKeyValues[i])).forEachRemaining(Property::remove);
                 else
@@ -332,9 +386,9 @@ public final class ElementHelper {
     }
 
     /**
-     * Assign key/value pairs as properties to an {@link Vertex}.  If the value of {@link T#id} or {@link T#label} is
-     * in the set of pairs, then they are ignored. The {@link VertexProperty.Cardinality} of the key is determined from
-     * the {@link Graph.Features.VertexFeatures}.
+     * Assign key/value pairs as properties to an {@link Vertex}.  If the value of {@link T#id}, {@link T#label} or
+     * {@link T#labels} is in the set of pairs, then they are ignored. The {@link VertexProperty.Cardinality} of the
+     * key is determined from the {@link Graph.Features.VertexFeatures}.
      *
      * @param vertex            the graph vertex to assign the {@code propertyKeyValues}
      * @param propertyKeyValues the key/value pairs to assign to the {@code element}
@@ -348,7 +402,7 @@ public final class ElementHelper {
         final boolean allowNullPropertyValues = vertex.graph().features().vertex().supportsNullPropertyValues();
 
         for (int i = 0; i < propertyKeyValues.length; i = i + 2) {
-            if (!propertyKeyValues[i].equals(T.id) && !propertyKeyValues[i].equals(T.label))
+            if (!isIdOrLabelKey(propertyKeyValues[i]))
                 if (!allowNullPropertyValues && null == propertyKeyValues[i + 1])
                     vertex.properties(((String) propertyKeyValues[i])).forEachRemaining(VertexProperty::remove);
                 else
@@ -357,8 +411,8 @@ public final class ElementHelper {
     }
 
     /**
-     * Assign key/value pairs as properties to a {@link Vertex}. If the value of {@link T#id} or {@link T#label} is
-     * in the set of pairs, then they are ignored.
+     * Assign key/value pairs as properties to a {@link Vertex}. If the value of {@link T#id}, {@link T#label} or
+     * {@link T#labels} is in the set of pairs, then they are ignored.
      *
      * @param vertex            the vertex to attach the properties to
      * @param cardinality       the cardinality of the key value pair settings
@@ -374,7 +428,7 @@ public final class ElementHelper {
         final boolean allowNullPropertyValues = vertex.graph().features().vertex().supportsNullPropertyValues();
 
         for (int i = 0; i < propertyKeyValues.length; i = i + 2) {
-            if (!propertyKeyValues[i].equals(T.id) && !propertyKeyValues[i].equals(T.label))
+            if (!isIdOrLabelKey(propertyKeyValues[i]))
                 if (!allowNullPropertyValues && null == propertyKeyValues[i + 1])
                     vertex.properties(((String) propertyKeyValues[i])).forEachRemaining(VertexProperty::remove);
                 else

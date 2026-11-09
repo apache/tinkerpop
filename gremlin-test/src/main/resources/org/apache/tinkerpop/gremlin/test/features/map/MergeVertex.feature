@@ -1292,3 +1292,99 @@ Feature: Step - mergeV()
     And the graph should return 2 for count of "g.V()"
     And the graph should return 1 for count of "g.V().has(\"device\",\"serial\",UUID(\"c47d2ea0-5b18-4a6f-b2eb-0f9eed7c6b5a\")).has(\"model\",\"TH-300\").has(\"online\",false)"
 
+  @MultiLabel
+  Scenario: g_mergeVXlabels_ab_name_markoX_multilabel_create
+    Given the empty graph
+    And the traversal of
+      """
+      g.mergeV([(T.labels): ["person","employee"], name: "marko"])
+      """
+    When iterated to list
+    Then the result should have a count of 1
+    And the graph should return 1 for count of "g.V()"
+    And the graph should return 1 for count of "g.V().hasLabel(\"person\").hasLabel(\"employee\")"
+    And the graph should return 1 for count of "g.V().has(\"name\",\"marko\")"
+
+  @MultiLabel
+  Scenario: g_mergeVXlabels_ab_name_markoX_multilabel_match
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("person").addLabel("employee").property("name", "marko")
+      """
+    And the traversal of
+      """
+      g.mergeV([(T.labels): ["person","employee"], name: "marko"])
+      """
+    When iterated to list
+    Then the result should have a count of 1
+    And the graph should return 1 for count of "g.V()"
+    And the graph should return 1 for count of "g.V().hasLabel(\"person\").hasLabel(\"employee\")"
+
+  @MultiLabel
+  Scenario: g_mergeVXlabel_person_name_markoX_optionXonMatch_labels_managerX
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("person").property("name", "marko")
+      """
+    And the traversal of
+      """
+      g.mergeV([(T.label): "person", name: "marko"]).
+          option(Merge.onMatch, [(T.labels): ["manager"]])
+      """
+    When iterated to list
+    Then the result should have a count of 1
+    And the graph should return 1 for count of "g.V()"
+    And the graph should return 1 for count of "g.V().hasLabel(\"person\").hasLabel(\"manager\")"
+
+  @MultiLabel
+  Scenario: g_withXmultilabelX_V_elementMap_mergeV
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("person").addLabel("employee").property("name", "marko")
+      """
+    And the traversal of
+      """
+      g.with("multilabel").V().elementMap().mergeV()
+      """
+    When iterated to list
+    Then the result should have a count of 1
+    And the graph should return 1 for count of "g.V()"
+    And the graph should return 1 for count of "g.V().hasLabel(\"person\").hasLabel(\"employee\")"
+
+  Scenario: g_mergeVXlabel_person_labels_person_name_markoX
+    Given the empty graph
+    And the traversal of
+      """
+      g.mergeV([(T.label): "person", (T.labels): ["person"], name: "marko"])
+      """
+    When iterated to list
+    Then the traversal will raise an error with message containing text of "does not allow both T.label and T.labels"
+
+  # an empty search label set is the same as no label, so onCreate may supply one
+  Scenario: g_mergeVXlabels_empty_name_markoX_optionXonCreate_labels_personX
+    Given the empty graph
+    And using the parameter xx1 defined as "m[{\"t[labels]\": \"s[]\", \"name\":\"marko\"}]"
+    And using the parameter xx2 defined as "m[{\"t[labels]\": \"person\"}]"
+    And the traversal of
+      """
+      g.mergeV(xx1).option(Merge.onCreate, xx2)
+      """
+    When iterated to list
+    Then the result should have a count of 1
+    And the graph should return 1 for count of "g.V().has(\"person\",\"name\",\"marko\")"
+
+  # the same label written as a String and as a set is not an onCreate override
+  Scenario: g_mergeVXlabels_person_name_markoX_optionXonCreate_labels_setXpersonXX
+    Given the empty graph
+    And using the parameter xx1 defined as "m[{\"t[labels]\": \"person\", \"name\":\"marko\"}]"
+    And using the parameter xx2 defined as "m[{\"t[labels]\": \"s[person]\"}]"
+    And the traversal of
+      """
+      g.mergeV(xx1).option(Merge.onCreate, xx2)
+      """
+    When iterated to list
+    Then the result should have a count of 1
+    And the graph should return 1 for count of "g.V().has(\"person\",\"name\",\"marko\")"

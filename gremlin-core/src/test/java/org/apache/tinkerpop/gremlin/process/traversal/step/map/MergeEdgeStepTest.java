@@ -162,6 +162,30 @@ public class MergeEdgeStepTest extends GValueStepTest {
         MergeEdgeStep.validateMapInput(m, true);
     }
 
+    @Test
+    public void shouldValidateWithLabelsToken() {
+        MergeEdgeStep.validateMapInput(CollectionUtil.asMap(T.labels, "knows"), false);
+        MergeEdgeStep.validateMapInput(CollectionUtil.asMap(T.labels, Set.of("knows")), false);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void shouldNotAllowBothLabelAndLabels() {
+        MergeEdgeStep.validateMapInput(CollectionUtil.asMap(T.label, "knows", T.labels, Set.of("knows")), false);
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void shouldRejectConstantOnMatchWithLabelToken() {
+        // the feature suite covers T.labels; the singular token must be rejected at construction too
+        MergeEdgeStep.validateStaticOnMatch(new ConstantTraversal<>(CollectionUtil.asMap(T.label, "likes")));
+    }
+
+    @Test
+    public void shouldDeferOnMatchCheckWhenNotConstant() {
+        // only a constant Map is known up front; a Map produced by a traversal is checked when an edge is matched
+        MergeEdgeStep.validateStaticOnMatch(__.constant(CollectionUtil.asMap(T.labels, "likes")).asAdmin());
+        MergeEdgeStep.validateStaticOnMatch(new ConstantTraversal<>(CollectionUtil.asMap("weight", 1)));
+    }
+
     @Test(expected = IllegalArgumentException.class)
     public void shouldFailToValidateWithoutTokens() {
         final Map<Object,Object> m = CollectionUtil.asMap("k", "v",

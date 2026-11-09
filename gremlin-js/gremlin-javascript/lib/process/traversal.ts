@@ -616,5 +616,5 @@ export const order = toEnum('Order', 'asc desc shuffle');
 export const pick = toEnum('Pick', 'any none unproductive');
 export const pop = toEnum('Pop', 'all first last mixed');
 export const scope = toEnum('Scope', 'global local');
-export const t = toEnum('T', 'id key label value');
+export const t = toEnum('T', 'id key label labels value');
 export const n = toEnum('N', 'byte_ short_ int_ long_ float_ double_ bigInt bigDecimal');

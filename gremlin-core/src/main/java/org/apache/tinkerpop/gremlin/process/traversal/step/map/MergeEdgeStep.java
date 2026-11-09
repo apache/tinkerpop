@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -38,11 +39,13 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.EventUtil;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.Attachable;
 import org.apache.tinkerpop.gremlin.structure.util.CloseableIterator;
+import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
@@ -54,10 +57,44 @@ import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.outV;
  */
 public class MergeEdgeStep<S> extends MergeElementStep<S, Edge, Map<Object, Object>> {
 
-    private static final Set allowedTokens = new LinkedHashSet(Arrays.asList(T.id, T.label, Direction.IN, Direction.OUT));
+    private static final Set allowedTokens = new LinkedHashSet(Arrays.asList(T.id, T.label, T.labels, Direction.IN, Direction.OUT));
 
     public static void validateMapInput(final Map map, final boolean ignoreTokens) {
         MergeElementStep.validate(map, ignoreTokens, allowedTokens, "mergeE");
+    }
+
+    /**
+     * Validates a materialized Map and returns it with any edge label under {@link T#label} as a single
+     * {@code String}. A {@link T#labels} entry is moved to {@link T#label}, and a label collection, which edges allow
+     * for symmetry with vertices, is reduced to its one label. An empty collection is removed by
+     * {@link #normalizeLabelsToken}, as it means no label was given.
+     *
+     * @throws IllegalArgumentException if a label collection holds more than one label or a non-{@code String}
+     */
+    private static Map validateAndNormalize(final Map map, final boolean ignoreTokens) {
+        validateMapInput(map, ignoreTokens);
+        final Map normalized = normalizeLabelsToken(map);
+        final Object label = null == normalized ? null : normalized.get(T.label);
+        if (!(label instanceof Collection))
+            return normalized;
+
+        final Map singleLabel = new LinkedHashMap(normalized);
+        ElementHelper.asEdgeLabel(label).ifPresent(l -> singleLabel.put(T.label, l));
+        return singleLabel;
+    }
+
+    /**
+     * An edge has exactly one label, which cannot be changed once the edge exists, so a constant
+     * {@code option(onMatch)} Map with a label is rejected when the option is given rather than only when an edge is
+     * matched. A Map produced by a traversal is checked when the step executes.
+     *
+     * @throws UnsupportedOperationException if the Map has a {@link T#label} or {@link T#labels} key
+     */
+    static void validateStaticOnMatch(final Traversal.Admin onMatch) {
+        final Object onMatchMap = constantValue(onMatch);
+        if (onMatchMap instanceof Map &&
+                (((Map) onMatchMap).containsKey(T.label) || ((Map) onMatchMap).containsKey(T.labels)))
+            throw Element.Exceptions.labelMutationNotSupported();
     }
 
     private Traversal.Admin<S, Object> outVTraversal = null;
@@ -102,6 +139,8 @@ public class MergeEdgeStep<S> extends MergeElementStep<S, Edge, Map<Object, Obje
                 throw new IllegalArgumentException("option(inV) can only be specified once per mergeE step");
             this.inVTraversal = this.integrateChild(traversalOption);
         } else {
+            if (token == Merge.onMatch)
+                validateStaticOnMatch(traversalOption);
             super.addChildOption(token, traversalOption);
         }
     }
@@ -257,8 +296,7 @@ public class MergeEdgeStep<S> extends MergeElementStep<S, Edge, Map<Object, Obje
 
     @Override
     protected Iterator<Edge> flatMap(final Traverser.Admin<S> traverser) {
-        final Map unresolvedMergeMap = materializeMap(traverser, mergeTraversal);
-        validateMapInput(unresolvedMergeMap, false);
+        final Map unresolvedMergeMap = validateAndNormalize(materializeMap(traverser, mergeTraversal), false);
 
         /*
          * Create a copy of the unresolved map and attempt to resolve any Vertex references.
@@ -285,6 +323,10 @@ public class MergeEdgeStep<S> extends MergeElementStep<S, Edge, Map<Object, Obje
                 // assume good input from GraphTraversal - folks might drop in a T here even though it is immutable
                 final Map<String, ?> onMatchMap = materializeMap(traverser, onMatchTraversal);
                 validateMapInput(onMatchMap, true);
+
+                // an edge has exactly one label, which cannot be changed once the edge exists
+                if (onMatchMap.containsKey(T.label) || onMatchMap.containsKey(T.labels))
+                    throw Element.Exceptions.labelMutationNotSupported();
 
                 onMatchMap.forEach((key, value) -> {
                     // trigger callbacks for eventing - in this case, it's a EdgePropertyChangedEvent. if there's no
@@ -346,11 +388,11 @@ public class MergeEdgeStep<S> extends MergeElementStep<S, Edge, Map<Object, Obje
         if (onCreateTraversal == null)
             return mergeMap;
 
-        final Map onCreateMap = materializeMap(traverser, onCreateTraversal);
+        final Map rawOnCreateMap = materializeMap(traverser, onCreateTraversal);
         // null result from onCreateTraversal - use main mergeMap argument
-        if (onCreateMap == null || onCreateMap.size() == 0)
+        if (rawOnCreateMap == null || rawOnCreateMap.size() == 0)
             return mergeMap;
-        validateMapInput(onCreateMap, false);
+        final Map onCreateMap = validateAndNormalize(rawOnCreateMap, false);
 
         /*
          * Now we need to merge the two maps - onCreate should inherit traits from mergeMap, and it is not allowed to
