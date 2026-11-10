@@ -544,6 +544,7 @@ limitations under the License.
                         <exclude>**/npm-debug.log</exclude>
                         <exclude>**/dist/**</exclude>
                         <exclude>**/build/**</exclude>
+                        <exclude>**/.duel-cache/**</exclude>
                         <exclude>docs/upgrade/spec/cmdb-data.gremlin</exclude>
                         <exclude>docs/upgrade/spec/spec.md</exclude>
                         <!-- javascript docs/lib -->
