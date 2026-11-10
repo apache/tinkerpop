@@ -211,22 +211,7 @@ public final class MultiPoint extends GeometryCollection {
     }
 
     @Override
-    String wktTypeName() {
-        return "MULTIPOINT";
-    }
-
-    @Override
-    void writeWktBody(final StringBuilder sb) {
-        for (int i = 0; i < points.size(); i++) {
-            if (i > 0) sb.append(", ");
-            final Point p = points.get(i);
-            if (p.hasNoParts()) {
-                sb.append("EMPTY");
-            } else {
-                sb.append('(');
-                p.writeWktBody(sb);
-                sb.append(')');
-            }
-        }
+    <R> R accept(final GeometryVisitor<R> visitor) {
+        return visitor.visitMultiPoint(this);
     }
 }

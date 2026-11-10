@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.structure.geo;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.util.List;
 
 /**
@@ -43,6 +44,9 @@ final class WkbWriter {
             writeGeometry(dos, g);
             dos.flush();
             return baos.toByteArray();
+        } catch (UncheckedIOException e) {
+            // the body writers run behind the visitor, which carries no checked exception
+            throw new RuntimeException("Unexpected I/O error writing WKB", e.getCause());
         } catch (IOException e) {
             throw new RuntimeException("Unexpected I/O error writing WKB", e);
         }
@@ -60,27 +64,76 @@ final class WkbWriter {
         dos.writeInt(typeCode);
 
         // Write geometry-specific data
-        if (g instanceof Point) {
-            writePoint(dos, (Point) g);
-        } else if (g instanceof LineString) {
-            writeLineString(dos, (LineString) g);
-        } else if (g instanceof Polygon) {
-            writePolygon(dos, (Polygon) g);
-        } else if (g instanceof MultiPoint) {
-            writeMultiPoint(dos, (MultiPoint) g);
-        } else if (g instanceof MultiLineString) {
-            writeMultiLineString(dos, (MultiLineString) g);
-        } else if (g instanceof MultiPolygon) {
-            writeMultiPolygon(dos, (MultiPolygon) g);
-        } else if (g instanceof GeometryCollection) {
-            writeGeometryCollection(dos, (GeometryCollection) g);
-        } else {
-            throw new IllegalStateException("No WKB encoding for geometry type " + g.getClass().getName());
+        g.accept(new BodyVisitor(dos));
+    }
+
+    /**
+     * Writes the WKB body of each kind, the part that follows the byte order marker and the type
+     * code.
+     */
+    private static final class BodyVisitor implements GeometryVisitor<Void> {
+
+        private final DataOutputStream dos;
+
+        private BodyVisitor(final DataOutputStream dos) {
+            this.dos = dos;
+        }
+
+        @Override
+        public Void visitPoint(final Point p) {
+            return write(() -> writeCoordinate(dos, p, p.hasZ()));
+        }
+
+        @Override
+        public Void visitLineString(final LineString ls) {
+            return write(() -> writeLineString(dos, ls));
+        }
+
+        @Override
+        public Void visitPolygon(final Polygon poly) {
+            return write(() -> writePolygon(dos, poly));
+        }
+
+        @Override
+        public Void visitMultiPoint(final MultiPoint mp) {
+            return write(() -> writeElements(dos, mp.geometries()));
+        }
+
+        @Override
+        public Void visitMultiLineString(final MultiLineString mls) {
+            return write(() -> writeElements(dos, mls.geometries()));
+        }
+
+        @Override
+        public Void visitMultiPolygon(final MultiPolygon mpoly) {
+            return write(() -> writeElements(dos, mpoly.geometries()));
+        }
+
+        @Override
+        public Void visitGeometryCollection(final GeometryCollection gc) {
+            return write(() -> writeElements(dos, gc.geometries()));
+        }
+
+        /**
+         * Runs a body writer, turning the I/O failure it declares into an unchecked one. The
+         * stream writes to a byte array, so no such failure arises in practice.
+         */
+        private Void write(final BodyWriter writer) {
+            try {
+                writer.write();
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
+            }
+            return null;
         }
     }
 
-    private static void writePoint(final DataOutputStream dos, final Point p) throws IOException {
-        writeCoordinate(dos, p, p.hasZ());
+    /**
+     * A body writer, which may declare an I/O failure the visitor cannot.
+     */
+    @FunctionalInterface
+    private interface BodyWriter {
+        void write() throws IOException;
     }
 
     /**
@@ -103,6 +156,10 @@ final class WkbWriter {
         }
     }
 
+    /**
+     * Writes a sequence of points, the point count followed by each coordinate. A polygon ring
+     * carries the same form.
+     */
     private static void writeLineString(final DataOutputStream dos, final LineString ls) throws IOException {
         final List<Point> points = ls.points();
         dos.writeInt(points.size());
@@ -116,50 +173,21 @@ final class WkbWriter {
         dos.writeInt(ringCount);
 
         if (ringCount > 0) {
-            writeRing(dos, poly.exteriorRing());
+            writeLineString(dos, poly.exteriorRing());
             for (final LineString hole : poly.interiorRings()) {
-                writeRing(dos, hole);
+                writeLineString(dos, hole);
             }
         }
     }
 
-    private static void writeRing(final DataOutputStream dos, final LineString ring) throws IOException {
-        final List<Point> points = ring.points();
-        dos.writeInt(points.size());
-        for (final Point p : points) {
-            writeCoordinate(dos, p, ring.hasZ());
-        }
-    }
-
-    private static void writeMultiPoint(final DataOutputStream dos, final MultiPoint mp) throws IOException {
-        final List<Point> points = mp.geometries();
-        dos.writeInt(points.size());
-        for (final Point p : points) {
-            writeGeometry(dos, p);
-        }
-    }
-
-    private static void writeMultiLineString(final DataOutputStream dos, final MultiLineString mls) throws IOException {
-        final List<LineString> lineStrings = mls.geometries();
-        dos.writeInt(lineStrings.size());
-        for (final LineString ls : lineStrings) {
-            writeGeometry(dos, ls);
-        }
-    }
-
-    private static void writeMultiPolygon(final DataOutputStream dos, final MultiPolygon mpoly) throws IOException {
-        final List<Polygon> polygons = mpoly.geometries();
-        dos.writeInt(polygons.size());
-        for (final Polygon p : polygons) {
-            writeGeometry(dos, p);
-        }
-    }
-
-    private static void writeGeometryCollection(final DataOutputStream dos, final GeometryCollection gc) throws IOException {
-        final List<? extends Geometry> geometries = gc.geometries();
-        dos.writeInt(geometries.size());
-        for (final Geometry g : geometries) {
-            writeGeometry(dos, g);
+    /**
+     * Writes the elements of a collection, each as a geometry of its own with its byte order
+     * marker and type code.
+     */
+    private static void writeElements(final DataOutputStream dos, final List<? extends Geometry> elements) throws IOException {
+        dos.writeInt(elements.size());
+        for (final Geometry element : elements) {
+            writeGeometry(dos, element);
         }
     }
 }

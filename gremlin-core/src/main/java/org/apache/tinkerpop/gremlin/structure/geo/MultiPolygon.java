@@ -211,22 +211,7 @@ public final class MultiPolygon extends MultiSurface {
     }
 
     @Override
-    String wktTypeName() {
-        return "MULTIPOLYGON";
-    }
-
-    @Override
-    void writeWktBody(final StringBuilder sb) {
-        for (int i = 0; i < polygons.size(); i++) {
-            if (i > 0) sb.append(", ");
-            final Polygon p = polygons.get(i);
-            if (p.hasNoParts()) {
-                sb.append("EMPTY");
-            } else {
-                sb.append('(');
-                p.writeWktBody(sb);
-                sb.append(')');
-            }
-        }
+    <R> R accept(final GeometryVisitor<R> visitor) {
+        return visitor.visitMultiPolygon(this);
     }
 }

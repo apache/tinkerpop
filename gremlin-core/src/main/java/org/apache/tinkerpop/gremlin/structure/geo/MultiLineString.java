@@ -214,22 +214,7 @@ public final class MultiLineString extends MultiCurve {
     }
 
     @Override
-    String wktTypeName() {
-        return "MULTILINESTRING";
-    }
-
-    @Override
-    void writeWktBody(final StringBuilder sb) {
-        for (int i = 0; i < lineStrings.size(); i++) {
-            if (i > 0) sb.append(", ");
-            final LineString ls = lineStrings.get(i);
-            if (ls.hasNoParts()) {
-                sb.append("EMPTY");
-            } else {
-                sb.append('(');
-                ls.writeWktBody(sb);
-                sb.append(')');
-            }
-        }
+    <R> R accept(final GeometryVisitor<R> visitor) {
+        return visitor.visitMultiLineString(this);
     }
 }

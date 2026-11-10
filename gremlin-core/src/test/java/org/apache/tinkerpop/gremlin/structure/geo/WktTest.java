@@ -51,6 +51,8 @@ public class WktTest {
 
         // Polygon 2D
         assertRoundTrip("POLYGON((0 0, 1 0, 1 1, 0 0))");
+        // Polygon 2D with a hole, the hole separated from the shell by ", ("
+        assertRoundTrip("POLYGON((0 0, 10 0, 10 10, 0 0), (2 2, 3 2, 3 3, 2 2))");
         // Polygon Z
         assertRoundTrip("POLYGON Z ((0 0 0, 1 0 0, 1 1 0, 0 0 0))");
 
@@ -66,6 +68,8 @@ public class WktTest {
 
         // MultiPolygon 2D
         assertRoundTrip("MULTIPOLYGON(((0 0, 1 0, 1 1, 0 0)), ((2 2, 3 2, 3 3, 2 2)))");
+        // MultiPolygon 2D whose polygon carries a hole
+        assertRoundTrip("MULTIPOLYGON(((0 0, 10 0, 10 10, 0 0), (2 2, 3 2, 3 3, 2 2)))");
         // MultiPolygon Z
         assertRoundTrip("MULTIPOLYGON Z (((0 0 0, 1 0 0, 1 1 0, 0 0 0)))");
 

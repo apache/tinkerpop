@@ -209,18 +209,7 @@ public final class LineString extends Curve {
     }
 
     @Override
-    String wktTypeName() {
-        return "LINESTRING";
-    }
-
-    @Override
-    void writeWktBody(final StringBuilder sb) {
-        if (points.isEmpty()) {
-            return;
-        }
-        for (int i = 0; i < points.size(); i++) {
-            if (i > 0) sb.append(", ");
-            points.get(i).writeWktBody(sb);
-        }
+    <R> R accept(final GeometryVisitor<R> visitor) {
+        return visitor.visitLineString(this);
     }
 }

@@ -300,22 +300,7 @@ public final class Point extends Geometry {
     }
 
     @Override
-    String wktTypeName() {
-        return "POINT";
-    }
-
-    @Override
-    void writeWktBody(final StringBuilder sb) {
-        if (empty) {
-            // an empty point has no coordinates; the writer emits the EMPTY keyword
-            return;
-        }
-        sb.append(WktWriter.formatDouble(x));
-        sb.append(' ');
-        sb.append(WktWriter.formatDouble(y));
-        if (hasZ()) {
-            sb.append(' ');
-            sb.append(WktWriter.formatDouble(z));
-        }
+    <R> R accept(final GeometryVisitor<R> visitor) {
+        return visitor.visitPoint(this);
     }
 }

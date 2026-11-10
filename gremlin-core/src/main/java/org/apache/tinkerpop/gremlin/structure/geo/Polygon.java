@@ -245,25 +245,8 @@ public final class Polygon extends Surface {
     }
 
     @Override
-    String wktTypeName() {
-        return "POLYGON";
-    }
-
-    @Override
-    void writeWktBody(final StringBuilder sb) {
-        if (shell.hasNoParts()) {
-            return;
-        }
-        // Write shell
-        sb.append('(');
-        shell.writeWktBody(sb);
-        sb.append(')');
-        // Write holes
-        for (final LineString hole : holes) {
-            sb.append(", (");
-            hole.writeWktBody(sb);
-            sb.append(')');
-        }
+    <R> R accept(final GeometryVisitor<R> visitor) {
+        return visitor.visitPolygon(this);
     }
 
     /**

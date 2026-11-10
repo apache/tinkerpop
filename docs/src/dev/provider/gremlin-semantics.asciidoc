@@ -286,6 +286,20 @@ same total length.
 
 ===== GEOMETRY
 
+A geometry value satisfies these construction invariants on every path that builds it (a Java factory, the
+Well-Known Text or Binary reader, or the grammar literal); a value that breaks one is rejected with an
+<<gremlin-semantics-errors,Argument Error>>.
+
+* *Finite coordinates.* Every x, y and z is finite; `NaN` and `+/-Infinity` are rejected. An empty geometry such as
+`POINT EMPTY` is distinct and valid.
+* *`GEOGRAPHIC` range.* For SRID 4326, longitude is in `[-180, 180]` and latitude in `[-90, 90]`; out of range is
+rejected, not wrapped. Other SRIDs are unconstrained.
+* *One dimension.* A geometry is 2D or 3D throughout; mixing coordinates with and without z is rejected.
+* *One SRID.* Every part of a collection shares the whole's SRID.
+* *Line strings and rings.* A line string has 0 or 2+ points; a polygon ring is empty or has 4+ points and is closed;
+a vertex is never an empty point.
+* *Nesting.* A `GEOMETRYCOLLECTION` nests at most 32 levels deep, enforced on every path, not just the readers.
+
 Geometries are compared by exact value. `A == B` if `A` and `B` have the same SRID, kind, structure and coordinates,
 including whether z is present. Coordinates are compared numerically, so `-0.0` equals `0.0`. The comparison is
 structural, not spatial: `LINESTRING(0 0, 1 1)` is not equal to `LINESTRING(1 1, 0 0)`, `POINT(1 2)` is not equal to

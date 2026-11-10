@@ -356,12 +356,9 @@ public abstract class Geometry implements Comparable<Geometry> {
     abstract boolean hasNoParts();
 
     /**
-     * Writes the WKT body (coordinates or parts) to the builder.
+     * Hands this geometry to the visitor method of its kind and returns that method's result.
+     * This is how an algorithm that behaves differently per kind, such as a serializer, selects
+     * its branch without testing the runtime type.
      */
-    abstract void writeWktBody(StringBuilder sb);
-
-    /**
-     * Returns the WKT type name (POINT, LINESTRING, etc.).
-     */
-    abstract String wktTypeName();
+    abstract <R> R accept(GeometryVisitor<R> visitor);
 }

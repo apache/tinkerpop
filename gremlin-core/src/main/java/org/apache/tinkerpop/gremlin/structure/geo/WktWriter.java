@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.structure.geo;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;
+import java.util.List;
 
 /**
  * Package-private WKT writer.
@@ -29,6 +30,11 @@ final class WktWriter {
 
     // 17 significant digits always read back to the same double (IEEE 754)
     private static final int MAX_SIGNIFICANT_DIGITS = 17;
+
+    /**
+     * The type names are the same for every value, so one instance serves all calls.
+     */
+    private static final GeometryVisitor<String> TYPE_NAMES = new TypeNameVisitor();
 
     private WktWriter() {
     }
@@ -46,8 +52,8 @@ final class WktWriter {
      * Appends a geometry with its type name, its Z tag and either the EMPTY keyword or a
      * parenthesized body. The choice is structural, so WKT and WKB describe the same parts.
      */
-    static void writeTagged(final StringBuilder sb, final Geometry g) {
-        sb.append(g.wktTypeName());
+    private static void writeTagged(final StringBuilder sb, final Geometry g) {
+        sb.append(g.accept(TYPE_NAMES));
         if (g.hasZ()) {
             sb.append(" Z");
         }
@@ -58,8 +64,143 @@ final class WktWriter {
                 sb.append(' ');
             }
             sb.append('(');
-            g.writeWktBody(sb);
+            g.accept(new BodyVisitor(sb));
             sb.append(')');
+        }
+    }
+
+    /**
+     * Returns the WKT type name of each kind.
+     */
+    private static final class TypeNameVisitor implements GeometryVisitor<String> {
+
+        @Override
+        public String visitPoint(final Point point) {
+            return "POINT";
+        }
+
+        @Override
+        public String visitLineString(final LineString lineString) {
+            return "LINESTRING";
+        }
+
+        @Override
+        public String visitPolygon(final Polygon polygon) {
+            return "POLYGON";
+        }
+
+        @Override
+        public String visitMultiPoint(final MultiPoint multiPoint) {
+            return "MULTIPOINT";
+        }
+
+        @Override
+        public String visitMultiLineString(final MultiLineString multiLineString) {
+            return "MULTILINESTRING";
+        }
+
+        @Override
+        public String visitMultiPolygon(final MultiPolygon multiPolygon) {
+            return "MULTIPOLYGON";
+        }
+
+        @Override
+        public String visitGeometryCollection(final GeometryCollection geometryCollection) {
+            return "GEOMETRYCOLLECTION";
+        }
+    }
+
+    /**
+     * Appends the WKT body of each kind, the part that sits inside the parentheses, and recurses
+     * into the parts of a value that holds parts of its own.
+     */
+    private static final class BodyVisitor implements GeometryVisitor<Void> {
+
+        private final StringBuilder sb;
+
+        private BodyVisitor(final StringBuilder sb) {
+            this.sb = sb;
+        }
+
+        @Override
+        public Void visitPoint(final Point point) {
+            sb.append(formatDouble(point.x()));
+            sb.append(' ');
+            sb.append(formatDouble(point.y()));
+            if (point.hasZ()) {
+                sb.append(' ');
+                sb.append(formatDouble(point.z()));
+            }
+            return null;
+        }
+
+        @Override
+        public Void visitLineString(final LineString lineString) {
+            final List<Point> points = lineString.points();
+            for (int i = 0; i < points.size(); i++) {
+                if (i > 0) sb.append(", ");
+                visitPoint(points.get(i));
+            }
+            return null;
+        }
+
+        @Override
+        public Void visitPolygon(final Polygon polygon) {
+            // Write shell
+            sb.append('(');
+            visitLineString(polygon.exteriorRing());
+            sb.append(')');
+            // Write holes
+            for (final LineString hole : polygon.interiorRings()) {
+                sb.append(", (");
+                visitLineString(hole);
+                sb.append(')');
+            }
+            return null;
+        }
+
+        @Override
+        public Void visitMultiPoint(final MultiPoint multiPoint) {
+            return writeElements(multiPoint.geometries());
+        }
+
+        @Override
+        public Void visitMultiLineString(final MultiLineString multiLineString) {
+            return writeElements(multiLineString.geometries());
+        }
+
+        @Override
+        public Void visitMultiPolygon(final MultiPolygon multiPolygon) {
+            return writeElements(multiPolygon.geometries());
+        }
+
+        @Override
+        public Void visitGeometryCollection(final GeometryCollection geometryCollection) {
+            final List<? extends Geometry> geometries = geometryCollection.geometries();
+            for (int i = 0; i < geometries.size(); i++) {
+                if (i > 0) sb.append(", ");
+                writeTagged(sb, geometries.get(i));
+            }
+            return null;
+        }
+
+        /**
+         * Appends the elements of a Multi value, each as its own parenthesized body, or as the
+         * EMPTY keyword when it holds no parts. The elements carry no type name of their own.
+         */
+        private Void writeElements(final List<? extends Geometry> elements) {
+            for (int i = 0; i < elements.size(); i++) {
+                if (i > 0) sb.append(", ");
+                final Geometry element = elements.get(i);
+                if (element.hasNoParts()) {
+                    sb.append("EMPTY");
+                } else {
+                    sb.append('(');
+                    element.accept(this);
+                    sb.append(')');
+                }
+            }
+            return null;
         }
     }
 

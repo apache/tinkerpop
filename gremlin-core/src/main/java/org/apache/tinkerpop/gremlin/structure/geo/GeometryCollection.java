@@ -226,16 +226,12 @@ public class GeometryCollection extends Geometry {
         return geometries.isEmpty();
     }
 
+    /**
+     * A subclass that represents a geometry kind of its own must override this method, or it
+     * inherits this one and is silently serialized as a GEOMETRYCOLLECTION.
+     */
     @Override
-    String wktTypeName() {
-        return "GEOMETRYCOLLECTION";
-    }
-
-    @Override
-    void writeWktBody(final StringBuilder sb) {
-        for (int i = 0; i < geometries.size(); i++) {
-            if (i > 0) sb.append(", ");
-            WktWriter.writeTagged(sb, geometries.get(i));
-        }
+    <R> R accept(final GeometryVisitor<R> visitor) {
+        return visitor.visitGeometryCollection(this);
     }
 }
