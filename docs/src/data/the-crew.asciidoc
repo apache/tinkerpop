@@ -33,7 +33,9 @@ optional `endTime`, that record the span during which the person lived there. A 
 `endTime` is the person's current one. Third, the graph itself carries graph variables that hold
 metadata about the graph. These features make the crew graph the right choice for demonstrating
 multi-properties, meta-properties, and graph variables. It is created with
-`TinkerFactory.createTheCrew()` and ships as `data/tinkerpop-crew.*`.
+`TinkerFactory.createTheCrew()` and ships as `data/tinkerpop-crew.json` in GraphSON and
+`data/tinkerpop-crew.kryo` in Gryo. It is not provided in GraphML, which cannot represent the
+meta-properties and multi-properties that define the graph.
 
 .The Crew Graph
 image::the-crew-graph.png[width=685]

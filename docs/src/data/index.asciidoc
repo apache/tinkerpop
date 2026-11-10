@@ -36,8 +36,20 @@ small and self-contained so that a traversal can be read alongside the data it o
 they are available in every distribution without any external data source or configuration. Each
 graph is constructed by a factory method on
 link:https://github.com/apache/tinkerpop/blob/master/tinkergraph-gremlin/src/main/java/org/apache/tinkerpop/gremlin/tinkergraph/structure/TinkerFactory.java[`TinkerFactory`]
-and also ships as data files under the `data/` directory of the distribution in the GraphSON,
-GraphML, and Gryo formats.
+and also ships as data files under the `data/` directory of the distribution. Every graph is
+available in the GraphSON format, and most are additionally provided in GraphML and Gryo. The set of
+formats offered differs from one graph to the next, as the following table summarizes and as each
+section describes in detail.
+
+[width="100%",options="header"]
+|=========================================================
+|Graph |GraphSON (`.json`) |GraphML (`.xml`) |Gryo (`.kryo`)
+|Modern |yes |yes |yes
+|The Crew |yes |no |yes
+|The Zoo |yes |no |no
+|Grateful Dead |yes |yes |yes
+|Air Routes |yes |yes |yes
+|=========================================================
 
 This book serves as a reference for those graphs. Each section describes one graph: the nature of
 its data, where it came from, and the kinds of problems it illustrates best. Every graph is then
