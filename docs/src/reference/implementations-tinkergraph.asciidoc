@@ -253,9 +253,12 @@ g.V().properties()
 [[tinkergraph-multi-label]]
 === Multi-Label Support
 
-TinkerGraph supports multiple labels per vertex when `gremlin.tinkergraph.vertexLabelCardinality` is set to
-`ONE_OR_MORE` or `ZERO_OR_MORE`. This enables use of the `addLabel()`, `dropLabel()`, `dropLabels()`, and `labels()`
-traversal steps.
+The `gremlin.tinkergraph.vertexLabelCardinality` configuration controls how many labels a vertex may carry. Its
+default value of `ONE` gives every vertex exactly one label that is fixed when the vertex is created. Setting it to
+`ONE_OR_MORE` or `ZERO_OR_MORE` instead allows a vertex to carry several labels that can change over its lifetime,
+which enables the `addLabel()`, `dropLabel()`, and `dropLabels()` traversal steps. The `labels()` step, which returns
+the set of labels on a vertex, is available under any setting. Under the default `ONE` cardinality the label is
+immutable, so calling `addLabel()`, `dropLabel()`, or `dropLabels()` raises an `IllegalStateException`.
 
 [gremlin-groovy]
 ----
@@ -272,6 +275,13 @@ g.V().has("name","marko").dropLabel("employee").labels() <3>
 <1> The vertex was created with two labels.
 <2> A third label is added.
 <3> One label is removed.
+
+The two multi-label settings differ in whether a vertex may become unlabeled. With `ZERO_OR_MORE` a vertex may hold
+any number of labels, including none, so `dropLabels()` removes every label and `label()` then returns an empty
+string. With `ONE_OR_MORE` a vertex must always retain at least one label, so `dropLabels()` raises an
+`IllegalStateException`, as does any `dropLabel()` call that would remove the vertex's final label. Under
+`ONE_OR_MORE` the graph's default vertex label is also retained alongside any explicitly assigned labels, so a vertex
+created with `addV("person","employee")` reports the default label together with `person` and `employee`.
 
 The `hasLabel()` step works with multi-label vertices using OR semantics: `hasLabel("a","b")` matches any vertex that
 has label "a" OR label "b". To match vertices having both labels, chain multiple `hasLabel()` calls:
