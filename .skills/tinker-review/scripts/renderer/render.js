@@ -95,6 +95,10 @@ function stripCodeWrapper(str) {
  *   openQuestions: [{ title, body: "HTML", meta: "string", refs?: [CodeRef] }]
  *   appendixFunctional: { environment: "HTML", testCode: "raw text", fullOutput: "raw text" }
  *     (testCode = the COMPLETE labeled battery; renderer wraps it in <pre><code>, do NOT pre-wrap)
+ *   appendixBlindDesign: { skipped: "HTML" }
+ *     | { surfaces: [{ id, kind, name, commitment }],
+ *         objections: [{ id, surface, type, claim, outcome, note: "HTML" }] }
+ *     (outcome: finding | openQuestion | dropped; name/commitment/claim are plain text)
  */
 function notProvided(sectionId, title) {
   return `<section id="${sectionId}">\n  <h2>${esc(title)}</h2>\n  <p class="section-intro" style="color: var(--danger);">Section not provided.</p>\n</section>`;
@@ -103,7 +107,7 @@ function notProvided(sectionId, title) {
 export function render(evidence, options = {}) {
   const warnings = options.warnings || [];
   const { meta, graphStats, checks, discussions, summary, clusters, communityAssessment, communityNames,
-    guidedWalk, functionalTest, findings, openQuestions, appendixFunctional } = evidence;
+    guidedWalk, functionalTest, findings, openQuestions, appendixFunctional, appendixBlindDesign } = evidence;
 
   const beads = discussions?.beads;
   const refCtx = {
@@ -126,6 +130,7 @@ export function render(evidence, options = {}) {
   parts.push(openQuestions && openQuestions.length > 0 ? renderOpenQuestions(openQuestions, refCtx, warnings) : notProvided("open-questions", "Open Questions"));
   parts.push(renderAppendixStructural(checks, graphStats, communityNames, beads));
   parts.push(appendixFunctional ? renderAppendixFunctional(appendixFunctional) : notProvided("appendix-functional", "Appendix: Functional Test Details"));
+  parts.push(appendixBlindDesign ? renderAppendixBlindDesign(appendixBlindDesign) : notProvided("appendix-blind-design", "Appendix: Blind Design Pass"));
   parts.push(`<footer>Graph Review &mdash; Apache TinkerPop | PR #${esc(String(meta.pr))} | Generated ${esc(meta.timestamp)}</footer>`);
 
   return TEMPLATE.replace("{{content}}", parts.join("\n\n"));
@@ -156,6 +161,7 @@ function renderNav() {
     <li><a href="#open-questions">Open Questions</a></li>
     <li><a href="#appendix-structural">Appendix: Structural</a></li>
     <li><a href="#appendix-functional">Appendix: Functional Test</a></li>
+    <li><a href="#appendix-blind-design">Appendix: Blind Design Pass</a></li>
   </ul>
 </nav>`;
 }
@@ -811,6 +817,55 @@ function renderAppendixFunctional(af) {
 
   <h3>Full Output</h3>
   <pre><code>${esc(stripCodeWrapper(af.fullOutput))}</code></pre>
+</section>`;
+}
+
+// What happened to each blind objection once reconciled against the beads.
+const BLIND_OUTCOMES = {
+  finding: { badge: "badge-attention", text: "finding" },
+  openQuestion: { badge: "badge-context", text: "open question" },
+  dropped: { badge: "badge-safe", text: "answered by record" },
+};
+
+/**
+ * The blind design pass: the high-impact surfaces it was given and every
+ * objection it returned, each with its reconciliation outcome, so a reader can
+ * trace a blind-sourced finding or open question back to its objection and see
+ * which objections the beads already answered.
+ */
+function renderAppendixBlindDesign(bd) {
+  const title = "Appendix: Blind Design Pass";
+  if (bd.skipped) {
+    return `<section id="appendix-blind-design">
+  <h2>${title}</h2>
+  <p class="section-intro">Skipped.</p>
+  <div class="card">\n    ${bd.skipped}\n  </div>
+</section>`;
+  }
+  const surfaces = bd.surfaces || [];
+  const objections = bd.objections || [];
+  const surfaceRows = surfaces.map((s) =>
+    `<tr><td><code>${esc(s.id)}</code></td><td>${esc(s.kind)}</td><td>${esc(s.name)}</td><td>${esc(s.commitment)}</td></tr>`).join("\n");
+  const objectionRows = objections.map((o) => {
+    const out = BLIND_OUTCOMES[o.outcome] || { badge: "", text: o.outcome || "unreconciled" };
+    return `<tr><td><code>${esc(o.id)}</code></td><td><code>${esc(o.surface)}</code></td><td>${esc(o.type)}</td>` +
+      `<td>${esc(o.claim)}</td><td><span class="badge ${out.badge}">${esc(out.text)}</span></td><td>${o.note || ""}</td></tr>`;
+  }).join("\n");
+  return `<section id="appendix-blind-design">
+  <h2>${title}</h2>
+  <p class="section-intro">A subagent that saw neither the beads nor the PR description reviewed each high-impact surface. Each of its objections was reconciled against the beads; findings and open questions it raised name the objection id.</p>
+
+  <h3>Surfaces</h3>
+  <table class="gap-table">
+    <tr><th>Id</th><th>Kind</th><th>Surface</th><th>Commits the project to</th></tr>
+${surfaceRows}
+  </table>
+
+  <h3>Objections</h3>
+  ${objections.length === 0 ? `<p class="section-intro">The subagent raised no objections.</p>` : `<table class="gap-table">
+    <tr><th>Id</th><th>Surface</th><th>Type</th><th>Objection</th><th>Outcome</th><th>Reconciliation</th></tr>
+${objectionRows}
+  </table>`}
 </section>`;
 }
 
