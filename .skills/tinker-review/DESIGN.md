@@ -22,6 +22,38 @@ the same mechanical/judgment line: `functional/setup.js` builds the PR and start
 a server from its artifacts (mechanical), while a blind subagent designs and runs
 the test battery per the playbooks' Verify sections (judgment).
 
+### Trusting decisions, and the blind design pass
+
+A PR's decision beads are the author's recorded reasoning, usually worked out
+with an agent and an operator, and the review trusts them by default: every
+decision gets a fact check (does the code do what the bead says, is each
+rejected reason true of this code) and nothing more. Questioning every decision
+would bury the few that matter under re-litigated internal choices, most of
+which are cheap to reverse.
+
+The cost of trust is that the reviewer inherits the author's framing: once it
+has read the beads, it weighs the options they recorded and rarely notices the
+one they didn't. So the review spends scrutiny only where a wrong call is
+expensive — decisions that govern a **high-impact surface** (public API,
+configuration or protocol; user-visible behaviour; one-way doors such as grammar
+syntax, serialization formats and spec-defined semantics) — and asks them three
+bounded questions (premise, counterargument, option set) rather than re-running
+their trade-offs. A recorded choice between options stands even where the
+reviewer would have chosen otherwise.
+
+The objections those questions test come mostly from a **blind design pass**: a
+subagent that sees each high-impact surface's contract before and after, the
+JIRA and named standards, but not the beads, the PR description or the comment
+threads, all of which argue the design as well as state it. Context-constrained
+agents surface ideas the informed reviewer has been talked out of, as the blind
+functional tester already does for usability. The pass is therefore mandatory
+whenever a high-impact surface exists, rather than left to the reviewer's
+discretion: the agent that would decide to skip it is the one already anchored.
+It produces candidates only; the reviewer reconciles them against the beads,
+drops what the record answers, and at most three challenges reach the report.
+It has no script — picking surfaces and building the bundle are judgment, and
+the git lookups it needs are spelled out in `references/blind-design.md`.
+
 Data flows one direction through three artifacts:
 
 ```

@@ -59,6 +59,14 @@ confidence pass so the `governs` edges they write go through it:
 - Rejected alternatives — each answers "why not X?" only if the reason X lost
   is true of this code, so check that reason the same way. If the diff does X
   anyway, does the reason still hold?
+- Trust is the default. Every decision gets the two checks above and nothing
+  more — a decision the operator settled by choosing between recorded options
+  is settled, even where you would have chosen differently. Only a decision that
+  governs a **high-impact surface** also gets the challenge below: a public API,
+  configuration format or protocol; user-visible behaviour (results, defaults,
+  semantics); or a one-way door (grammar syntax, a serialization or persisted
+  format, spec-defined semantics). Internal structure is never high impact,
+  however large the change.
 - Where the beads stop, look harder. Changed code no decision governs (no
   `governs` edge after `linkBead`), and any part a bead says was built without
   beads (a decision accepting that earlier commits have none), had its
@@ -73,6 +81,24 @@ confidence pass so the `governs` edges they write go through it:
   does the PR description say so too?
 - When several roots were loaded, which one does this PR deliver, and what do
   the others show about the connected work it depends on or affects?
+
+**High-impact design** (whether or not beads were found; see
+[references/blind-design.md](../references/blind-design.md)):
+- Blind design pass — when the diff has a high-impact surface, run it before
+  challenging anything: pick the surfaces from the diff, brief a subagent that
+  sees neither the beads nor the PR description, and take its objections as
+  candidates. When no surface is high impact, skip it and record why in
+  `appendixBlindDesign.skipped`.
+- Challenge each decision that governs a high-impact surface, with the blind
+  objections as input, by three bounded questions — not by re-running its
+  trade-off. Without beads, ask them of the design itself:
+  - Premise — does a claim it makes about an external standard, the JIRA or
+    released behaviour hold against that source itself, not the bead's
+    paraphrase?
+  - Counterargument — does its reasoning engage the obvious objection to the
+    consequence it creates?
+  - Option set — is a credible alternative missing from it and its rejected
+    siblings?
 
 **Resource safety:**
 - Connections, channels, or streams opened without a clear cleanup path
@@ -142,6 +168,17 @@ author's recorded reasoning is as much inside knowledge as the source code.
   holds — high. If that reason no longer holds, an open question: was this a
   deliberate reconsideration? Diff contradicts a chosen decision with no newer
   decision superseding it — high.
+- Challenges to high-impact decisions — blind-sourced and your own together, at
+  most three in the report, ranked by the surface's impact, a point both raised
+  ranked first. A premise the source confirms is wrong — high. A premise you
+  could not check against its source — an open question saying what was not
+  checked. A counterargument the reasoning never engages, or an alternative
+  missing from the option set — an open question naming the decision and the
+  gap. An objection the record already answers — nothing. A high-impact surface
+  no decision governs, when the PR has beads — an open question. More than three
+  surviving — one open question about the PR's scope instead of the list. Record
+  every blind objection and its outcome in `appendixBlindDesign`. A skipped pass
+  is not itself a finding.
 - An `in_progress` task under the PR's root that the PR doesn't finish — high
   when the PR claims to be complete. An open, unclaimed task — an open question
   only: an epic root spans several PRs, so it may belong to a later one.

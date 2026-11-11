@@ -30,6 +30,7 @@ metadata:
 - Read [references/interfaces.md](references/interfaces.md) when you need the exact function signatures or data type definitions for a module
 - Read [references/enrichment-cli.md](references/enrichment-cli.md) when you need to know what an enrichment CLI command *does* and when to reach for it (the command names below are terse; this is where their meaning lives)
 - Read [references/functional-testing.md](references/functional-testing.md) when you run the optional functional test (step 4) — what `functional/cli.js` does, how the built server is configured, and how to drive it from the subagent
+- Read [references/blind-design.md](references/blind-design.md) when you run the blind design pass (step 3) — picking high-impact surfaces, building the subagent's bundle, its return shape, and reconciling its objections against the beads
 
 ## Execution Sequence
 
@@ -37,7 +38,8 @@ When invoked with `/review <pr-number>`:
 
 The run has two phases (see [DESIGN.md](DESIGN.md)). **Phase 1** (step 1) is
 deterministic and builds the graph. **Phase 2** (steps 3–5) is agent-driven —
-enrichment, an optional functional test, then the report. Step 2 chooses the
+enrichment with a blind design pass, an optional functional test, then the
+report. Step 2 chooses the
 playbooks that guide Phase 2; step 6 tears down.
 
 ### 1. Setup + Phase 1 (deterministic)
@@ -144,6 +146,35 @@ section and inherited by every playbook.
 Follow the playbook's Enrich section (graph writes) and its Inspect section (read
 the changed source, recording concerns as candidate findings for Interpret to
 weigh at report time). Check Escape conditions.
+
+**Blind design pass (subagent, mandatory when gated).** Decision beads are
+trusted by default, so the review only fact-checks most of them. A decision that
+governs a **high-impact surface** — public API, configuration or protocol;
+user-visible behaviour; a one-way door such as grammar syntax or a serialization
+format — is also challenged, and the challenge draws on an agent that has not
+read the beads. `general.md`'s Inspect (*High-impact design*) holds the gate and
+the challenge questions; [references/blind-design.md](references/blind-design.md)
+holds the mechanics:
+
+- **Gate** — pick the high-impact surfaces from the diff (not from the beads).
+  If there are none, skip the pass and record the reason in
+  `appendixBlindDesign.skipped`.
+- **Bundle** — write each surface's contract after and before the change, its
+  release status, the JIRA text and any named standards to
+  `/tmp/pr-review-<pr>/blind/`.
+- **Isolation** — the subagent reads only that directory. It does NOT get the
+  beads, the PR description, PR or JIRA comment threads, the knowledge graph,
+  `evidence.json`, your Inspect notes, the functional test or implementation
+  code. Brief it as an experienced committer who also implements a provider.
+- **Return** — per surface, what it commits the project to and at most three
+  typed objections (`premise`, `counterargument`, `alternative`), or none.
+- **Reconcile** — you, having read the beads, sort each objection against them:
+  confirmed false premise, unaddressed counterargument, missing alternative,
+  already answered (dropped) or ungoverned surface. Interpret grades the
+  outcomes; at most three challenges reach the report.
+
+The pass produces candidates, not report entries. It can run in parallel with
+the functional test (step 4): the two subagents share nothing.
 
 ### 4. Phase 2 — Functional Testing (optional, subagent)
 
@@ -299,8 +330,17 @@ produce a complete evidence-with-narrative JSON file. Write it to
   yourself. `testCode` is the **complete, unabbreviated** labeled battery from the
   subagent (see step 4); it is the source of truth the Functional Test section
   summarizes by label.
+- `appendixBlindDesign` — the blind design pass (step 3): either
+  `{ skipped }`, the gate reason as HTML, or `{ surfaces, objections }`.
+  `surfaces` is `[{ id, kind, name, commitment }]`; `objections` is
+  `[{ id, surface, type, claim, outcome, note }]`, one per objection the
+  subagent returned, with `outcome` one of `finding`, `openQuestion` or
+  `dropped` and `note` (HTML) saying which decision answers or fails to answer
+  it. Every entry in `findings` or `openQuestions` that came from the pass names
+  its objection id, so a reader can trace it back.
 
-All `body`, `intro` and question `text` fields (and `functionalTest.plan`/`observations`, `appendixFunctional.environment`)
+All `body`, `intro` and question `text` fields (and `functionalTest.plan`/`observations`, `appendixFunctional.environment`,
+`appendixBlindDesign.skipped` and each objection's `note`)
 are HTML — use `<code>`, `<strong>`, `<ul>`, `<p>` as needed. The raw-text fields
 noted above are the exception. The renderer handles all layout, CSS, and structure.
 
