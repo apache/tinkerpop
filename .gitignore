@@ -60,3 +60,7 @@ node_modules/
 node/
 gremlin-js/node_modules/
 gremlin-js/node/
+# output left behind by older branches, where these modules lived at the root rather than under gremlin-js/
+/gremlin-javascript/
+/gremlin-mcp/
+/gremlint/
