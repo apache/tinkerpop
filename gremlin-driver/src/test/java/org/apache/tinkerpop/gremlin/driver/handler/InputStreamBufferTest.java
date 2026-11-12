@@ -23,6 +23,16 @@ import org.apache.tinkerpop.gremlin.driver.stream.ByteBufQueueInputStream;
 import org.apache.tinkerpop.gremlin.driver.stream.InputStreamBuffer;
 import org.junit.Test;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.ByteBuffer;
+import java.util.Arrays;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import static org.junit.Assert.*;
 
 public class InputStreamBufferTest {
@@ -90,5 +100,178 @@ public class InputStreamBufferTest {
     @Test(expected = UnsupportedOperationException.class)
     public void shouldThrowOnNioBuffer() {
         new InputStreamBuffer(new ByteBufQueueInputStream()).nioBuffer();
+    }
+
+    @Test
+    public void shouldRoundTripBoundaryPrimitiveValues() throws Exception {
+        final ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        final DataOutputStream dos = new DataOutputStream(bos);
+        dos.writeBoolean(false);
+        dos.writeByte(-1);
+        dos.writeShort(Short.MIN_VALUE);
+        dos.writeInt(Integer.MIN_VALUE);
+        dos.writeLong(Long.MAX_VALUE);
+        dos.writeFloat(Float.NaN);
+        dos.writeDouble(Double.NEGATIVE_INFINITY);
+
+        final InputStreamBuffer buffer = bufferOf(bos.toByteArray());
+        assertFalse(buffer.readBoolean());
+        assertEquals((byte) -1, buffer.readByte());
+        assertEquals(Short.MIN_VALUE, buffer.readShort());
+        assertEquals(Integer.MIN_VALUE, buffer.readInt());
+        assertEquals(Long.MAX_VALUE, buffer.readLong());
+        assertTrue(Float.isNaN(buffer.readFloat()));
+        assertEquals(Double.NEGATIVE_INFINITY, buffer.readDouble(), 0.0);
+        // 1 + 1 + 2 + 4 + 8 + 4 + 8 = 28 bytes consumed
+        assertEquals(28, buffer.readerIndex());
+    }
+
+    @Test
+    public void shouldReadBytesIntoArrayWithOffsetAndLength() {
+        final InputStreamBuffer buffer = bufferOf(new byte[]{10, 20, 30, 40});
+        final byte[] dest = new byte[6];
+        buffer.readBytes(dest, 1, 4);
+        assertArrayEquals(new byte[]{0, 10, 20, 30, 40, 0}, dest);
+        assertEquals(4, buffer.readerIndex());
+    }
+
+    @Test
+    public void shouldReadBytesIntoByteBuffer() {
+        final InputStreamBuffer buffer = bufferOf(new byte[]{1, 2, 3, 4});
+        final ByteBuffer dst = ByteBuffer.allocate(4);
+        buffer.readBytes(dst);
+        assertArrayEquals(new byte[]{1, 2, 3, 4}, dst.array());
+        assertEquals(4, buffer.readerIndex());
+    }
+
+    @Test
+    public void shouldReadBytesIntoOutputStream() throws Exception {
+        final InputStreamBuffer buffer = bufferOf(new byte[]{5, 6, 7});
+        final ByteArrayOutputStream out = new ByteArrayOutputStream();
+        buffer.readBytes(out, 3);
+        assertArrayEquals(new byte[]{5, 6, 7}, out.toByteArray());
+        assertEquals(3, buffer.readerIndex());
+    }
+
+    @Test
+    public void shouldWrapIOExceptionFromUnderlyingStreamOnRead() {
+        final List<BufferOp> reads = Arrays.asList(
+                InputStreamBuffer::readBoolean,
+                InputStreamBuffer::readByte,
+                InputStreamBuffer::readShort,
+                InputStreamBuffer::readInt,
+                InputStreamBuffer::readLong,
+                InputStreamBuffer::readFloat,
+                InputStreamBuffer::readDouble,
+                b -> b.readBytes(new byte[1]),
+                b -> b.readBytes(new byte[1], 0, 1),
+                b -> b.readBytes(ByteBuffer.allocate(1)));
+
+        for (final BufferOp read : reads) {
+            // an empty stream forces DataInputStream to throw EOFException, which the class wraps
+            final InputStreamBuffer buffer = bufferOf(new byte[0]);
+            try {
+                read.apply(buffer);
+                fail("expected RuntimeException wrapping an IOException");
+            } catch (RuntimeException e) {
+                assertTrue("cause should be an IOException but was " + e.getCause(),
+                        e.getCause() instanceof IOException);
+            }
+        }
+    }
+
+    @Test(expected = IOException.class)
+    public void shouldPropagateIOExceptionFromReadBytesToOutputStream() throws Exception {
+        // this overload declares throws IOException, so the EOFException is not wrapped
+        bufferOf(new byte[0]).readBytes(new ByteArrayOutputStream(), 4);
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void shouldThrowOnGetBytes() {
+        bufferOf(new byte[0]).getBytes(0, new byte[1]);
+    }
+
+    @Test
+    public void shouldNotBeDirect() {
+        assertFalse(bufferOf(new byte[0]).isDirect());
+    }
+
+    @Test
+    public void shouldThrowUnsupportedOnWriteAndRandomAccessOperations() {
+        final List<BufferOp> unsupported = Arrays.asList(
+                b -> b.writeBoolean(true),
+                b -> b.writeByte(1),
+                b -> b.writeShort(1),
+                b -> b.writeLong(1L),
+                b -> b.writeFloat(1f),
+                b -> b.writeDouble(1d),
+                b -> b.writeBytes(new byte[1]),
+                b -> b.writeBytes(ByteBuffer.allocate(1)),
+                b -> b.writeBytes(new byte[1], 0, 1),
+                InputStreamBuffer::writerIndex,
+                b -> b.writerIndex(0),
+                InputStreamBuffer::markWriterIndex,
+                InputStreamBuffer::resetWriterIndex,
+                b -> b.readerIndex(0),
+                InputStreamBuffer::capacity,
+                InputStreamBuffer::retain,
+                InputStreamBuffer::referenceCount,
+                InputStreamBuffer::nioBufferCount,
+                InputStreamBuffer::nioBuffers,
+                b -> b.nioBuffers(0, 1),
+                b -> b.nioBuffer(0, 1));
+
+        for (final BufferOp op : unsupported) {
+            final InputStreamBuffer buffer = bufferOf(new byte[0]);
+            try {
+                op.apply(buffer);
+                fail("expected UnsupportedOperationException");
+            } catch (UnsupportedOperationException expected) {
+                // expected
+            }
+        }
+    }
+
+    @Test
+    public void shouldReleaseAndCloseUnderlyingStream() {
+        final AtomicBoolean closed = new AtomicBoolean(false);
+        final InputStream in = new ByteArrayInputStream(new byte[]{1, 2, 3}) {
+            @Override
+            public void close() throws IOException {
+                closed.set(true);
+                super.close();
+            }
+        };
+
+        final InputStreamBuffer buffer = new InputStreamBuffer(in);
+        assertTrue(buffer.release());
+        assertTrue("underlying stream should be closed by release()", closed.get());
+    }
+
+    @Test
+    public void shouldReturnTrueFromReleaseEvenWhenCloseFails() {
+        final InputStream in = new InputStream() {
+            @Override
+            public int read() {
+                return -1;
+            }
+
+            @Override
+            public void close() throws IOException {
+                throw new IOException("close failure should be swallowed");
+            }
+        };
+
+        // release() performs a best-effort close and must still report success
+        assertTrue(new InputStreamBuffer(in).release());
+    }
+
+    private static InputStreamBuffer bufferOf(final byte[] bytes) {
+        return new InputStreamBuffer(new ByteArrayInputStream(bytes));
+    }
+
+    @FunctionalInterface
+    private interface BufferOp {
+        void apply(InputStreamBuffer buffer);
     }
 }
