@@ -1121,3 +1121,29 @@ Feature: Step - mergeV()
       """
     When iterated to list
     Then the traversal will raise an error with message containing text of "option(onMatch) can only be specified once"
+
+  Scenario: g_injectX1_1X_mergeVXlabel_person_name_aliceX_optionXonMatch_matched_YX
+    Given the empty graph
+    And using the parameter xx1 defined as "m[{\"t[label]\": \"person\", \"name\":\"alice\"}]"
+    And using the parameter xx2 defined as "m[{\"matched\":\"Y\"}]"
+    And the traversal of
+      """
+      g.inject(1, 1).mergeV(xx1).option(Merge.onMatch, xx2)
+      """
+    When iterated to list
+    Then the result should have a count of 2
+    And the graph should return 1 for count of "g.V()"
+    And the graph should return 1 for count of "g.V().has(\"person\",\"name\",\"alice\").has(\"matched\",\"Y\")"
+
+  Scenario: g_injectXlabel_person_name_alice_label_person_name_aliceX_mergeV_optionXonMatch_matched_YX
+    Given the empty graph
+    And using the parameter xx1 defined as "m[{\"t[label]\": \"person\", \"name\":\"alice\"}]"
+    And using the parameter xx2 defined as "m[{\"matched\":\"Y\"}]"
+    And the traversal of
+      """
+      g.inject(xx1, xx1).mergeV().option(Merge.onMatch, xx2)
+      """
+    When iterated to list
+    Then the result should have a count of 2
+    And the graph should return 1 for count of "g.V()"
+    And the graph should return 1 for count of "g.V().has(\"person\",\"name\",\"alice\").has(\"matched\",\"Y\")"

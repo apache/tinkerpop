@@ -1177,3 +1177,39 @@ Feature: Step - mergeE()
       """
     When iterated to list
     Then the traversal will raise an error with message containing text of "option(inV) can only be specified once"
+
+  Scenario: g_injectX1_1X_mergeEXlabel_knows_out_marko_in_vadasX_optionXonMatch_matched_YX
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("person").property("name", "marko").
+        addV("person").property("name", "vadas")
+      """
+    And using the parameter xx1 defined as "m[{\"t[label]\": \"knows\", \"D[OUT]\":\"v[marko]\", \"D[IN]\":\"v[vadas]\"}]"
+    And using the parameter xx2 defined as "m[{\"matched\":\"Y\"}]"
+    And the traversal of
+      """
+      g.inject(1, 1).mergeE(xx1).option(Merge.onMatch, xx2)
+      """
+    When iterated to list
+    Then the result should have a count of 2
+    And the graph should return 1 for count of "g.E()"
+    And the graph should return 1 for count of "g.E().hasLabel(\"knows\").has(\"matched\",\"Y\")"
+
+  Scenario: g_injectXlabel_knows_out_marko_in_vadas_label_knows_out_marko_in_vadasX_mergeE_optionXonMatch_matched_YX
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("person").property("name", "marko").
+        addV("person").property("name", "vadas")
+      """
+    And using the parameter xx1 defined as "m[{\"t[label]\": \"knows\", \"D[OUT]\":\"v[marko]\", \"D[IN]\":\"v[vadas]\"}]"
+    And using the parameter xx2 defined as "m[{\"matched\":\"Y\"}]"
+    And the traversal of
+      """
+      g.inject(xx1, xx1).mergeE().option(Merge.onMatch, xx2)
+      """
+    When iterated to list
+    Then the result should have a count of 2
+    And the graph should return 1 for count of "g.E()"
+    And the graph should return 1 for count of "g.E().hasLabel(\"knows\").has(\"matched\",\"Y\")"

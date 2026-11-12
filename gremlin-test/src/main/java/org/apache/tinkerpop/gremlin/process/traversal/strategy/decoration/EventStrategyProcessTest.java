@@ -88,6 +88,28 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
 
     @Test
     @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
+    public void shouldTriggerAddVertexForEachBulkedTraverser() {
+        final StubMutationListener listener1 = new StubMutationListener();
+        final StubMutationListener listener2 = new StubMutationListener();
+        final EventStrategy.Builder builder = EventStrategy.build()
+                .addListener(listener1)
+                .addListener(listener2);
+
+        if (graph.features().graph().supportsTransactions())
+            builder.eventQueue(new EventStrategy.TransactionalEventQueue(graph));
+
+        final EventStrategy eventStrategy = builder.create();
+
+        final GraphTraversalSource gts = create(eventStrategy);
+        gts.inject(1, 1).addV().property("any", "thing").iterate();
+
+        tryCommit(graph, g -> assertEquals(2, IteratorUtils.count(gts.V().has("any", "thing"))));
+        assertEquals(2, listener1.addVertexEventRecorded());
+        assertEquals(2, listener2.addVertexEventRecorded());
+    }
+
+    @Test
+    @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
     public void shouldTriggerAddVertexViaMergeV() {
         final StubMutationListener listener1 = new StubMutationListener();
         final StubMutationListener listener2 = new StubMutationListener();
