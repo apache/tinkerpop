@@ -80,6 +80,8 @@ class GremlinSetCommandTest {
                 candidateStrings.contains(Preferences.PREF_VERTEX_COLOR))
         assertTrue("expected input.prompt in completer candidates: ${candidateStrings}".toString(),
                 candidateStrings.contains(Preferences.PREF_INPUT_PROMPT))
+        assertTrue("expected warnings in completer candidates: ${candidateStrings}".toString(),
+                candidateStrings.contains(Preferences.PREF_WARNINGS))
     }
 
     @Test

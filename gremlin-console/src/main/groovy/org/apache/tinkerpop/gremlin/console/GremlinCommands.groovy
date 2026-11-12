@@ -42,4 +42,8 @@ class GremlinCommands {
                 new UninstallCommand(mediator),
                 new ClsCommand(mediator)] as Command[])
     }
+
+    static String slashName(final String typed) {
+        return "/" + typed.substring(1)
+    }
 }

@@ -61,10 +61,8 @@ class ImportGroovyCustomizer implements GroovyCustomizer {
         final Map<String, String> classImports = new LinkedHashMap<>();
         for (ImportCustomizer customizer : customizers) {
             customizer.getClassImports().forEach(i -> {
-                final String canonicalName = i.getCanonicalName();
-                final String simpleName = canonicalName.substring(canonicalName.lastIndexOf('.') + 1);
-                classImports.remove(simpleName);
-                classImports.put(simpleName, canonicalName);
+                classImports.remove(i.getSimpleName());
+                classImports.put(i.getSimpleName(), i.getCanonicalName());
             });
         }
         classImports.values().forEach(ic::addImports);

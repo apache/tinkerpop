@@ -95,12 +95,7 @@ public class Preferences {
      * Loads the preferences and keeps them up to date as they change.
      */
     public static void expandoMagic() {
-        // Gremlin Handlers
-
-        // Initial Load
         loadDefaultValues()
-
-        // Listeners
         installPropertyListeners()
     }
 

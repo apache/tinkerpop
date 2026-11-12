@@ -73,9 +73,9 @@ class StatementParser implements Parser {
             if (!command && continuesOnNextLine(line)) throw new StatementContinues()
             return parsed
         } catch (EOFError e) {
-            // more input cannot fix a stray closing bracket, and a command with an unclosed quote is reported by
+            // more input cannot fix brackets that do not match, and a command with an unclosed quote is reported by
             // the command, so both are accepted as they are
-            if (e instanceof StatementContinues || !(command || hasStrayClosingBracket(line))) throw e
+            if (e instanceof StatementContinues || !(command || cannotBeClosed(line, e))) throw e
             return delegate.parse(line, cursor, ParseContext.SPLIT_LINE)
         }
     }
@@ -95,8 +95,7 @@ class StatementParser implements Parser {
     private boolean isCommandLine(final String line) {
         final String trimmed = line.trim()
         if (!trimmed.startsWith(":") && !trimmed.startsWith("/")) return false
-        final String name = "/" + trimmed.substring(1).split(/\s+/, 2)[0]
-        return isCommand.test(name)
+        return isCommand.test(GremlinCommands.slashName(trimmed.split(/\s+/, 2)[0]))
     }
 
     /**
@@ -130,22 +129,14 @@ class StatementParser implements Parser {
     }
 
     /**
-     * Whether a closing bracket appears before any matching opening bracket, which no further input can fix.
-     * Brackets inside strings count too.
+     * Whether more input cannot fix the brackets, e.g. {@code [1, 2))}, which the line reader reports as missing a
+     * {@code ]}.
      */
-    static boolean hasStrayClosingBracket(final String statement) {
-        final Map<Character, Character> openerOf = [(')' as char): ('(' as char), (']' as char): ('[' as char), ('}' as char): ('{' as char)]
-        final Map<Character, Integer> open = [('(' as char): 0, ('[' as char): 0, ('{' as char): 0]
-        for (char c : statement.toCharArray()) {
-            if (open.containsKey(c)) {
-                open[c] = open[c] + 1
-            } else if (openerOf.containsKey(c)) {
-                final char opener = openerOf[c]
-                open[opener] = open[opener] - 1
-                if (open[opener] < 0) return true
-            }
-        }
-        return false
+    private boolean cannotBeClosed(final String statement, final EOFError e) {
+        if (e.missing?.startsWith("missing: ")) return true
+        if (!e.missing?.startsWith("add: ")) return false
+        final String closing = e.missing.substring("add: ".length())
+        return !parses(statement + "\n" + closing) && !parses(statement + "\n" + NEXT_LINE + "\n" + closing)
     }
 
     /**

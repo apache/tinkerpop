@@ -42,33 +42,33 @@ class PluginCommandTest {
 
     @Test
     void shouldRequirePluginNameForUse() {
-        assertTrue(((String) cmd.do_use.call([])).contains("Specify the name"))
+        assertTrue(((String) cmd.execute(["use"])).contains("Specify the name"))
     }
 
     @Test
     void shouldReportUnknownPluginForUse() {
-        assertTrue(((String) cmd.do_use.call(["no.such.plugin"])).contains("could not be found"))
+        assertTrue(((String) cmd.execute(["use", "no.such.plugin"])).contains("could not be found"))
     }
 
     @Test
     void shouldRequirePluginNameForUnuse() {
-        assertTrue(((String) cmd.do_unuse.call([])).contains("Specify the name"))
+        assertTrue(((String) cmd.execute(["unuse"])).contains("Specify the name"))
     }
 
     @Test
     void shouldReportUnknownPluginForUnuse() {
-        assertTrue(((String) cmd.do_unuse.call(["no.such.plugin"])).contains("could not be found"))
+        assertTrue(((String) cmd.execute(["unuse", "no.such.plugin"])).contains("could not be found"))
     }
 
     @Test
     void shouldDeactivateAnAvailablePlugin() {
         def engine = new GroovyEngine()
         def mediator = new Mediator(null)
-        // populate a real plugin from the classpath so do_unuse's any/find predicates + deactivate path run
+        // populate a real plugin from the classpath so the lookup and deactivate path run
         def plugin = ServiceLoader.load(GremlinPlugin, engine.getClassLoader()).iterator().next()
         mediator.availablePlugins.put(plugin.class.name, new PluggedIn((GremlinPlugin) plugin, engine, false))
         def cmd = new PluginCommand(mediator)
-        def result = (String) cmd.do_unuse.call([plugin.name])
+        def result = (String) cmd.execute(["unuse", plugin.name])
         assertTrue(result.contains("deactivated"))
     }
 

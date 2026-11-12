@@ -190,6 +190,8 @@ class SugarLoaderTest {
     @Test
     public void shouldAllowMapRangeSubscript() {
         SugarLoader.load()
+        // the subscript is added to Map, which a LinkedHashMap metaclass made by an earlier test does not pick up
+        GroovySystem.metaClassRegistry.removeMetaClass(LinkedHashMap)
         assertEquals([a: 1, b: 2], [a: 1, b: 2, c: 3][0..1])
         assertEquals([b: 2, c: 3], [a: 1, b: 2, c: 3][1..5])
     }

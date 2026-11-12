@@ -56,6 +56,7 @@ class PluggedIn {
                 ic.addStarImports(it.getClassPackages().collect() { it.getName() }.toArray(new String[0]))
                 ic.addStaticStars(it.getMethodClasses().collect() { it.getCanonicalName() }.toArray(new String[0]))
                 ic.addStaticStars(it.getEnumClasses().collect() { it.getCanonicalName() }.toArray(new String[0]))
+                ic.addStaticStars(it.getFieldClasses().collect() { it.getCanonicalName() }.toArray(new String[0]))
                 engine.getCompilerConfiguration().addCompilationCustomizers(ic)
             } else if (it instanceof ScriptCustomizer) {
                 it.getScripts().collect { it.join(LINE_SEPARATOR) }.each { engine.execute(it) }

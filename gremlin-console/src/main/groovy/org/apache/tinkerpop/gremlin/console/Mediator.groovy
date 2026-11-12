@@ -34,10 +34,6 @@ class Mediator {
         this.console = console
     }
 
-    def showShellEvaluationOutput(final boolean show) {
-        console.showShellEvaluationOutput(show)
-    }
-
     def writePluginState() {
         def file = new File(ConsoleFs.PLUGIN_CONFIG_FILE)
 
@@ -67,7 +63,4 @@ class Mediator {
         return file.exists() ? file.readLines().findAll { StringUtils.isNotEmpty(it) } : []
     }
 
-    def void close() {
-        // do cleanup if needed
-    }
 }
