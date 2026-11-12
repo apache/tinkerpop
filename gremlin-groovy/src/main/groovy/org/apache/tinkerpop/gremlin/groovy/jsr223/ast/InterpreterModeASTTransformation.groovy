@@ -48,6 +48,8 @@ import org.codehaus.groovy.syntax.Types
 import org.codehaus.groovy.transform.ASTTransformation
 import org.codehaus.groovy.transform.GroovyASTTransformation
 
+import java.lang.reflect.Modifier
+
 /**
  * An {@code ASTTransformation} that promotes "local" variables to global ones.  In this case, "local" refers to those
  * variables that are defined in a script with "def" at the root of the script.  These would typically be interpreted
@@ -118,6 +120,8 @@ class InterpreterModeASTTransformation implements ASTTransformation {
             if (!(declaration.leftExpression instanceof VariableExpression)) return
 
             def variable = (VariableExpression) declaration.leftExpression
+            // the value is now assigned after the declaration, which a final variable does not allow
+            variable.modifiers = variable.modifiers & ~Modifier.FINAL
             hoisted << variable
             expressionStatement.expression = declaration.rightExpression instanceof EmptyExpression ?
                     new VariableExpression(variable) :

@@ -101,7 +101,7 @@ class StatementParserTest {
         // open brackets, strings and comments, including a license header at the top of a script
         for (String unfinished : ["[1,2,", "foo(", "foo(1, [2, 3]", "add3 = { a ->", "if (true) {", "class Person {",
                                   "s = \'\'\'", "s = \"\"\"", "/*", "/**\n * license header", "x = 1 /* note",
-                                  "x = 1 +", "g.V(1).", "x ==", "if (x)", "g.V().\n  repeat(out())."]) {
+                                  "x = 1 +", "g.V(1).", "x ==", "if (x)", "g.V().\n  repeat(out()).", 'x = [")",']) {
             assertTrue(unfinished, script.isUnfinished(unfinished))
         }
         // more lines cannot fix these, so they run and fail at once rather than swallowing the rest of the script
@@ -112,11 +112,12 @@ class StatementParserTest {
     }
 
     @Test
-    void shouldFindStrayClosingBrackets() {
-        assertTrue(StatementParser.hasStrayClosingBracket("[1, 2))"))
-        assertTrue(StatementParser.hasStrayClosingBracket("}"))
-        assertFalse(StatementParser.hasStrayClosingBracket("[1, [2]"))
-        assertFalse(StatementParser.hasStrayClosingBracket("foo([1], { it })"))
+    void shouldIgnoreBracketsInStringsWhenWaiting() {
+        assertWaits('x = [")",')
+        assertWaits('m = ["}": 1,')
+        assertWaits('foo("))"')
+        assertAccepted('x = ")")')
+        assertAccepted("x = 1 // )")
     }
 
     private void assertWaits(final String input) {

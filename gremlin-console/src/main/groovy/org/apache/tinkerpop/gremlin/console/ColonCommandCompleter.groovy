@@ -47,8 +47,8 @@ class ColonCommandCompleter implements Completer {
     ParsedLine asSlashCommand(final ParsedLine line) {
         if (line.wordIndex() < 1 || !(line instanceof CompletingParsedLine)) return line
         final String first = line.words()[0]
-        if (!first.startsWith(":") || !isCommand.test("/" + first.substring(1))) return line
-        return new SlashLine((CompletingParsedLine) line, ["/" + first.substring(1)] + line.words().drop(1))
+        if (!first.startsWith(":") || !isCommand.test(GremlinCommands.slashName(first))) return line
+        return new SlashLine((CompletingParsedLine) line, [GremlinCommands.slashName(first)] + line.words().drop(1))
     }
 
     private static class SlashLine implements CompletingParsedLine {

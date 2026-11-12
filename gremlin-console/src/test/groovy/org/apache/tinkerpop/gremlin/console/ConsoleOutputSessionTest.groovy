@@ -65,8 +65,8 @@ class ConsoleOutputSessionTest extends AbstractConsoleSessionTest {
 
     @Test
     void shouldAppendToAListThatWasPrintedEmpty() {
-        // Console.groovy has special handling so that printing an empty list does not keep its iterator around, which
-        // would otherwise make the next line fail with a ConcurrentModificationException
+        // printing a list must not keep its iterator around, which would make adding to it on the next line fail with
+        // a ConcurrentModificationException
         final ConsoleSession console = start()
         assertEquals(["==>null"], console.send("x = []"))
         assertEquals([], console.send("x"))
@@ -183,6 +183,22 @@ class ConsoleOutputSessionTest extends AbstractConsoleSessionTest {
         awaitPreference { Preferences.emptyResult == "" }
         // an empty indicator prints no line at all
         assertEquals([], console.send("null"))
+    }
+
+    @Test
+    void shouldPrintEachKindOfResult() {
+        final ConsoleSession console = start()
+        loadModern(console)
+        assertEquals(["==>v[1]"], console.results("g.V(1).next()"))
+        assertEquals(["==>e[7][1-knows->2]", "==>e[8][1-knows->4]"], console.results("g.E().hasLabel('knows')").sort())
+        assertEquals(["==>[v[1],v[2]]", "==>[v[1],v[3]]", "==>[v[1],v[4]]"], console.results("g.V(1).out().path()").sort())
+        final List<String> folded = console.results("g.V(1).elementMap().fold()")
+        assertEquals(folded.toString(), 1, folded.size())
+        assertTrue(folded[0], folded[0].contains("id:1") && folded[0].contains("label:person"))
+        assertEquals(["==>1", "==>2", "==>3"], console.results("[1, 2, 3].toArray()"))
+        assertEquals(["==>[1,2]", "==>[3,4]"], console.results("[[1, 2], [3, 4]]"))
+        assertEquals(["==>123456789012345"], console.results("123456789012345"))
+        assertEquals(["==>true"], console.results("1 < 2"))
     }
 
     @Test

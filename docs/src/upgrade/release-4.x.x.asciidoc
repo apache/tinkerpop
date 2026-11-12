@@ -404,7 +404,8 @@ by the application that starts the shell, and the Gremlin Console has no way for
 The console classes tied to groovysh 4 changed with it: `GremlinGroovysh` is removed, the classes in
 `org.apache.tinkerpop.gremlin.console.commands` extend JLine's `AbstractCommand` instead of `CommandSupport`,
 `PluggedIn` is constructed with the console's Groovy engine instead of a `Groovysh` and `IO`, and `Mediator` no longer
-has the `evaluating` flag and `IMPORT_*` constants. These classes are internal to the console.
+has the `evaluating` flag, the `IMPORT_*` constants or the `showShellEvaluationOutput()` and `close()` methods. These
+classes are internal to the console.
 
 ==== Graph Driver Providers
 

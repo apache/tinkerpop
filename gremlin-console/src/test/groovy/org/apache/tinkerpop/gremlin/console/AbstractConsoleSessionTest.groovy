@@ -66,7 +66,8 @@ abstract class AbstractConsoleSessionTest {
 
     @After
     void tearDownSession() {
-        sessions.each { if (it != null) try { it.close() } catch (Throwable ignored) { } }
+        // newest first, as each session restores the streams it replaced
+        sessions.reverseEach { if (it != null) try { it.close() } catch (Throwable ignored) { } }
         System.setProperty("user.home", oldHome)
         Ansi.enabled = oldAnsi
         resetPreferences()

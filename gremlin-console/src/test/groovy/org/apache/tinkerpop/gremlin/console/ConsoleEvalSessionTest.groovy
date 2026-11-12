@@ -194,6 +194,44 @@ class ConsoleEvalSessionTest extends AbstractConsoleSessionTest {
     }
 
     @Test
+    void shouldReadTheArgumentsOfCommandsInAScriptLikeTypedOnes() {
+        final List<String> commands = [':set result.prompt "a b> "', ':set result.indicator.null "say \\"hi\\""',
+                                       ':set   max-iteration   7']
+        final List<String> keys = [Preferences.PREF_RESULT_PROMPT, Preferences.PREF_RESULT_IND_NULL,
+                                   Preferences.PREFERENCE_ITERATION_MAX]
+        final ConsoleSession typed = start()
+        commands.each { typed.send(it) }
+        final List<String> typedValues = keys.collect { STORE.get(it, null) }
+        typed.close()
+        assertEquals(["a b> ", "7"], [typedValues[0], typedValues[2]])
+
+        STORE.clear()
+        start([[writeFile("commands.groovy", commands.join("\n") + "\n").absolutePath]])
+        assertEquals(typedValues, keys.collect { STORE.get(it, null) })
+    }
+
+    @Test
+    void shouldRunScriptCommandsByAliasWithLeadingSpacesAndSingleQuotes() {
+        final File script = writeFile("aliases.groovy",
+                "  :pin unuse tinkerpop.utilities\nx = [1,\n  2]\n:set result.prompt 'c d> '\n")
+        final ConsoleSession console = start([[script.absolutePath]])
+        assertEquals("c d> ", STORE.get(Preferences.PREF_RESULT_PROMPT, null))
+        awaitPreference { Preferences.resultPrompt == "c d> " }
+        assertTrue(console.send(":plugin list").contains("c d> tinkerpop.utilities"))
+        assertEquals(["c d> 1", "c d> 2"], console.send("x"))
+    }
+
+    @Test
+    void shouldReportAnUnclosedQuoteInAScriptCommandWithItsLine() {
+        final File script = writeFile("unclosed.groovy", 'a = 1\n:set result.prompt "oops\nb = 2\n')
+        final ConsoleSession console = start([[script.absolutePath]])
+        final String error = console.err.text()
+        assertTrue(error, error.contains("Error in ${script.absolutePath} at [2: :set result.prompt \"oops] - Missing closing \"".toString()))
+        assertEquals(["==>1"], console.results("a"))
+        console.fails("b", "No such property: b")
+    }
+
+    @Test
     void shouldReportAShellCommandInsideAScriptFile() {
         // the groovysh commands only exist once the shell has started, which is after the scripts ran
         final File script = writeFile("shell-command.groovy", "before = 1\n:load other.groovy\nafter = 2\n")

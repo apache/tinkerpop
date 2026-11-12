@@ -23,7 +23,8 @@ import re
 
 import pytest  # noqa: F401 (also used by the parametrize markers below)
 
-from .console_helpers import PROMPT, clean_lines, exit_console, plugin_activated_lines, results, wait_for_exit
+from .console_helpers import PROMPT, UTILITIES_PLUGIN, clean_lines, exit_console, plugin_activated_lines, results, \
+    wait_for_exit
 
 
 def test_help_prints_usage_and_exits_zero(console):
@@ -170,6 +171,34 @@ def test_execute_with_arguments_binds_them_as_strings(console):
     completed = console.run("-e", script, "1", "two")
     assert completed.returncode == 0, completed.stderr
     assert "[String:1, String:two]" in completed.stdout
+
+
+def test_execute_script_runs_console_commands(console):
+    script = console.write_file("commands.groovy", "\n".join([
+        ':set result.prompt "a b> "',
+        ":set result.indicator.null 'no thing'",
+        ':set   max-iteration   7',
+        'x = [1,',
+        '  2]',
+        '  :pin unuse tinkerpop.utilities',
+        ':set input.prompt "say \\"hi\\""',
+        "prefs = java.util.prefs.Preferences.userRoot().node('/org/apache/tinkerpop/gremlin/console')",
+        "println(['result.prompt', 'result.indicator.null', 'max-iteration', 'input.prompt'].collect { prefs.get(it, null) })",
+        'println x',
+    ]) + "\n")
+    completed = console.run("-e", script)
+    assert completed.returncode == 0, completed.stdout + completed.stderr
+    assert '[a b> , no thing, 7, say "hi"]' in completed.stdout
+    assert "[1, 2]" in completed.stdout
+    assert UTILITIES_PLUGIN not in console.read_plugins()
+
+
+def test_execute_script_with_a_bad_console_command_exits_one(console):
+    script = console.write_file("bad-command.groovy", 'x = 1\n:set result.prompt "oops\nprintln "unreachable"\n')
+    completed = console.run("-e", script)
+    assert completed.returncode == 1, completed.stdout + completed.stderr
+    assert 'Error in %s at [2: :set result.prompt "oops] - Missing closing "' % script in completed.stderr
+    assert "unreachable" not in completed.stdout
 
 
 def test_only_the_last_scripts_args_remain(console):

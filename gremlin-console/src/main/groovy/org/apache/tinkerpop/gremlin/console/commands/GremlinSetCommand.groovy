@@ -67,6 +67,7 @@ class GremlinSetCommand extends GremlinCommand {
             set << org.apache.tinkerpop.gremlin.console.Preferences.PREF_STRING_COLOR
             set << org.apache.tinkerpop.gremlin.console.Preferences.PREF_NUMBER_COLOR
             set << org.apache.tinkerpop.gremlin.console.Preferences.PREF_T_COLOR
+            set << org.apache.tinkerpop.gremlin.console.Preferences.PREF_WARNINGS
             return set.toList()
         }
 

@@ -29,7 +29,6 @@ import org.apache.tinkerpop.gremlin.console.commands.UsageException
 import org.apache.tinkerpop.gremlin.groovy.loaders.GremlinLoader
 import org.apache.tinkerpop.gremlin.jsr223.CoreGremlinPlugin
 import org.apache.tinkerpop.gremlin.jsr223.GremlinPlugin
-import org.apache.tinkerpop.gremlin.jsr223.ImportCustomizer
 import org.apache.tinkerpop.gremlin.process.traversal.Failure
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalExplanation
 import org.apache.tinkerpop.gremlin.structure.Edge
@@ -42,6 +41,7 @@ import org.codehaus.groovy.control.customizers.ASTTransformationCustomizer
 import org.codehaus.groovy.tools.shell.IO
 import org.jline.jansi.Ansi
 import org.jline.builtins.Options.HelpException
+import org.jline.reader.EOFError
 import org.jline.reader.LineReader
 import org.jline.reader.Widget
 import org.jline.reader.impl.DefaultHighlighter
@@ -54,6 +54,7 @@ import org.jline.terminal.Terminal
 import org.jline.terminal.TerminalBuilder
 
 import java.lang.reflect.UndeclaredThrowableException
+import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
 import java.util.function.BiConsumer
@@ -84,9 +85,6 @@ class Console {
             "/n": "/inspect",
             "/quit": "/exit"]
 
-    private Iterator tempIterator = Collections.emptyIterator()
-    private boolean showOutput = false
-
     private final IO io
     private final boolean interactive
     private final GroovyEngine engine
@@ -106,9 +104,6 @@ class Console {
         }
 
         final Mediator mediator = new Mediator(this)
-
-        // make sure that remotes are closed on jvm shutdown
-        addShutdownHook { mediator.close() }
 
         engine = createEngine()
 
@@ -147,8 +142,6 @@ class Console {
         commands = GremlinCommands.create(mediator, engine)
 
         if (scriptsAndArgs != null && !scriptsAndArgs.isEmpty()) executeInShell(scriptsAndArgs, commands)
-
-        showOutput = true
     }
 
     /**
@@ -179,6 +172,7 @@ class Console {
                 } as GroovyshOptions.ErrorHandler)
                 .onReaderReady({ LineReader r, GroovySystemRegistry registry ->
                     this.reader = r
+                    keepHistoryInMemoryIfUnusable(r, historyFile)
                     r.setHighlighter(new DefaultHighlighter())
                     // the "......1> " continuation prompt
                     r.setVariable(LineReader.SECONDARY_PROMPT_PATTERN, "%P.%N> ")
@@ -203,14 +197,21 @@ class Console {
     static GroovyEngine createEngine() {
         final CompilerConfiguration compilerConfig = new CompilerConfiguration(CompilerConfiguration.DEFAULT)
         compilerConfig.addCompilationCustomizers(new ASTTransformationCustomizer(ThreadInterrupt.class))
-        org.codehaus.groovy.control.customizers.ImportCustomizer ic = new org.codehaus.groovy.control.customizers.ImportCustomizer()
-        def imports = (ImportCustomizer) CoreGremlinPlugin.instance().getCustomizers("gremlin-groovy").get()[0]
-        ic.addStarImports(imports.getClassPackages().collect() { it.getName() }.toArray(new String[0]))
-        ic.addStaticStars(imports.getMethodClasses().collect() { it.getCanonicalName() }.toArray(new String[0]))
-        ic.addStaticStars(imports.getEnumClasses().collect() { it.getCanonicalName() }.toArray(new String[0]))
-        ic.addStaticStars(imports.getFieldClasses().collect() { it.getCanonicalName() }.toArray(new String[0]))
-        compilerConfig.addCompilationCustomizers(ic)
-        return new GroovyEngine(Console.class.classLoader, new Binding(), compilerConfig)
+        final GroovyEngine engine = new GroovyEngine(Console.class.classLoader, new Binding(), compilerConfig)
+        new PluggedIn(CoreGremlinPlugin.instance(), engine, false).activate()
+        return engine
+    }
+
+    /**
+     * Keeps the history in memory when the history file cannot be used, which the line reader would fail on.
+     */
+    private void keepHistoryInMemoryIfUnusable(final LineReader r, final Path historyFile) {
+        if (!Files.exists(historyFile) ||
+                (Files.isRegularFile(historyFile) && Files.isReadable(historyFile) && Files.isWritable(historyFile)))
+            return
+        io.err.println(Colorizer.render(Preferences.errorColor,
+                "Cannot use the history file $historyFile - the history of this session will not be saved"))
+        r.setVariable(LineReader.HISTORY_FILE, null)
     }
 
     /**
@@ -230,85 +231,43 @@ class Console {
         } as Widget)
     }
 
-    def showShellEvaluationOutput(final boolean show) {
-        showOutput = show
-    }
-
     private void handleResultIterate(final Object result) {
-        if (!showOutput) return
+        // give ctrl+c a chance
+        Thread.yield()
+        if (interruptedWhilePrinting()) return
 
-        while (true) {
+        if (result instanceof TraversalExplanation) {
+            final int width = reader == null ? 80 : reader.terminal.width
+            println(Colorizer.render(Preferences.resultPromptColor, (buildResultPrompt() + result.prettyPrint(width < 20 ? 80 : width))))
+            return
+        }
+
+        final Iterator iterator = asIterator(result)
+        if (iterator == null) {
+            printResult(result)
+            return
+        }
+
+        int counter = 0
+        while (iterator.hasNext() && (Preferences.maxIteration == -1 || counter < Preferences.maxIteration)) {
             // give ctrl+c a chance
             Thread.yield()
-
             if (interruptedWhilePrinting()) return
 
-            if (this.tempIterator.hasNext()) {
-                int counter = 0
-                while (this.tempIterator.hasNext() && (Preferences.maxIteration == -1 || counter < Preferences.maxIteration)) {
-                    // give ctrl+c a chance
-                    Thread.yield()
-
-                    if (interruptedWhilePrinting()) return
-
-                    printResult(tempIterator.next())
-                    counter++
-                }
-                if (this.tempIterator.hasNext())
-                    println(Colorizer.render(Preferences.resultPromptColor, ELLIPSIS))
-                this.tempIterator = Collections.emptyIterator()
-                break
-            } else {
-                try {
-                    // if the result is an empty iterator then the tempIterator needs to be set to one, as a
-                    // future assignment to the strategies that produced the iterator will maintain that reference
-                    // and try to iterate it above.  in other words, this:
-                    //
-                    // x =[]
-                    // x << "test"
-                    //
-                    // would throw a ConcurrentModificationException because the assignment of x to the tempIterator
-                    // on the first line would maintain a reference on the next result iteration call and would
-                    // drop into the other part of this if statement and throw.
-                    if (result instanceof Iterator) {
-                        this.tempIterator = (Iterator) result
-                        if (!this.tempIterator.hasNext()) {
-                            this.tempIterator = Collections.emptyIterator()
-                            return
-                        }
-                    } else if (result instanceof Iterable) {
-                        this.tempIterator = ((Iterable) result).iterator()
-                        if (!this.tempIterator.hasNext()) {
-                            this.tempIterator = Collections.emptyIterator()
-                            return
-                        }
-                    } else if (result instanceof Object[]) {
-                        this.tempIterator = new ArrayIterator((Object[]) result)
-                        if (!this.tempIterator.hasNext()) {
-                            this.tempIterator = Collections.emptyIterator()
-                            return
-                        }
-                    } else if (result instanceof Map) {
-                        this.tempIterator = ((Map) result).entrySet().iterator()
-                        if (!this.tempIterator.hasNext()) {
-                            this.tempIterator = Collections.emptyIterator()
-                            return
-                        }
-                    } else if (result instanceof TraversalExplanation) {
-                        final int width = reader == null ? 80 : reader.terminal.width
-                        println(Colorizer.render(Preferences.resultPromptColor,(buildResultPrompt() + result.prettyPrint(width < 20 ? 80 : width))))
-                        return
-                    } else {
-                        printResult(result)
-                        return
-                    }
-                } catch (final Exception e) {
-                    this.tempIterator = Collections.emptyIterator()
-                    throw e
-                }
-            }
+            printResult(iterator.next())
+            counter++
         }
+        if (iterator.hasNext())
+            println(Colorizer.render(Preferences.resultPromptColor, ELLIPSIS))
         System.out.flush()
+    }
+
+    private static Iterator asIterator(final Object result) {
+        if (result instanceof Iterator) return (Iterator) result
+        if (result instanceof Iterable) return ((Iterable) result).iterator()
+        if (result instanceof Object[]) return new ArrayIterator((Object[]) result)
+        if (result instanceof Map) return ((Map) result).entrySet().iterator()
+        return null
     }
 
     /**
@@ -316,7 +275,6 @@ class Console {
      */
     private boolean interruptedWhilePrinting() {
         if (!Thread.interrupted()) return false
-        this.tempIterator = Collections.emptyIterator()
         io.out.println("Execution interrupted by ctrl+c")
         return true
     }
@@ -369,8 +327,6 @@ class Console {
     }
 
     private void handleError(Throwable e) {
-        this.tempIterator = Collections.emptyIterator()
-
         // ctrl+c interrupts the running statement. inside a closure that implements an interface, e.g. one coerced
         // with "as Iterator", the InterruptedException arrives wrapped.
         if (e instanceof UndeclaredThrowableException && e.cause instanceof InterruptedException)
@@ -411,17 +367,13 @@ class Console {
         // ctrl+c leaves the interrupt flag set, which would make reading the answer fail
         Thread.interrupted()
         String line
-        if (reader != null) {
-            reader.setVariable(LineReader.DISABLE_HISTORY, true)
-            try {
-                line = reader.readLine("")
-            } catch (Exception ignored) {
-                line = ""
-            } finally {
-                reader.setVariable(LineReader.DISABLE_HISTORY, false)
-            }
-        } else {
-            line = new BufferedReader(new InputStreamReader(System.in)).readLine()
+        reader.setVariable(LineReader.DISABLE_HISTORY, true)
+        try {
+            line = reader.readLine("")
+        } catch (Exception ignored) {
+            line = ""
+        } finally {
+            reader.setVariable(LineReader.DISABLE_HISTORY, false)
         }
         if (null == line) line = ""
         if (line.trim().equalsIgnoreCase("y")) e.printStackTrace(io.err)
@@ -509,8 +461,13 @@ class Console {
      * groovysh's own commands do not exist until the shell starts.
      */
     private static void executeCommand(final String line, final CommandGroup commands) {
-        final List<String> words = new DefaultParser().parse(line, line.length()).words().findAll { !it.isEmpty() }
-        final String name = "/" + words[0].substring(1)
+        List<String> words
+        try {
+            words = new DefaultParser(eofOnUnclosedQuote: true).parse(line, line.length()).words().findAll { !it.isEmpty() }
+        } catch (EOFError e) {
+            throw new IllegalArgumentException("Missing closing " + (e.missing == "quote" ? "'" : '"'))
+        }
+        final String name = GremlinCommands.slashName(words[0])
         if (name in EXIT_COMMANDS) System.exit(0)
 
         final Command command = commands.command(name)
@@ -559,8 +516,6 @@ class Console {
         }
 
         if (options.v) {
-        if (args.length == 1 && !args[0].startsWith("-"))
-            new Console(io, [args[0]], true)
             println("gremlin " + Gremlin.version())
             System.exit(0)
         }

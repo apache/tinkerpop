@@ -20,6 +20,8 @@ package org.apache.tinkerpop.gremlin.console
 
 import org.junit.Test
 
+import java.nio.file.Files
+
 import static org.junit.Assert.assertEquals
 import static org.junit.Assert.assertFalse
 import static org.junit.Assert.assertTrue
@@ -174,6 +176,12 @@ class ConsoleCommandsSessionTest extends AbstractConsoleSessionTest {
     }
 
     @Test
+    void shouldReportSetWithTooManyArguments() {
+        final ConsoleSession console = start()
+        assertEquals(["Command ':set' requires arguments: <name> [<value>]"], console.command(":set a b c"))
+    }
+
+    @Test
     void shouldReportSetWithUnbalancedQuotes() {
         final ConsoleSession console = start()
         console.fails(':set result.prompt "oops', 'Missing closing "')
@@ -222,6 +230,18 @@ class ConsoleCommandsSessionTest extends AbstractConsoleSessionTest {
     private static List<List> historyEntries(final List<String> output) {
         return output.collect { it =~ /^\s*(\d+)\s+(.*)$/ }.findAll { it.matches() }
                 .collect { [Integer.parseInt(it.group(1)), it.group(2)] }
+    }
+
+    @Test
+    void shouldStartWithAHistoryFileThatCannotBeOpened() {
+        final java.nio.file.Path history = Files.createDirectory(home.resolve(".gremlin_groovy_history"))
+        final ConsoleSession console = start()
+        assertTrue(console.err.text(), console.err.text().contains(
+                "Cannot use the history file $history - the history of this session will not be saved".toString()))
+        assertEquals(["==>2"], console.results("1+1"))
+        assertTrue(console.command(":history").any { it.contains("1+1") })
+        assertEquals(0, console.close())
+        assertTrue(Files.isDirectory(history))
     }
 
     @Test

@@ -145,6 +145,11 @@ public class GremlinGroovyScriptEngineTest {
         }
 
         assertEquals(10, engine.eval("addItUp(zzz,xxx)"));
+
+        assertEquals(5, engine.eval("final fff = 5"));
+        assertEquals(5, engine.eval("fff"));
+        assertEquals(6, engine.eval("final int ggg = 6"));
+        assertEquals(6, engine.eval("ggg"));
     }
 
     @Test
