@@ -18,6 +18,8 @@
  */
 package org.apache.tinkerpop.gremlin.structure.geo;
 
+import org.locationtech.jts.geom.Envelope;
+
 import java.util.Arrays;
 
 /**
@@ -65,12 +67,16 @@ final class Coordinates {
 
     /**
      * Returns the 2D bounding box of a geometry as {@code {minX, minY, maxX, maxY}}, or null when
-     * the geometry holds no coordinate.
+     * the geometry holds no coordinate. The box spans every coordinate of the geometry, the hole
+     * rings of a polygon included, since a TinkerPop polygon accepts a hole that reaches outside
+     * its shell.
      */
     static double[] boundingBox(final Geometry geometry) {
-        final BoundingBoxVisitor box = new BoundingBoxVisitor();
-        visitPoints(geometry, box);
-        return box.toArray();
+        final Envelope envelope = new Envelope();
+        visitPoints(geometry, point -> envelope.expandToInclude(point.x(), point.y()));
+        return envelope.isNull()
+                ? null
+                : new double[]{envelope.getMinX(), envelope.getMinY(), envelope.getMaxX(), envelope.getMaxY()};
     }
 
     /**
@@ -99,40 +105,6 @@ final class Coordinates {
 
         private double[] toArray() {
             return size == values.length ? values : Arrays.copyOf(values, size);
-        }
-    }
-
-    /**
-     * Tracks the 2D extent of every visited point.
-     */
-    private static final class BoundingBoxVisitor implements PointVisitor {
-
-        private double minX;
-        private double minY;
-        private double maxX;
-        private double maxY;
-        private boolean any;
-
-        @Override
-        public void visit(final Point point) {
-            final double x = point.x();
-            final double y = point.y();
-            if (!any) {
-                minX = x;
-                maxX = x;
-                minY = y;
-                maxY = y;
-                any = true;
-                return;
-            }
-            if (x < minX) minX = x;
-            if (x > maxX) maxX = x;
-            if (y < minY) minY = y;
-            if (y > maxY) maxY = y;
-        }
-
-        private double[] toArray() {
-            return any ? new double[]{minX, minY, maxX, maxY} : null;
         }
     }
 }

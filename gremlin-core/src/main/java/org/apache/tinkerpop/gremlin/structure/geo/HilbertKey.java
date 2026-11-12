@@ -18,13 +18,19 @@
  */
 package org.apache.tinkerpop.gremlin.structure.geo;
 
+import org.locationtech.jts.shape.fractal.HilbertCode;
+
 /**
  * Package-private locality key used as the third key of the geometry order. The key is the
  * level-16 Hilbert index of the cell holding the 2D bounding box centre of a geometry, so that
  * geometries which lie near each other on the plane or the globe sort near each other.
  * <p>
+ * The grid is TinkerPop's, specified in gremlin-semantics.asciidoc: each axis is quantised to 16
+ * bits, a geographic coordinate over its own range and any other coordinate over the order
+ * preserving form of the double. The curve index of a cell is JTS's
+ * {@link org.locationtech.jts.shape.fractal.HilbertCode} at level 16.
+ * <p>
  * The key is a 32-bit value. Compare it as unsigned: keys above 2^31 are negative as an int.
- * The grid and curve are specified in gremlin-semantics.asciidoc.
  */
 final class HilbertKey {
 
@@ -104,30 +110,12 @@ final class HilbertKey {
     }
 
     /**
-     * Returns the level-16 Hilbert index of the cell (x, y). Both arguments are cell indexes in
+     * Returns the level-16 Hilbert index of the cell (x, y), which is JTS's
+     * {@link HilbertCode#encode(int, int, int)} at level 16. Both arguments are cell indexes in
      * 0..65535, and the result is a 32 bit value to be compared as an unsigned integer.
      */
     static int encode(final int x, final int y) {
-        int cellX = x;
-        int cellY = y;
-        long index = 0;
-        for (int step = SIDE / 2; step > 0; step /= 2) {
-            final int quadrantX = (cellX & step) > 0 ? 1 : 0;
-            final int quadrantY = (cellY & step) > 0 ? 1 : 0;
-            index += (long) step * step * ((3 * quadrantX) ^ quadrantY);
-            // reflect and transpose the cell, so the next finer step is read in the frame the
-            // curve enters that quadrant with
-            if (quadrantY == 0) {
-                if (quadrantX == 1) {
-                    cellX = MAX_CELL - cellX;
-                    cellY = MAX_CELL - cellY;
-                }
-                final int transposed = cellX;
-                cellX = cellY;
-                cellY = transposed;
-            }
-        }
-        return (int) index;
+        return HilbertCode.encode(ORDER, x, y);
     }
 
     private static int clamp(final double cell) {

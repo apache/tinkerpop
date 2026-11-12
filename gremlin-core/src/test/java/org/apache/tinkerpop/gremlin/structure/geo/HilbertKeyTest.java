@@ -29,8 +29,9 @@ import static org.junit.Assert.assertTrue;
 
 /**
  * Tests for the level-16 Hilbert key used as the third key of the geometry order. The expected
- * indexes are pinned to the values JTS 1.20 {@code HilbertCode.encode(16, x, y)} produces, so that
- * the hand written encoding stays interchangeable with the standard one.
+ * indexes are pinned to the values JTS 1.20 {@code HilbertCode.encode(16, x, y)} produces. Since
+ * the Hilbert key is part of the documented geometry order, pinning them means a JTS upgrade that
+ * changed the encoding would be caught here.
  */
 public class HilbertKeyTest {
 
@@ -119,6 +120,18 @@ public class HilbertKeyTest {
         assertEquals(keyOf(Point.of(1, 1)), line);
         // z plays no part in the key
         assertEquals(keyOf(Point.of(1, 1)), keyOf(Point.of(1, 1, 7)));
+    }
+
+    @Test
+    public void shouldKeyOverTheHoleRingsOfAPolygon() {
+        // a hole may reach outside the shell, and the box spans every ring: (-5 -5) to (10 10)
+        final LineString shell = LineString.of(
+                Point.of(0, 0), Point.of(10, 0), Point.of(10, 10), Point.of(0, 0));
+        final LineString hole = LineString.of(
+                Point.of(-5, -5), Point.of(-4, -5), Point.of(-4, -4), Point.of(-5, -5));
+        final Polygon polygon = Polygon.of(shell, hole);
+        assertEquals(keyOf(LineString.of(Point.of(-5, -5), Point.of(10, 10))), keyOf(polygon));
+        assertNotEquals(keyOf(shell), keyOf(polygon));
     }
 
     @Test
