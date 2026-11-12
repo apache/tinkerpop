@@ -2048,6 +2048,14 @@ some problems would be, `while(true) {}`, which would consume a thread in the Gr
 preventing it from serving other requests.  Sending enough of these kinds of scripts would eventually consume all
 available threads and Gremlin Server would stop responding.
 
+TinkerPop provides two reference `GremlinScriptEngine` implementations, `GremlinLangScriptEngine`, and
+`GremlinGroovyScriptEngine`. `GremlinLangScriptEngine` feeds all scripts through our native Gremlin grammar and parser,
+and rejects any scripts which are not pure gremlin traversals. `GremlinGroovyScriptEngine` grants access to the full
+capabilities of the Groovy programming language, including access to non-Gremlin APIs. For any deployments in which
+script submission from untrusted sources is a possibility, the best practice is to disable `GremlinGroovyScriptEngine`,
+only exposing Gremlin via `GremlinLangScriptEngine` or bytecode. The remainder of this section discusses some strategies
+which can help limit the threat surface area of `GremlinGroovyScriptEngine` when in use.
+
 Scripts have access to the full power of their language and the JVM on which they are running. This means that they
 can access certain APIs that have nothing to do with Gremlin itself, such as `java.lang.System` or the `java.io`
 and `java.net` packages. Scripts offer developers a lot of flexibility, but having that flexibility comes at the cost
