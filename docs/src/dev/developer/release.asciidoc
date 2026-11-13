@@ -30,6 +30,14 @@ feedback.  Once a release point has been identified, the following phases repres
 * Submit the official release for PMC vote.
 * Release and promote.
 
+The source and binary distributions that the PMC votes on are staged, voted on and published through
+link:https://releases.apache.org/[Apache Trusted Releases] (ATR). ATR holds the release candidate, sends the `[VOTE]`
+email and tallies the replies, checks signatures, checksums and licensing, commits the approved files to `dist/release`
+and sends the announcement. A release in ATR moves through three phases: _compose_, where the files are uploaded and
+checked, _vote_, and _finish_, where the release is published and announced. Maven artifacts are staged in Apache
+Nexus, and the GLVs and Docker images are deployed to their own repositories, as ATR does not distribute to them.
+See the link:https://releases.apache.org/docs/[ATR documentation] for more about each phase.
+
 IMPORTANT: During release, it is best to use the current SNAPSHOT version of this documentation to ensure that you have
 the latest updates as almost every release includes improved documentation that may involve new or revised steps to
 execute.
@@ -96,14 +104,35 @@ link:https://id.apache.org[Apache LDAP] entry (under `OpenPGP Public Key Primary
 key will be added automatically to this link:https://people.apache.org/keys/committer/[list of committer keys] which
 will be used to validate the distribution.
 
-Your public key also needs to be added to KEYS files in both the
-link:https://dist.apache.org/repos/dist/dev/tinkerpop/KEYS[development] and
-link:https://dist.apache.org/repos/dist/release/tinkerpop/KEYS[release] distribution directories and committed
-using Apache Subversion (SVN).
+Your public key also needs to be added to the
+link:https://dist.apache.org/repos/dist/release/tinkerpop/KEYS[KEYS] file in the release distribution directory and
+committed using Apache Subversion (SVN). ATR imports keys from this file and checks signatures against it, and voters
+and users verify with it.
+
+Also set up ATR upload credentials as described in the <<release-environment,Release Environment>> section.
 
 NOTE: If you are a committer, you will require the assistance of a PMC member to upload
 your key into the link:https://dist.apache.org/repos/dist/release/tinkerpop/KEYS[release] distribution directory. This
 can also be done during Release & Promote when release files are uploaded.
+
+[[atr-project-setup]]
+=== ATR Project Setup
+
+TinkerPop's ATR project is `tinkerpop`. Its settings are configured once by a PMC member on the project page in ATR
+and are maintained there afterward:
+
+* Metadata: the name `Apache TinkerPop`, the homepage, download page, bug database and mailing list pages, and the
+repository `https://github.com/apache/tinkerpop`.
+* Lifecycle: a cycle match of `^(\d+\.\d+)\.\d+.*$`, so that each release line, such as 3.7, is one cycle.
+* Compose: source artifact paths of `apache-tinkerpop-*-src.zip` and binary artifact paths of
+`apache-tinkerpop-gremlin-*-bin.zip`.
+* Vote: email vote mode, `dev@tinkerpop.apache.org` as the recipient, a minimum voting period of 72 hours, and the
+`[VOTE]` and `[RESULT][VOTE]` templates given under <<email-templates,Email Templates>>.
+* Finish: a download path suffix of `+{{VERSION}}+`, so that releases are published to `dist/release/tinkerpop/xx.yy.zz/`,
+and `dev@tinkerpop.apache.org` as the announcement recipient.
+
+Before the first release through ATR, also review the release catalog for `tinkerpop` in ATR and report anything that is
+attached to the wrong project or version.
 
 == Pre-flight Check
 
@@ -259,22 +288,24 @@ document generation and this step now merely needs to upload what was generated.
 for generating javadoc.
 . `mvn deploy -Papache-release -DcreateChecksum=true -DskipTests` - deploy signed artifacts with checksums to link:https://repository.apache.org/[Apache Nexus].
 . Review generated artifacts (request another committer to review as well) then "close" the repo - if the repo is left open it will be automatically dropped after five days and closing the repo will allow it to stay available for a full ninety days which is more than enough time to complete a vote. Do NOT "release" the repository at this time.
-. Upload artifacts to `https://dist.apache.org/repos/dist/dev/tinkerpop` for `[VOTE]` review.
-.. Use `svn rm` to delete past versions that were up for review in the same line of code. In other words, if uploading 3.2.3 then remove instances of 3.2.2 or any other past 3.2.x releases.
-.. `svn co --depth empty https://dist.apache.org/repos/dist/dev/tinkerpop/ dev` and `mkdir dev/xx.yy.zz`
-.. `cp ~/.m2/repository/org/apache/tinkerpop/gremlin-console/xx.yy.zz/gremlin-console-xx.yy.zz-distribution.zip* dev/xx.yy.zz`
-.. `cp ~/.m2/repository/org/apache/tinkerpop/gremlin-server/xx.yy.zz/gremlin-server-xx.yy.zz-distribution.zip* dev/xx.yy.zz`
-.. `cp ~/.m2/repository/org/apache/tinkerpop/tinkerpop/xx.yy.zz/tinkerpop-xx.yy.zz-source-release.zip* dev/xx.yy.zz`
-.. `cd dev/xx.yy.zz`
-.. `rm -f *.md5`
-.. `for file in *.sha1 ; do artifact=$(basename ${file} .sha1); sha512sum $artifact | awk '{print $1}' > ${artifact}.sha512; rm ${file}; done`
-.. pass:[<code>ls * | xargs -n1 -I {} echo "mv apache-tinkerpop-{} {}" | sed -e 's/distribution/bin/' -e 's/source-release/src/' -e 's/tinkerpop-tinkerpop/tinkerpop/' -e s'/^\(.*\) \(.*\) \(.*\)$/\1 \3 \2/' | /bin/bash</code>]
-.. `cd ..; svn add xx.yy.zz/; svn ci -m "TinkerPop xx.yy.zz release"`
+. Compose the release candidate in link:https://releases.apache.org/[ATR].
+.. Under "Draft > Candidates", start a new release of `tinkerpop` with version `xx.yy.zz`.
+.. run `mvn -N -Patr initialize` to copy, prepare, and upload the signed source and binary distributions from the local Maven repository. Add
+`-Datr.dryRun=true` to stage and list the files without uploading.
+.. Wait for ATR's checks to finish and review them on the compose page. Blockers must be fixed before a vote can start.
+.. Record the closed Nexus staging repository as a staged Maven distribution with "Verify a third-party distribution" on the draft page.
 . Execute `bin/validate-distribution.sh` and any other relevant testing.
 . `git commit -a -m "TinkerPop xx.yy.zz release"` and push
 . `git tag -a -m "TinkerPop xx.yy.zz release" xx.yy.zz` and `git push origin xx.yy.zz`
-. Submit for `[VOTE]` at `dev@tinkerpop.apache.org` (see email template below)
+. Record the source commit of the `xx.yy.zz` tag on the ATR draft from the compose page, creating a new revision of the draft.
+Wait for that check and resolve anything it reports before starting the vote.
+. Start the vote from the compose page with "Start voting". The form is filled from the project's `[VOTE]`
+template in ATR (see <<email-templates,below>>) and is sent in your name to `dev@tinkerpop.apache.org`. Review the body,
+keep the duration at no less than 72 hours, and decide whether ATR should publish to `dist/release` automatically when
+the vote passes. The vote is on the ATR revision named in the email, so any further upload requires a new vote.
 . *Wait for vote acceptance* (72 hours)
+. Resolve the vote on the vote page in ATR. Double-check ATR's tally against the email thread first. Resolving sends the
+`[RESULT][VOTE]` email. A passed vote moves the release to the finish phase, while a failed vote returns it to compose for another candidate.
 
 == Release & Promote
 
@@ -312,12 +343,14 @@ missing or were built for another version.
 .. `mvn deploy -pl gremlin-server -DskipTests -DdockerImages`
 . Review the deployed Docker images at link:https://hub.docker.com/r/tinkerpop/gremlin-console/[Console]
 and link:https://hub.docker.com/r/tinkerpop/gremlin-server/[Server]
-. `svn co --depth empty https://dist.apache.org/repos/dist/dev/tinkerpop dev; svn up dev/xx.yy.zz` *(PMC member)*
-. `svn co --depth empty https://dist.apache.org/repos/dist/release/tinkerpop release; mkdir release/xx.yy.zz` *(PMC member)*
-. Copy release files from `dev/xx.yy.zz` to `release/xx.yy.zz`. *(PMC member)*
-. `cd release; svn add xx.yy.zz/; svn ci -m "TinkerPop xx.yy.zz release"` *(PMC member)*
+. Unless ATR published automatically when the vote resolved, use "Publish to ASF Distribution Area" on the finish page
+in ATR, which commits the voted files to `https://dist.apache.org/repos/dist/release/tinkerpop/xx.yy.zz/`.
 . Wait for Apache Sonatype to sync the artifacts to link:https://repo1.maven.org/maven2/org/apache/tinkerpop/tinkerpop/[Maven Central].
-. Report the release through link:https://reporter.apache.org/addrelease.html?tinkerpop[reporter.apache.org] (an email reminder should arrive shortly following the svn command above to do the release)
+. Record the distributions on the finish page in ATR with "Verify a third-party distribution" - for example Maven
+Central (`org.apache.tinkerpop` / `gremlin-core`), PyPI (`gremlinpython`), npm (`gremlin`, `gremlint`, `gremlin-mcp`)
+and Docker Hub (`tinkerpop` / `gremlin-server`, `gremlin-console`). ATR looks each one up before accepting it, so
+retry any that have not synced yet.
+. Report the release through link:https://reporter.apache.org/addrelease.html?tinkerpop[reporter.apache.org] (an email reminder should arrive shortly following the publication to `dist/release`)
 . Update homepage with references in `/site` to latest distribution and to other internal links elsewhere on the page.
 .. Typically, this need only be done on the `master` branch as we only publish from there.
 .. Update `index.html`.
@@ -334,12 +367,17 @@ Releases" recall that the hyperlink must change to point to version in the link:
 . `bin/publish-home.sh <username>` to publish the updated web site with new releases.
 . Execute `bin/update-current-docs.sh <username>` to migrate to the latest documentation set for `/current`.
 . This step should only occur after the website is updated and all links are working. If there are releases present in
-SVN that represents lines of code that are no longer under development, then remove those releases. In other words,
-if `3.2.0` is present and `3.2.1` is released then remove `3.2.0`.  However, if `3.1.3` is present and that line of
-code is still under potential development, it may stay.
+`dist/release` that represent lines of code that are no longer under development, then archive those releases from
+their release page in ATR, which removes their files from `dist/release`. In other words,
+if `3.2.0` is present and `3.2.1` is released then archive `3.2.0`.  However, if `3.1.3` is present and that line of
+code is still under potential development, it may stay. ATR can archive the prior release of the same line when the
+new one is announced, if "Auto archive prior release" is selected in the next step.
 . Announce release - see <<email-templates,templates>> for suggested form
-.. Email `dev@`/`gremlin-users@` mailing lists
+.. Use "Announce" on the finish page in ATR to send the announcement to `dev@`. ATR sends it only once the files are
+reachable on the download servers, and then adds the release to its catalog, which completes the release in ATR.
+.. Email the `gremlin-users@` mailing list
 .. Tweet from `@apachetinkerpop` *(PMC member)*
+.. Announce the release on the TinkerPop LinkedIn Page *(PMC member)*
 .. Message the "Announcement" Discord channel *(PMC member)*
 
 == Post-release Tasks
@@ -415,69 +453,65 @@ as removing dead branches, which is a generated list posted for review on the de
 
 [source,text]
 ----
-Subject: [VOTE] TinkerPop xx.yy.zz Release
+[VOTE] TinkerPop {{VERSION}} Release
+----
 
+and the template is:
+
+[source,text]
+----
 Hello,
 
-We are happy to announce that TinkerPop xx.yy.zz is ready for release.
+We are happy to announce that TinkerPop {{VERSION}} is ready for release.
 
-The release artifacts can be found at this location:
-	https://dist.apache.org/repos/dist/dev/tinkerpop/xx.yy.zz/
+The release candidate, ATR revision {{REVISION}}, can be found at:
+  {{REVIEW_URL}}
+
+The file manifest for this revision is at:
+  {{MANIFEST_URL}}
 
 The source distribution is provided by:
-	apache-tinkerpop-xx.yy.zz-src.zip
+  apache-tinkerpop-{{VERSION}}-src.zip
 
 Two binary distributions are provided for user convenience:
-	apache-tinkerpop-gremlin-console-xx.yy.zz-bin.zip
-	apache-tinkerpop-gremlin-server-xx.yy.zz-bin.zip
+  apache-tinkerpop-gremlin-console-{{VERSION}}-bin.zip
+  apache-tinkerpop-gremlin-server-{{VERSION}}-bin.zip
 
-The GPG key used to sign the release artifacts is available at:
-    https://dist.apache.org/repos/dist/dev/tinkerpop/KEYS
-
+The release artifacts are signed with one or more OpenPGP keys from:
+  {{KEYS_FILE}}
+{{COMMIT_PARAGRAPH}}
 The online docs can be found here:
-	https://tinkerpop.apache.org/docs/xx.yy.zz/ (user docs)
-	https://tinkerpop.apache.org/docs/xx.yy.zz/upgrade/ (upgrade docs)
-	https://tinkerpop.apache.org/javadocs/xx.yy.zz/core/ (core javadoc)
-	https://tinkerpop.apache.org/javadocs/xx.yy.zz/full/ (full javadoc)
-	https://tinkerpop.apache.org/dotnetdocs/xx.yy.zz/ (.NET API docs)
-	https://tinkerpop.apache.org/jsdocs/xx.yy.zz/ (Javascript API docs)
+  https://tinkerpop.apache.org/docs/{{VERSION}}/ (user docs)
+  https://tinkerpop.apache.org/docs/{{VERSION}}/upgrade/ (upgrade docs)
+  https://tinkerpop.apache.org/javadocs/{{VERSION}}/core/ (core javadoc)
+  https://tinkerpop.apache.org/javadocs/{{VERSION}}/full/ (full javadoc)
+  https://tinkerpop.apache.org/dotnetdocs/{{VERSION}}/ (.NET API docs)
+  https://tinkerpop.apache.org/jsdocs/{{VERSION}}/ (Javascript API docs)
 
 The Git tag can be found here:
-	https://github.com/apache/tinkerpop/tree/xx.yy.zz
+  https://github.com/apache/tinkerpop/tree/{{VERSION}}
 
 The release notes are available here:
-	https://github.com/apache/tinkerpop/blob/xx.yy.zz/CHANGELOG.asciidoc
+  https://github.com/apache/tinkerpop/blob/{{VERSION}}/CHANGELOG.asciidoc
 
-The [VOTE] will be open for the next 72 hours --- closing <DayOfTheWeek> (<Month> <Day> <Year>) at <Time> <TimeZone>.
+The [VOTE] will be open for at least the next {{DURATION}} hours.
 
 My vote is +1.
 
 Thank you very much,
-<TinkerPop Committer Name>
+{{YOUR_FULL_NAME}}
 ----
 
 === Release RESULT VOTE
 
 [source,text]
 ----
-Subject: [RESULT][VOTE] TinkerPop xx.yy.zz Release
+This vote is now closed and has {{OUTCOME}}.
 
-This vote is now closed with a total of X +1s, no +0s and no -1s. The results are:
-
-BINDING VOTES:
-
-+1  (X -- list of voters)
-0   (0)
--1  (0)
-
-NON-BINDING VOTES:
-
-+1 (X -- list of voters)
-0  (0)
--1 (0)
+{{ATR_TALLY}}
 
 Thank you very much,
-<TinkerPop Committer Name>
+{{YOUR_FULL_NAME}}
 ----
 
 === General Release Announcement

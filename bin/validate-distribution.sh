@@ -33,7 +33,7 @@ fi
 SCRIPT_DIR=$(cd `dirname $0` ; pwd)
 TMP_DIR="/tmp/tpdv"
 
-# Required. Only the latest version on each release stream is available on dist.
+# Required. The version of the release candidate in Apache Trusted Releases (ATR).
 VERSION=${1}
 # Optional. Provide the zip file URL.
 URL=${2}
@@ -45,11 +45,16 @@ if [ -z ${VERSION} ]; then
   exit 1
 fi
 
+# Optional. Where the candidate files are downloaded from, defaulting to the ATR release candidate.
+DIST_BASE_URL=${DIST_BASE_URL:-"https://releases.apache.org/download/path/tinkerpop/${VERSION}"}
+# Optional. The KEYS file to verify signatures against, which ATR keeps in the release distribution area.
+KEYS_URL=${KEYS_URL:-"https://downloads.apache.org/tinkerpop/KEYS"}
+
 if [ -z ${URL} ]; then
 
-  CONSOLE_URL="https://dist.apache.org/repos/dist/dev/tinkerpop/${VERSION}/apache-tinkerpop-gremlin-console-${VERSION}-bin.zip"
-  SERVER_URL="https://dist.apache.org/repos/dist/dev/tinkerpop/${VERSION}/apache-tinkerpop-gremlin-server-${VERSION}-bin.zip"
-  SOURCE_URL="https://dist.apache.org/repos/dist/dev/tinkerpop/${VERSION}/apache-tinkerpop-${VERSION}-src.zip"
+  CONSOLE_URL="${DIST_BASE_URL}/apache-tinkerpop-gremlin-console-${VERSION}-bin.zip"
+  SERVER_URL="${DIST_BASE_URL}/apache-tinkerpop-gremlin-server-${VERSION}-bin.zip"
+  SOURCE_URL="${DIST_BASE_URL}/apache-tinkerpop-${VERSION}-src.zip"
 
   echo -e "\nValidating binary distributions\n"
 
@@ -77,7 +82,7 @@ mkdir -p ${TMP_DIR}
 rm -rf ${TMP_DIR}/*
 cd ${TMP_DIR}
 
-COMMITTERS=$(curl -Ls https://dist.apache.org/repos/dist/dev/tinkerpop/KEYS | tee ${TMP_DIR}/KEYS | grep -Po '(?<=<)[^<]*(?=@apache.org>)' | uniq)
+COMMITTERS=$(curl -Ls ${KEYS_URL} | tee ${TMP_DIR}/KEYS | grep -Po '(?<=<)[^<]*(?=@apache.org>)' | uniq)
 gpg --import ${TMP_DIR}/KEYS 2> /dev/null && rm ${TMP_DIR}/KEYS
 
 curl -Ls https://people.apache.org/keys/committer/ | grep -v invalid > ${TMP_DIR}/.committers

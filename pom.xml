@@ -787,6 +787,11 @@ limitations under the License.
                     <artifactId>maven-enforcer-plugin</artifactId>
                     <version>3.0.0-M3</version>
                 </plugin>
+                <plugin>
+                    <groupId>org.apache.tooling</groupId>
+                    <artifactId>atr-maven-plugin</artifactId>
+                    <version>1.0.0-beta-1</version>
+                </plugin>
             </plugins>
         </pluginManagement>
     </build>
@@ -2639,6 +2644,101 @@ limitations under the License.
                                         <descriptor>source-release.xml</descriptor>
                                     </descriptors>
                                     <tarLongFileMode>posix</tarLongFileMode>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <!--
+        Uploads the release distributions to the Apache Trusted Releases (ATR) draft for this version. It is run on its
+        own, after "mvn deploy -Papache-release", with:
+
+            mvn -N -Patr initialize
+
+        It must not be combined with the reactor build because the upload runs only at the execution root, which
+        completes before gremlin-console and gremlin-server have built their distributions. The signed artifacts are
+        taken from the local Maven repository, where the deploy installed them, renamed to their distribution names,
+        given .sha512 checksums and uploaded. The ATR draft must already exist and be in the compose phase. Credentials
+        are read from the "apache.atr" server in settings.xml. Add -Datr.dryRun=true to stage without uploading.
+        -->
+        <profile>
+            <id>atr</id>
+            <properties>
+                <atr.project>tinkerpop</atr.project>
+                <atr.source.repository>${settings.localRepository}/org/apache/tinkerpop</atr.source.repository>
+                <atr.staging.directory>${project.build.directory}/atr/${project.version}</atr.staging.directory>
+            </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-antrun-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>atr-stage-distributions</id>
+                                <phase>initialize</phase>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                                <configuration>
+                                    <target>
+                                        <property name="src" value="${atr.source.repository}"/>
+                                        <property name="dest" value="${atr.staging.directory}"/>
+                                        <property name="v" value="${project.version}"/>
+                                        <delete dir="${dest}"/>
+                                        <mkdir dir="${dest}"/>
+                                        <copy file="${src}/tinkerpop/${v}/tinkerpop-${v}-source-release.zip"
+                                              tofile="${dest}/apache-tinkerpop-${v}-src.zip"/>
+                                        <copy file="${src}/tinkerpop/${v}/tinkerpop-${v}-source-release.zip.asc"
+                                              tofile="${dest}/apache-tinkerpop-${v}-src.zip.asc"/>
+                                        <copy file="${src}/gremlin-console/${v}/gremlin-console-${v}-distribution.zip"
+                                              tofile="${dest}/apache-tinkerpop-gremlin-console-${v}-bin.zip"/>
+                                        <copy file="${src}/gremlin-console/${v}/gremlin-console-${v}-distribution.zip.asc"
+                                              tofile="${dest}/apache-tinkerpop-gremlin-console-${v}-bin.zip.asc"/>
+                                        <copy file="${src}/gremlin-server/${v}/gremlin-server-${v}-distribution.zip"
+                                              tofile="${dest}/apache-tinkerpop-gremlin-server-${v}-bin.zip"/>
+                                        <copy file="${src}/gremlin-server/${v}/gremlin-server-${v}-distribution.zip.asc"
+                                              tofile="${dest}/apache-tinkerpop-gremlin-server-${v}-bin.zip.asc"/>
+                                        <checksum algorithm="SHA-512" fileext=".sha512" forceOverwrite="yes">
+                                            <fileset dir="${dest}" includes="*.zip"/>
+                                        </checksum>
+                                    </target>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.tooling</groupId>
+                        <artifactId>atr-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>atr-check-composing</id>
+                                <phase>initialize</phase>
+                                <goals>
+                                    <goal>check-composing</goal>
+                                </goals>
+                            </execution>
+                            <execution>
+                                <id>atr-upload</id>
+                                <phase>initialize</phase>
+                                <goals>
+                                    <goal>upload</goal>
+                                </goals>
+                                <configuration>
+                                    <files>
+                                        <file>${atr.staging.directory}/apache-tinkerpop-${project.version}-src.zip</file>
+                                        <file>${atr.staging.directory}/apache-tinkerpop-${project.version}-src.zip.asc</file>
+                                        <file>${atr.staging.directory}/apache-tinkerpop-${project.version}-src.zip.sha512</file>
+                                        <file>${atr.staging.directory}/apache-tinkerpop-gremlin-console-${project.version}-bin.zip</file>
+                                        <file>${atr.staging.directory}/apache-tinkerpop-gremlin-console-${project.version}-bin.zip.asc</file>
+                                        <file>${atr.staging.directory}/apache-tinkerpop-gremlin-console-${project.version}-bin.zip.sha512</file>
+                                        <file>${atr.staging.directory}/apache-tinkerpop-gremlin-server-${project.version}-bin.zip</file>
+                                        <file>${atr.staging.directory}/apache-tinkerpop-gremlin-server-${project.version}-bin.zip.asc</file>
+                                        <file>${atr.staging.directory}/apache-tinkerpop-gremlin-server-${project.version}-bin.zip.sha512</file>
+                                    </files>
                                 </configuration>
                             </execution>
                         </executions>
