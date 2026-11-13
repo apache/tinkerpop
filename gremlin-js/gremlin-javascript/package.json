@@ -56,7 +56,7 @@
     "buffer": "^6.0.3",
     "deep-equal": "^2.2.3",
     "eventemitter3": "^5.0.1",
-    "undici": "6.29.1"
+    "undici": "8.12.4"
   },
   "optionalDependencies": {
     "@aws-sdk/credential-providers": "^3.967.0",
