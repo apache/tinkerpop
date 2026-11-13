@@ -143,7 +143,8 @@ assigned (use common sense when reviewing these tickets before removing the Fix 
 Resolution may have been assigned).
 .. Review the beads expected to land in this version, as described in <<beads,Using Beads>>, and ensure that:
 ... Every bead belonging to work that has merged is `pinned`. Pinning is what makes a bead permanent, so a
-subgraph left closed but unpinned is work whose record was never completed.
+subgraph left closed but unpinned is work whose record was never completed. Errands and the gates that
+hold them are the exception, as they are never pinned (see <<beads-errands,Errands>>).
 ... The release label on each bead matches the version under release. The label value must be quoted and
 closed beads must be included, as in `bd query 'labels="xx.yy.zz"' --all`, because an unquoted version
 number fails to parse and closed beads are hidden by default.
@@ -385,6 +386,8 @@ the help of a PMC member for those steps.
 .. Test that all root-level examples work correctly with the new published versions
 . Perform beads administration tasks, as described in <<beads,Using Beads>>:
 .. `bd dolt pull` to take in anything other committers have pushed.
+.. `bin/beads-gates.py` to preview, then `bin/beads-gates.py --apply` to resolve the gates on pull requests
+that have merged or closed since the last run, as described in <<beads-errands,Errands>>.
 .. Confirm that every subgraph belonging to the release is `pinned`. The pre-flight check should already
 have established this, so anything still closed and unpinned at this point is work whose record was
 never finished.

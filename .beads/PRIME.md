@@ -2,7 +2,8 @@
 
 Beads is TinkerPop's planning system **and its long-term memory**. It records not just what
 changed, but why — decisions made, alternatives rejected, and directions abandoned. Treat
-every bead as something a contributor will read in three years.
+every bead as something a contributor will read in three years. The one exception is the
+errand (section 8), which is built to be thrown away.
 
 ## Workflow
 
@@ -17,6 +18,7 @@ without reading it.
 5. **Never rewrite or discard history** — section 5
 6. **Records, fields, edge types and bead IDs follow fixed conventions; text goes in `--description`, not `--design`** — section 6
 7. **Never invent a label** — section 7
+8. **An errand is a non-blocking review follow-up: no root, no parent, never pinned; only when the operator asks** — section 8
 
 ---
 
@@ -136,6 +138,8 @@ bd children <root>               # recursive — the whole subtree (--json: dire
   thread. Only the operator knows which one, and a record is the sole link from the work back
   to the code (section 6). A small fix may genuinely have none, so take that answer and move on.
 - A small fix is a lone bead. It is its own root; don't hunt for a parent.
+- **An errand is not root work.** Creating one (section 8) never binds to, or changes, the
+  session's root, and none of this section applies to it.
 - The operator may decline binding to a bead, in which case ignore these rules.
 
 `bd query "parent=none"` does not work. Filter on the `parent` field client-side.
@@ -308,7 +312,7 @@ a list, and `bd ready` cannot tell you anything useful about it.
   `bd dep list <record> -t parent-child`. Its `parent` field reports only one of them, and
   which one is undefined, so never read that field for a record, and never
   `bd update --parent` one — it replaces only that edge. Every other bead keeps exactly one
-  parent.
+  parent, except an errand and its gate (section 8), which have none.
 - **Search first — duplicates are the risk.** `bd query` has no field for external refs,
   and `bd search <ref> --status all` finds a ticket id but not a URL. For any ref,
   `bd search tp --external-contains <ref> --status all` works — `tp` matches every bead id.
@@ -383,6 +387,82 @@ release  build  environment
 
 ---
 
+## 8. Errands
+
+An **errand** is a non-blocking PR review comment turned into work that someone else picks up
+later — important, but not worth holding the merge for. Whoever picks it up, an agent or a
+person, has only the bead: not the review, not the conversation, not you. It is the one bead
+outside the root model. No root, no parent, no record, no decisions, and it is **never
+pinned**: once closed it is eligible for purge like anything unpinned, and that is intended.
+
+**Only when the operator asks.** An errand comes from a PR review, with or without
+`tinker-review`. Never offer one, never create one on your own initiative, and
+`tinker-review` does not propose them.
+
+**Eligibility: losing it must lose nothing.** An errand will be purged, so it qualifies only
+when nothing the project needs to remember lives in it:
+
+- the reviewer has already said what should change, so whoever picks it up makes only
+  implementation choices nobody would ask about in review;
+- it changes no public API, configuration format or protocol;
+- it is one PR on one branch.
+
+If the reasoning has to outlive the work, it is not an errand. Say so, and offer a root
+(section 1) instead.
+
+**It never touches the session root.** No `--parent`, no edge, no comment — not on the
+session's root, not on the reviewed PR's root, even when you are bound to one. With no parent
+it inherits no labels, so set them explicitly.
+
+**Draft, show, then create.** Review comments are terse. Expand the comment into the spec
+below, show the operator the whole bead, and run `bd create` only once they confirm. All
+four sections are required:
+
+```
+## Change
+What to change and where. Files by name only: the PR's shas do not survive its merge.
+
+## Why
+The reviewer's reasoning as a mechanism, so whoever picks it up can tell whether it
+still applies after the PR's later revisions.
+
+## Acceptance
+Observable criteria for done.
+
+## Validation
+The command that must pass: `mvn clean install` unless the operator gives another.
+CHANGELOG: yes|no. Docs: yes|no.
+```
+
+| Field | Value |
+|---|---|
+| `--type` | `errand` |
+| `--priority` | `3`, unless the operator says otherwise |
+| `--labels` | module and concern labels from section 7; never a release label — the release is not known until it lands |
+| `--metadata` | `{"branch":"<base>","origin":"apache/tinkerpop#N"}`; `branch` defaults to the reviewed PR's base branch, and the operator may override it |
+| status | `open`, unclaimed — it is someone else's work |
+
+**Gate it on the PR.** The code an errand fixes usually exists only on the PR's branch, so it
+cannot start until the PR merges. A PR has **one** `gh:pr` gate, shared by all its errands,
+so look for it first:
+
+```bash
+bd gate list --json        # open gate with await_type "gh:pr" and await_id "N"? filter client-side
+bd dep add <errand> <gate> # one exists
+bd gate create --type=gh:pr --await-id=N --blocks <errand> --reason="apache/tinkerpop#N"  # none yet
+```
+
+That `blocks` edge is the only edge an errand has. Never parent, relate or record it.
+
+**Lifecycle.** `bin/beads-gates.py` resolves gates against GitHub; someone runs it, nothing
+does so automatically. A merged PR resolves its gate and its errands appear in
+`bd ready --type=errand`. A PR closed without merging closes its gate and every open errand
+behind it, since the code they fix never landed. An errand closes when its own fix merges to
+a release line. It is not pinned, and its commits are not recorded — `bin/beads-commits.py`
+is for roots.
+
+---
+
 ## Essential commands
 
 ```bash
@@ -400,6 +480,8 @@ bd dep cycles                    # a plan with a cycle cannot execute
 bd update <id> --claim | -s pinned | --external-ref=TINKERPOP-NNNN
 bd search <text>
 bd query 'notes="<sha>"' --all   # which record holds this commit; quote the sha
+bd ready --type=errand           # errands whose PR has merged; the one unscoped bd ready
+bin/beads-gates.py [--apply]     # resolve PR gates: merged releases errands, closed closes them
 ```
 
 Priority is `0-4` (0 = critical), never "high"/"medium"/"low".
