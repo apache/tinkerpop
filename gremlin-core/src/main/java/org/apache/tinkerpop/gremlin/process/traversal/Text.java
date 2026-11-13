@@ -18,6 +18,8 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal;
 
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalInterruptedException;
+
 import java.io.Serializable;
 import java.util.Objects;
 import java.util.regex.Pattern;
@@ -191,8 +193,9 @@ public enum Text implements PBiPredicate<String, String> {
 
         @Override
         public boolean test(final String value, final String expression) {
-            // expression can be ignored here since it was passed in on construction in TextP
-            final Matcher matcher = pattern.matcher(value);
+            // expression is unused - the pattern was compiled from it in the constructor.
+            // The input is wrapped so an in-progress match can be interrupted (e.g. by an evaluationTimeout).
+            final Matcher matcher = pattern.matcher(new InterruptibleCharSequence(value));
             return negate != matcher.find();
         }
 
@@ -222,6 +225,48 @@ public enum Text implements PBiPredicate<String, String> {
         @Override
         public String getPredicateName() {
             return isNegate() ? "notRegex" : "regex";
+        }
+    }
+
+    /**
+     * A {@link CharSequence} that makes regex matching interruptible. A {@link Matcher} reads its input through
+     * {@link #charAt(int)}, so checking the current thread's interrupt flag there lets an interrupt (such as an
+     * {@code evaluationTimeout}) stop an in-progress match with a {@link TraversalInterruptedException}. As in
+     * {@code AbstractStep}, the flag is cleared when the exception is thrown. The flag is checked once every
+     * {@code CHECK_INTERVAL} reads to keep the per-character cost low.
+     */
+    private static final class InterruptibleCharSequence implements CharSequence {
+
+        // Power of two so the periodic check is a cheap bitmask.
+        private static final int CHECK_INTERVAL = 1024;
+
+        private final CharSequence inner;
+        private int calls;
+
+        private InterruptibleCharSequence(final CharSequence inner) {
+            this.inner = inner;
+        }
+
+        @Override
+        public char charAt(final int index) {
+            if ((++calls & (CHECK_INTERVAL - 1)) == 0 && Thread.interrupted())
+                throw new TraversalInterruptedException();
+            return inner.charAt(index);
+        }
+
+        @Override
+        public int length() {
+            return inner.length();
+        }
+
+        @Override
+        public CharSequence subSequence(final int start, final int end) {
+            return new InterruptibleCharSequence(inner.subSequence(start, end));
+        }
+
+        @Override
+        public String toString() {
+            return inner.toString();
         }
     }
 }
