@@ -1147,3 +1147,15 @@ Feature: Step - mergeV()
     Then the result should have a count of 2
     And the graph should return 1 for count of "g.V()"
     And the graph should return 1 for count of "g.V().has(\"person\",\"name\",\"alice\").has(\"matched\",\"Y\")"
+    
+  Scenario: g_injectXlabel_person_name_alice_x4X_mergeV_optionXonMatch_projectXmatchCountX_byXV_hasXname_aliceX_coalesceXvaluesXmatchCountX_mathX_plus_1X_constantX1XXXX
+    Given the empty graph
+    And using the parameter xx1 defined as "m[{\"t[label]\": \"person\", \"name\":\"alice\"}]"
+    And the traversal of
+      """
+      g.inject(xx1, xx1, xx1, xx1).mergeV().option(Merge.onMatch, __.project("matchCount").by(__.V().has("person","name","alice").coalesce(__.values("matchCount").math("_ + 1"), __.constant(1))))
+      """
+    When iterated to list
+    Then the result should have a count of 4
+    And the graph should return 1 for count of "g.V()"
+    And the graph should return 1 for count of "g.V().has(\"person\",\"name\",\"alice\").has(\"matchCount\",3.0d)"

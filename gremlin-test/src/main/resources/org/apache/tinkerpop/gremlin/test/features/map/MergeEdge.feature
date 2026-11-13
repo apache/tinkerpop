@@ -1213,3 +1213,20 @@ Feature: Step - mergeE()
     Then the result should have a count of 2
     And the graph should return 1 for count of "g.E()"
     And the graph should return 1 for count of "g.E().hasLabel(\"knows\").has(\"matched\",\"Y\")"
+    
+  Scenario: g_injectXlabel_knows_out_marko_in_vadas_x4X_mergeE_optionXonMatch_projectXmatchCountX_byXE_hasLabelXknowsX_coalesceXvaluesXmatchCountX_mathX_plus_1X_constantX1XXXX
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("person").property("name", "marko").
+        addV("person").property("name", "vadas")
+      """
+    And using the parameter xx1 defined as "m[{\"t[label]\": \"knows\", \"D[OUT]\":\"v[marko]\", \"D[IN]\":\"v[vadas]\"}]"
+    And the traversal of
+      """
+      g.inject(xx1, xx1, xx1, xx1).mergeE().option(Merge.onMatch, __.project("matchCount").by(__.E().hasLabel("knows").coalesce(__.values("matchCount").math("_ + 1"), __.constant(1))))
+      """
+    When iterated to list
+    Then the result should have a count of 4
+    And the graph should return 1 for count of "g.E()"
+    And the graph should return 1 for count of "g.E().hasLabel(\"knows\").has(\"matchCount\",3.0d)"

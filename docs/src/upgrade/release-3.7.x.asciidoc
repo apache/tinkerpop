@@ -65,18 +65,6 @@ as `map()`, `sideEffect()` and `coalesce()` still occur once per bulked traverse
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-3295[TINKERPOP-3295]
 
-=== Upgrading for Providers
-
-==== Graph System Providers
-
-===== Mutating Steps and Bulked Traversers
-
-Providers that replace `AddVertexStep`, `AddEdgeStep`, `MergeVertexStep`, `MergeEdgeStep` or `AddPropertyStep` with
-their own implementations should perform the mutation once for each unit of a traverser's bulk. New Gherkin tests in
-the `AddVertex`, `AddEdge`, `MergeVertex` and `MergeEdge` features validate this behavior.
-
-See: link:https://issues.apache.org/jira/browse/TINKERPOP-3295[TINKERPOP-3295]
-
 == TinkerPop 3.7.7
 
 *Release Date: September 1, 2026*
