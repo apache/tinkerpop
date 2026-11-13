@@ -400,6 +400,23 @@ The encrypted password can then be configured in the `settings.xml` as described
 link:https://infra.apache.org/publishing-maven-artifacts.html["Set up your development environment" of this Apache Infra article].
 This configuration will be used by `mvn deploy`.
 
+Release distributions are staged, voted on and published through
+link:https://releases.apache.org/[Apache Trusted Releases] (ATR), and the `atr` profile of the root `pom.xml` uploads
+them with the link:https://apache.github.io/tooling-atr-maven-plugin/[ATR Maven Plugin]. Log in to ATR with your Apache
+account, generate a Personal Access Token (PAT) on the link:https://releases.apache.org/tokens[Tokens] page and add it,
+encrypted, to `settings.xml` as the `apache.atr` server:
+
+[source,xml]
+----
+<server>
+  <id>apache.atr</id>
+  <username>your-asf-id</username>
+  <password>{encrypted-atr-pat}</password>
+</server>
+----
+
+A PAT is shown only once and expires, so generate a new one if it is lost or no longer accepted.
+
 For Python releases, uploading to pypi uses link:https://pypi.python.org/pypi/twine[twine] which is automatically
 installed by the build process in maven. Twine refers to `HOME/.pypirc` file for configuration on the pypi deploy
 environments and username and password combinations. The file typically looks like this:
