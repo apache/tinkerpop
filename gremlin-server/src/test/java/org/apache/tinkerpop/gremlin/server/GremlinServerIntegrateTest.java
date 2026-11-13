@@ -82,7 +82,7 @@ import static org.apache.tinkerpop.gremlin.groovy.jsr223.GroovyCompilerGremlinPl
 import static org.apache.tinkerpop.gremlin.process.remote.RemoteConnection.GREMLIN_REMOTE;
 import static org.apache.tinkerpop.gremlin.process.remote.RemoteConnection.GREMLIN_REMOTE_CONNECTION_CLASS;
 import static org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource.traversal;
-import static org.apache.tinkerpop.gremlin.util.Tokens.TIMEOUT_MILLIS;
+import static org.apache.tinkerpop.gremlin.util.message.Tokens.TIMEOUT_MILLIS;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;

@@ -42,6 +42,8 @@ limitations under the License.
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-configuration2</artifactId>
+            <!-- commons-logging (which configuration2's module descriptor requires) still arrives through
+                 commons-beanutils below; excluding it here keeps the two paths from diverging in version -->
             <exclusions>
                 <exclusion>
                     <groupId>commons-logging</groupId>
@@ -69,14 +71,13 @@ limitations under the License.
             <version>${snakeyaml.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.carrotsearch</groupId>
-            <artifactId>hppc</artifactId>
-            <version>0.7.1</version>
+            <groupId>org.antlr</groupId>
+            <artifactId>antlr4-runtime</artifactId>
+            <version>${antlr4.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.squareup</groupId>
-            <artifactId>javapoet</artifactId>
-            <version>${javapoet.version}</version>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-text</artifactId>
         </dependency>
         <dependency>
             <groupId>net.objecthunter</groupId>
@@ -123,6 +124,22 @@ limitations under the License.
             </testResource>
         </testResources>
         <plugins>
+            <!-- report exported signatures that expose inaccessible types -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>default-compile</id>
+                        <configuration>
+                            <showWarnings>true</showWarnings>
+                            <compilerArgs combine.children="append">
+                                <arg>-Xlint:exports,module,opens,-requires-automatic,-requires-transitive-automatic</arg>
+                            </compilerArgs>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
@@ -130,6 +147,11 @@ limitations under the License.
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-failsafe-plugin</artifactId>
+                <configuration>
+                    <systemPropertyVariables>
+                        <gremlin.jpms.artifactJar>${project.build.directory}/${project.build.finalName}.jar</gremlin.jpms.artifactJar>
+                    </systemPropertyVariables>
+                </configuration>
             </plugin>
             <plugin>
                 <groupId>com.google.code.maven-replacer-plugin</groupId>

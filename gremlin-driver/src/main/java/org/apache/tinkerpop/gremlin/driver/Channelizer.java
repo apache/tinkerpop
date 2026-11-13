@@ -25,7 +25,6 @@ import io.netty.channel.ChannelPipeline;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.handler.codec.http.HttpClientCodec;
 import io.netty.handler.codec.http.HttpObjectAggregator;
-import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslHandler;
 import io.netty.handler.proxy.HttpProxyHandler;
@@ -43,11 +42,9 @@ import org.apache.tinkerpop.gremlin.driver.handler.IdleConnectionHandler;
 import org.apache.tinkerpop.gremlin.driver.handler.InactiveChannelHandler;
 import org.apache.tinkerpop.gremlin.driver.handler.ReadTimeoutHandler;
 import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryReader;
-import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.util.ser.GraphBinaryMessageSerializerV4;
-import org.apache.tinkerpop.gremlin.util.MessageSerializer;
+import org.apache.tinkerpop.gremlin.util.ser.MessageSerializer;
 
-import java.util.Collections;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -64,7 +61,7 @@ import static io.netty.handler.codec.http.HttpObjectDecoder.DEFAULT_VALIDATE_HEA
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public interface Channelizer extends ChannelHandler {
+interface Channelizer extends ChannelHandler {
 
     /**
      * Initializes the {@code Channelizer}. Called just after construction.
@@ -216,12 +213,6 @@ public interface Channelizer extends ChannelHandler {
      * channelizer. Only sessionless requests are possible.
      */
     final class HttpChannelizer extends AbstractChannelizer {
-        /**
-         * This response is used as a signal for determining if all content of the response has been read.
-         */
-        public static final ResponseMessage LAST_CONTENT_READ_RESPONSE =
-                ResponseMessage.build().code(HttpResponseStatus.NO_CONTENT).result(Collections.emptyList()).create();
-
         private HttpGremlinRequestEncoder gremlinRequestEncoder;
         private HttpStreamingResponseHandler streamingResponseHandler;
         private HttpGremlinResponseDecoder gremlinResponseDecoder;

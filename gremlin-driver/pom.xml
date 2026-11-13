@@ -38,12 +38,47 @@ limitations under the License.
         </dependency>
         <dependency>
             <groupId>io.netty</groupId>
-            <artifactId>netty-all</artifactId>
+            <artifactId>netty-common</artifactId>
+            <version>${netty.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-buffer</artifactId>
+            <version>${netty.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-transport</artifactId>
+            <version>${netty.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-codec-base</artifactId>
+            <version>${netty.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-codec-http</artifactId>
+            <version>${netty.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-handler</artifactId>
+            <version>${netty.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-handler-proxy</artifactId>
             <version>${netty.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.yaml</groupId>
+            <artifactId>snakeyaml</artifactId>
+            <version>${snakeyaml.version}</version>
         </dependency>
         <dependency>
             <groupId>ch.qos.logback</groupId>
@@ -74,6 +109,28 @@ limitations under the License.
             <groupId>software.amazon.awssdk</groupId>
             <artifactId>utils</artifactId>
             <version>${awssdk.version}</version>
+        </dependency>
+        <!-- required by the module descriptor: Sigv4 hands credentials to the signer as an AwsCredentialsIdentity,
+             and the signer loads its checksums and the Reactive Streams API at run time -->
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>identity-spi</artifactId>
+            <version>${awssdk.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>checksums-spi</artifactId>
+            <version>${awssdk.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>checksums</artifactId>
+            <version>${awssdk.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.reactivestreams</groupId>
+            <artifactId>reactive-streams</artifactId>
+            <version>${reactive-streams.version}</version>
         </dependency>
         <dependency>
             <groupId>software.amazon.awssdk</groupId>
@@ -182,15 +239,24 @@ limitations under the License.
                                     <exclude>org.slf4j:slf4j-api</exclude>
                                 </excludes>
                             </artifactSet>
+                            <filters>
+                                <!-- the -shaded jar is classpath-only: it must never carry a module
+                                     descriptor (it bundles TinkerPop's own modules and many third-party jars,
+                                     some relocated and some not, so any leaked descriptor would misdescribe the jar)
+                                     or a signature file (bundled signed dependencies fail verification once their
+                                     class files are repackaged alongside everything else) -->
+                                <filter>
+                                    <artifact>*:*</artifact>
+                                    <excludes>
+                                        <exclude>module-info.class</exclude>
+                                        <exclude>META-INF/versions/*/module-info.class</exclude>
+                                        <exclude>META-INF/*.SF</exclude>
+                                        <exclude>META-INF/*.DSA</exclude>
+                                        <exclude>META-INF/*.RSA</exclude>
+                                    </excludes>
+                                </filter>
+                            </filters>
                             <relocations>
-                                <relocation>
-                                    <pattern>com.carrotsearch</pattern>
-                                    <shadedPattern>com.shaded.carrotsearch</shadedPattern>
-                                </relocation>
-                                <relocation>
-                                    <pattern>com.squareup</pattern>
-                                    <shadedPattern>com.shaded.squareup</shadedPattern>
-                                </relocation>
                                 <relocation>
                                     <pattern>io.netty</pattern>
                                     <shadedPattern>io.shaded.netty</shadedPattern>
@@ -284,6 +350,12 @@ limitations under the License.
                 <executions>
                     <execution>
                         <id>integration-test</id>
+                        <configuration>
+                            <systemPropertyVariables>
+                                <gremlin.jpms.driverJar>${project.build.directory}/${project.build.finalName}.jar</gremlin.jpms.driverJar>
+                                <gremlin.jpms.driverShadedJar>${project.build.directory}/${project.build.finalName}-shaded.jar</gremlin.jpms.driverShadedJar>
+                            </systemPropertyVariables>
+                        </configuration>
                     </execution>
                     <execution>
                         <id>performance-test</id>
@@ -299,6 +371,17 @@ limitations under the License.
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>default-compile</id>
+                        <configuration>
+                            <showWarnings>true</showWarnings>
+                            <compilerArgs combine.children="append">
+                                <arg>-Xlint:exports,module,opens,-requires-automatic,-requires-transitive-automatic</arg>
+                            </compilerArgs>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>

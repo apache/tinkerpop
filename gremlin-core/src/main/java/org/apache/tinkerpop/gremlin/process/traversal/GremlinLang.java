@@ -37,8 +37,8 @@ import org.apache.tinkerpop.gremlin.structure.io.pdt.CompositePDT;
 import org.apache.tinkerpop.gremlin.structure.io.pdt.CompositePDTAdapter;
 import org.apache.tinkerpop.gremlin.structure.io.pdt.PDTRegistry;
 import org.apache.tinkerpop.gremlin.util.NumberHelper;
+import org.apache.tinkerpop.gremlin.util.StringUtil;
 
-import javax.lang.model.SourceVersion;
 import java.io.Serializable;
 import java.util.Date;
 import java.math.BigDecimal;
@@ -243,7 +243,7 @@ public class GremlinLang implements Cloneable, Serializable {
                 return argAsString(((GValue<?>) arg).get());
             }
 
-            if (!SourceVersion.isIdentifier(key)) {
+            if (!StringUtil.isIdentifier(key)) {
                 throw new IllegalArgumentException(String.format("Invalid parameter name [%s].", key));
             }
 

@@ -86,7 +86,7 @@ public abstract class Client implements RequestSubmitter, RequestSubmitterAsync 
     /**
      * Chooses a {@link Connection} to write the message to.
      */
-    protected abstract Connection chooseConnection(final RequestMessage msg) throws TimeoutException, ConnectionException;
+    abstract Connection chooseConnection(final RequestMessage msg) throws TimeoutException, ConnectionException;
 
     /**
      * Asynchronous close of the {@code Client}.
@@ -357,7 +357,7 @@ public abstract class Client implements RequestSubmitter, RequestSubmitterAsync 
          * from that host's connection pool.
          */
         @Override
-        protected Connection chooseConnection(final RequestMessage msg) throws TimeoutException, ConnectionException {
+        Connection chooseConnection(final RequestMessage msg) throws TimeoutException, ConnectionException {
             final Iterator<Host> possibleHosts = this.cluster.loadBalancingStrategy().select(msg);
 
             // try a random host if none are marked available. maybe it will reconnect in the meantime. better than
@@ -536,7 +536,7 @@ public abstract class Client implements RequestSubmitter, RequestSubmitterAsync 
          * Delegates to the underlying {@link Client.ClusteredClient}.
          */
         @Override
-        protected Connection chooseConnection(final RequestMessage msg) throws TimeoutException, ConnectionException {
+        Connection chooseConnection(final RequestMessage msg) throws TimeoutException, ConnectionException {
             if (close.isDone()) throw new IllegalStateException("Client is closed");
             return client.chooseConnection(msg);
         }
@@ -612,7 +612,7 @@ public abstract class Client implements RequestSubmitter, RequestSubmitterAsync 
         }
 
         @Override
-        protected Connection chooseConnection(final RequestMessage msg) throws TimeoutException, ConnectionException {
+        Connection chooseConnection(final RequestMessage msg) throws TimeoutException, ConnectionException {
             // Transactions pin to a host, not a connection: each request carries its transaction id, so any connection
             // to the pinned host is interchangeable. The borrowed connection returns to the pool as soon as the
             // response completes (see Connection.write()).

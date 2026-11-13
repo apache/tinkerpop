@@ -21,9 +21,15 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.StepTest;
+import org.apache.tinkerpop.gremlin.structure.util.DefaultGraphProvider;
+import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.List;
+
+import static org.junit.Assert.assertEquals;
+
+import static org.junit.Assert.fail;
 
 /**
  * @author Daniel Kuppitz (http://gremlin.guru)
@@ -36,5 +42,20 @@ public class SubgraphStepTest extends StepTest {
                 __.subgraph("x"),
                 __.subgraph("y")
         );
+    }
+
+    /**
+     * {@code gremlin-core} sees no {@link DefaultGraphProvider} on its own test path, so opening the default
+     * side-effect graph fails, with the message naming the remedies.
+     */
+    @Test
+    public void shouldFailWithImprovedMessageWhenNoDefaultGraphProviderIsRegistered() {
+        final Traversal.Admin<?, ?> traversal = __.subgraph("x").asAdmin();
+        try {
+            traversal.getSideEffects().get("x");
+            fail("expected an IllegalStateException naming the remedies for the missing DefaultGraphProvider");
+        } catch (final IllegalStateException ex) {
+            assertEquals(DefaultGraphProvider.NO_PROVIDER_MESSAGE, ex.getMessage());
+        }
     }
 }

@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect;
 
+import org.apache.commons.configuration2.BaseConfiguration;
 import org.apache.tinkerpop.gremlin.process.traversal.Operator;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
@@ -30,13 +31,11 @@ import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.CloseableIterator;
-import org.apache.tinkerpop.gremlin.structure.util.GraphFactory;
+import org.apache.tinkerpop.gremlin.structure.util.DefaultGraphProvider;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.util.EnumSet;
-import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.Set;
 
 /**
@@ -57,14 +56,20 @@ public final class SubgraphStep extends SideEffectBarrierStep<Edge> implements S
     private Graph.Features.VertexFeatures parentGraphFeatures;
     private boolean subgraphSupportsMetaProperties = false;
 
-    private static final Map<String, Object> DEFAULT_CONFIGURATION = new HashMap<String, Object>() {{
-        put(Graph.GRAPH, "org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph"); // hard coded because TinkerGraph is not part of gremlin-core
-    }};
-
     public SubgraphStep(final Traversal.Admin traversal, final String sideEffectKey) {
         super(traversal);
         this.sideEffectKey = sideEffectKey;
-        this.getTraversal().asAdmin().getSideEffects().registerIfAbsent(this.sideEffectKey, () -> GraphFactory.open(DEFAULT_CONFIGURATION), Operator.assign);
+        this.getTraversal().asAdmin().getSideEffects().registerIfAbsent(this.sideEffectKey, SubgraphStep::openDefaultGraph, Operator.assign);
+    }
+
+    /**
+     * Opens the default side-effect graph through the {@link DefaultGraphProvider} SPI (provided by
+     * {@code tinkergraph-gremlin}), since {@code gremlin-core} cannot name {@code TinkerGraph} directly.
+     */
+    private static Graph openDefaultGraph() {
+        return DefaultGraphProvider.find()
+                .orElseThrow(() -> new IllegalStateException(DefaultGraphProvider.NO_PROVIDER_MESSAGE))
+                .open(new BaseConfiguration());
     }
 
     @Override

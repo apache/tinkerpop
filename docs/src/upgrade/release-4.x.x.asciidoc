@@ -418,9 +418,113 @@ Cluster cluster = Cluster.build("localhost")
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-3281[TINKERPOP-3281]
 
+[[upgrade-java-module-system]]
+==== Java Module System Support
+
+`gremlin-language`, `gremlin-shaded`, `gremlin-core`, `gremlin-util`, `gql-gremlin`, `tinkergraph-gremlin`,
+`gremlin-driver` and `gremlin-annotations` now include Java module descriptors. Applications using the module path
+must declare the modules they require:
+
+[source,java]
+----
+module com.example.app {
+    requires org.apache.tinkerpop.gremlin.driver;
+}
+----
+
+Classpath applications remain supported, but may need the package, dependency and API migrations below. Applications
+moving to the module path must also export or open extension classes used reflectively by TinkerPop. The reference
+documentation describes the affected extension points and module-path limitations, including Gryo.
+
+Applications on the module path can access only exported TinkerPop packages. Code using an implementation package
+listed as non-exported in the reference documentation must migrate to an exported API or remain on the classpath.
+
+For example, importing `SimpleClient` fails on the module path because `gremlin-driver` does not export its
+`simple` package:
+
+[source,java]
+----
+// compiles on the classpath, but fails on the module path
+import org.apache.tinkerpop.gremlin.driver.simple.SimpleClient;
+----
+
+See: link:https://tinkerpop.apache.org/docs/4.0.0-beta.4/reference/#gremlin-java-jpms[Reference Documentation - Java Platform Module System]
+
+[[upgrade-jpms-dependencies]]
+==== Dependency Changes
+
+`gremlin-driver`, `gremlin-util` and `gremlin-server` now depend on the specific Netty modules they use instead of
+`netty-all`. Applications that used other Netty components through that transitive dependency must declare those
+components directly. Applications that obtained HPPC or JavaPoet transitively from `gremlin-core` must likewise add a
+direct dependency.
+
+The `gremlin-driver` artifact with the `shaded` classifier remains classpath-only. Applications using the module path
+must use the regular `gremlin-driver` artifact.
+
+[[upgrade-java-package-relocations]]
+==== Java Package Relocations
+
+The generated Gremlin parser classes moved from `org.apache.tinkerpop.gremlin.language.grammar` to
+`org.apache.tinkerpop.gremlin.language.antlr`. Code that directly uses generated types such as `GremlinParser` or
+`GremlinBaseVisitor` must update its imports. Handwritten entry points such as `GremlinQueryParser` did not move.
+
+`MessageSerializer` moved to `org.apache.tinkerpop.gremlin.util.ser` and `Tokens` moved to
+`org.apache.tinkerpop.gremlin.util.message`. Code using either type must update its imports:
+
+[source,java]
+----
+// 3.x
+import org.apache.tinkerpop.gremlin.language.grammar.GremlinBaseVisitor;
+import org.apache.tinkerpop.gremlin.language.grammar.GremlinParser;
+import org.apache.tinkerpop.gremlin.util.MessageSerializer;
+import static org.apache.tinkerpop.gremlin.util.Tokens.TIMEOUT_MILLIS;
+
+// 4.x
+import org.apache.tinkerpop.gremlin.language.antlr.GremlinBaseVisitor;
+import org.apache.tinkerpop.gremlin.language.antlr.GremlinParser;
+import org.apache.tinkerpop.gremlin.util.ser.MessageSerializer;
+import static org.apache.tinkerpop.gremlin.util.message.Tokens.TIMEOUT_MILLIS;
+----
+
+[[upgrade-jpms-api-visibility]]
+==== Java API Visibility Changes
+
+JPMS checks identified declarations that were visible but depended on package-private implementation types. The
+client-side `Channelizer`, `Client.chooseConnection()` and the `TinkerMessenger` constructor are now package-private.
+They were already unusable by ordinary applications because their signatures required `Connection` or
+`TinkerMessageBoard`, so no migration is expected.
+
+`GraphSONModule`, `GraphSONModuleBuilder` and `Settings.ConnectionPoolSettings` are now public so that applications can
+use the public APIs that expose them.
+
 === Upgrading for Providers
 
 ==== Graph System Providers
+
+[[upgrade-default-graph-provider]]
+===== Default Graph Provider SPI
+
+When deserializing a GraphBinary `Graph` result or creating the default side-effect graph for `subgraph()`, TinkerPop
+now uses the `DefaultGraphProvider` service to create the graph. A provider distribution that uses TinkerGraph for
+either purpose must include `tinkergraph-gremlin`. To use another graph implementation, the provider must implement
+and register `DefaultGraphProvider`.
+
+[source,java]
+----
+public final class MyDefaultGraphProvider implements DefaultGraphProvider {
+    @Override
+    public Graph open(final Configuration configuration) {
+        return MyGraph.open(configuration);
+    }
+}
+----
+
+Register the implementation with `provides` on the module path or in `META-INF/services` on the classpath.
+
+Only one distinct implementation may be present. Repeated registrations of the same implementation are allowed, but
+different implementations cause an error.
+
+See: link:https://tinkerpop.apache.org/docs/4.0.0-beta.4/dev/provider/#provider-jpms[Provider Documentation - Java Module System Support]
 
 ===== TinkerGraph Persistence Hooks Removed
 

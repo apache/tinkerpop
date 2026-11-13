@@ -35,9 +35,9 @@ import org.apache.tinkerpop.gremlin.driver.UserAgent;
 import org.apache.tinkerpop.gremlin.driver.auth.Auth.AuthenticationException;
 import org.apache.tinkerpop.gremlin.driver.exception.ResponseException;
 import org.apache.tinkerpop.gremlin.process.traversal.GremlinLang;
-import org.apache.tinkerpop.gremlin.util.MessageSerializer;
-import org.apache.tinkerpop.gremlin.util.Tokens;
 import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
+import org.apache.tinkerpop.gremlin.util.message.Tokens;
+import org.apache.tinkerpop.gremlin.util.ser.MessageSerializer;
 
 import java.net.InetSocketAddress;
 import java.net.URI;

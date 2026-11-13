@@ -46,7 +46,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.atomic.AtomicReference;
 
-import static org.apache.tinkerpop.gremlin.driver.Channelizer.HttpChannelizer.LAST_CONTENT_READ_RESPONSE;
+import static org.apache.tinkerpop.gremlin.driver.handler.HttpResponseMarkers.LAST_CONTENT_READ_RESPONSE;
 
 /**
  * Decodes chunked HTTP responses into streaming results without buffering the full response body.

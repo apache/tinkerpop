@@ -1913,6 +1913,179 @@ Point p = (Point) g.V().has("location").values("location").next();
 Classes annotated with `@ProviderDefined` are automatically dehydrated when passed as traversal arguments and
 hydrated on deserialization without explicit registry configuration.
 
+[[gremlin-java-jpms]]
+[llms-summary="Using Gremlin-Java with the Java Platform Module System (JPMS), including module names, Maven setup, extension-point access, and classpath-only limitations."]
+=== Java Platform Module System
+
+The core Gremlin-Java artifacts ship with module descriptors, so applications that use the Java Platform Module System
+(JPMS) can place them on the module path and `requires` them by name. Two kinds of applications are supported on the
+module path: driver applications that connect to Gremlin Server or another remote Gremlin provider with
+`gremlin-driver`, and embedded applications that run Gremlin in-process, typically against TinkerGraph. Every
+artifact continues to work on the classpath.
+
+The following artifacts are named modules:
+
+[cols="1,2,2",options="header"]
+|===
+|Artifact |Module name |Packages not exported
+|`gremlin-language` |`org.apache.tinkerpop.gremlin.language` |`...language.corpus`
+|`gremlin-shaded` |`org.apache.tinkerpop.gremlin.shaded` |
+|`gremlin-core` |`org.apache.tinkerpop.gremlin.core` |`...jsr223.console`, `...process.computer.traversal.lambda`,
+`...process.traversal.strategy.util`
+|`gremlin-util` |`org.apache.tinkerpop.gremlin.util` |`...util.ser.binary`
+|`gql-gremlin` |`org.apache.tinkerpop.gremlin.gql` |
+|`tinkergraph-gremlin` |`org.apache.tinkerpop.gremlin.tinkergraph` |`...tinkergraph.process.traversal.step.map`,
+`...tinkergraph.process.traversal.step.sideEffect`
+|`gremlin-driver` |`org.apache.tinkerpop.gremlin.driver` |`...driver.handler`, `...driver.simple`,
+`...driver.stream`, `...driver.util`
+|`gremlin-annotations` |`org.apache.tinkerpop.gremlin.annotations` |
+|===
+
+Each module exports its public API. The packages in the last column, abbreviated from `org.apache.tinkerpop.gremlin`,
+hold only internal classes and are not exported, so code on the module path cannot compile against them. The same
+descriptor serves both the regular and the `min` jar of `tinkergraph-gremlin`. Modules that appear in another
+module's API are declared with `requires transitive`, so an application only needs to name the TinkerPop modules it
+uses directly. `gremlin-driver` brings `gremlin-core` and `gremlin-util` with it, and `tinkergraph-gremlin` brings
+`gremlin-core`.
+
+[[gremlin-java-jpms-driver]]
+==== Driver Applications
+
+A driver application declares the usual Maven dependency and requires the driver module:
+
+[source,xml]
+----
+<dependency>
+   <groupId>org.apache.tinkerpop</groupId>
+   <artifactId>gremlin-driver</artifactId>
+   <version>x.y.z</version>
+</dependency>
+----
+
+[source,java]
+----
+module com.example.app {
+    requires org.apache.tinkerpop.gremlin.driver;
+}
+----
+
+The application then uses `Cluster`, `Client` and `DriverRemoteConnection` as described in
+<<gremlin-java-connecting,Connecting>>. With all dependencies on the module path, it starts with the standard
+launcher:
+
+[source,shell]
+----
+java --module-path <dependency jars and application> -m com.example.app/com.example.App
+----
+
+Results that are a `Graph`, such as the side-effect of `subgraph()`, are deserialized into a TinkerGraph, so an
+application that receives them also needs `tinkergraph-gremlin`. The `gremlin-driver` dependency on it is optional
+and must be declared explicitly:
+
+[source,xml]
+----
+<dependency>
+   <groupId>org.apache.tinkerpop</groupId>
+   <artifactId>tinkergraph-gremlin</artifactId>
+   <version>x.y.z</version>
+</dependency>
+----
+
+TinkerGraph only has to be on the module path. It binds automatically through the
+`org.apache.tinkerpop.gremlin.structure.util.DefaultGraphProvider` service, so the application descriptor stays
+unchanged and needs no `requires org.apache.tinkerpop.gremlin.tinkergraph`. If no provider is present, the `Graph`
+result fails with an error that names `tinkergraph-gremlin` and explains how to make its module present.
+
+[[gremlin-java-jpms-embedded]]
+==== Embedded Applications
+
+An embedded application depends on `tinkergraph-gremlin` and requires its module, which reads `gremlin-core`
+transitively:
+
+[source,xml]
+----
+<dependency>
+   <groupId>org.apache.tinkerpop</groupId>
+   <artifactId>tinkergraph-gremlin</artifactId>
+   <version>x.y.z</version>
+</dependency>
+----
+
+[source,java]
+----
+module com.example.app {
+    requires org.apache.tinkerpop.gremlin.tinkergraph;
+}
+----
+
+OLTP traversals, the `gremlin-lang` script engine (discovered through `DefaultGremlinScriptEngineManager`) and OLAP
+with `TinkerGraphComputer` all work on the module path, as do sample graphs such as `TinkerFactory.createModern()`.
+The two sample graphs that load from Gryo files are the exception, as described in
+<<gremlin-java-jpms-limitations,JPMS Limitations>>.
+
+[[gremlin-java-jpms-dsl]]
+==== DSLs on the Module Path
+
+A <<gremlin-java-dsl,DSL>> built with `@GremlinDsl` works on the module path. The annotation is only needed while
+compiling, so the application reads the annotations module with `requires static`, and the processor runs from the
+processor module path (`--processor-module-path`), where `gremlin-annotations` registers it as a
+`javax.annotation.processing.Processor` service. `gremlin-core` creates the generated `TraversalSource`
+reflectively, so the package holding the DSL is exported to it:
+
+[source,java]
+----
+module com.example.app {
+    requires static org.apache.tinkerpop.gremlin.annotations;
+    requires org.apache.tinkerpop.gremlin.tinkergraph;
+
+    exports com.example.app.social to org.apache.tinkerpop.gremlin.core;
+}
+----
+
+A DSL used with a remote connection is also exported to `org.apache.tinkerpop.gremlin.driver`, which creates the
+DSL's `TraversalSource` reflectively when a remote transaction begins:
+
+[source,java]
+----
+module com.example.app {
+    requires static org.apache.tinkerpop.gremlin.annotations;
+    requires org.apache.tinkerpop.gremlin.driver;
+
+    exports com.example.app.social to org.apache.tinkerpop.gremlin.core, org.apache.tinkerpop.gremlin.driver;
+}
+----
+
+[[gremlin-java-jpms-extensions]]
+==== Extension Points
+
+Extension points implemented in named modules may require `exports`, `opens` or `provides` directives so that
+TinkerPop can load or reflect into them. The canonical access requirements, service registration rules and module
+layer restrictions are documented under
+link:https://tinkerpop.apache.org/docs/x.y.z/dev/provider/#provider-jpms[Java Module System Support] in the provider
+documentation. Those rules apply to application extensions as well as graph-provider modules.
+
+[[gremlin-java-jpms-limitations]]
+==== JPMS Limitations
+
+`gremlin-server`, `gremlin-groovy`, `gremlin-console`, `hadoop-gremlin`, `spark-gremlin` and `gremlin-test` have no
+module descriptors and are supported only on the classpath. The same is true of the `gremlin-driver` jar with the
+`shaded` classifier, which carries no module descriptor or `Automatic-Module-Name` and does not run on the module
+path.
+
+Gryo is not supported on the module path. Kryo relies on reflective access to JDK and TinkerPop classes that named
+modules do not open, so Gryo reading and writing (`GryoMapper`, `GryoReader`, `GryoWriter`, `IoCore.gryo()` and
+`.kryo` files with `io()`) fails, typically with an `InaccessibleObjectException`. That includes
+`TinkerFactory.createGratefulDead()` and `TinkerFactory.createAirRoutes()`, which load their data from Gryo files. The
+Gryo packages remain exported, but an application that needs Gryo runs on the classpath.
+
+Three libraries in the module graph have no module name of their own and are resolved as automatic modules named
+after their jar files. `gremlin-core` requires `javatuples` transitively, because javatuples types appear in its API,
+and requires `exp4j`, which backs the `math()`-step. `gremlin-language` also requires `javatuples`, for a package it
+does not export. `commons-beanutils` requires `commons.collections`, from the
+`commons-collections` 3.2.2 jar. A build that renames those jars, for example `maven-dependency-plugin`
+`copy-dependencies` with `prependGroupId=true`, changes the derived names, and the application then fails at startup
+with a "module not found" error. Keeping the original jar file names avoids the problem.
+
 [[gremlin-javascript]]
 [llms-summary="Using Gremlin from JavaScript/Node.js: installing the gremlin package, building traversals, and connecting to a remote Gremlin Server."]
 == Gremlin-JavaScript

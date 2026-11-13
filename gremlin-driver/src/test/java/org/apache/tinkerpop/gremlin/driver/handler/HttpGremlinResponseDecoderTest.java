@@ -28,8 +28,8 @@ import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.util.CharsetUtil;
-import org.apache.tinkerpop.gremlin.util.MessageSerializer;
 import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
+import org.apache.tinkerpop.gremlin.util.ser.MessageSerializer;
 import org.apache.tinkerpop.gremlin.util.ser.SerTokens;
 import org.apache.tinkerpop.gremlin.util.ser.SerializationException;
 import org.apache.tinkerpop.gremlin.util.ser.Serializers;
@@ -39,7 +39,7 @@ import java.util.Collections;
 
 import static io.netty.handler.codec.http.HttpHeaderNames.CONTENT_TYPE;
 import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
-import static org.apache.tinkerpop.gremlin.driver.Channelizer.HttpChannelizer.LAST_CONTENT_READ_RESPONSE;
+import static org.apache.tinkerpop.gremlin.driver.handler.HttpResponseMarkers.LAST_CONTENT_READ_RESPONSE;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertSame;
@@ -155,7 +155,7 @@ public class HttpGremlinResponseDecoderTest {
 
     /**
      * After a successful decode the decoder must emit the decoded {@link ResponseMessage} followed by the
-     * {@link org.apache.tinkerpop.gremlin.driver.Channelizer.HttpChannelizer#LAST_CONTENT_READ_RESPONSE} signal, and
+     * {@link HttpResponseMarkers#LAST_CONTENT_READ_RESPONSE} signal, and
      * must record that bytes were read on the channel so the inactivity handler treats the connection as live.
      */
     @Test

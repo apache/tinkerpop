@@ -722,7 +722,7 @@ files within Intellij itself on command:
 . Right-click on the `Gremlin.g4` file and "Configure ANTLR"
 . Set "Output directory where all output is generated" to `target/generated-sources/antlr4`
 . Set "Grammar file encoding" to `utf-8`
-. Set "Package/namespace for the generated code" to `org.apache.tinkerpop.gremlin.language.grammar`
+. Set "Package/namespace for the generated code" to `org.apache.tinkerpop.gremlin.language.antlr`
 . Set "Language" to `Java`
 . Set "Case transformation in the Preview window" should be "Leave as-is"
 . The "generate parse tree listener" should be unchecked and the "generate parse tree visitor" should be checked.

@@ -122,7 +122,7 @@ import java.util.stream.Stream;
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-abstract class GraphSONModule extends TinkerPopJacksonModule {
+public abstract class GraphSONModule extends TinkerPopJacksonModule {
 
     GraphSONModule(final String name) {
         super(name);
@@ -849,7 +849,7 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
      * A "builder" used to create {@link GraphSONModule} instances.  Each "version" should have an associated
      * {@code GraphSONModuleBuilder} so that it can be registered with the {@link GraphSONVersion} enum.
      */
-    static interface GraphSONModuleBuilder {
+    public interface GraphSONModuleBuilder {
 
         /**
          * Creates a new {@link GraphSONModule} object.

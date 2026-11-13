@@ -18,7 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.language.translator;
 
-import org.apache.tinkerpop.gremlin.language.grammar.GremlinParser;
+import org.apache.tinkerpop.gremlin.language.antlr.GremlinParser;
 
 /**
  * A base class for visitors that translate Gremlin AST nodes to Gremlin strings.

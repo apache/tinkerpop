@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.util;
 
+import javax.lang.model.SourceVersion;
 import java.util.Arrays;
 import org.apache.tinkerpop.gremlin.AssertHelper;
 import org.junit.Test;
@@ -32,6 +33,27 @@ public class StringUtilTest {
     @Test
     public void shouldBeUtilityClass() throws Exception {
         AssertHelper.assertIsUtilityClass(StringUtil.class);
+    }
+
+    /**
+     * {@code StringUtil.isIdentifier()} exists so that {@code gremlin-core} doesn't need the {@code java.compiler}
+     * module. This confirms it agrees with {@code javax.lang.model.SourceVersion.isIdentifier()} on common cases:
+     * typical parameter names, names that must be rejected, and a couple of non-ASCII letters.
+     */
+    @Test
+    public void shouldMatchSourceVersionIsIdentifierForCommonCases() {
+        for (final String s : new String[]{"x", "name", "_x", "$x", "x1", "camelCase", "é", "éclair"}) {
+            assertIdentifierAgreement(s, true);
+        }
+
+        for (final String s : new String[]{"", "1x", "a-b", "a b", "a.b"}) {
+            assertIdentifierAgreement(s, false);
+        }
+    }
+
+    private static void assertIdentifierAgreement(final String s, final boolean expected) {
+        assertEquals(s, expected, SourceVersion.isIdentifier(s));
+        assertEquals(s, expected, StringUtil.isIdentifier(s));
     }
 
     @Test

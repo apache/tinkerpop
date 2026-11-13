@@ -51,7 +51,7 @@ public final class TinkerMessenger<M> implements Messenger<M> {
     private final TinkerMessageBoard<M> messageBoard;
     private final MessageCombiner<M> combiner;
 
-    public TinkerMessenger(final Vertex vertex, final TinkerMessageBoard<M> messageBoard, final Optional<MessageCombiner<M>> combiner) {
+    TinkerMessenger(final Vertex vertex, final TinkerMessageBoard<M> messageBoard, final Optional<MessageCombiner<M>> combiner) {
         this.vertex = vertex;
         this.messageBoard = messageBoard;
         this.combiner = combiner.isPresent() ? combiner.get() : null;

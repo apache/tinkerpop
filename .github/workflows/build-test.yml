@@ -40,11 +40,54 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
       - name: Build with Maven
-        run: mvn clean install -pl $EXCLUDE_MODULES -Dci --batch-mode -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn -Dcoverage
+        # Run the post-package artifact checks without enabling the ordinary integration-test suite.
+        run: mvn clean install -pl $EXCLUDE_MODULES -Dci --batch-mode -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn -Dcoverage -DskipIntegrationTests=false '-Dit.test=*VerificationTest' -Dfailsafe.failIfNoSpecifiedTests=false
       - name: Upload to Codecov
         uses: codecov/codecov-action@v7
         with:
          directory: ./gremlin-tools/gremlin-coverage/target/site
+  example-projects:
+    name: Example projects
+    timeout-minutes: 20
+    needs: smoke
+    runs-on: ubuntu-26.04
+    steps:
+      - uses: actions/checkout@v7
+      - name: Set up JDK 17
+        uses: actions/setup-java@v6
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+      - name: Build Gremlin Server distribution
+        run: mvn install -pl :gremlin-server -am -DskipTests -DskipImageBuild -Dci --batch-mode -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
+      - name: Build Java JPMS examples
+        run: |
+          projects=(embedded remote remote-graph dsl extensions sigv4)
+          for project in "${projects[@]}"; do
+            mvn --batch-mode -Dci -f "example-projects/java/jpms/${project}/pom.xml" package
+          done
+      - name: Activate Gremlin Server
+        run: |
+          mkdir -p "${RUNNER_TEMP}/tinkerpop-example-projects"
+          cd gremlin-server/target/apache-tinkerpop-gremlin-server-*-standalone
+          LOG_DIR="${RUNNER_TEMP}/tinkerpop-example-projects" PID_DIR="${RUNNER_TEMP}/tinkerpop-example-projects" GREMLIN_YAML=conf/gremlin-server-modern.yaml bin/gremlin-server.sh activate
+      - name: Run Java JPMS examples
+        run: |
+          java -p example-projects/java/jpms/embedded/target/modules -m examples.jpms.embedded/examples.jpms.embedded.EmbeddedApp
+          java -p example-projects/java/jpms/remote/target/modules -m examples.jpms.remote/examples.jpms.remote.RemoteApp
+          java -p example-projects/java/jpms/remote-graph/target/modules -m examples.jpms.remotegraph/examples.jpms.remotegraph.RemoteGraphApp
+          java -p example-projects/java/jpms/remote-graph/target/modules --limit-modules examples.jpms.remotegraph -Dexamples.jpms.expectNoGraphProvider=true -m examples.jpms.remotegraph/examples.jpms.remotegraph.RemoteGraphApp
+          java -p example-projects/java/jpms/dsl/target/modules -m examples.jpms.dsl/examples.jpms.dsl.DslApp
+          java -p example-projects/java/jpms/extensions/target/modules -m examples.jpms.extensions/examples.jpms.extensions.ExtensionsApp
+          java -p example-projects/java/jpms/sigv4/target/modules -m examples.jpms.sigv4/examples.jpms.sigv4.Sigv4App
+      - name: Show Gremlin Server log
+        if: failure()
+        run: test ! -f "${RUNNER_TEMP}/tinkerpop-example-projects/gremlin.log" || tail -200 "${RUNNER_TEMP}/tinkerpop-example-projects/gremlin.log"
+      - name: Stop Gremlin Server
+        if: always()
+        run: |
+          cd gremlin-server/target/apache-tinkerpop-gremlin-server-*-standalone 2>/dev/null || exit 0
+          LOG_DIR="${RUNNER_TEMP}/tinkerpop-example-projects" PID_DIR="${RUNNER_TEMP}/tinkerpop-example-projects" GREMLIN_YAML=conf/gremlin-server-modern.yaml bin/gremlin-server.sh stop
   java-jdk21:
     name: mvn clean install - jdk21
     timeout-minutes: 45

@@ -20,9 +20,9 @@ package org.apache.tinkerpop.gremlin.driver;
 
 import org.apache.commons.configuration2.Configuration;
 import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryReadLimits;
-import org.apache.tinkerpop.gremlin.util.MessageSerializer;
 import org.apache.tinkerpop.gremlin.util.ser.GraphBinaryMessageSerializerV4;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
+import org.apache.tinkerpop.gremlin.util.ser.MessageSerializer;
 import org.yaml.snakeyaml.LoaderOptions;
 import org.yaml.snakeyaml.TypeDescription;
 import org.yaml.snakeyaml.Yaml;
@@ -282,7 +282,7 @@ public final class Settings {
         return settings;
     }
 
-    static class ConnectionPoolSettings {
+    public static class ConnectionPoolSettings {
         /**
          * Determines if SSL should be enabled or not. If enabled on the server then it must be enabled on the client.
          */
