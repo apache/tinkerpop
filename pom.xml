@@ -185,6 +185,7 @@ limitations under the License.
         <slf4j.version>2.0.16</slf4j.version>
         <snakeyaml.version>2.0</snakeyaml.version>
         <spark.version>4.3.0</spark.version>
+        <spatial4j.version>0.8</spatial4j.version>
         <awssdk.version>2.29.3</awssdk.version>
         <!-- Version aligned with Netty's optional bcpkix dependency used for SelfSignedCertificate -->
         <bouncycastle.version>1.70</bouncycastle.version>
@@ -867,6 +868,11 @@ limitations under the License.
                 <groupId>org.locationtech.jts</groupId>
                 <artifactId>jts-core</artifactId>
                 <version>${jts.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.locationtech.spatial4j</groupId>
+                <artifactId>spatial4j</artifactId>
+                <version>${spatial4j.version}</version>
             </dependency>
             <dependency>
                 <groupId>io.github.hakky54</groupId>
@@ -1894,6 +1900,11 @@ limitations under the License.
                                             <version>${jts.version}</version>
                                         </additionalDependency>
                                         <additionalDependency>
+                                            <groupId>org.locationtech.spatial4j</groupId>
+                                            <artifactId>spatial4j</artifactId>
+                                            <version>${spatial4j.version}</version>
+                                        </additionalDependency>
+                                        <additionalDependency>
                                             <groupId>io.netty</groupId>
                                             <artifactId>netty-buffer</artifactId>
                                             <version>${netty.version}</version>
@@ -2245,6 +2256,11 @@ limitations under the License.
                                             <groupId>org.locationtech.jts</groupId>
                                             <artifactId>jts-core</artifactId>
                                             <version>${jts.version}</version>
+                                        </additionalDependency>
+                                        <additionalDependency>
+                                            <groupId>org.locationtech.spatial4j</groupId>
+                                            <artifactId>spatial4j</artifactId>
+                                            <version>${spatial4j.version}</version>
                                         </additionalDependency>
                                         <additionalDependency>
                                             <groupId>org.apache.commons</groupId>

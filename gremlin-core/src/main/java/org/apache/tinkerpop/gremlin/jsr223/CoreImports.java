@@ -59,6 +59,8 @@ import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.verifica
 import org.apache.tinkerpop.gremlin.process.remote.RemoteConnection;
 import org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.DT;
+import org.apache.tinkerpop.gremlin.process.traversal.Geo;
+import org.apache.tinkerpop.gremlin.process.traversal.GeoP;
 import org.apache.tinkerpop.gremlin.process.traversal.GType;
 import org.apache.tinkerpop.gremlin.process.traversal.IO;
 import org.apache.tinkerpop.gremlin.process.traversal.Merge;
@@ -242,6 +244,8 @@ public final class CoreImports {
         CLASS_IMPORTS.add(Pick.class);
         CLASS_IMPORTS.add(P.class);
         CLASS_IMPORTS.add(TextP.class);
+        CLASS_IMPORTS.add(GeoP.class);
+        CLASS_IMPORTS.add(Geo.class);
         CLASS_IMPORTS.add(WithOptions.class);
         // remote
         CLASS_IMPORTS.add(RemoteConnection.class);
@@ -371,6 +375,7 @@ public final class CoreImports {
         uniqueMethods(P.class).forEach(METHOD_IMPORTS::add);
         uniqueMethods(AnonymousTraversalSource.class).forEach(METHOD_IMPORTS::add);
         uniqueMethods(TextP.class).forEach(METHOD_IMPORTS::add);
+        uniqueMethods(GeoP.class).forEach(METHOD_IMPORTS::add);
         uniqueMethods(__.class).filter(m -> !m.getName().equals("__")).forEach(METHOD_IMPORTS::add);
         uniqueMethods(Computer.class).forEach(METHOD_IMPORTS::add);
         uniqueMethods(TimeUtil.class).forEach(METHOD_IMPORTS::add);

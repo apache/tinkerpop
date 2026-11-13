@@ -42,6 +42,7 @@ import org.apache.tinkerpop.gremlin.structure.geo.Geometry;
 import org.apache.tinkerpop.gremlin.structure.geo.Model;
 import org.apache.tinkerpop.gremlin.structure.geo.Polygon;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
+import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.apache.tinkerpop.gremlin.util.function.Lambda;
 import org.javatuples.Pair;
 import org.junit.Test;
@@ -626,5 +627,42 @@ public class GremlinGroovyScriptEngineTest {
 
         // a bare GEOGRAPHIC on its own names the GType
         assertEquals(GType.GEOGRAPHIC, engine.eval("GEOGRAPHIC"));
+    }
+
+    @Test
+    public void shouldEvalGeoPredicatesOverTinkerGraph() throws Exception {
+        final GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine();
+        final Bindings bindings = new SimpleBindings();
+        bindings.put("g", traversal().with(TinkerGraph.open()));
+        bindings.put("geo", traversal().with(TinkerGraph.open()));
+
+        // cartesian points and a polygon, as a console session would add them
+        engine.eval("g.addV(\"store\").property(\"loc\", Geometry(\"POINT(2 2)\")).iterate()", bindings);
+        engine.eval("g.addV(\"store\").property(\"loc\", Geometry(\"POINT(5 5)\")).iterate()", bindings);
+        engine.eval("g.addV(\"zone\").property(\"loc\", Geometry(\"POLYGON((10 10, 14 10, 14 14, 10 14, 10 10))\")).iterate()", bindings);
+
+        // only the point inside the polygon is within it
+        assertEquals(1L, engine.eval(
+                "g.V().has(\"loc\", geoWithin(Geometry(\"POLYGON((0 0, 4 0, 4 4, 0 4, 0 0))\"))).count().next()", bindings));
+        assertEquals(Geometry.fromWkt("POINT(2 2)"), engine.eval(
+                "g.V().has(\"loc\", geoWithin(Geometry(\"POLYGON((0 0, 4 0, 4 4, 0 4, 0 0))\"))).values(\"loc\").next()", bindings));
+
+        // only the polygon property contains the point
+        assertEquals(1L, engine.eval(
+                "g.V().has(\"loc\", geoContains(Geometry(\"POINT(12 12)\"))).count().next()", bindings));
+        assertEquals("zone", engine.eval(
+                "g.V().has(\"loc\", geoContains(Geometry(\"POINT(12 12)\"))).label().next()", bindings));
+        assertEquals(0L, engine.eval(
+                "g.V().has(\"loc\", geoContains(Geometry(\"POINT(20 20)\"))).count().next()", bindings));
+
+        // geographic points about 556 meters apart, and one far away
+        engine.eval("geo.addV(\"store\").property(\"loc\", Geometry(\"POINT(2 2)\", GEOGRAPHIC)).iterate()", bindings);
+        engine.eval("geo.addV(\"store\").property(\"loc\", Geometry(\"POINT(2.005 2)\", GEOGRAPHIC)).iterate()", bindings);
+        engine.eval("geo.addV(\"store\").property(\"loc\", Geometry(\"POINT(5 5)\", GEOGRAPHIC)).iterate()", bindings);
+
+        assertEquals(2L, engine.eval(
+                "geo.V().has(\"loc\", geoWithinDistance(Geometry(\"POINT(2 2)\", GEOGRAPHIC), 1000)).count().next()", bindings));
+        assertEquals(1L, engine.eval(
+                "geo.V().has(\"loc\", geoWithinDistance(Geometry(\"POINT(2 2)\", GEOGRAPHIC), 100)).count().next()", bindings));
     }
 }
