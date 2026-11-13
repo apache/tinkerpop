@@ -26,6 +26,8 @@ import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
+import org.apache.tinkerpop.gremlin.structure.util.keyed.KeyedProperty;
+import org.apache.tinkerpop.gremlin.structure.util.keyed.KeyedVertexProperty;
 
 import java.util.Set;
 
@@ -38,7 +40,8 @@ public final class EventUtil {
     private EventUtil() {}
 
     /**
-     * Register a vertex property change event with the callback registry.
+     * Register a vertex property change event with the callback registry. If the property is new, the old value is a
+     * {@link KeyedVertexProperty} that only carries the key, as {@link AddPropertyStep} reports it.
      */
     public static void registerVertexPropertyChange(final CallbackRegistry<Event> callbackRegistry,
                                                     final Traversal.Admin<Object, Object> traversal,
@@ -48,14 +51,17 @@ public final class EventUtil {
         if (hasAnyCallbacks(callbackRegistry)) {
             final EventStrategy eventStrategy = forceGetEventStrategy(traversal);
             final Property<?> p = vertex.property(key);
-            final Property<Object> oldValue = p.isPresent() ? eventStrategy.detach(vertex.property(key)) : null;
+            final Property<Object> oldValue = p.isPresent() ?
+                    eventStrategy.detach(vertex.property(key)) :
+                    new KeyedVertexProperty<>(key);
             final Event.VertexPropertyChangedEvent vpce = new Event.VertexPropertyChangedEvent(eventStrategy.detach(vertex), oldValue, value);
             callbackRegistry.getCallbacks().forEach(c -> c.accept(vpce));
         }
     }
 
     /**
-     * Register an edge property change event with the callback registry.
+     * Register an edge property change event with the callback registry. If the property is new, the old value is a
+     * {@link KeyedProperty} that only carries the key, as {@link AddPropertyStep} reports it.
      */
     public static void registerEdgePropertyChange(final CallbackRegistry<Event> callbackRegistry,
                                                   final Traversal.Admin<Object, Object> traversal,
@@ -65,8 +71,9 @@ public final class EventUtil {
         if (hasAnyCallbacks(callbackRegistry)) {
             final EventStrategy eventStrategy = forceGetEventStrategy(traversal);
             final Property<?> p = edge.property(key);
-            final Property<Object> oldValue =
-                    p.isPresent() ? eventStrategy.detach(edge.property(key)) : null;
+            final Property<Object> oldValue = p.isPresent() ?
+                    eventStrategy.detach(edge.property(key)) :
+                    new KeyedProperty<>(key);
             final Event.EdgePropertyChangedEvent vpce = new Event.EdgePropertyChangedEvent(eventStrategy.detach(edge), oldValue, value);
             callbackRegistry.getCallbacks().forEach(c -> c.accept(vpce));
         }
