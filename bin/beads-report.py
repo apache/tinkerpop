@@ -36,7 +36,8 @@ Two scopes:
 
 Checks divide into two kinds, and the distinction matters:
 
-  OBJECTIVE   dangling edge targets; rationale on closed unpinned beads.
+  OBJECTIVE   dangling edge targets; rationale on closed unpinned beads;
+              errands that break their fixed shape (PRIME.md section 8).
               Defects and facts. No judgment involved.
 
   HEURISTIC   decisions with no rejected alternative recorded; roots with
@@ -60,6 +61,12 @@ import sys
 
 # A commit record is titled and referenced owner/repo@<sha> -- PRIME.md section 6.
 COMMIT_REF = re.compile(r"@[0-9a-f]{7,40}$")
+
+# Errands and the gates holding them are built to be purged (PRIME.md section 8),
+# so a closed one losing its comments is the design, not a loss.
+DISPOSABLE = {"errand", "gate"}
+ERRAND_SECTIONS = ("## Change", "## Why", "## Acceptance", "## Validation")
+PR_REF = re.compile(r"^[^/\s]+/[^/#\s]+#\d+$")
 
 
 def bd(*args):
@@ -159,6 +166,8 @@ def main():
     for bead in beads.values():
         if bead.get("status") != "closed":
             continue  # pinned and open beads are not purge-eligible
+        if bead.get("issue_type") in DISPOSABLE:
+            continue
         carried = []
         if bead.get("comment_count") or bead.get("comments"):
             n = bead.get("comment_count") or len(bead.get("comments") or [])
@@ -168,6 +177,33 @@ def main():
         if carried:
             at_risk.append(f"{bead['id']:18} {', '.join(carried):22} {bead['title'][:44]}")
     report("Rationale on closed beads (lost at next purge -- pin to keep)", at_risk)
+
+    # An errand is read by someone with nothing but the bead, so a missing piece of
+    # its spec is a defect. Its one permitted edge is `blocks` onto a gh:pr gate.
+    # Only open errands matter: a closed one has done its job and is due for purge.
+    misshapen = []
+    for bead in beads.values():
+        if bead.get("issue_type") != "errand" or bead.get("status") == "closed":
+            continue
+        meta = bead.get("metadata") or {}
+        text = bead.get("description") or ""
+        flaws = [f"no {k}" for k in ("branch", "origin") if not meta.get(k)]
+        if meta.get("origin") and not PR_REF.match(str(meta["origin"])):
+            flaws.append("origin not owner/repo#N")
+        flaws += [f"no {h[3:]}" for h in ERRAND_SECTIONS if h not in text]
+        if bead.get("parent"):
+            flaws.append("has a parent")
+        for src, dst, typ in edges:
+            if bead["id"] not in (src, dst):
+                continue
+            other = beads.get(dst if src == bead["id"] else src) or {}
+            if not (src == bead["id"] and typ == "blocks"
+                    and other.get("issue_type") == "gate"
+                    and other.get("await_type") == "gh:pr"):
+                flaws.append(f"{typ} edge to {other.get('id', dst)}")
+        if flaws:
+            misshapen.append(f"{bead['id']:18} {bead['title'][:30]:30}  {', '.join(flaws)}")
+    report("Errands that break their shape (defect)", misshapen)
 
     # --- HEURISTIC ---------------------------------------------------------
 
