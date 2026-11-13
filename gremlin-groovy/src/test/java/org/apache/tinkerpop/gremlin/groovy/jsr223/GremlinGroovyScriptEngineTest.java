@@ -28,6 +28,7 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.tinkerpop.gremlin.groovy.jsr223.ast.AmbiguousMethodASTTransformation;
 import org.apache.tinkerpop.gremlin.groovy.jsr223.ast.RepeatASTTransformationCustomizer;
 import org.apache.tinkerpop.gremlin.jsr223.DefaultImportCustomizer;
+import org.apache.tinkerpop.gremlin.process.traversal.GType;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
@@ -37,6 +38,9 @@ import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversal
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ReadOnlyStrategy;
 import org.apache.tinkerpop.gremlin.structure.Column;
+import org.apache.tinkerpop.gremlin.structure.geo.Geometry;
+import org.apache.tinkerpop.gremlin.structure.geo.Model;
+import org.apache.tinkerpop.gremlin.structure.geo.Polygon;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 import org.apache.tinkerpop.gremlin.util.function.Lambda;
 import org.javatuples.Pair;
@@ -581,5 +585,46 @@ public class GremlinGroovyScriptEngineTest {
         expectedKeys.forEach((key) -> {
             assertEquals(expectedConfig.get(Object.class, key), reconstructedStrategy.getConfiguration().get(Object.class, key));
         });
+    }
+
+    @Test
+    public void shouldEvalGeometryFunction() throws Exception {
+        final GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine();
+
+        // a bare GEOGRAPHIC as the second argument names the coordinate model
+        final Geometry square = (Geometry) engine.eval("Geometry(\"POLYGON((0 0, 4 0, 4 4, 0 4, 0 0))\", GEOGRAPHIC)");
+        assertThat(square, instanceOf(Polygon.class));
+        assertEquals(Model.GEOGRAPHIC, square.model());
+        assertEquals(4326, square.srid());
+
+        assertEquals(Geometry.fromWkt("POINT(1 2)", Model.GEOGRAPHIC),
+                engine.eval("Geometry(\"POINT(1 2)\", Model.GEOGRAPHIC)"));
+
+        final Geometry cartesian = (Geometry) engine.eval("Geometry(\"POINT(1 2)\")");
+        assertEquals(Geometry.fromWkt("POINT(1 2)"), cartesian);
+        assertEquals(Model.CARTESIAN, cartesian.model());
+
+        assertEquals(Geometry.fromWkt("POINT(1 2)", 32618), engine.eval("Geometry(\"POINT(1 2)\", 32618)"));
+
+        // the class import resolves alongside the function
+        assertEquals(Geometry.fromWkt("POINT(1 2)", Model.GEOGRAPHIC),
+                engine.eval("Geometry.fromWkt(\"POINT(1 2)\", Model.GEOGRAPHIC)"));
+
+        // a bare CARTESIAN as the second argument names the coordinate model
+        final Geometry cartesianByGType = (Geometry) engine.eval("Geometry(\"POINT(1 2)\", CARTESIAN)");
+        assertEquals(Model.CARTESIAN, cartesianByGType.model());
+
+        // a GType that does not name a coordinate model is rejected
+        try {
+            engine.eval("Geometry(\"POINT(1 2)\", POINT)");
+            fail("Should have tanked since POINT does not name a coordinate model");
+        } catch (Exception ex) {
+            assertTrue("Should name the accepted models, was: " + ExceptionUtils.getStackTrace(ex),
+                    ExceptionUtils.getThrowableList(ex).stream().anyMatch(t -> t.getMessage() != null &&
+                            t.getMessage().contains("GType.CARTESIAN or GType.GEOGRAPHIC")));
+        }
+
+        // a bare GEOGRAPHIC on its own names the GType
+        assertEquals(GType.GEOGRAPHIC, engine.eval("GEOGRAPHIC"));
     }
 }

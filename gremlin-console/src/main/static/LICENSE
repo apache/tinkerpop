@@ -209,6 +209,7 @@ The Apache TinkerPop project bundles the following components under the BSD Lice
 
      Antlr4 (org.antlr:antlr4-runtime:4.13.2 - https://www.antlr.org) - for details, see licenses/antlr4
      JLine (jline:jline:2.14.6 - https://github.com/jline/jline2) - for details, see licenses/jline2
+     JTS Topology Suite (org.locationtech.jts:jts-core:1.20.0 - https://github.com/locationtech/jts) - EDL 1.0, for details, see licenses/jts
      Kryo (com.esotericsoftware:kryo-shaded:3.0.3 - https://github.com/EsotericSoftware/kryo)
        - shaded in gremlin-shaded to org.apache.tinkerpop.shaded.kryo
        - for details, see licenses/kryo

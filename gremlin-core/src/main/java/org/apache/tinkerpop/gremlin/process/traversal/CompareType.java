@@ -31,7 +31,9 @@ import java.util.concurrent.ConcurrentHashMap;
 public enum CompareType implements PBiPredicate<Object, Object> {
 
     /**
-     * Evaluates if the first object is an instance of the second class.
+     * Evaluates if the first object is an instance of the second class. A {@link GType} that
+     * matches by model, such as {@code GType.GEOGRAPHIC}, tests the first object's model instead,
+     * whether it is given as the enum or as its name.
      *
      * @since 3.8.0
      */
@@ -42,12 +44,18 @@ public enum CompareType implements PBiPredicate<Object, Object> {
                 return second == null || (second instanceof GType && ((GType) second).getType() == null);
             }
 
+            if (second instanceof GType) {
+                return ((GType) second).matches(first);
+            }
+
             Class<?> valueClass;
             if (second instanceof String) {
+                final Optional<GType> byName = CompareType.GlobalTypeCache.getRegisteredModelType((String) second);
+                if (byName.isPresent()) {
+                    return byName.get().matches(first);
+                }
                 valueClass = CompareType.GlobalTypeCache.getRegisteredType((String) second)
                         .orElseThrow(() -> new IllegalArgumentException(second + " is not a registered type"));
-            } else if (second instanceof GType) {
-                valueClass = ((GType) second).getType();
             } else {
                 valueClass = (Class<?>) second;
             }
@@ -68,6 +76,13 @@ public enum CompareType implements PBiPredicate<Object, Object> {
          */
         private static final Map<String, Class<?>> GLOBAL_TYPE_REGISTRY = new ConcurrentHashMap<>();
 
+        /**
+         * A register of the {@link GType} entries that match a value by its model rather than by
+         * its class, keyed by enum name. These entries share a class with {@code GEOMETRY}, so a
+         * class alone cannot tell them apart.
+         */
+        private static final Map<String, GType> MODEL_TYPE_REGISTRY = new ConcurrentHashMap<>();
+
         // register the GType classes for convenience use of simple class names in grammar
         static {
             for (GType value : GType.values()) {
@@ -76,6 +91,9 @@ public enum CompareType implements PBiPredicate<Object, Object> {
                     continue;
                 }
                 registerDataType(value.getType());
+                if (value.requiredModel() != null) {
+                    MODEL_TYPE_REGISTRY.put(value.name(), value);
+                }
             }
         }
 
@@ -111,6 +129,14 @@ public enum CompareType implements PBiPredicate<Object, Object> {
                 return Optional.of(GLOBAL_TYPE_REGISTRY.get(typeName));
 
             return Optional.empty();
+        }
+
+        /**
+         * Looks up a {@link GType} that matches a value by its model, by enum name. Returns an
+         * empty result for every other name, including the names of types that match by class.
+         */
+        static Optional<GType> getRegisteredModelType(final String typeName) {
+            return Optional.ofNullable(MODEL_TYPE_REGISTRY.get(typeName));
         }
     }
 }
