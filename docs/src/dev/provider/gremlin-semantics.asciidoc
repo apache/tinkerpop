@@ -295,6 +295,10 @@ Well-Known Text or Binary reader, or the grammar literal); a value that breaks o
 * *`GEOGRAPHIC` range.* For SRID 4326, longitude is in `[-180, 180]` and latitude in `[-90, 90]`; out of range is
 rejected, not wrapped. Other SRIDs are unconstrained.
 * *One dimension.* A geometry is 2D or 3D throughout; mixing coordinates with and without z is rejected.
+Well-Known Text marks a 3D value with a `Z` tag, as in `POINT Z(1 2 3)`. Text that holds no `Z` tag at all is read as
+3D when a coordinate has a third ordinate, the form PostGIS EWKT writes (`SRID=4326;POINT(1 2 3)`). Text that holds a
+`Z` tag rejects an untagged part with three ordinates. M values are not supported, so an `M` or `ZM` tag (written
+apart as in `POINT M` or against the type name as in `POINTM` or `POINTZM`) and a fourth ordinate are rejected.
 * *One SRID.* Every part of a collection shares the whole's SRID.
 * *Line strings and rings.* A line string has 0 or 2+ points; a polygon ring is empty or has 4+ points and is closed;
 a vertex is never an empty point.

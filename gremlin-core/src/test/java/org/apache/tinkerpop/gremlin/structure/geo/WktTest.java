@@ -428,13 +428,11 @@ public class WktTest {
             // expected
         }
 
-        // POINT with 3 ordinates but no Z tag
-        try {
-            Geometry.fromWkt("POINT(1 2 3)");
-            fail("Expected IAE for POINT with 3 ordinates but no Z");
-        } catch (IllegalArgumentException e) {
-            // expected
-        }
+        // POINT with 3 ordinates and no Z tag reads as 3D, the form PostGIS EWKT writes
+        final Geometry untagged3d = Geometry.fromWkt("POINT(1 2 3)");
+        assertTrue(untagged3d.hasZ());
+        assertEquals("POINT Z (1 2 3)", untagged3d.toWKT());
+        assertEquals(Geometry.fromWkt("POINT Z (1 2 3)"), untagged3d);
 
         // Collection mixing Z tags
         try {
@@ -443,6 +441,195 @@ public class WktTest {
         } catch (IllegalArgumentException e) {
             // expected
         }
+    }
+
+    // Text with no Z tag anywhere, whose coordinates all have 3 ordinates, reads as 3D
+    @Test
+    public void testUntaggedThirdOrdinateReadsAsZ() {
+        assertUntaggedMatchesTagged("POINT(1 2 3)", "POINT Z (1 2 3)");
+        assertUntaggedMatchesTagged("SRID=4326;LINESTRING(0 0 0,1 1 0,1 2 1)",
+                "SRID=4326;LINESTRING Z (0 0 0,1 1 0,1 2 1)");
+        assertUntaggedMatchesTagged("POLYGON((0 0 0, 10 0 0, 10 10 0, 0 0 0), (2 2 1, 3 2 1, 3 3 1, 2 2 1))",
+                "POLYGON Z ((0 0 0, 10 0 0, 10 10 0, 0 0 0), (2 2 1, 3 2 1, 3 3 1, 2 2 1))");
+        assertUntaggedMatchesTagged("MULTIPOINT(EMPTY,(1 1 1))", "MULTIPOINT Z (EMPTY,(1 1 1))");
+        assertUntaggedMatchesTagged("GEOMETRYCOLLECTION(POINT(1 2 3),POINT EMPTY)",
+                "GEOMETRYCOLLECTION Z (POINT Z (1 2 3),POINT Z EMPTY)");
+        assertUntaggedMatchesTagged("MULTIPOLYGON(((0 0 0, 1 0 0, 1 1 0, 0 0 0)))",
+                "MULTIPOLYGON Z (((0 0 0, 1 0 0, 1 1 0, 0 0 0)))");
+        assertUntaggedMatchesTagged("MULTILINESTRING(EMPTY,(0 0 0, 1 1 1))",
+                "MULTILINESTRING Z (EMPTY,(0 0 0, 1 1 1))");
+    }
+
+    // The ISO Z tag is written back for a value read from untagged text
+    @Test
+    public void testUntaggedThirdOrdinateOutput() {
+        assertEquals("SRID=0;POINT Z (1 2 3)", Geometry.fromWkt("POINT(1 2 3)").toEWKT());
+        assertEquals("SRID=4326;POINT Z (1 2 3)", Geometry.fromWkt("SRID=4326;POINT(1 2 3)").toEWKT());
+    }
+
+    // An untagged 3D value derives its model from the EWKT prefix as a 2D value does
+    @Test
+    public void testUntaggedThirdOrdinateWithEwktPrefix() {
+        final Geometry g = Geometry.fromWkt("SRID=4326;POINT(1 2 3)");
+        assertEquals(Model.GEOGRAPHIC, g.model());
+        assertEquals(4326, g.srid());
+        assertTrue(g.hasZ());
+    }
+
+    // An EMPTY part of an untagged 3D value is the 3D empty of its kind
+    @Test
+    public void testUntaggedThirdOrdinateEmptyParts() {
+        final MultiPoint mp = (MultiPoint) Geometry.fromWkt("MULTIPOINT(EMPTY,(1 1 1))");
+        assertTrue(mp.hasZ());
+        assertEquals("MULTIPOINT Z (EMPTY, (1 1 1))", mp.toWKT());
+        assertEquals(Point.emptyWithZ(0, true), mp.geometries().get(0));
+
+        final GeometryCollection gc = (GeometryCollection) Geometry.fromWkt("GEOMETRYCOLLECTION(POINT(1 2 3),POINT EMPTY)");
+        assertTrue(gc.hasZ());
+        assertEquals("GEOMETRYCOLLECTION Z (POINT Z (1 2 3), POINT Z EMPTY)", gc.toWKT());
+    }
+
+    // A coordinate with 4 ordinates names the ordinate count and the M dimension
+    @Test
+    public void testFourOrdinatesRejected() {
+        try {
+            Geometry.fromWkt("POINT(0 0 0 0)");
+            fail("Expected IAE for a coordinate with 4 ordinates");
+        } catch (IllegalArgumentException e) {
+            assertTrue("Message should name the ordinate count, was: " + e.getMessage(),
+                    e.getMessage().contains("more than 3 ordinates"));
+            assertTrue("Message should name M, was: " + e.getMessage(),
+                    e.getMessage().contains("M"));
+        }
+    }
+
+    // An M dimension written against the type name is reported as M
+    @Test
+    public void testGluedMRejected() {
+        for (final String wkt : new String[]{"POINTM(0 0 0)", "SRID=4326;MULTIPOINTM(0 0 0,1 2 1)",
+                "LINESTRINGM(0 0 0, 1 1 1)", "POLYGONM((0 0 0, 1 0 0, 1 1 0, 0 0 0))",
+                "MULTILINESTRINGM((0 0 0, 1 1 1))", "MULTIPOLYGONM(((0 0 0, 1 0 0, 1 1 0, 0 0 0)))",
+                "GEOMETRYCOLLECTIONM(POINTM(0 0 0))"}) {
+            try {
+                Geometry.fromWkt(wkt);
+                fail("Expected IAE for " + wkt);
+            } catch (IllegalArgumentException e) {
+                assertTrue("Message should name M, was: " + e.getMessage(),
+                        e.getMessage().contains("M dimension not supported"));
+            }
+        }
+    }
+
+    // Coordinates that mix 2 and 3 ordinates in untagged text are rejected
+    @Test
+    public void testMixed2dAnd3dRejected() {
+        for (final String wkt : new String[]{"LINESTRING(0 0, 1 1 1)", "LINESTRING(0 0 0, 1 1)",
+                "MULTIPOINT((0 0 0), (1 1))", "GEOMETRYCOLLECTION(POINT(1 2 3), POINT(4 5))",
+                "POLYGON((0 0 0, 1 0 0, 1 1, 0 0 0))"}) {
+            try {
+                Geometry.fromWkt(wkt);
+                fail("Expected IAE for " + wkt);
+            } catch (IllegalArgumentException e) {
+                assertTrue("Message should name 2D and 3D, was: " + e.getMessage(),
+                        e.getMessage().contains("2D and 3D"));
+            }
+        }
+    }
+
+    // Text that carries a Z tag follows the strict ISO rules
+    @Test
+    public void testTaggedTextFollowsIsoRules() {
+        assertIae(() -> Geometry.fromWkt("GEOMETRYCOLLECTION(POINT Z (1 2 3), POINT(4 5 6))"));
+        assertIae(() -> Geometry.fromWkt("LINESTRING Z (0 0 0, 1 1)"));
+        assertIae(() -> Geometry.fromWkt("GEOMETRYCOLLECTION Z (POINT Z (1 2 3), POINT(4 5))"));
+        assertIae(() -> Geometry.fromWkt("MULTIPOINT Z ((0 0 0), (1 1))"));
+
+        // An untagged part of tagged text names its missing Z tag, not a mix of dimensions
+        assertMessage("GEOMETRYCOLLECTION(POINT Z (1 2 3), POINT(4 5 6))", "3 ordinates but no Z tag");
+        assertMessageAbsent("GEOMETRYCOLLECTION(POINT Z (1 2 3), POINT(4 5 6))", "2D and 3D");
+
+        // A tagged part short of its z ordinate names the missing number
+        assertMessage("LINESTRING Z (0 0 0, 1 1)", "Expected number");
+        assertMessageAbsent("LINESTRING Z (0 0 0, 1 1)", "2D and 3D");
+    }
+
+    // A lowercase Z tag reads as 3D
+    @Test
+    public void testLowercaseZTag() {
+        final Geometry g = Geometry.fromWkt("point z (1 2 3)");
+        assertTrue(g.hasZ());
+        assertEquals(Geometry.fromWkt("POINT Z (1 2 3)"), g);
+    }
+
+    // A tagged coordinate with 4 ordinates names the ordinate count and the M dimension
+    @Test
+    public void testTaggedFourOrdinatesRejected() {
+        assertMessage("POINT Z (0 0 0 0)", "more than 3 ordinates");
+        assertMessage("POINT Z (0 0 0 0)", "M dimension");
+    }
+
+    // An untagged coordinate with 5 ordinates names the ordinate count and the M dimension
+    @Test
+    public void testFiveOrdinatesRejected() {
+        assertMessage("POINT(0 0 0 0 0)", "more than 3 ordinates");
+        assertMessage("POINT(0 0 0 0 0)", "M dimension");
+    }
+
+    // A ZM dimension written against the type name is reported as ZM
+    @Test
+    public void testGluedZmRejected() {
+        assertMessage("POINTZM(0 0 0 0)", "ZM dimension not supported");
+        assertMessage("SRID=4326;MULTIPOINTZM(0 0 0 0)", "ZM dimension not supported");
+        assertMessage("GEOMETRYCOLLECTION(POINTM(0 0 0))", "M dimension not supported");
+    }
+
+    // A failure found on the second reading of untagged text is a plain IllegalArgumentException
+    @Test
+    public void testUntaggedRetryReportsLaterFailure() {
+        assertEquals(IllegalArgumentException.class,
+                assertIae(() -> Geometry.fromWkt("SRID=4326;POINT(200 1 1)")).getClass());
+        assertMessage("SRID=4326;POINT(200 1 1)", "longitude must be in [-180, 180]");
+
+        assertEquals(IllegalArgumentException.class,
+                assertIae(() -> Geometry.fromWkt("LINESTRING(0 0 0)")).getClass());
+    }
+
+    // Text following an untagged 3D value is reported as trailing text
+    @Test
+    public void testUntaggedRetryWithTrailingText() {
+        assertMessage("POINT(1 2 3) extra", "Unexpected trailing text");
+    }
+
+    // Untagged text whose first failure is structural is rejected
+    @Test
+    public void testUntaggedMixedDimensionsWithStructuralFailure() {
+        assertIae(() -> Geometry.fromWkt("MULTILINESTRING((0 0), (0 0 0, 1 1 1))"));
+    }
+
+    // Text holding no coordinate, or only 2 ordinates, is 2D
+    @Test
+    public void test2dTextReadsAs2d() {
+        final Geometry empty = Geometry.fromWkt("POINT EMPTY");
+        assertFalse(empty.hasZ());
+        assertEquals("POINT EMPTY", empty.toWKT());
+
+        final Geometry gcEmpty = Geometry.fromWkt("GEOMETRYCOLLECTION(POINT EMPTY)");
+        assertFalse(gcEmpty.hasZ());
+        assertEquals("GEOMETRYCOLLECTION(POINT EMPTY)", gcEmpty.toWKT());
+
+        final Geometry p = Geometry.fromWkt("POINT(1 2)");
+        assertFalse(p.hasZ());
+        assertEquals("POINT(1 2)", p.toWKT());
+    }
+
+    /**
+     * Asserts that untagged text reads as 3D and reads to the same value as its ISO-tagged form.
+     */
+    private void assertUntaggedMatchesTagged(final String untagged, final String tagged) {
+        final Geometry fromUntagged = Geometry.fromWkt(untagged);
+        assertTrue("Expected 3D for " + untagged, fromUntagged.hasZ());
+        assertEquals(Geometry.fromWkt(tagged), fromUntagged);
+        assertEquals(Geometry.fromWkt(tagged).toWKT(), fromUntagged.toWKT());
     }
 
     // NaN and Infinity not allowed
@@ -690,12 +877,31 @@ public class WktTest {
         assertEquals(Geometry.fromWkt(g.toWKT()), Geometry.fromWkb(g.toWKB(), g.srid()));
     }
 
-    private static void assertIae(final Runnable action) {
+    private static IllegalArgumentException assertIae(final Runnable action) {
         try {
             action.run();
             fail("Expected IllegalArgumentException");
+            return null;
         } catch (IllegalArgumentException e) {
-            // expected
+            return e;
         }
+    }
+
+    /**
+     * Asserts that the text is rejected with a message holding the given fragment.
+     */
+    private static void assertMessage(final String wkt, final String fragment) {
+        final IllegalArgumentException e = assertIae(() -> Geometry.fromWkt(wkt));
+        assertTrue("Message for " + wkt + " should hold \"" + fragment + "\", was: " + e.getMessage(),
+                e.getMessage().contains(fragment));
+    }
+
+    /**
+     * Asserts that the text is rejected with a message free of the given fragment.
+     */
+    private static void assertMessageAbsent(final String wkt, final String fragment) {
+        final IllegalArgumentException e = assertIae(() -> Geometry.fromWkt(wkt));
+        assertFalse("Message for " + wkt + " should not hold \"" + fragment + "\", was: " + e.getMessage(),
+                e.getMessage().contains(fragment));
     }
 }

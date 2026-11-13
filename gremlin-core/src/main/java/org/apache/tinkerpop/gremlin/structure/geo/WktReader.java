@@ -36,20 +36,56 @@ final class WktReader {
      */
     private static final int MAX_SRID_DIGITS = 10;
 
+    /**
+     * Message for a coordinate that carries a third ordinate in text read under ISO rules.
+     */
+    private static final String MSG_UNTAGGED_THIRD_ORDINATE = "Coordinate has 3 ordinates but no Z tag";
+
+    /**
+     * Type names carrying a ZM dimension written against the name, the form PostGIS writes.
+     */
+    private static final String[] ZM_SUFFIXED_TYPES = {
+        "POINTZM", "LINESTRINGZM", "POLYGONZM", "MULTIPOINTZM", "MULTILINESTRINGZM",
+        "MULTIPOLYGONZM", "GEOMETRYCOLLECTIONZM"
+    };
+
+    /**
+     * Type names carrying an M dimension written against the name, the form PostGIS writes.
+     */
+    private static final String[] M_SUFFIXED_TYPES = {
+        "POINTM", "LINESTRINGM", "POLYGONM", "MULTIPOINTM", "MULTILINESTRINGM", "MULTIPOLYGONM",
+        "GEOMETRYCOLLECTIONM"
+    };
+
     private final String input;
+
+    /**
+     * True when a part that carries no Z tag is read as 3D, the form PostGIS EWKT writes.
+     */
+    private final boolean readUntaggedAsZ;
+
+    /**
+     * True when the text holds no Z tag at all, so it can be read again as 3D.
+     */
+    private final boolean zTagAbsent;
+
     private int pos;
     private int depth; // collection nesting depth
     private int srid;
     private Boolean hasZ; // null = not yet determined
 
-    private WktReader(final String input) {
+    private WktReader(final String input, final boolean readUntaggedAsZ) {
         this.input = input;
+        this.readUntaggedAsZ = readUntaggedAsZ;
+        this.zTagAbsent = input.indexOf('Z') < 0 && input.indexOf('z') < 0;
         this.pos = 0;
         this.depth = 0;
     }
 
     /**
-     * Parses WKT or EWKT text.
+     * Parses WKT or EWKT text. ISO rules are applied first, and text that carries no Z tag at
+     * all is read again as 3D when a coordinate holds a third ordinate, which is how PostGIS
+     * EWKT writes a 3D value.
      *
      * @param wktOrEwkt the input text
      * @param model explicit model, or null to derive from EWKT prefix
@@ -57,11 +93,23 @@ final class WktReader {
      * @return the parsed geometry
      */
     static Geometry parse(final String wktOrEwkt, final Model model, final Integer srid) {
+        try {
+            return parse(wktOrEwkt, model, srid, false);
+        } catch (UntaggedThirdOrdinate e) {
+            // the second pass reads every untagged part as 3D, so the third-ordinate signal
+            // cannot be raised again and every exception this call raises is a plain
+            // IllegalArgumentException
+            return parse(wktOrEwkt, model, srid, true);
+        }
+    }
+
+    private static Geometry parse(final String wktOrEwkt, final Model model, final Integer srid,
+                                  final boolean readUntaggedAsZ) {
         if (wktOrEwkt == null || wktOrEwkt.trim().isEmpty()) {
             throw new IllegalArgumentException("WKT input cannot be null or empty");
         }
 
-        final WktReader reader = new WktReader(wktOrEwkt);
+        final WktReader reader = new WktReader(wktOrEwkt, readUntaggedAsZ);
         reader.skipWhitespace();
 
         // Check for EWKT prefix
@@ -110,6 +158,7 @@ final class WktReader {
 
     private Geometry parseGeometry() {
         skipWhitespace();
+        rejectSuffixedDimension();
 
         if (matchIgnoreCase("POINT")) {
             return parsePoint();
@@ -165,16 +214,57 @@ final class WktReader {
         skipWhitespace();
 
         if (z) {
+            if (readUntaggedAsZ && !startsNumber(peek())) {
+                throw new IllegalArgumentException("Value mixes 2D and 3D coordinates");
+            }
             final double zVal = parseNumber();
             skipWhitespace();
+            rejectExtraOrdinates();
             return Point.ofWithSrid(x, y, zVal, srid);
         }
 
-        // A further ordinate without a Z tag is malformed
         if (startsNumber(peek())) {
-            throw new IllegalArgumentException("Coordinate has 3 ordinates but no Z tag");
+            parseNumber();
+            skipWhitespace();
+            rejectExtraOrdinates();
+            if (zTagAbsent) {
+                if (readUntaggedAsZ) {
+                    // every untagged part reads as 3D here, so this branch is unreachable
+                    throw new IllegalStateException("Untagged third ordinate signalled while reading untagged text as 3D");
+                }
+                // PostGIS EWKT writes a 3D value with no Z tag, so read the whole value again as 3D
+                throw new UntaggedThirdOrdinate();
+            }
+            throw new IllegalArgumentException(MSG_UNTAGGED_THIRD_ORDINATE);
         }
         return Point.ofWithSrid(x, y, srid);
+    }
+
+    /**
+     * Rejects a coordinate that carries a further ordinate at a position where three ordinates
+     * have been read, the XYZM form.
+     */
+    private void rejectExtraOrdinates() {
+        if (startsNumber(peek())) {
+            throw new IllegalArgumentException("Coordinate has more than 3 ordinates but the M dimension is not supported");
+        }
+    }
+
+    /**
+     * Rejects an M or ZM dimension written against the type name, as in "POINTM(0 0 0)" or
+     * "POINTZM(0 0 0 0)".
+     */
+    private void rejectSuffixedDimension() {
+        for (final String type : ZM_SUFFIXED_TYPES) {
+            if (peekWord(type)) {
+                throw new IllegalArgumentException("ZM dimension not supported");
+            }
+        }
+        for (final String type : M_SUFFIXED_TYPES) {
+            if (peekWord(type)) {
+                throw new IllegalArgumentException("M dimension not supported");
+            }
+        }
     }
 
     /**
@@ -459,7 +549,7 @@ final class WktReader {
         if (matchIgnoreCase("M")) {
             throw new IllegalArgumentException("M dimension not supported");
         }
-        return false;
+        return readUntaggedAsZ;
     }
 
     private double parseNumber() {
@@ -571,6 +661,18 @@ final class WktReader {
     }
 
     private boolean matchIgnoreCase(final String s) {
+        if (!peekWord(s)) {
+            return false;
+        }
+        pos += s.length();
+        return true;
+    }
+
+    /**
+     * Returns true if the word is at the current position, case-insensitively and bounded by a
+     * non-word character, without consuming it.
+     */
+    private boolean peekWord(final String s) {
         if (pos + s.length() > input.length()) {
             return false;
         }
@@ -586,7 +688,6 @@ final class WktReader {
                 return false;
             }
         }
-        pos += s.length();
         return true;
     }
 
@@ -616,6 +717,28 @@ final class WktReader {
     private void advance() {
         if (pos < input.length()) {
             pos++;
+        }
+    }
+
+    /**
+     * Signals that an untagged coordinate carries a third ordinate in text that holds no Z tag,
+     * so the whole value can be read again as 3D.
+     */
+    private static final class UntaggedThirdOrdinate extends IllegalArgumentException {
+
+        private static final long serialVersionUID = 1L;
+
+        private UntaggedThirdOrdinate() {
+            super(MSG_UNTAGGED_THIRD_ORDINATE);
+        }
+
+        /**
+         * The exception steers the second parse and is never surfaced, so it carries no stack
+         * trace.
+         */
+        @Override
+        public synchronized Throwable fillInStackTrace() {
+            return this;
         }
     }
 }

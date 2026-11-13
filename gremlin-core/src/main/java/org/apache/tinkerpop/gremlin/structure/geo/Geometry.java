@@ -76,6 +76,11 @@ public abstract class Geometry implements Comparable<Geometry> {
      * Parses WKT or EWKT text. If an EWKT prefix is present (for example
      * {@code "SRID=4326;POINT(1 2)"}), the SRID and so the model are derived from it. Otherwise
      * the model is {@link Model#CARTESIAN}.
+     * <p>
+     * The text is read under ISO rules, where a {@code Z} tag marks a 3D value. Text that holds
+     * no {@code Z} tag at all is read as 3D when a coordinate has a third ordinate, which is how
+     * PostGIS EWKT writes a 3D value (for example {@code "SRID=4326;POINT(1 2 3)"}). A value is
+     * 2D or 3D throughout. The {@code M} dimension is not supported.
      *
      * @param wktOrEwkt the WKT or EWKT string
      * @return the parsed geometry
@@ -85,14 +90,17 @@ public abstract class Geometry implements Comparable<Geometry> {
      *         if the geometry type name is unknown, or is one of the unsupported types
      *         {@code CIRCULARSTRING}, {@code COMPOUNDCURVE}, {@code CURVEPOLYGON},
      *         {@code MULTICURVE}, {@code MULTISURFACE}, {@code TRIANGLE}, {@code TIN} and
-     *         {@code POLYHEDRALSURFACE}; if an {@code M} or {@code ZM} dimension tag is present;
-     *         if a coordinate holds {@code NaN} or {@code Infinity}, is not a number, or has a
-     *         third ordinate without a {@code Z} tag; if a parenthesis, comma or other delimiter
-     *         is missing, or text follows the geometry; if the parts of one value do not all
-     *         carry the same {@code Z} tag; if a line string has exactly 1 point; if a polygon
-     *         ring has fewer than 4 points or is not closed; if collection nesting is deeper than
-     *         32 levels; or if the SRID resolves to 4326 and an x is outside -180 to 180 or a y
-     *         is outside -90 to 90
+     *         {@code POLYHEDRALSURFACE}; if an {@code M} or {@code ZM} dimension tag is present,
+     *         whether written apart from the type name as in {@code POINT M} or against it as in
+     *         {@code POINTM}, {@code POINTZM} or {@code MULTIPOINTM}; if a coordinate holds
+     *         {@code NaN} or {@code Infinity}, is not a number, or has a fourth ordinate; if the
+     *         text holds a {@code Z} tag and a part without one has a coordinate with a third
+     *         ordinate; if a parenthesis, comma or other delimiter is missing, or text follows
+     *         the geometry; if one value mixes 2D and 3D parts or coordinates, whether marked by
+     *         the {@code Z} tag or by the number of ordinates; if a line string has exactly 1
+     *         point; if a polygon ring has fewer than 4 points or is not closed; if collection
+     *         nesting is deeper than 32 levels; or if the SRID resolves to 4326 and an x is
+     *         outside -180 to 180 or a y is outside -90 to 90
      * @since 4.0.0
      */
     public static Geometry fromWkt(final String wktOrEwkt) {
