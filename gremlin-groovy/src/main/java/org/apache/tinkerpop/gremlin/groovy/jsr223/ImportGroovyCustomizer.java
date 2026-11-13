@@ -68,9 +68,16 @@ class ImportGroovyCustomizer implements GroovyCustomizer {
         classImports.values().forEach(ic::addImports);
 
         for (ImportCustomizer customizer : customizers) {
+            // Groovy 5+ also rejects a class and a method imported with the same name, such as Geometry, so the
+            // method's class is imported with a wildcard instead
             customizer.getMethodImports().stream()
                     .filter(m -> !m.getDeclaringClass().equals(__.class))
-                    .forEach(m -> ic.addStaticImport(m.getDeclaringClass().getCanonicalName(), m.getName()));
+                    .forEach(m -> {
+                        if (classImports.containsKey(m.getName()))
+                            ic.addStaticStars(m.getDeclaringClass().getCanonicalName());
+                        else
+                            ic.addStaticImport(m.getDeclaringClass().getCanonicalName(), m.getName());
+                    });
             customizer.getEnumClasses().forEach(m -> ic.addStaticStars(m.getCanonicalName())); // TINKERPOP-2953
             customizer.getFieldImports().forEach(f -> ic.addStaticImport(f.getDeclaringClass().getCanonicalName(), f.getName()));
         }

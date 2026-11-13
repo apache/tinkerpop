@@ -483,6 +483,23 @@ public class GremlinGroovyScriptEngineTest {
 	}
 
     @Test
+    public void shouldImportAClassAndAMethodWithTheSameName() throws Exception {
+        final DefaultImportCustomizer customizer = DefaultImportCustomizer.build()
+                .addClassImports(java.util.Date.class)
+                .addMethodImports(SameNameImports.class.getMethod("Date", long.class))
+                .create();
+        final GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine(customizer);
+        assertEquals(new java.util.Date(1L), engine.eval("Date(1L)"));
+        assertEquals(new java.util.Date(2L), engine.eval("new Date(2L)"));
+    }
+
+    public static class SameNameImports {
+        public static java.util.Date Date(final long time) {
+            return new java.util.Date(time);
+        }
+    }
+
+    @Test
     public void shouldHandleMergeVAmbiguousNull() throws Exception {
         final GraphTraversalSource g = traversal().withEmbedded(EmptyGraph.instance());
         final Bindings bindings = new SimpleBindings();
