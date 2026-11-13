@@ -32,6 +32,10 @@ abstract class AbstractConsoleSessionTest {
 
     static final String MODERN_GRAPH = "g = traversal().with(TinkerFactory.createModern())"
     static final String MODERN_GRAPH_RESULT = "==>graphtraversalsource[tinkermemorygraph[vertices:6 edges:6], standard]"
+    // as in the distribution's plugins.txt
+    static final List<String> DEFAULT_PLUGINS = ["org.apache.tinkerpop.gremlin.console.jsr223.RemoteGremlinPlugin",
+                                                 "org.apache.tinkerpop.gremlin.console.jsr223.UtilitiesGremlinPlugin",
+                                                 "org.apache.tinkerpop.gremlin.tinkergraph.jsr223.TinkerGraphGremlinPlugin"]
 
     // in-memory in tests (see InMemoryPreferencesFactory)
     protected static final java.util.prefs.Preferences STORE =
@@ -43,6 +47,8 @@ abstract class AbstractConsoleSessionTest {
     private String oldHome
     private boolean oldAnsi
     private final List<ConsoleSession> sessions = []
+    private File pluginsFile
+    private boolean createdPluginsDir
 
     @Before
     void setUpSession() {
@@ -72,12 +78,25 @@ abstract class AbstractConsoleSessionTest {
         Ansi.enabled = oldAnsi
         resetPreferences()
         home.toFile().deleteDir()
+        if (pluginsFile != null) {
+            pluginsFile.delete()
+            if (createdPluginsDir) pluginsFile.parentFile.delete()
+        }
     }
 
     protected ConsoleSession start(final List<List<String>> scriptsAndArgs = null, final int columns = 120) {
         final ConsoleSession session = new ConsoleSession(home, scriptsAndArgs, columns)
         sessions << session
         return session
+    }
+
+    /**
+     * Writes the plugins.txt that consoles started afterwards read, so that plugin changes can be saved.
+     */
+    protected void writePluginsFile(final List<String> classNames) {
+        pluginsFile = new File(ConsoleFs.PLUGIN_CONFIG_FILE)
+        createdPluginsDir = pluginsFile.parentFile.mkdirs()
+        pluginsFile.text = classNames.join(System.lineSeparator())
     }
 
     protected File writeFile(final String name, final String content) {

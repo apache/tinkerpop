@@ -332,6 +332,26 @@ extension methods from `DefaultGroovyMethods` to `ArrayGroovyMethods`. An allowl
 See: link:https://tinkerpop.apache.org/docs/4.0.0/reference/#gremlin-console[Reference Documentation - Gremlin Console],
 link:https://docs.groovy-lang.org/docs/groovy-6.0.0/html/documentation/groovysh.html[groovysh Documentation]
 
+==== Gremlin Console Plugin List
+
+A plugin turned off with `:plugin unuse` keeps working until the Console restarts, yet `:plugin list` used to show it
+as already gone. The list now marks every plugin and says when a restart will change it:
+
+[source,text]
+----
+gremlin> :plugin unuse tinkerpop.utilities
+==>tinkerpop.utilities deactivated - restart your console for this to take effect
+gremlin> :plugin list
+==>tinkerpop.remote[active]
+==>tinkerpop.utilities[active until restart]
+==>tinkerpop.sugar[inactive]
+==>tinkerpop.credentials[inactive]
+==>tinkerpop.tinkergraph[active]
+----
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-3286[TINKERPOP-3286],
+link:https://tinkerpop.apache.org/docs/4.0.0/reference/#gremlin-console[Reference Documentation - Gremlin Console]
+
 === Upgrading for Providers
 
 ==== Graph System Providers
