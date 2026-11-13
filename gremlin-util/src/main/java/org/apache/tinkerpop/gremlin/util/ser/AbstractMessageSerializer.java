@@ -20,7 +20,6 @@ package org.apache.tinkerpop.gremlin.util.ser;
 
 import org.apache.tinkerpop.gremlin.structure.io.IoRegistry;
 import org.apache.tinkerpop.gremlin.structure.io.Mapper;
-import org.apache.tinkerpop.gremlin.util.MessageSerializer;
 
 import java.lang.reflect.Method;
 import java.util.Collections;

@@ -26,12 +26,12 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSo
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryReader;
 import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryWriter;
-import org.apache.tinkerpop.gremlin.util.MessageSerializer;
-import org.apache.tinkerpop.gremlin.util.Tokens;
 import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
+import org.apache.tinkerpop.gremlin.util.message.Tokens;
 import org.apache.tinkerpop.gremlin.util.ser.GraphBinaryMessageSerializerV4;
 import org.apache.tinkerpop.gremlin.util.ser.GraphSONMessageSerializerV4;
+import org.apache.tinkerpop.gremlin.util.ser.MessageSerializer;
 import org.apache.tinkerpop.gremlin.util.ser.NettyBufferFactory;
 import org.apache.tinkerpop.gremlin.util.ser.SerializationException;
 import org.apache.tinkerpop.gremlin.util.ser.SerTokens;

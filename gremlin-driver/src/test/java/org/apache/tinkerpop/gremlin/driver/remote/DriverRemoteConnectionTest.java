@@ -25,7 +25,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.GremlinLang;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
-import org.apache.tinkerpop.gremlin.util.Tokens;
+import org.apache.tinkerpop.gremlin.util.message.Tokens;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 

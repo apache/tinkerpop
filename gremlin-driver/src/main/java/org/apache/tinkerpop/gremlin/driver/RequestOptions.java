@@ -27,12 +27,12 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Optional;
 
-import static org.apache.tinkerpop.gremlin.util.Tokens.ARGS_BATCH_SIZE;
-import static org.apache.tinkerpop.gremlin.util.Tokens.BULK_RESULTS;
-import static org.apache.tinkerpop.gremlin.util.Tokens.TIMEOUT_MILLIS;
-import static org.apache.tinkerpop.gremlin.util.Tokens.ARGS_G;
-import static org.apache.tinkerpop.gremlin.util.Tokens.ARGS_LANGUAGE;
-import static org.apache.tinkerpop.gremlin.util.Tokens.ARGS_MATERIALIZE_PROPERTIES;
+import static org.apache.tinkerpop.gremlin.util.message.Tokens.ARGS_BATCH_SIZE;
+import static org.apache.tinkerpop.gremlin.util.message.Tokens.ARGS_G;
+import static org.apache.tinkerpop.gremlin.util.message.Tokens.ARGS_LANGUAGE;
+import static org.apache.tinkerpop.gremlin.util.message.Tokens.ARGS_MATERIALIZE_PROPERTIES;
+import static org.apache.tinkerpop.gremlin.util.message.Tokens.BULK_RESULTS;
+import static org.apache.tinkerpop.gremlin.util.message.Tokens.TIMEOUT_MILLIS;
 
 /**
  * Options that can be supplied on a per request basis.

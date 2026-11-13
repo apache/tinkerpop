@@ -29,8 +29,8 @@ import org.apache.tinkerpop.gremlin.server.util.GremlinError;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceFactory;
-import org.apache.tinkerpop.gremlin.util.Tokens;
 import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
+import org.apache.tinkerpop.gremlin.util.message.Tokens;
 
 import java.util.HashMap;
 import java.util.List;

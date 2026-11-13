@@ -18,7 +18,6 @@
  */
 package org.apache.tinkerpop.gremlin.util.message;
 
-import org.apache.tinkerpop.gremlin.util.Tokens;
 import org.junit.Test;
 
 import java.util.HashMap;

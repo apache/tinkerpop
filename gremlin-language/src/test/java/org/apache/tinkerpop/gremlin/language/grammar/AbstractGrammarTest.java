@@ -21,6 +21,9 @@ package org.apache.tinkerpop.gremlin.language.grammar;
 import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.atn.PredictionMode;
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.apache.tinkerpop.gremlin.language.antlr.GremlinBaseVisitor;
+import org.apache.tinkerpop.gremlin.language.antlr.GremlinLexer;
+import org.apache.tinkerpop.gremlin.language.antlr.GremlinParser;
 
 import static org.junit.Assert.fail;
 

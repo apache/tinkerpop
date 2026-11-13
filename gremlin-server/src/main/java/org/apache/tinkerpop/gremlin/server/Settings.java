@@ -32,7 +32,7 @@ import org.apache.tinkerpop.gremlin.server.handler.AbstractAuthenticationHandler
 import org.apache.tinkerpop.gremlin.server.util.DefaultGraphManager;
 import org.apache.tinkerpop.gremlin.server.util.LifeCycleHook;
 import org.apache.tinkerpop.gremlin.structure.Graph;
-import org.apache.tinkerpop.gremlin.util.MessageSerializer;
+import org.apache.tinkerpop.gremlin.util.ser.MessageSerializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yaml.snakeyaml.LoaderOptions;

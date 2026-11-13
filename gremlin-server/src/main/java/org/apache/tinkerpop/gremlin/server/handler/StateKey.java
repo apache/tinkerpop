@@ -20,8 +20,8 @@ package org.apache.tinkerpop.gremlin.server.handler;
 
 import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.util.AttributeKey;
-import org.apache.tinkerpop.gremlin.util.MessageSerializer;
 import org.apache.tinkerpop.gremlin.server.auth.AuthenticatedUser;
+import org.apache.tinkerpop.gremlin.util.ser.MessageSerializer;
 import org.javatuples.Pair;
 
 import java.util.UUID;

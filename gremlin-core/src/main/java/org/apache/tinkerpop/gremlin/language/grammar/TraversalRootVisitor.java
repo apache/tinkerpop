@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.language.grammar;
 
+import org.apache.tinkerpop.gremlin.language.antlr.GremlinParser;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
