@@ -50,29 +50,51 @@ def test_clear_prints_the_clear_screen_sequence(console):
 # --- plugins --------------------------------------------------------------------------------------------------------
 
 
+def _plugin_states(child):
+    """Returns the :plugin list as a map from plugin name to its state."""
+    states = {}
+    for line in results(child, ":plugin list"):
+        name, state = line[len("==>"):].rstrip("]").split("[", 1)
+        states[name] = state
+    return states
+
+
+def test_only_the_plugins_in_plugins_txt_are_activated(console):
+    # sugar and credentials are on the classpath but not in the plugins.txt written by the fixture
+    child, banner = console.start("-C")
+    assert len(plugin_activated_lines(banner)) == 3, banner
+    states = _plugin_states(child)
+    assert states["tinkerpop.sugar"] == "inactive", states
+    assert states["tinkerpop.credentials"] == "inactive", states
+    assert states["tinkerpop.remote"] == "active", states
+    assert exit_console(child) == 0
+    # a start does not rewrite the list
+    assert console.read_plugins() == DEFAULT_PLUGINS
+
+
 def test_plugin_unuse_and_use_are_saved_for_the_next_start(console):
     # deactivate
     child, _ = console.start("-C")
     assert results(child, ":plugin unuse tinkerpop.utilities") == \
         ["==>tinkerpop.utilities deactivated - restart your console for this to take effect"]
-    listed = results(child, ":plugin list")
-    assert "==>tinkerpop.utilities" in listed, listed
-    assert "==>tinkerpop.utilities[active]" not in listed, listed
+    assert _plugin_states(child)["tinkerpop.utilities"] == "active until restart"
     assert exit_console(child) == 0
 
     saved = console.read_plugins()
     assert UTILITIES_PLUGIN not in saved
     assert REMOTE_PLUGIN in saved and TINKERGRAPH_PLUGIN in saved
 
-    # the next start no longer announces it
+    # the next start no longer activates it
     child, banner = console.start("-C")
     activated = plugin_activated_lines(banner)
     assert "plugin activated: tinkerpop.utilities" not in activated, activated
     assert "plugin activated: tinkerpop.remote" in activated
     assert "plugin activated: tinkerpop.tinkergraph" in activated
+    assert _plugin_states(child)["tinkerpop.utilities"] == "inactive"
 
     # re-activate
     assert results(child, ":plugin use tinkerpop.utilities") == ["==>tinkerpop.utilities activated"]
+    assert _plugin_states(child)["tinkerpop.utilities"] == "active"
     assert exit_console(child) == 0
     assert UTILITIES_PLUGIN in console.read_plugins()
 
