@@ -31,6 +31,40 @@ image::gremlin-zamfir.png[width=185]
 Please see the link:https://github.com/apache/tinkerpop/blob/3.7.8/CHANGELOG.asciidoc#release-3-7-8[changelog] for a
 complete list of all the modifications that are part of this release.
 
+=== Upgrading for Users
+
+==== Mutating Steps and Bulked Traversers
+
+Gremlin combines traversers that hold the same value into a single traverser with a bulk count. This happens for
+duplicate values given to `inject()`, after `barrier()` and after the barriers that `LazyBarrierStrategy` adds
+automatically. The `addV()`, `addE()`, `mergeV()`, `mergeE()` and `property()` steps now perform their write once for
+every traverser that a bulked traverser represents, so the number of mutations no longer depends on whether
+traversers happened to be bulked.
+
+[source,groovy]
+----
+// 3.7.7
+gremlin> g.inject(1, 1).addV('person').id()
+==>0
+==>0
+gremlin> g.V().count()
+==>1
+
+// 3.7.8
+gremlin> g.inject(1, 1).addV('person').id()
+==>0
+==>1
+gremlin> g.V().count()
+==>2
+----
+
+Traversals that write from duplicate traversers may now create more elements, apply `onMatch` where it was skipped
+before, add more `list` cardinality values, or raise an error for a reused user supplied `T.id`. Such traversals
+should be reviewed if they depended on the previous counts. Mutations made inside the child traversals of steps such
+as `map()`, `sideEffect()` and `coalesce()` still occur once per bulked traverser.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-3295[TINKERPOP-3295]
+
 == TinkerPop 3.7.7
 
 *Release Date: September 1, 2026*
