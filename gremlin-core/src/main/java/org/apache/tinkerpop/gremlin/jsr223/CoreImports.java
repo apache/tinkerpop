@@ -163,7 +163,6 @@ import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceProperty;
 import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceVertex;
 import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceVertexProperty;
 import org.apache.tinkerpop.gremlin.util.DatetimeHelper;
-import org.apache.tinkerpop.gremlin.util.GeometryHelper;
 import org.apache.tinkerpop.gremlin.util.Gremlin;
 import org.apache.tinkerpop.gremlin.util.TimeUtil;
 import org.apache.tinkerpop.gremlin.util.function.Lambda;
@@ -380,14 +379,6 @@ public final class CoreImports {
             METHOD_IMPORTS.add(DatetimeHelper.class.getMethod("datetime"));
         } catch (Exception ex) {
             throw new IllegalStateException("Could not load datetime() function to imports");
-        }
-        try {
-            METHOD_IMPORTS.add(GeometryHelper.class.getMethod("Geometry", String.class));
-            METHOD_IMPORTS.add(GeometryHelper.class.getMethod("Geometry", String.class, Model.class));
-            METHOD_IMPORTS.add(GeometryHelper.class.getMethod("Geometry", String.class, int.class));
-            METHOD_IMPORTS.add(GeometryHelper.class.getMethod("Geometry", String.class, GType.class));
-        } catch (Exception ex) {
-            throw new IllegalStateException("Could not load Geometry() function to imports", ex);
         }
 
         ///////////
