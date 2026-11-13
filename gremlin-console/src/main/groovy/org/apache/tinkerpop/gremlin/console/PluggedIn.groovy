@@ -18,29 +18,35 @@
  */
 package org.apache.tinkerpop.gremlin.console
 
-import org.apache.groovy.groovysh.Groovysh
+import org.apache.groovy.groovysh.jline.GroovyEngine
 import org.apache.tinkerpop.gremlin.jsr223.BindingsCustomizer
 import org.apache.tinkerpop.gremlin.jsr223.GremlinPlugin
 import org.apache.tinkerpop.gremlin.jsr223.ImportCustomizer
 import org.apache.tinkerpop.gremlin.jsr223.ScriptCustomizer
-import org.apache.tinkerpop.gremlin.jsr223.console.GremlinShellEnvironment
-import org.codehaus.groovy.tools.shell.IO
+
 /**
+ * A plugin available to the console, applied to its Groovy engine when activated. Being active now and after a restart
+ * can differ, as a running engine cannot drop a plugin and some installed plugins need a restart.
+ *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 class PluggedIn {
     private static final String LINE_SEPARATOR = System.getProperty("line.separator")
     private final GremlinPlugin plugin
-    private boolean activated = false
+    private final GroovyEngine engine
 
-    private final Groovysh shell
-    private final IO io
+    // applied to the engine of this session
+    private boolean loaded
+    // listed in ext/plugins.txt, so active after a restart
+    private boolean activated
+    // installed in this session and only usable after a restart
+    private boolean restartRequired = false
 
-    public PluggedIn(final GremlinPlugin plugin, final Groovysh shell, final IO io, final boolean activated) {
+    public PluggedIn(final GremlinPlugin plugin, final GroovyEngine engine, final boolean activated) {
         this.plugin = plugin
+        this.loaded = activated
         this.activated = activated
-        this.shell = shell
-        this.io = io
+        this.engine = engine
     }
 
     GremlinPlugin getPlugin() {
@@ -51,29 +57,45 @@ class PluggedIn {
         return activated
     }
 
+    boolean getLoaded() {
+        return loaded
+    }
+
+    boolean getRestartRequired() {
+        return restartRequired
+    }
+
+    void setRestartRequired(final boolean restartRequired) {
+        this.restartRequired = restartRequired
+    }
+
+    /**
+     * Applies the plugin to the engine unless it is loaded already or needs a restart, and keeps it for the next start.
+     */
     void activate() {
-        plugin.getCustomizers("gremlin-groovy").get().each {
-            if (it instanceof ImportCustomizer) {
-                if (shell instanceof GremlinGroovysh) {
+        if (!loaded && !restartRequired) {
+            plugin.getCustomizers("gremlin-groovy").get().each {
+                if (it instanceof ImportCustomizer) {
                     org.codehaus.groovy.control.customizers.ImportCustomizer ic = new org.codehaus.groovy.control.customizers.ImportCustomizer()
                     ic.addStarImports(it.getClassPackages().collect() { it.getName() }.toArray(new String[0]))
                     ic.addStaticStars(it.getMethodClasses().collect() { it.getCanonicalName() }.toArray(new String[0]))
                     ic.addStaticStars(it.getEnumClasses().collect() { it.getCanonicalName() }.toArray(new String[0]))
-                    ((GremlinGroovysh) shell).getCompilerConfiguration().addCompilationCustomizers(ic)
-                } else {
-                    it.getClassPackages().collect {Mediator.IMPORT_SPACE + it.getName() + Mediator.IMPORT_WILDCARD }.each { shell.execute(it) }
-                    it.getMethodClasses().collect {Mediator.IMPORT_STATIC_SPACE + it.getCanonicalName() + Mediator.IMPORT_WILDCARD}.each {shell.execute(it)}
-                    it.getEnumClasses().collect {Mediator.IMPORT_STATIC_SPACE + it.getCanonicalName() + Mediator.IMPORT_WILDCARD}.each {shell.execute(it)}
+                    ic.addStaticStars(it.getFieldClasses().collect() { it.getCanonicalName() }.toArray(new String[0]))
+                    engine.getCompilerConfiguration().addCompilationCustomizers(ic)
+                } else if (it instanceof ScriptCustomizer) {
+                    it.getScripts().collect { it.join(LINE_SEPARATOR) }.each { engine.execute(it) }
+                } else if (it instanceof BindingsCustomizer) {
+                    it.bindings.entrySet().each { kv -> engine.put(kv.key, kv.value) }
                 }
-            } else if (it instanceof ScriptCustomizer) {
-                it.getScripts().collect { it.join(LINE_SEPARATOR) }.each { shell.execute(it) }
-            } else if (it instanceof BindingsCustomizer) {
-                it.bindings.entrySet().each { kv -> shell.getInterp().getContext().setProperty(kv.key, kv.value) }
             }
+            this.loaded = true
         }
         this.activated = true
     }
 
+    /**
+     * Leaves the plugin out of the next start. It stays loaded in this session.
+     */
     void deactivate() {
         this.activated = false
     }

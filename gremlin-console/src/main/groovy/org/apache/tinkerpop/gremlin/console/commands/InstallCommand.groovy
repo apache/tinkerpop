@@ -19,8 +19,7 @@
 package org.apache.tinkerpop.gremlin.console.commands
 
 import groovy.grape.Grape
-import org.apache.groovy.groovysh.CommandSupport
-import org.apache.groovy.groovysh.Groovysh
+import org.apache.groovy.groovysh.jline.GroovyEngine
 import org.apache.tinkerpop.gremlin.console.ConsoleFs
 import org.apache.tinkerpop.gremlin.console.Mediator
 import org.apache.tinkerpop.gremlin.console.PluggedIn
@@ -33,22 +32,35 @@ import org.apache.tinkerpop.gremlin.jsr223.GremlinPlugin
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-class InstallCommand extends CommandSupport {
+class InstallCommand extends GremlinCommand {
 
     private final Mediator mediator
+    private final GroovyEngine engine
 
-    public InstallCommand(final Groovysh shell, final Mediator mediator) {
-        super(shell, ":install", ":+")
+    public InstallCommand(final Mediator mediator, final GroovyEngine engine) {
+        super("/install")
         this.mediator = mediator
+        this.engine = engine
+    }
+
+    @Override
+    String description() { "Install a Maven library and its dependencies into the Gremlin Console" }
+
+    @Override
+    String usage() { "<group> <module> <version>" }
+
+    @Override
+    String help() {
+        "Import a Maven library into Gremlin.  In some cases, a dependency can only be included properly after " +
+                "restart of the Console (a message will appear with such a notification if such action is necessary)."
     }
 
     @Override
     def Object execute(final List<String> arguments) {
         final def artifact = createArtifact(arguments)
         try {
-            def grabber = new DependencyGrabber(shell.getInterp().getClassLoader(), ConsoleFs.CONSOLE_HOME_DIR)
+            def grabber = new DependencyGrabber(engine.getClassLoader(), ConsoleFs.CONSOLE_HOME_DIR)
             grabber.copyDependenciesToPath(artifact)
-
             final def dep = grabber.makeDepsMap(artifact)
             final def pluginsThatNeedRestart = grabDeps(dep)
             return "Loaded: " + arguments + (pluginsThatNeedRestart.size() == 0 ? "" : " - restart the console to use $pluginsThatNeedRestart")
@@ -64,11 +76,14 @@ class InstallCommand extends CommandSupport {
 
         // note that the service loader utilized the classloader from the groovy shell as shell class are available
         // from within there given loading through Grape.
-        ServiceLoader.load(GremlinPlugin, shell.getInterp().getClassLoader()).forEach { plugin ->
+        ServiceLoader.load(GremlinPlugin, engine.getClassLoader()).forEach { plugin ->
             if (!mediator.availablePlugins.containsKey(plugin.class.name)) {
-                mediator.availablePlugins.put(plugin.class.name, new PluggedIn((GremlinPlugin) plugin, shell, io, false))
-                if (plugin.requireRestart())
+                final PluggedIn pluggedIn = new PluggedIn((GremlinPlugin) plugin, engine, false)
+                mediator.availablePlugins.put(plugin.class.name, pluggedIn)
+                if (plugin.requireRestart()) {
+                    pluggedIn.restartRequired = true
                     pluginsThatNeedRestart << plugin.name
+                }
             }
         }
 

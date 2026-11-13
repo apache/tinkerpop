@@ -145,6 +145,11 @@ public class GremlinGroovyScriptEngineTest {
         }
 
         assertEquals(10, engine.eval("addItUp(zzz,xxx)"));
+
+        assertEquals(5, engine.eval("final fff = 5"));
+        assertEquals(5, engine.eval("fff"));
+        assertEquals(6, engine.eval("final int ggg = 6"));
+        assertEquals(6, engine.eval("ggg"));
     }
 
     @Test
@@ -476,6 +481,23 @@ public class GremlinGroovyScriptEngineTest {
 		final GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine(customizer);
 		engine.eval("__.users();[]");
 	}
+
+    @Test
+    public void shouldImportAClassAndAMethodWithTheSameName() throws Exception {
+        final DefaultImportCustomizer customizer = DefaultImportCustomizer.build()
+                .addClassImports(java.util.Date.class)
+                .addMethodImports(SameNameImports.class.getMethod("Date", long.class))
+                .create();
+        final GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine(customizer);
+        assertEquals(new java.util.Date(1L), engine.eval("Date(1L)"));
+        assertEquals(new java.util.Date(2L), engine.eval("new Date(2L)"));
+    }
+
+    public static class SameNameImports {
+        public static java.util.Date Date(final long time) {
+            return new java.util.Date(time);
+        }
+    }
 
     @Test
     public void shouldHandleMergeVAmbiguousNull() throws Exception {
