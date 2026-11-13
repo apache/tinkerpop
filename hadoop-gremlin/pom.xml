@@ -27,6 +27,21 @@ limitations under the License.
     <name>Apache TinkerPop :: Hadoop Gremlin</name>
     <dependencyManagement>
         <dependencies>
+            <!-- align jackson with the version Spark 4.x is built against, matching the jackson-bom import in
+                 spark-gremlin -->
+            <dependency>
+                <groupId>com.fasterxml.jackson</groupId>
+                <artifactId>jackson-bom</artifactId>
+                <version>2.21.2</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <!-- hadoop-common and jakarta.xml.bind-api bring 1.2.1 while jackson-module-jaxb-annotations brings 1.2.2 -->
+            <dependency>
+                <groupId>jakarta.activation</groupId>
+                <artifactId>jakarta.activation-api</artifactId>
+                <version>1.2.2</version>
+            </dependency>
             <dependency>
                 <!-- see: https://github.com/apache/hadoop/pull/84 -->
                 <groupId>io.netty</groupId>
@@ -165,21 +180,18 @@ limitations under the License.
             <artifactId>commons-logging</artifactId>
             <version>1.3.4</version>
         </dependency>
-        <!-- use jackson 2.13.5 to fit better with spark where Scala module 2.13.4 requires Jackson Databind version >= 2.13.0 and < 2.14.0 -->
+        <!-- jackson versions are managed by the jackson-bom import above -->
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-annotations</artifactId>
-            <version>2.13.5</version>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-core</artifactId>
-            <version>2.13.5</version>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
-            <version>2.13.5</version>
         </dependency>
         <dependency>
             <groupId>com.google.inject</groupId>
