@@ -18,8 +18,6 @@
  */
 package org.apache.tinkerpop.gremlin.util.ser;
 
-import org.apache.tinkerpop.gremlin.util.MessageSerializer;
-
 /**
  * An enum of the default serializers available starting in v4.0.
  *

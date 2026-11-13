@@ -19,7 +19,6 @@
 package org.apache.tinkerpop.gremlin.util.message;
 
 import org.apache.tinkerpop.gremlin.process.traversal.GremlinLang;
-import org.apache.tinkerpop.gremlin.util.Tokens;
 
 import java.util.Collections;
 import java.util.HashMap;

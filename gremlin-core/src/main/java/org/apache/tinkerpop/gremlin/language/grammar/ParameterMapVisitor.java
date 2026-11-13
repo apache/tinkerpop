@@ -18,6 +18,8 @@
  */
 package org.apache.tinkerpop.gremlin.language.grammar;
 
+import org.apache.tinkerpop.gremlin.language.antlr.GremlinParser;
+
 /**
  * A visitor for parsing parameter map strings that prevents traversal injection.
  * <p>
