@@ -231,15 +231,23 @@ public final class TinkerTransactionGraph extends AbstractTinkerGraph {
         // try to add new container or get existing
         TinkerElementContainer<TinkerEdge> container = edges.putIfAbsent(idValue, newContainer);
 
-        // is existing container contains Vertex?
+        // is existing container contains Edge?
         if (container != null && container.get() != null)
-            throw Exceptions.vertexWithIdAlreadyExists(idValue);
+            throw Exceptions.edgeWithIdAlreadyExists(idValue);
+
+        long version = txNumber;
+        if (container != null && container.isDeleted() && container.getModified() != null) {
+            // edge being added was previously deleted
+            // we need to reference the version from the deleted state when adding the edge back
+            version = container.getModified().version();
+            container.unmarkDeleted((TinkerTransaction) tx());
+        }
 
         // no existing container, let's use new one
         if (container == null)
             container = newContainer;
 
-        final TinkerEdge edge = new TinkerEdge(idValue, outVertex, label, inVertex, txNumber);
+        final TinkerEdge edge = new TinkerEdge(idValue, outVertex, label, inVertex, version);
         ElementHelper.attachProperties(edge, keyValues);
         container.setDraft(edge, (TinkerTransaction) tx());
 

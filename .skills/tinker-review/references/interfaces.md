@@ -171,6 +171,20 @@ interface ReportPackage extends Evidence {
   appendixFunctional?: { environment; testCode; fullOutput };
     // environment: HTML. testCode/fullOutput: RAW TEXT (renderer wraps in
     // <pre><code>; do not pre-wrap). testCode is the COMPLETE labeled battery.
+  appendixBlindDesign?:
+    | { skipped: string }                  // HTML — the gate reason: no high-impact surface
+    | {
+        surfaces: { id; kind; name; commitment }[];
+          // id "S1"…; kind: "api" | "behavior" | "grammar" | "format";
+          // name, commitment: plain text (escaped by the renderer)
+        objections: { id; surface; type; claim; outcome; note }[];
+          // one per objection the blind subagent returned. id "S1.a"…; surface: a
+          // surfaces[].id; type: "premise" | "counterargument" | "alternative";
+          // claim: plain text; outcome: "finding" | "openQuestion" | "dropped";
+          // note: HTML naming the decision that answers it, or the gap it found.
+      };
+    // The blind design pass (references/blind-design.md). Every finding or open
+    // question it produced names its objection id in its body.
 }
 ```
 

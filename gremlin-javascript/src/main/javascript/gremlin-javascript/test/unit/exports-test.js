@@ -39,6 +39,10 @@ describe('API', function () {
     assert.strictEqual(typeof glvModule.process.Traverser, 'function');
     assert.strictEqual(typeof glvModule.process.GraphTraversal, 'function');
     assert.strictEqual(typeof glvModule.process.GraphTraversalSource, 'function');
+    validateConstructor(glvModule.process, 'CardinalityValue');
+    assert.strictEqual(typeof glvModule.process.CardinalityValue.single, 'function');
+    assert.strictEqual(typeof glvModule.process.CardinalityValue.list, 'function');
+    assert.strictEqual(typeof glvModule.process.CardinalityValue.set, 'function');
     assert.strictEqual(typeof glvModule.process.barrier, 'object');
     assert.strictEqual(typeof glvModule.process.cardinality, 'object');
     assert.strictEqual(typeof glvModule.process.column, 'object');

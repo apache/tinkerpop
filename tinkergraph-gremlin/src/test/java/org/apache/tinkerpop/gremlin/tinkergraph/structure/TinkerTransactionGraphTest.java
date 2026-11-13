@@ -32,6 +32,7 @@ import java.util.stream.IntStream;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -1712,6 +1713,155 @@ public class TinkerTransactionGraphTest {
         } catch (TransactionException e) {
             assertEquals("Conflict: element modified in another transaction", e.getMessage());
             verifyCommittedSingleVertex(g, "updated");
+        }
+    }
+
+    @Test
+    public void shouldAllowDropAddEdgeInSameTransaction() {
+        final TinkerTransactionGraph g = TinkerTransactionGraph.open();
+        final GraphTraversalSource gtx = g.tx().begin();
+
+        gtx.addV().property(T.id, 1).iterate();
+        gtx.addV().property(T.id, 2).iterate();
+        gtx.V(1).addE(EDGE_LABEL).to(__.V(2)).property(T.id, EDGE_ID).property(PROPERTY_WEIGHT, 1).iterate();
+        gtx.tx().commit();
+
+        verifyCommittedSingleEdge(g, 1);
+        final long originalVersion = g.getEdges().get(EDGE_ID).getUnmodified().version();
+
+        // drop the edge and re-create it with the same id in the same transaction
+        gtx.E().drop().iterate();
+        gtx.V(1).addE(EDGE_LABEL).to(__.V(2)).property(T.id, EDGE_ID).property(PROPERTY_WEIGHT, 2).iterate();
+        gtx.tx().commit();
+
+        verifyCommittedSingleEdge(g, 2);
+        assertNotEquals(originalVersion, g.getEdges().get(EDGE_ID).getUnmodified().version());
+        assertEquals(EDGE_ID, g.traversal().V(1).outE(EDGE_LABEL).id().next());
+        assertEquals(EDGE_ID, g.traversal().V(2).inE(EDGE_LABEL).id().next());
+    }
+
+    @Test
+    public void shouldAllowDropAddEdgeBetweenDifferentVerticesInSameTransaction() {
+        final TinkerTransactionGraph g = TinkerTransactionGraph.open();
+        final GraphTraversalSource gtx = g.tx().begin();
+
+        gtx.addV().property(T.id, 1).iterate();
+        gtx.addV().property(T.id, 2).iterate();
+        gtx.addV().property(T.id, 3).iterate();
+        gtx.V(1).addE(EDGE_LABEL).to(__.V(2)).property(T.id, EDGE_ID).iterate();
+        gtx.tx().commit();
+
+        // drop the edge and re-create it with the same id between other vertices
+        gtx.E(EDGE_ID).drop().iterate();
+        gtx.V(3).addE(EDGE_LABEL).to(__.V(1)).property(T.id, EDGE_ID).iterate();
+        gtx.tx().commit();
+
+        verifyCommittedSingleEdge(g, null);
+        final GraphTraversalSource gs = g.traversal();
+        assertEquals(0, gs.V(1).outE().count().next().longValue());
+        assertEquals(0, gs.V(2).inE().count().next().longValue());
+        assertEquals(EDGE_ID, gs.V(3).outE(EDGE_LABEL).id().next());
+        assertEquals(EDGE_ID, gs.V(1).inE(EDGE_LABEL).id().next());
+    }
+
+    @Test
+    public void shouldAllowAddDropAddEdgeInSameTransaction() {
+        final TinkerTransactionGraph g = TinkerTransactionGraph.open();
+        final GraphTraversalSource gtx = g.tx().begin();
+
+        gtx.addV().property(T.id, 1).iterate();
+        gtx.addV().property(T.id, 2).iterate();
+        gtx.V(1).addE(EDGE_LABEL).to(__.V(2)).property(T.id, EDGE_ID).property(PROPERTY_WEIGHT, 1).iterate();
+        gtx.E(EDGE_ID).drop().iterate();
+        gtx.V(1).addE(EDGE_LABEL).to(__.V(2)).property(T.id, EDGE_ID).property(PROPERTY_WEIGHT, 2).iterate();
+        gtx.tx().commit();
+
+        verifyCommittedSingleEdge(g, 2);
+    }
+
+    @Test
+    public void shouldAllowAddDropAddDropEdgeInSameTransaction() {
+        final TinkerTransactionGraph g = TinkerTransactionGraph.open();
+        final GraphTraversalSource gtx = g.tx().begin();
+
+        gtx.addV().property(T.id, 1).iterate();
+        gtx.addV().property(T.id, 2).iterate();
+        gtx.V(1).addE(EDGE_LABEL).to(__.V(2)).property(T.id, EDGE_ID).iterate();
+        gtx.E(EDGE_ID).drop().iterate();
+        gtx.V(1).addE(EDGE_LABEL).to(__.V(2)).property(T.id, EDGE_ID).iterate();
+        gtx.E(EDGE_ID).drop().iterate();
+        gtx.tx().commit();
+
+        assertEquals(2, g.getVerticesCount());
+        assertEquals(0, g.getEdgesCount());
+    }
+
+    @Test
+    public void shouldRollbackDropAddEdgeInSameTransaction() {
+        final TinkerTransactionGraph g = TinkerTransactionGraph.open();
+        final GraphTraversalSource gtx = g.tx().begin();
+
+        gtx.addV().property(T.id, 1).iterate();
+        gtx.addV().property(T.id, 2).iterate();
+        gtx.V(1).addE(EDGE_LABEL).to(__.V(2)).property(T.id, EDGE_ID).property(PROPERTY_WEIGHT, 1).iterate();
+        gtx.tx().commit();
+
+        gtx.E(EDGE_ID).drop().iterate();
+        gtx.V(1).addE(EDGE_LABEL).to(__.V(2)).property(T.id, EDGE_ID).property(PROPERTY_WEIGHT, 2).iterate();
+        gtx.tx().rollback();
+
+        verifyCommittedSingleEdge(g, 1);
+        assertEquals(EDGE_ID, g.traversal().V(1).outE(EDGE_LABEL).id().next());
+        assertEquals(EDGE_ID, g.traversal().V(2).inE(EDGE_LABEL).id().next());
+    }
+
+    @Test
+    public void shouldPreventDropAddEdgeInConcurrentTransactions() {
+        final TinkerTransactionGraph g = TinkerTransactionGraph.open();
+        final GraphTraversalSource gtx = g.tx().begin();
+
+        gtx.addV().property(T.id, 1).iterate();
+        gtx.addV().property(T.id, 2).iterate();
+        gtx.V(1).addE(EDGE_LABEL).to(__.V(2)).property(T.id, EDGE_ID).property(PROPERTY_WEIGHT, 1).iterate();
+        gtx.tx().commit();
+
+        // drop the edge and add it back but don't commit
+        gtx.E(EDGE_ID).drop().iterate();
+        gtx.V(1).addE(EDGE_LABEL).to(__.V(2)).property(T.id, EDGE_ID).property(PROPERTY_WEIGHT, 2).iterate();
+
+        // update the edge in another thread and commit
+        runInNewThread(() -> {
+            final GraphTraversalSource gtx2 = g.tx().begin();
+            gtx2.E(EDGE_ID).property(PROPERTY_WEIGHT, 3).iterate();
+            gtx2.tx().commit();
+        });
+
+        try {
+            gtx.tx().commit();
+            fail("should throw TransactionException");
+        } catch (TransactionException e) {
+            assertEquals("Conflict: element modified in another transaction", e.getMessage());
+            verifyCommittedSingleEdge(g, 3);
+        }
+    }
+
+    @Test
+    public void shouldNotAllowAddingEdgeWithExistingId() {
+        final TinkerTransactionGraph g = TinkerTransactionGraph.open();
+        final GraphTraversalSource gtx = g.tx().begin();
+
+        gtx.addV().property(T.id, 1).iterate();
+        gtx.addV().property(T.id, 2).iterate();
+        gtx.V(1).addE(EDGE_LABEL).to(__.V(2)).property(T.id, EDGE_ID).iterate();
+        gtx.tx().commit();
+
+        try {
+            gtx.V(1).addE(EDGE_LABEL).to(__.V(2)).property(T.id, EDGE_ID).iterate();
+            fail("should throw IllegalArgumentException");
+        } catch (IllegalArgumentException e) {
+            assertEquals(Graph.Exceptions.edgeWithIdAlreadyExists(EDGE_ID).getMessage(), e.getMessage());
+        } finally {
+            gtx.tx().rollback();
         }
     }
 

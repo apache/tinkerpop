@@ -330,6 +330,54 @@ prohibition in `.beads/PRIME.md` binds the agent rather than the committer. An a
 never to rewrite reasoning it finds, precisely so that judgment about what is correct stays with
 a person.
 
+[[beads-errands]]
+=== Errands
+
+Not every observation made during a review deserves to hold up the pull request that prompted it. A
+misspelled word, a small refactoring or a minor structural fix is often worth doing without being
+worth another review cycle. An errand captures such a non-blocking review comment as a bead that
+someone else picks up later, whether a person or an autonomous agent working without supervision.
+
+An errand stands outside the root model described above. It has no root, no parent, no record and
+no decision beads, and it is never pinned. Once closed it remains eligible for routine cleanup like
+any other unpinned bead, which is intended. That property also defines what qualifies. An errand
+suits work whose loss would cost the project nothing it needs to remember, meaning the reviewer has
+already settled what should change, the change touches no public API, configuration format or
+protocol, and it fits in a single pull request on a single branch. Work whose reasoning must outlive
+it belongs under a root with decision beads instead.
+
+An errand is created only when the committer asks for one while reviewing a pull request, whether or
+not the `tinker-review` skill is in use. Creating it never binds to, or alters, the root the session
+is working under. Because the bead is the only thing its eventual owner will have, the agent expands
+the terse review comment into a complete specification and presents it for confirmation before
+writing it. The description holds four required sections. The Change section states what to change
+and where, the Why section gives the reviewer's reasoning, and the Acceptance section gives
+observable criteria for completion. The Validation section names the command that must pass, which
+is `mvn clean install` unless the committer specifies otherwise, and states whether a changelog entry
+and documentation changes are needed. The bead's metadata holds the target branch, which defaults to
+the base branch of the reviewed pull request, and the origin pull request in the
+`apache/tinkerpop#N` form. Errands take priority 3 by default along with module and concern labels,
+but never a release label, as the release is not known until the change lands.
+
+The code an errand fixes usually exists only on the branch of the pull request under review, so the
+errand cannot begin until that pull request merges. A `gh:pr` gate, which is a bead that stays open
+until GitHub reports the pull request merged, blocks it until then. Each pull request has one gate
+shared by all of the errands raised against it, and that gate is the only bead an errand connects
+to. Gates do not resolve on their own, and `bin/beads-gates.py` is what resolves them:
+
+[source,text]
+----
+bin/beads-gates.py
+bin/beads-gates.py --apply
+----
+
+The first form reports what each open gate would do and writes nothing. When a pull request has
+merged, its gate is resolved and its errands become available through `bd ready --type=errand`.
+When a pull request was closed without merging, its errands are closed along with the gate, since
+the code they would have fixed never landed. Any committer may run the script, and it also runs as
+part of the beads administration that follows a release. An errand itself closes once its own change
+merges to a release line, and nothing records its commits.
+
 [[beads-shared]]
 === A Shared Database
 

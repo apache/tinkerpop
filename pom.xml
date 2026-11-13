@@ -536,7 +536,9 @@ limitations under the License.
                         <exclude>**/node/**</exclude>
                         <exclude>**/node_modules/**</exclude>
                         <exclude>**/npm-debug.log</exclude>
+                        <exclude>**/dist/**</exclude>
                         <exclude>**/build/**</exclude>
+                        <exclude>**/.duel-cache/**</exclude>
                         <!-- javascript docs/lib -->
                         <exclude>**/doc/**</exclude>
                         <exclude>**/lib/**</exclude>
