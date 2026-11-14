@@ -52,7 +52,7 @@ export type GremlinEdge = z.infer<typeof GremlinEdgeSchema>;
 /**
  * Gremlin property map (from valueMap() queries).
  */
-export const GremlinPropertyMapSchema = z.record(z.array(z.unknown()));
+export const GremlinPropertyMapSchema = z.record(z.string(), z.array(z.unknown()));
 export type GremlinPropertyMap = z.infer<typeof GremlinPropertyMapSchema>;
 
 /**
@@ -91,7 +91,7 @@ export const GremlinStructuredResultSchema = z.discriminatedUnion('type', [
  * Generic objects without 'type' field.
  */
 const GenericObjectSchema = z
-  .record(z.unknown())
+  .record(z.string(), z.unknown())
   .refine(obj => !('type' in obj) || typeof obj['type'] !== 'string', {
     message: "Objects with 'type' field must use structured schemas",
   });

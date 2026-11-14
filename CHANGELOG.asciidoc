@@ -43,6 +43,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Removed the per-request `userAgent` option from all drivers so the user agent is sent only as the `User-Agent` header controlled by `enableUserAgentOnConnect`.
 * Fixed `gremlin-mcp` to include the server's reason when a query fails rather than only reporting that it failed.
 * Added `search_gremlin_docs` and `get_gremlin_doc_page` tools to `gremlin-mcp` that serve the reference documentation and Gremlin Semantics for a chosen TinkerPop version.
+* Bumped `zod` to 4.6.7 for `gremlin-mcp`, which requires an explicit key schema on `z.record()`.
 * Bumped `jackson-databind` to 2.22.4.
 * Bumped Spark to 4.3.0 and Hadoop to 3.5.0.
 * Changed `gremlin-javascript` to export Gremlin symbols by name using their Gremlin spelling, such as `T`, `Order` and `__`.
