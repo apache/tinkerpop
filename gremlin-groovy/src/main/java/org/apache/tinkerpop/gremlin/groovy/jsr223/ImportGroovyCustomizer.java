@@ -24,7 +24,9 @@ import org.codehaus.groovy.control.customizers.CompilationCustomizer;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -53,8 +55,19 @@ class ImportGroovyCustomizer implements GroovyCustomizer {
         // from the incoming customizer. ultimately, the fix should be to resolve the naming conflicts to ensure a
         // unique space somehow.
         ic.addStaticStars(__.class.getCanonicalName());
+
+        // Groovy 5+ rejects two imports with the same simple name. keep the last one so a plugin can still override a
+        // core class like __ (TINKERPOP-2394)
+        final Map<String, String> classImports = new LinkedHashMap<>();
         for (ImportCustomizer customizer : customizers) {
-            customizer.getClassImports().forEach(i -> ic.addImports(i.getCanonicalName()));
+            customizer.getClassImports().forEach(i -> {
+                classImports.remove(i.getSimpleName());
+                classImports.put(i.getSimpleName(), i.getCanonicalName());
+            });
+        }
+        classImports.values().forEach(ic::addImports);
+
+        for (ImportCustomizer customizer : customizers) {
             customizer.getMethodImports().stream()
                     .filter(m -> !m.getDeclaringClass().equals(__.class))
                     .forEach(m -> ic.addStaticImport(m.getDeclaringClass().getCanonicalName(), m.getName()));

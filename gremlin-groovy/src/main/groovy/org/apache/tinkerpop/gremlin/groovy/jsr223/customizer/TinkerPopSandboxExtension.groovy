@@ -34,6 +34,8 @@ class TinkerPopSandboxExtension extends AbstractSandboxExtension {
 
     private static final List<String> methodWhiteList = ["java\\.util\\..*",
                                                          "org\\.codehaus\\.groovy\\.runtime\\.DefaultGroovyMethods.*",
+                                                         // array helpers moved here from DefaultGroovyMethods in Groovy 5
+                                                         "org\\.codehaus\\.groovy\\.runtime\\.ArrayGroovyMethods.*",
                                                          "org\\.apache\\.tinkerpop\\.gremlin\\.structure\\..*",
                                                          "org\\.apache\\.tinkerpop\\.gremlin\\.process\\..*",
                                                          "org\\.apache\\.tinkerpop\\.gremlin\\.process\\.traversal\\.dsl\\.graph\\..*"]

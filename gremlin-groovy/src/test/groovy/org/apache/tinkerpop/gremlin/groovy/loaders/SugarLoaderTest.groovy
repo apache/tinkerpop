@@ -18,15 +18,21 @@
  */
 package org.apache.tinkerpop.gremlin.groovy.loaders
 
+import org.apache.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine
+import org.apache.tinkerpop.gremlin.groovy.jsr223.SugarGremlinPlugin
 import org.apache.tinkerpop.gremlin.groovy.util.SugarTestHelper
+import org.apache.tinkerpop.gremlin.jsr223.ScriptCustomizer
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__
 import org.apache.tinkerpop.gremlin.structure.*
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory
+import org.junit.After
 import org.junit.Before
 import org.junit.Test
 
 import static org.apache.tinkerpop.gremlin.process.traversal.P.eq
+import static org.apache.tinkerpop.gremlin.process.traversal.P.gt
 import static org.junit.Assert.*
 
 /**
@@ -127,6 +133,84 @@ class SugarLoaderTest {
         assertEquals(StringFactory.traversalString(g.V().out().asAdmin()), g.V().out().toString());
         assertEquals(StringFactory.traversalString(g.V.out), g.V.out.toString());
         assertEquals(convertToVertex(graph, "marko").toString(), g.V(convertToVertexId(graph, "marko")).next().toString())
+    }
+
+    @After
+    public void tearDown() throws Exception {
+        // sugar changes global metaclasses, so turn it off again for other tests in the same JVM
+        SugarTestHelper.clearRegistry()
+    }
+
+    @Test
+    public void shouldAllowRangeAndIndexSubscripts() {
+        def g = TinkerFactory.createModern().traversal()
+        SugarLoader.load()
+        // [a..b] is inclusive in Groovy but becomes range(a, b), which excludes b
+        assertEquals(2L, g.V[0..2].count().next())
+        assertEquals(['marko', 'vadas'], g.V[0..2].name.toList())
+        assertEquals(['vadas'], g.V[1].name.toList())
+    }
+
+    @Test
+    public void shouldAllowOrAndOperators() {
+        def g = TinkerFactory.createModern().traversal()
+        SugarLoader.load()
+        assertEquals(['josh', 'peter'], g.V.where(__.has('age', gt(31)) | __.has('name', 'josh')).name.toList())
+        assertEquals(['josh'], g.V.where(__.has('age', gt(30)) & __.has('name', 'josh')).name.toList())
+    }
+
+    @Test
+    public void shouldAllowAnonymousTraversalSugar() {
+        def g = TinkerFactory.createModern().traversal()
+        SugarLoader.load()
+        assertEquals(['lop', 'vadas', 'josh'], g.V(1).flatMap(__.out).name.toList())
+        assertEquals(['marko'], g.V(1).map(__.name).toList())
+        assertEquals([29], g.V(1).map(__.age).toList())
+    }
+
+    @Test
+    public void shouldAllowEdgesAndTraverserMethodDelegation() {
+        def g = TinkerFactory.createModern().traversal()
+        SugarLoader.load()
+        assertEquals(6L, g.E.count.next())
+        // methods missing on the Traverser are called on the object it holds
+        assertEquals(['person', 'person', 'software', 'person', 'software', 'person'], g.V.map { it.label() }.toList())
+        assertEquals(['marko', 'vadas'], g.V.limit(2).map { it.name }.toList())
+    }
+
+    @Test
+    public void shouldKeepStepLoaderAdditionsWhenSugarIsLoaded() {
+        def g = TinkerFactory.createModern().traversal()
+        GremlinLoader.load()
+        SugarLoader.load()
+        assertEquals(6L, g.withStrategies(org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ReadOnlyStrategy).V().count().next())
+        assertEquals([null], g.inject(null).toList())
+    }
+
+    @Test
+    public void shouldAllowMapRangeSubscript() {
+        SugarLoader.load()
+        // the subscript is added to Map, which a LinkedHashMap metaclass made by an earlier test does not pick up
+        GroovySystem.metaClassRegistry.removeMetaClass(LinkedHashMap)
+        assertEquals([a: 1, b: 2], [a: 1, b: 2, c: 3][0..1])
+        assertEquals([b: 2, c: 3], [a: 1, b: 2, c: 3][1..5])
+    }
+
+    @Test
+    public void shouldAllowSugarThroughTheScriptEngine() {
+        // the engine does not run plugin scripts itself; like the script engine manager in Gremlin Server, evaluate
+        // the plugin's script customizer (which calls SugarLoader.load()) before using the sugar
+        def engine = new GremlinGroovyScriptEngine()
+        new SugarGremlinPlugin().getCustomizers("gremlin-groovy").get()
+                .findAll { it instanceof ScriptCustomizer }
+                .each { ((ScriptCustomizer) it).getScripts().each { lines -> engine.eval(lines.join("\n")) } }
+        def bindings = engine.createBindings()
+        bindings.put("g", TinkerFactory.createModern().traversal())
+        assertEquals(6L, engine.eval("g.V.count.next()", bindings))
+        assertEquals(['marko', 'vadas'], engine.eval("g.V[0..2].name.toList()", bindings))
+        assertEquals(['lop', 'vadas', 'josh'], engine.eval("g.V(1).out.name.toList()", bindings))
+        assertEquals(['josh', 'peter'], engine.eval("g.V.where(__.has('age', gt(31)) | __.has('name', 'josh')).name.toList()", bindings))
+        assertEquals(['person', 'person'], engine.eval("g.V.limit(2).map{ it.label() }.toList()", bindings))
     }
 
     private Object convertToVertexId(final Graph graph, final String vertexName) {

@@ -19,9 +19,7 @@
 package org.apache.tinkerpop.gremlin.console.commands
 
 import org.apache.tinkerpop.gremlin.console.ConsoleFs
-import org.apache.tinkerpop.gremlin.console.GremlinGroovysh
 import org.apache.tinkerpop.gremlin.console.Mediator
-import org.codehaus.groovy.tools.shell.IO
 import org.junit.Before
 import org.junit.Test
 
@@ -32,9 +30,7 @@ class UninstallCommandTest {
 
     @Before
     void setUp() {
-        def io = new IO(new ByteArrayInputStream(), new ByteArrayOutputStream(), new ByteArrayOutputStream())
-        def shell = new GremlinGroovysh(new Mediator(null), io)
-        cmd = new UninstallCommand(shell, new Mediator(null))
+        cmd = new UninstallCommand(new Mediator(null))
     }
 
     @Test

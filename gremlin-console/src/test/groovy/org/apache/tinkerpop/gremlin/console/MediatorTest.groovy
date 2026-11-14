@@ -35,7 +35,6 @@ class MediatorTest {
         final Mediator mediator = new Mediator(null)
         assertNotNull(mediator)
         assertTrue(mediator.availablePlugins.isEmpty())
-        assertFalse(mediator.evaluating.get())
     }
 
     @Test
@@ -49,6 +48,38 @@ class MediatorTest {
         // with no plugin-config file present, readPluginState() returns an empty list (not null)
         new File(ConsoleFs.PLUGIN_CONFIG_FILE).delete()
         assertEquals([], Mediator.readPluginState())
+    }
+
+    @Test
+    void shouldReadPluginStateInFileOrderIgnoringBlankLines() {
+        final File file = new File(ConsoleFs.PLUGIN_CONFIG_FILE)
+        final boolean createdDir = file.parentFile.mkdirs()
+        try {
+            file.text = "b.SecondPlugin\n\na.FirstPlugin\n\n"
+            assertEquals(["b.SecondPlugin", "a.FirstPlugin"], Mediator.readPluginState())
+        } finally {
+            file.delete()
+            if (createdDir) file.parentFile.delete()
+        }
+    }
+
+    @Test
+    void shouldWriteOnlyActivePluginsToPluginState() {
+        final File file = new File(ConsoleFs.PLUGIN_CONFIG_FILE)
+        final boolean createdDir = file.parentFile.mkdirs()
+        try {
+            // writePluginState only writes to a file that already exists and is writable
+            file.text = "old.Plugin\n"
+            final Mediator mediator = new Mediator(null)
+            mediator.availablePlugins.put("x.Active", new PluggedIn(null, null, true))
+            mediator.availablePlugins.put("x.Inactive", new PluggedIn(null, null, false))
+
+            assertTrue(mediator.writePluginState())
+            assertEquals(["x.Active"], Mediator.readPluginState())
+        } finally {
+            file.delete()
+            if (createdDir) file.parentFile.delete()
+        }
     }
 
     @Test
