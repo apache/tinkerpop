@@ -34,22 +34,18 @@ import java.util.Map;
  * Predefined {@code Predicate} values that filter {@link Geometry} values by a spatial
  * relationship, backed by the {@link Geo} predicates.
  * <p>
- * <b>What the predicate holds.</b> For {@code geoWithin} and {@code geoContains},
- * {@link #getValue()} is the geometry to compare against. For {@code geoWithinDistance} it is a
- * two element list of the geometry and the distance, in that order, so that both arguments stay
- * readable to a provider strategy that folds the filter into a spatial index.
+ * For {@code geoWithinDistance}, {@link #getValue()} is a two element list of the geometry and the
+ * distance, in that order.
  * <p>
  * An argument may instead come from a child traversal, which is resolved against each traverser.
  * {@code geoWithinDistance} then holds a child traversal for each of its two arguments, and a
  * constant given beside a traversal is carried as a constant traversal. An argument may also be a
  * {@link GValue}, whose value is resolved when the traversal is built.
  * <p>
- * <b>Accuracy in the geographic model.</b> {@link Model#GEOGRAPHIC} edges are treated as straight
- * in longitude and latitude rather than as geodesics. The relate predicates and the distance of a
- * geometry that is not a point are therefore accurate for an edge shorter than about 100 km that
- * crosses neither the antimeridian nor a pole, where they stay within about 1% of the WGS84
- * measure. The distance between two points is measured on the sphere directly, so it is accurate
- * at any separation and is unaffected by the antimeridian.
+ * <b>Accuracy in the geographic model.</b> Distances are measured on a sphere of the WGS84 mean
+ * radius, within about 1% of WGS84. Edges are straight in longitude and latitude, so the relate
+ * predicates, and distances between shapes other than two points, hold for edges under about
+ * 100 km that cross neither the antimeridian nor a pole.
  *
  * @since 4.0.0
  */
@@ -62,6 +58,12 @@ public class GeoP extends P<Object> {
      */
     private final List<Object> arguments;
 
+    /**
+     * Constructs a {@code GeoP} from the argument as it was given, which is validated unless it is
+     * a child traversal.
+     *
+     * @since 4.0.0
+     */
     public GeoP(final PBiPredicate<Object, Object> biPredicate, final Object value) {
         super(biPredicate, value);
         this.arguments = null;
@@ -120,12 +122,19 @@ public class GeoP extends P<Object> {
 
     /**
      * {@inheritDoc}
+     * <p>
+     * A new value for one of this predicate's variables is validated as the same value given to a
+     * constructor would be.
      */
     @Override
     public void updateVariable(final String name, final Object value) {
         super.updateVariable(name, value);
-        if (null != arguments && variables.containsKey(name)) {
+        if (!variables.containsKey(name)) return;
+        if (null != arguments) {
             literals = Collections.singletonList((Object) resolve(arguments, variables));
+        }
+        if (!hasTraversal()) {
+            validateConstants(biPredicate, getValue());
         }
     }
 

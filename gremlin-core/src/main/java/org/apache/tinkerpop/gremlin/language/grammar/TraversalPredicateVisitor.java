@@ -20,12 +20,17 @@ package org.apache.tinkerpop.gremlin.language.grammar;
 
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.apache.tinkerpop.gremlin.language.antlr.GremlinParser;
+import org.apache.tinkerpop.gremlin.process.traversal.GeoP;
 import org.apache.tinkerpop.gremlin.process.traversal.GType;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.TextP;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
+import org.apache.tinkerpop.gremlin.structure.geo.Geometry;
 
 import java.util.Collection;
+import java.util.List;
+import java.util.function.Supplier;
 
 public class TraversalPredicateVisitor extends DefaultGremlinBaseVisitor<P> {
 
@@ -296,6 +301,79 @@ public class TraversalPredicateVisitor extends DefaultGremlinBaseVisitor<P> {
     @Override
     public P visitTraversalPredicate_notRegex(final GremlinParser.TraversalPredicate_notRegexContext ctx) {
         return TextP.notRegex((String) antlr.argumentVisitor.visitStringArgument(ctx.stringArgument()));
+    }
+
+    @Override
+    public P visitTraversalPredicate_geoWithin(final GremlinParser.TraversalPredicate_geoWithinContext ctx) {
+        if (ctx.nestedTraversal() != null) {
+            return GeoP.geoWithin(parseTraversal(ctx.nestedTraversal()));
+        }
+        return build(() -> GeoP.geoWithin(parseGeometry(ctx.geometryArgument())));
+    }
+
+    @Override
+    public P visitTraversalPredicate_geoContains(final GremlinParser.TraversalPredicate_geoContainsContext ctx) {
+        if (ctx.nestedTraversal() != null) {
+            return GeoP.geoContains(parseTraversal(ctx.nestedTraversal()));
+        }
+        return build(() -> GeoP.geoContains(parseGeometry(ctx.geometryArgument())));
+    }
+
+    @Override
+    public P visitTraversalPredicate_geoWithinDistance(final GremlinParser.TraversalPredicate_geoWithinDistanceContext ctx) {
+        // the geometry comes first and the distance second, and either may be given as a traversal,
+        // so the traversals of this context are taken in the order they were written
+        final List<GremlinParser.NestedTraversalContext> traversals = ctx.nestedTraversal();
+        final boolean geometryFromTraversal = null == ctx.geometryArgument();
+        final boolean distanceFromTraversal = null == ctx.numericArgument();
+
+        if (geometryFromTraversal && distanceFromTraversal) {
+            return GeoP.geoWithinDistance(parseTraversal(traversals.get(0)), parseTraversal(traversals.get(1)));
+        }
+        if (geometryFromTraversal) {
+            return build(() -> GeoP.geoWithinDistance(parseTraversal(traversals.get(0)),
+                    parseDistance(ctx.numericArgument())));
+        }
+        if (distanceFromTraversal) {
+            return build(() -> GeoP.geoWithinDistance(parseGeometry(ctx.geometryArgument()),
+                    parseTraversal(traversals.get(0))));
+        }
+        return build(() -> GeoP.geoWithinDistance(parseGeometry(ctx.geometryArgument()),
+                parseDistance(ctx.numericArgument())));
+    }
+
+    /**
+     * Builds a geo predicate, reporting an argument it rejects as a parse failure in the same way a
+     * rejected literal is reported.
+     */
+    private static P build(final Supplier<P> predicate) {
+        try {
+            return predicate.get();
+        } catch (IllegalArgumentException iae) {
+            throw new GremlinParserException("Invalid geo predicate: " + iae.getMessage(), iae);
+        }
+    }
+
+    private GValue<Geometry> parseGeometry(final GremlinParser.GeometryArgumentContext ctx) {
+        return asGValue(antlr.argumentVisitor.visitGeometryArgument(ctx));
+    }
+
+    private GValue<Number> parseDistance(final GremlinParser.NumericArgumentContext ctx) {
+        return asGValue(antlr.argumentVisitor.visitNumericArgument(ctx));
+    }
+
+    /**
+     * Carries a literal as an unnamed {@link GValue} so that both forms of an argument reach the
+     * predicate the same way. A wrong type is left to the predicate to reject.
+     */
+    @SuppressWarnings("unchecked")
+    private static <V> GValue<V> asGValue(final Object literalOrVariable) {
+        if (literalOrVariable instanceof GValue) return (GValue<V>) literalOrVariable;
+        return GValue.of(null, (V) literalOrVariable);
+    }
+
+    private Traversal.Admin<?, ?> parseTraversal(final GremlinParser.NestedTraversalContext ctx) {
+        return (Traversal.Admin<?, ?>) antlr.tvisitor.visitNestedTraversal(ctx);
     }
 
     /**

@@ -59,7 +59,6 @@ import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.verifica
 import org.apache.tinkerpop.gremlin.process.remote.RemoteConnection;
 import org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.DT;
-import org.apache.tinkerpop.gremlin.process.traversal.Geo;
 import org.apache.tinkerpop.gremlin.process.traversal.GeoP;
 import org.apache.tinkerpop.gremlin.process.traversal.GType;
 import org.apache.tinkerpop.gremlin.process.traversal.IO;
@@ -165,6 +164,7 @@ import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceProperty;
 import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceVertex;
 import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceVertexProperty;
 import org.apache.tinkerpop.gremlin.util.DatetimeHelper;
+import org.apache.tinkerpop.gremlin.util.GeometryHelper;
 import org.apache.tinkerpop.gremlin.util.Gremlin;
 import org.apache.tinkerpop.gremlin.util.TimeUtil;
 import org.apache.tinkerpop.gremlin.util.function.Lambda;
@@ -244,7 +244,6 @@ public final class CoreImports {
         CLASS_IMPORTS.add(P.class);
         CLASS_IMPORTS.add(TextP.class);
         CLASS_IMPORTS.add(GeoP.class);
-        CLASS_IMPORTS.add(Geo.class);
         CLASS_IMPORTS.add(WithOptions.class);
         // remote
         CLASS_IMPORTS.add(RemoteConnection.class);
@@ -384,6 +383,14 @@ public final class CoreImports {
             METHOD_IMPORTS.add(DatetimeHelper.class.getMethod("datetime"));
         } catch (Exception ex) {
             throw new IllegalStateException("Could not load datetime() function to imports");
+        }
+        try {
+            METHOD_IMPORTS.add(GeometryHelper.class.getMethod("geometry", String.class));
+            METHOD_IMPORTS.add(GeometryHelper.class.getMethod("geometry", String.class, Model.class));
+            METHOD_IMPORTS.add(GeometryHelper.class.getMethod("geometry", String.class, int.class));
+            METHOD_IMPORTS.add(GeometryHelper.class.getMethod("geometry", String.class, GType.class));
+        } catch (Exception ex) {
+            throw new IllegalStateException("Could not load geometry() function to imports", ex);
         }
 
         ///////////

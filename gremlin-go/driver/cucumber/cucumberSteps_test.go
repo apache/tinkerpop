@@ -1297,7 +1297,8 @@ func TestCucumberFeatures(t *testing.T) {
 		TestSuiteInitializer: InitializeTestSuite,
 		ScenarioInitializer:  InitializeScenario,
 		Options: &godog.Options{
-			Tags:     "~@GraphComputerOnly && ~@AllowNullPropertyValues && ~@StepWrite && ~@MultiLabelDefault",
+			// @DataGeometry is excluded since geometry values cannot be serialized
+			Tags:     "~@GraphComputerOnly && ~@AllowNullPropertyValues && ~@StepWrite && ~@MultiLabelDefault && ~@DataGeometry",
 			Format:   "pretty",
 			Paths:    []string{getEnvOrDefaultString("CUCUMBER_FEATURE_FOLDER", "../../../gremlin-test/src/main/resources/org/apache/tinkerpop/gremlin/test/features")},
 			TestingT: t, // Testing instance that will run subtests.

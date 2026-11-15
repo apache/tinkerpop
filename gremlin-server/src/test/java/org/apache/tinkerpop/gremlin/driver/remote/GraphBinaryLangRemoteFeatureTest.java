@@ -28,9 +28,10 @@ import org.apache.tinkerpop.gremlin.features.AbstractGuiceFactory;
 import org.apache.tinkerpop.gremlin.features.World;
 import org.junit.runner.RunWith;
 
+// @DataGeometry scenarios do not run remotely since geometry values cannot be serialized
 @RunWith(Cucumber.class)
 @CucumberOptions(
-        tags = "not @GraphComputerOnly and not @AllowNullPropertyValues and not @StepSubgraph and not @MultiLabelDefault", // TINKERPOP-3154
+        tags = "not @GraphComputerOnly and not @AllowNullPropertyValues and not @StepSubgraph and not @MultiLabelDefault and not @DataGeometry", // TINKERPOP-3154
         glue = { "org.apache.tinkerpop.gremlin.features" },
         objectFactory = GraphBinaryLangRemoteFeatureTest.RemoteGuiceFactory.class,
         features = { "classpath:/org/apache/tinkerpop/gremlin/test/features" },

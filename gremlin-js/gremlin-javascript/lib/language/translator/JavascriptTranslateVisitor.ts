@@ -74,6 +74,10 @@ export default class JavascriptTranslateVisitor extends TranslateVisitor {
     }
 
     visitTraversalGType(ctx: any): void {
+        if (TranslateVisitor.isGeometryGType(ctx)) {
+            throw new TranslatorException('Javascript does not support geometry types');
+        }
+
         const parts: string[] = ctx.getText().split('.');
         this.sb.push(this.processGremlinSymbol(parts[0]));
         this.sb.push('.');
@@ -198,6 +202,22 @@ export default class JavascriptTranslateVisitor extends TranslateVisitor {
         this.sb.push("Buffer.from(");
         this.visitStringLiteral(ctx.stringLiteral());
         this.sb.push(",'base64')");
+    }
+
+    visitGeometryLiteral(_ctx: any): void {
+        throw new TranslatorException('Javascript does not support geometry literals');
+    }
+
+    visitTraversalPredicate_geoWithin(_ctx: any): void {
+        throw new TranslatorException('Javascript does not support geo predicates');
+    }
+
+    visitTraversalPredicate_geoContains(_ctx: any): void {
+        throw new TranslatorException('Javascript does not support geo predicates');
+    }
+
+    visitTraversalPredicate_geoWithinDistance(_ctx: any): void {
+        throw new TranslatorException('Javascript does not support geo predicates');
     }
 }
 

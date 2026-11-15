@@ -70,6 +70,8 @@ include::the-crew.asciidoc[]
 
 include::the-zoo.asciidoc[]
 
+include::the-delivery.asciidoc[]
+
 include::grateful-dead.asciidoc[]
 
 include::air-routes.asciidoc[]

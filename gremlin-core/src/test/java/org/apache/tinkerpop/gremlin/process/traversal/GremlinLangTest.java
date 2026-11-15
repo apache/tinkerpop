@@ -18,9 +18,12 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal;
 
+import org.apache.tinkerpop.gremlin.language.grammar.GremlinQueryParser;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.IsStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.InjectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SeedStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ReadOnlyStrategy;
@@ -28,6 +31,9 @@ import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
+import org.apache.tinkerpop.gremlin.structure.geo.Geometry;
+import org.apache.tinkerpop.gremlin.structure.geo.Model;
+import org.apache.tinkerpop.gremlin.structure.geo.Point;
 import org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefined;
 import org.apache.tinkerpop.gremlin.structure.io.pdt.PrimitivePDTAdapter;
 import org.apache.tinkerpop.gremlin.structure.io.pdt.PrimitivePDT;
@@ -51,6 +57,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -175,6 +182,52 @@ public class GremlinLangTest {
                         "g.inject(PDT(\"Uint32\",\"42\"))"},
                 {g.inject(new PrimitivePDT("Empty", "")),
                         "g.inject(PDT(\"Empty\",\"\"))"},
+                // Geometry - every model, written as the WKT plus an int SRID
+                {g.inject(Point.of(1, 2)), "g.inject(Geometry(\"POINT(1 2)\",0))"},
+                {g.inject(Point.of(1, 2, Model.GEOGRAPHIC)), "g.inject(Geometry(\"POINT(1 2)\",4326))"},
+                {g.inject(Geometry.fromWkt("POINT(1 2)", 32618)), "g.inject(Geometry(\"POINT(1 2)\",32618))"},
+                {g.inject(Geometry.fromWkt("POLYGON((0 0, 4 0, 4 4, 0 4, 0 0), (1 1, 1 2, 2 2, 2 1, 1 1))")),
+                        "g.inject(Geometry(\"POLYGON((0 0, 4 0, 4 4, 0 4, 0 0), (1 1, 1 2, 2 2, 2 1, 1 1))\",0))"},
+                {g.inject(Geometry.fromWkt("POINT Z (1 2 3)")), "g.inject(Geometry(\"POINT Z (1 2 3)\",0))"},
+                {g.inject(Geometry.fromWkt("POINT EMPTY")), "g.inject(Geometry(\"POINT EMPTY\",0))"},
+                {g.inject(Geometry.fromWkt("GEOMETRYCOLLECTION(POINT(1 1), GEOMETRYCOLLECTION(LINESTRING(2 2, 3 3), POINT EMPTY))")),
+                        "g.inject(Geometry(\"GEOMETRYCOLLECTION(POINT(1 1), GEOMETRYCOLLECTION(LINESTRING(2 2, 3 3), POINT EMPTY))\",0))"},
+                {g.inject(Arrays.asList(Point.of(1, 2), Point.of(3, 4))),
+                        "g.inject([Geometry(\"POINT(1 2)\",0),Geometry(\"POINT(3 4)\",0)])"},
+                {g.inject(asMap("loc", Point.of(1, 2))), "g.inject([\"loc\":Geometry(\"POINT(1 2)\",0)])"},
+                {g.inject(asMap(Point.of(1, 2), "home")), "g.inject([Geometry(\"POINT(1 2)\",0):\"home\"])"},
+                {g.V().has("loc", Point.of(1, 2)), "g.V().has(\"loc\",Geometry(\"POINT(1 2)\",0))"},
+                // Geometry GType entries, both a kind and a model
+                {g.inject(1).is(P.typeOf(GType.GEOMETRY)), "g.inject(1).is(P.typeOf(GType.GEOMETRY))"},
+                {g.inject(1).is(P.typeOf(GType.GEOGRAPHIC)), "g.inject(1).is(P.typeOf(GType.GEOGRAPHIC))"},
+                // the geo predicates, with geoWithinDistance's two arguments written as two arguments
+                {g.V().has("loc", GeoP.geoWithin(Point.of(1, 2))),
+                        "g.V().has(\"loc\",GeoP.geoWithin(Geometry(\"POINT(1 2)\",0)))"},
+                {g.V().has("loc", GeoP.geoContains(Point.of(1, 2, Model.GEOGRAPHIC))),
+                        "g.V().has(\"loc\",GeoP.geoContains(Geometry(\"POINT(1 2)\",4326)))"},
+                {g.V().has("loc", GeoP.geoWithinDistance(Point.of(1, 2), 10)),
+                        "g.V().has(\"loc\",GeoP.geoWithinDistance(Geometry(\"POINT(1 2)\",0),10))"},
+                {g.V().has("loc", GeoP.geoWithinDistance(Point.of(1, 2, Model.GEOGRAPHIC), 10.5)),
+                        "g.V().has(\"loc\",GeoP.geoWithinDistance(Geometry(\"POINT(1 2)\",4326),10.5D))"},
+                {g.V().has("loc", GeoP.geoWithin(Point.of(1, 2)).negate()),
+                        "g.V().has(\"loc\",P.not(GeoP.geoWithin(Geometry(\"POINT(1 2)\",0))))"},
+                // a connective keeps both geo predicates
+                {g.V().has("loc", GeoP.geoWithin(Point.of(1, 2)).and(GeoP.geoContains(Point.of(1, 2)))),
+                        "g.V().has(\"loc\",GeoP.geoWithin(Geometry(\"POINT(1 2)\",0)).and(GeoP.geoContains(Geometry(\"POINT(1 2)\",0))))"},
+                {g.V().has("loc", GeoP.geoWithin(Point.of(1, 2)).or(GeoP.geoContains(Point.of(1, 2)))),
+                        "g.V().has(\"loc\",GeoP.geoWithin(Geometry(\"POINT(1 2)\",0)).or(GeoP.geoContains(Geometry(\"POINT(1 2)\",0))))"},
+                {g.V().has("loc", GeoP.geoWithin(__.select("zone"))),
+                        "g.V().has(\"loc\",GeoP.geoWithin(__.select(\"zone\")))"},
+                {g.V().has("loc", GeoP.geoWithinDistance(__.select("zone"), 10)),
+                        "g.V().has(\"loc\",GeoP.geoWithinDistance(__.select(\"zone\"),__.constant(10)))"},
+                // a variable argument is written as the value it holds, as it is for the other predicates
+                {g.V().has("loc", GeoP.geoWithin(GValue.of("xx1", (Geometry) Point.of(1, 2)))),
+                        "g.V().has(\"loc\",GeoP.geoWithin(Geometry(\"POINT(1 2)\",0)))"},
+                {g.V().has("loc", GeoP.geoWithinDistance(GValue.of("xx1", (Geometry) Point.of(1, 2)),
+                        GValue.of("xx2", (Number) 10))),
+                        "g.V().has(\"loc\",GeoP.geoWithinDistance(Geometry(\"POINT(1 2)\",0),10))"},
+                {g.V().has("loc", GeoP.geoWithinDistance(__.select("zone"), GValue.of("xx2", (Number) 10))),
+                        "g.V().has(\"loc\",GeoP.geoWithinDistance(__.select(\"zone\"),__.constant(xx2)))"},
         });
     }
 
@@ -565,6 +618,97 @@ public class GremlinLangTest {
             final String gremlin = g2.inject(new Uint32(99)).asAdmin().getGremlinLang().getGremlin();
 
             assertEquals("g.inject(PDT(\"Uint32\",\"99\"))", gremlin);
+        }
+    }
+
+    public static class GeometryTests {
+
+        private static final String[] WKTS = new String[]{
+                "POINT(1 2)",
+                "POINT Z (1 2 3)",
+                "POINT EMPTY",
+                "POINT Z EMPTY",
+                "LINESTRING(0 0, 1 1)",
+                "LINESTRING EMPTY",
+                "POLYGON((0 0, 4 0, 4 4, 0 4, 0 0), (1 1, 1 2, 2 2, 2 1, 1 1))",
+                "POLYGON EMPTY",
+                "MULTIPOINT((1 1), (2 2))",
+                "MULTIPOINT EMPTY",
+                "MULTILINESTRING((0 0, 1 1), (2 2, 3 3))",
+                "MULTILINESTRING EMPTY",
+                "MULTIPOLYGON(((0 0, 1 0, 1 1, 0 0)))",
+                "MULTIPOLYGON EMPTY",
+                "GEOMETRYCOLLECTION(POINT(1 1), GEOMETRYCOLLECTION(LINESTRING(2 2, 3 3), POINT EMPTY))",
+                "GEOMETRYCOLLECTION EMPTY",
+                "POINT(-0.0 0.0000001)"
+        };
+
+        private static Geometry parseInjectedGeometry(final String gremlin) {
+            return (Geometry) parseInjected(gremlin);
+        }
+
+        private static Object parseInjected(final String gremlin) {
+            final Traversal.Admin<?, ?> parsed = ((Traversal<?, ?>) GremlinQueryParser.parse(gremlin)).asAdmin();
+            return ((InjectStep<?>) parsed.getStartStep()).getInjections()[0];
+        }
+
+        @Test
+        public void shouldRoundTripEveryKindAndSrid() {
+            for (final String wkt : WKTS) {
+                for (final int srid : new int[]{0, 4326, 32618}) {
+                    final Geometry original = Geometry.fromWkt(wkt, srid);
+                    final String gremlin = newG().inject(original).asAdmin().getGremlinLang().getGremlin();
+                    assertEquals(gremlin, original, parseInjectedGeometry(gremlin));
+                }
+            }
+        }
+
+        @Test
+        public void shouldRoundTripMapWithGeometryKey() {
+            final Map<Object, Object> original = new LinkedHashMap<>();
+            original.put(Point.of(1, 2, Model.GEOGRAPHIC), "home");
+            original.put(Geometry.fromWkt("LINESTRING(0 0, 1 1)", 32618), "route");
+            final String gremlin = newG().inject(original).asAdmin().getGremlinLang().getGremlin();
+            assertEquals("g.inject([Geometry(\"POINT(1 2)\",4326):\"home\",Geometry(\"LINESTRING(0 0, 1 1)\",32618):\"route\"])", gremlin);
+            assertEquals(original, parseInjected(gremlin));
+        }
+
+        @Test
+        public void shouldNotMarkGeometryAsUnsupportedType() {
+            final GremlinLang gremlinLang = newG().V().has("loc", Point.of(1, 2)).asAdmin().getGremlinLang();
+            assertFalse(gremlinLang.containsUnsupportedTypes());
+            assertEquals("", gremlinLang.getUnsupportedType());
+        }
+
+        @Test
+        public void shouldRoundTripEveryGeoPredicate() {
+            final Point point = Point.of(1, 2);
+            final Geometry square = Geometry.fromWkt("POLYGON((0 0, 4 0, 4 4, 0 4, 0 0))", Model.GEOGRAPHIC);
+            final List<P<Object>> predicates = Arrays.asList(
+                    GeoP.geoWithin(point),
+                    GeoP.geoContains(square),
+                    GeoP.geoWithinDistance(point, 10),
+                    GeoP.geoWithinDistance(square, 10.5),
+                    GeoP.geoWithin(point).negate(),
+                    GeoP.geoWithin(__.select("zone")),
+                    GeoP.geoWithinDistance(__.select("zone"), 10),
+                    GeoP.geoWithinDistance(point, __.select("radius")),
+                    GeoP.geoWithinDistance(__.select("zone"), __.select("radius")),
+                    GeoP.geoWithin(point).and(GeoP.geoContains(square)),
+                    GeoP.geoWithin(point).or(GeoP.geoContains(square)));
+
+            for (final P<Object> predicate : predicates) {
+                final String gremlin = newG().inject(1).is(predicate).asAdmin().getGremlinLang().getGremlin();
+                final Traversal.Admin<?, ?> parsed = ((Traversal<?, ?>) GremlinQueryParser.parse(gremlin)).asAdmin();
+                assertEquals(gremlin, predicate, ((IsStep<?>) parsed.getEndStep()).getPredicate());
+            }
+        }
+
+        @Test
+        public void shouldSerializeGeometryParameter() {
+            final Map<String, Object> params = new HashMap<>();
+            params.put("x", Point.of(1, 2, Model.GEOGRAPHIC));
+            assertEquals("[\"x\":Geometry(\"POINT(1 2)\",4326)]", GremlinLang.convertParametersToString(params));
         }
     }
 

@@ -49,9 +49,10 @@ import java.util.Optional;
 
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData;
 
+// @DataGeometry scenarios are excluded since geometry values cannot be serialized
 @RunWith(Cucumber.class)
 @CucumberOptions(
-        tags = "not @GraphComputerOnly and not @TinkerServiceRegistry and not @InsertionOrderingRequired and not @StepWrite and not @TinkerGQL and not @MultiLabelDefault",
+        tags = "not @GraphComputerOnly and not @TinkerServiceRegistry and not @InsertionOrderingRequired and not @StepWrite and not @TinkerGQL and not @MultiLabelDefault and not @DataGeometry",
         glue = { "org.apache.tinkerpop.gremlin.features" },
         objectFactory = HadoopGraphFeatureIntegrateTest.HadoopGraphGuiceFactory.class,
         features = { "classpath:/org/apache/tinkerpop/gremlin/test/features" },

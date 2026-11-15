@@ -140,6 +140,10 @@ export default class GroovyTranslateVisitor extends TranslateVisitor {
         this.sb.push('))');
     }
 
+    visitGeometryLiteral(ctx: any): void {
+        this.appendGeometryFromWkt(ctx);
+    }
+
     visitNullLiteral(ctx: any): void {
         if (ctx.parent?.constructor?.name === 'GenericMapNullableArgumentContext') {
             this.sb.push('null as Map');

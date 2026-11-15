@@ -25,8 +25,12 @@ import org.apache.tinkerpop.gremlin.structure.LabelCardinality;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
+import org.apache.tinkerpop.gremlin.structure.geo.Geometry;
+import org.apache.tinkerpop.gremlin.structure.geo.Model;
 
 import java.io.InputStream;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import static org.apache.tinkerpop.gremlin.structure.io.IoCore.gryo;
 import static org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph.DefaultIdManager;
@@ -436,6 +440,173 @@ public final class TinkerFactory {
         g.variables().set("comment",
                 "this graph showcases multi-label vertex support and diverse " +
                 "property types introduced in tinkerpop 4.x");
+    }
+
+    /**
+     * Create "the delivery" graph, a TinkerPop 4.x toy graph showcasing geometry property values and the
+     * geospatial predicates. It models a delivery network of hubs, the zones they serve, customers, places and
+     * a warehouse with its rooms. Contains 21 vertices and 20 edges.
+     */
+    public static TinkerMemoryGraph createTheDelivery() {
+        final TinkerMemoryGraph g = getTinkerGraphWithCurrentNumberManager();
+        generateTheDelivery(g);
+        return g;
+    }
+
+    /**
+     * Generate the graph in {@link #createTheDelivery()} into an existing graph. Locations on the Earth use the
+     * {@link Model#GEOGRAPHIC} model with longitude and latitude in degrees. The warehouse rooms and the picker use
+     * the {@link Model#CARTESIAN} model with coordinates in meters.
+     */
+    public static void generateTheDelivery(final AbstractTinkerGraph g) {
+        // Hubs
+        final Vertex hellsKitchen = g.addVertex(T.id, 1, T.label, "hub");
+        hellsKitchen.property("name", "Hell's Kitchen");
+        hellsKitchen.property("loc", Geometry.fromWkt("POINT(-73.9925 40.7614)", Model.GEOGRAPHIC));
+        hellsKitchen.property("country", "US");
+
+        final Vertex williamsburg = g.addVertex(T.id, 2, T.label, "hub");
+        williamsburg.property("name", "Williamsburg");
+        williamsburg.property("loc", Geometry.fromWkt("POINT(-73.9571 40.7146)", Model.GEOGRAPHIC));
+        williamsburg.property("country", "US");
+
+        final Vertex losAngeles = g.addVertex(T.id, 3, T.label, "hub");
+        losAngeles.property("name", "Los Angeles");
+        losAngeles.property("loc", Geometry.fromWkt("POINT(-118.2437 34.0522)", Model.GEOGRAPHIC));
+        losAngeles.property("country", "US");
+
+        final Vertex greenwich = g.addVertex(T.id, 4, T.label, "hub");
+        greenwich.property("name", "Greenwich");
+        greenwich.property("loc", Geometry.fromWkt("POINT(0 51.48)", Model.GEOGRAPHIC));
+        greenwich.property("country", "UK");
+
+        final Vertex auckland = g.addVertex(T.id, 5, T.label, "hub");
+        auckland.property("name", "Auckland");
+        auckland.property("loc", Geometry.fromWkt("POINT(174.7633 -36.8485)", Model.GEOGRAPHIC));
+        auckland.property("country", "NZ");
+
+        // Zones (Midtown has a hole for the park)
+        final Vertex midtown = g.addVertex(T.id, 6, T.label, "zone");
+        midtown.property("name", "Midtown");
+        midtown.property("loc", Geometry.fromWkt("POLYGON((-74.02 40.74, -73.93 40.74, -73.93 40.81, -74.02 40.81, -74.02 40.74), " +
+                "(-73.9819 40.7681, -73.973 40.7644, -73.9498 40.7968, -73.958 40.8006, -73.9819 40.7681))", Model.GEOGRAPHIC));
+
+        final Vertex northBrooklyn = g.addVertex(T.id, 7, T.label, "zone");
+        northBrooklyn.property("name", "North Brooklyn and Queens");
+        northBrooklyn.property("loc", Geometry.fromWkt("POLYGON((-73.97 40.69, -73.88 40.69, -73.88 40.8, -73.93 40.8, -73.93 40.735, -73.97 40.735, -73.97 40.69))", Model.GEOGRAPHIC));
+
+        final Vertex greenwichTown = g.addVertex(T.id, 8, T.label, "zone");
+        greenwichTown.property("name", "Greenwich Town");
+        greenwichTown.property("loc", Geometry.fromWkt("POLYGON((-0.03 51.46, 0.03 51.46, 0.03 51.5, -0.03 51.5, -0.03 51.46))", Model.GEOGRAPHIC));
+
+        final Vertex aucklandAndWaiheke = g.addVertex(T.id, 9, T.label, "zone");
+        aucklandAndWaiheke.property("name", "Auckland and Waiheke");
+        aucklandAndWaiheke.property("loc", Geometry.fromWkt("MULTIPOLYGON(((174.74 -36.87, 174.79 -36.87, 174.79 -36.84, 174.74 -36.84, 174.74 -36.87)), " +
+                "((174.98 -36.82, 175.06 -36.82, 175.06 -36.77, 174.98 -36.77, 174.98 -36.82)))", Model.GEOGRAPHIC));
+
+        // Places
+        final Vertex eastRiver = g.addVertex(T.id, 10, T.label, "waterway");
+        eastRiver.property("name", "East River");
+        eastRiver.property("loc", Geometry.fromWkt("MULTILINESTRING((-73.975 40.695, -73.965 40.72, -73.958 40.745, -73.951 40.77), " +
+                "(-73.958 40.745, -73.946 40.755, -73.945 40.77))", Model.GEOGRAPHIC));
+
+        final Vertex nightMarket = g.addVertex(T.id, 11, T.label, "event");
+        nightMarket.property("name", "Night Market");
+        nightMarket.property("loc", Geometry.fromWkt("GEOMETRYCOLLECTION(MULTIPOINT((-73.952 40.715), (-73.951 40.716)), " +
+                "POLYGON((-73.955 40.713, -73.949 40.713, -73.949 40.717, -73.955 40.717, -73.955 40.713)))", Model.GEOGRAPHIC));
+
+        // Customers
+        final Vertex ana = g.addVertex(T.id, 12, T.label, "customer");
+        ana.property("name", "Ana");
+        ana.property("loc", Geometry.fromWkt("POINT Z (-73.9857 40.7484 86)", Model.GEOGRAPHIC));
+
+        final Vertex ben = g.addVertex(T.id, 13, T.label, "customer");
+        ben.property("name", "Ben");
+        ben.property("loc", Geometry.fromWkt("POINT(-73.9654 40.7829)", Model.GEOGRAPHIC));
+
+        final Vertex dee = g.addVertex(T.id, 14, T.label, "customer");
+        dee.property("name", "Dee");
+        dee.property("loc", Geometry.fromWkt("POINT(-73.93 40.77)", Model.GEOGRAPHIC));
+
+        final Vertex eli = g.addVertex(T.id, 15, T.label, "customer");
+        eli.property("name", "Eli");
+        eli.property("loc", Geometry.fromWkt("POINT Z (-74.05 40.72 12)", Model.GEOGRAPHIC));
+        final Map<String, Object> eliCoords = new LinkedHashMap<>();
+        eliCoords.put("lon", -74.05d);
+        eliCoords.put("lat", 40.72d);
+        eli.property("coords", eliCoords);
+
+        final Vertex hana = g.addVertex(T.id, 16, T.label, "customer");
+        hana.property("name", "Hana");
+        hana.property("loc", Geometry.fromWkt("POINT Z (0.012 51.481 0)", Model.GEOGRAPHIC));
+        hana.property("raw", "POINT(0.012 51.481)");
+
+        // Warehouse inside the Hell's Kitchen hub, in meters
+        final Vertex chilled = g.addVertex(T.id, 17, T.label, "room");
+        chilled.property("name", "Chilled");
+        chilled.property("loc", Geometry.fromWkt("POLYGON((0 0, 8 0, 8 10, 0 10, 0 0))"));
+
+        final Vertex ambient = g.addVertex(T.id, 18, T.label, "room");
+        ambient.property("name", "Ambient");
+        ambient.property("loc", Geometry.fromWkt("POLYGON((8 0, 20 0, 20 10, 8 10, 8 0), (13 4, 15 4, 15 6, 13 6, 13 4))"));
+
+        final Vertex pat = g.addVertex(T.id, 19, T.label, "picker");
+        pat.property("name", "Pat");
+        pat.property("loc", Geometry.fromWkt("POINT(3 4)"));
+
+        // More zones (the Draft Zone is a self-intersecting polygon that is stored but not valid)
+        final Vertex congestionZone = g.addVertex(T.id, 20, T.label, "zone");
+        congestionZone.property("name", "Congestion Zone");
+        congestionZone.property("loc", Geometry.fromWkt("POLYGON((-74.02 40.7, -73.975 40.7, -73.975 40.7644, -74.02 40.7644, -74.02 40.7))", Model.GEOGRAPHIC));
+
+        final Vertex draftZone = g.addVertex(T.id, 21, T.label, "zone");
+        draftZone.property("name", "Draft Zone");
+        draftZone.property("loc", Geometry.fromWkt("POLYGON((-73.96 40.7, -73.94 40.72, -73.96 40.72, -73.94 40.7, -73.96 40.7))", Model.GEOGRAPHIC));
+
+        // Edges: serves
+        hellsKitchen.addEdge("serves", midtown, T.id, 22);
+        williamsburg.addEdge("serves", northBrooklyn, T.id, 23);
+        greenwich.addEdge("serves", greenwichTown, T.id, 24);
+        auckland.addEdge("serves", aucklandAndWaiheke, T.id, 25);
+
+        // Edges: orderedFrom
+        ana.addEdge("orderedFrom", hellsKitchen, T.id, 26);
+        ben.addEdge("orderedFrom", hellsKitchen, T.id, 27);
+        dee.addEdge("orderedFrom", hellsKitchen, T.id, 28);
+        eli.addEdge("orderedFrom", hellsKitchen, T.id, 29);
+        dee.addEdge("orderedFrom", williamsburg, T.id, 30);
+        hana.addEdge("orderedFrom", greenwich, T.id, 31);
+
+        // Edges: delivered
+        williamsburg.addEdge("delivered", ana, T.id, 32,
+                "path", Geometry.fromWkt("LINESTRING(-73.9571 40.7146, -73.9857 40.7484)", Model.GEOGRAPHIC));
+
+        // Edges: shipsTo (km is the great-circle distance between the two hubs, rounded to 0.1 km)
+        hellsKitchen.addEdge("shipsTo", greenwich, T.id, 33,
+                "path", Geometry.fromWkt("LINESTRING(-73.9925 40.7614, 0 51.48)", Model.GEOGRAPHIC),
+                "km", 5575.3d);
+        hellsKitchen.addEdge("shipsTo", losAngeles, T.id, 34,
+                "path", Geometry.fromWkt("LINESTRING(-73.9925 40.7614, -118.2437 34.0522)", Model.GEOGRAPHIC),
+                "km", 3936.5d);
+        losAngeles.addEdge("shipsTo", auckland, T.id, 35,
+                "path", Geometry.fromWkt("MULTILINESTRING((-118.2437 34.0522, -180 -10), (180 -10, 174.7633 -36.8485))", Model.GEOGRAPHIC),
+                "km", 10496.5d);
+        greenwich.addEdge("shipsTo", auckland, T.id, 36,
+                "path", Geometry.fromWkt("LINESTRING(0 51.48, 174.7633 -36.8485)", Model.GEOGRAPHIC),
+                "km", 18336.5d);
+
+        // Edges: hasRoom, worksIn, near and proposes
+        hellsKitchen.addEdge("hasRoom", chilled, T.id, 37);
+        hellsKitchen.addEdge("hasRoom", ambient, T.id, 38);
+        pat.addEdge("worksIn", chilled, T.id, 39);
+        nightMarket.addEdge("near", williamsburg, T.id, 40);
+        williamsburg.addEdge("proposes", draftZone, T.id, 41);
+
+        g.variables().set("name", "the-delivery");
+        g.variables().set("creator", "tinkerpop");
+        g.variables().set("comment",
+                "this graph showcases geometry property values and the geospatial predicates " +
+                "introduced in tinkerpop 4.x");
     }
 
     private static TinkerMemoryGraph getTinkerGraphWithCurrentNumberManager() {

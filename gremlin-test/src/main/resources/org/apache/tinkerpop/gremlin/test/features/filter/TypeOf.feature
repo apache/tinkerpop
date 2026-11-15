@@ -303,3 +303,150 @@ Feature: Predicate - typeOf() General
       | result |
       | bob |
       | dave |
+
+  @GraphComputerVerificationInjectionNotSupported @DataGeometry
+  Scenario: g_injectXgeometriesX_isXtypeOfXGType_GEOMETRYXX
+    Given the empty graph
+    And the traversal of
+      """
+      g.inject(Geometry("POINT(1 2)"), Geometry("LINESTRING(0 0, 1 1)"), Geometry("POLYGON((0 0, 4 0, 4 4, 0 4, 0 0))"), Geometry("POINT(13.4 52.5)", GEOGRAPHIC)).is(P.typeOf(GType.GEOMETRY))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | geo[POINT(1 2)] |
+      | geo[LINESTRING(0 0, 1 1)] |
+      | geo[POLYGON((0 0, 4 0, 4 4, 0 4, 0 0))] |
+      | geo[SRID=4326;POINT(13.4 52.5)] |
+
+  @GraphComputerVerificationInjectionNotSupported @DataGeometry
+  Scenario: g_injectXgeometriesX_isXtypeOfXGType_POINTXX
+    Given the empty graph
+    And the traversal of
+      """
+      g.inject(Geometry("POINT(1 2)"), Geometry("LINESTRING(0 0, 1 1)"), Geometry("POLYGON((0 0, 4 0, 4 4, 0 4, 0 0))"), Geometry("POINT(13.4 52.5)", GEOGRAPHIC)).is(P.typeOf(GType.POINT))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | geo[POINT(1 2)] |
+      | geo[SRID=4326;POINT(13.4 52.5)] |
+
+  @GraphComputerVerificationInjectionNotSupported @DataGeometry
+  Scenario: g_injectXgeometriesX_isXtypeOfXGType_LINESTRINGXX
+    Given the empty graph
+    And the traversal of
+      """
+      g.inject(Geometry("POINT(1 2)"), Geometry("LINESTRING(0 0, 1 1)"), Geometry("POLYGON((0 0, 4 0, 4 4, 0 4, 0 0))"), Geometry("POINT(13.4 52.5)", GEOGRAPHIC)).is(P.typeOf(GType.LINESTRING))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | geo[LINESTRING(0 0, 1 1)] |
+
+  @GraphComputerVerificationInjectionNotSupported @DataGeometry
+  Scenario: g_injectXgeometriesX_isXtypeOfXGType_POLYGONXX
+    Given the empty graph
+    And the traversal of
+      """
+      g.inject(Geometry("POINT(1 2)"), Geometry("LINESTRING(0 0, 1 1)"), Geometry("POLYGON((0 0, 4 0, 4 4, 0 4, 0 0))"), Geometry("POINT(13.4 52.5)", GEOGRAPHIC)).is(P.typeOf(GType.POLYGON))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | geo[POLYGON((0 0, 4 0, 4 4, 0 4, 0 0))] |
+
+  @GraphComputerVerificationInjectionNotSupported @DataGeometry
+  Scenario: g_injectXgeometriesX_isXtypeOfXGType_CARTESIANXX
+    Given the empty graph
+    And the traversal of
+      """
+      g.inject(Geometry("POINT(1 2)"), Geometry("LINESTRING(0 0, 1 1)"), Geometry("POLYGON((0 0, 4 0, 4 4, 0 4, 0 0))"), Geometry("POINT(13.4 52.5)", GEOGRAPHIC)).is(P.typeOf(GType.CARTESIAN))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | geo[POINT(1 2)] |
+      | geo[LINESTRING(0 0, 1 1)] |
+      | geo[POLYGON((0 0, 4 0, 4 4, 0 4, 0 0))] |
+
+  @GraphComputerVerificationInjectionNotSupported @DataGeometry
+  Scenario: g_injectXgeometriesX_isXtypeOfXGType_GEOGRAPHICX_andXtypeOfXGType_POINTXXX
+    Given the empty graph
+    And the traversal of
+      """
+      g.inject(Geometry("POINT(1 2)"), Geometry("LINESTRING(13.4 52.5, 13.5 52.6)", GEOGRAPHIC), Geometry("POINT(13.4 52.5)", GEOGRAPHIC)).is(P.typeOf(GType.GEOGRAPHIC).and(P.typeOf(GType.POINT)))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | geo[SRID=4326;POINT(13.4 52.5)] |
+
+  @GraphComputerVerificationInjectionNotSupported @DataGeometry
+  Scenario: g_injectXmultiGeometriesX_isXtypeOfXGType_MULTIPOINTXX
+    Given the empty graph
+    And the traversal of
+      """
+      g.inject(Geometry("MULTIPOINT((1 1), (2 2))"), Geometry("MULTILINESTRING((0 0, 1 1), (2 2, 3 3))"), Geometry("MULTIPOLYGON(((0 0, 1 0, 1 1, 0 0)))"), Geometry("GEOMETRYCOLLECTION(POINT(1 1))")).is(P.typeOf(GType.MULTIPOINT))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | geo[MULTIPOINT((1 1), (2 2))] |
+
+  @GraphComputerVerificationInjectionNotSupported @DataGeometry
+  Scenario: g_injectXmultiGeometriesX_isXtypeOfXGType_MULTILINESTRINGXX
+    Given the empty graph
+    And the traversal of
+      """
+      g.inject(Geometry("MULTIPOINT((1 1), (2 2))"), Geometry("MULTILINESTRING((0 0, 1 1), (2 2, 3 3))"), Geometry("MULTIPOLYGON(((0 0, 1 0, 1 1, 0 0)))"), Geometry("GEOMETRYCOLLECTION(POINT(1 1))")).is(P.typeOf(GType.MULTILINESTRING))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | geo[MULTILINESTRING((0 0, 1 1), (2 2, 3 3))] |
+
+  @GraphComputerVerificationInjectionNotSupported @DataGeometry
+  Scenario: g_injectXmultiGeometriesX_isXtypeOfXGType_MULTIPOLYGONXX
+    Given the empty graph
+    And the traversal of
+      """
+      g.inject(Geometry("MULTIPOINT((1 1), (2 2))"), Geometry("MULTILINESTRING((0 0, 1 1), (2 2, 3 3))"), Geometry("MULTIPOLYGON(((0 0, 1 0, 1 1, 0 0)))"), Geometry("GEOMETRYCOLLECTION(POINT(1 1))")).is(P.typeOf(GType.MULTIPOLYGON))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | geo[MULTIPOLYGON(((0 0, 1 0, 1 1, 0 0)))] |
+
+  @GraphComputerVerificationInjectionNotSupported @DataGeometry
+  Scenario: g_injectXmultiGeometriesX_isXtypeOfXGType_GEOMETRYCOLLECTIONXX
+    Given the empty graph
+    And the traversal of
+      """
+      g.inject(Geometry("MULTIPOINT((1 1), (2 2))"), Geometry("MULTILINESTRING((0 0, 1 1), (2 2, 3 3))"), Geometry("MULTIPOLYGON(((0 0, 1 0, 1 1, 0 0)))"), Geometry("GEOMETRYCOLLECTION(POINT(1 1))")).is(P.typeOf(GType.GEOMETRYCOLLECTION))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | geo[MULTIPOINT((1 1), (2 2))] |
+      | geo[MULTILINESTRING((0 0, 1 1), (2 2, 3 3))] |
+      | geo[MULTIPOLYGON(((0 0, 1 0, 1 1, 0 0)))] |
+      | geo[GEOMETRYCOLLECTION(POINT(1 1))] |
+
+  @AllowGeometryPropertyValues @DataGeometry
+  Scenario: g_V_hasXloc_typeOfXGType_POLYGONXX_valuesXnameX
+    Given the delivery graph
+    And the traversal of
+      """
+      g.V().has("loc", P.typeOf(GType.POLYGON)).values("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | Midtown |
+      | North Brooklyn and Queens |
+      | Greenwich Town |
+      | Congestion Zone |
+      | Draft Zone |
+      | Chilled |
+      | Ambient |

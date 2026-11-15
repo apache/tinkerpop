@@ -23,7 +23,7 @@ import org.apache.tinkerpop.gremlin.structure.geo.Geometry;
 import org.apache.tinkerpop.gremlin.structure.geo.Model;
 
 /**
- * Utility class holding the Gremlin Console's {@code Geometry(...)} functions, which build a
+ * Utility class holding the Gremlin Console's {@code geometry(...)} functions, which build a
  * geometry from WKT or EWKT text. Each overload is a proxy to the matching
  * {@link Geometry#fromWkt(String)} factory.
  * <p>
@@ -41,7 +41,7 @@ public final class GeometryHelper {
      * @return the parsed geometry
      * @since 4.0.0
      */
-    public static Geometry Geometry(final String wktOrEwkt) {
+    public static Geometry geometry(final String wktOrEwkt) {
         return Geometry.fromWkt(wktOrEwkt);
     }
 
@@ -53,7 +53,7 @@ public final class GeometryHelper {
      * @return the parsed geometry
      * @since 4.0.0
      */
-    public static Geometry Geometry(final String wkt, final Model model) {
+    public static Geometry geometry(final String wkt, final Model model) {
         return Geometry.fromWkt(wkt, model);
     }
 
@@ -65,7 +65,7 @@ public final class GeometryHelper {
      * @return the parsed geometry
      * @since 4.0.0
      */
-    public static Geometry Geometry(final String wkt, final int srid) {
+    public static Geometry geometry(final String wkt, final int srid) {
         return Geometry.fromWkt(wkt, srid);
     }
 
@@ -82,7 +82,7 @@ public final class GeometryHelper {
      * @throws IllegalArgumentException if {@code model} is null or is any other {@code GType}
      * @since 4.0.0
      */
-    public static Geometry Geometry(final String wkt, final GType model) {
+    public static Geometry geometry(final String wkt, final GType model) {
         if (model == null) {
             throw new IllegalArgumentException("model cannot be null");
         }

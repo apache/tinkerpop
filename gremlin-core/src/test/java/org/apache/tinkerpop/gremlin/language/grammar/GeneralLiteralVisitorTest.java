@@ -29,6 +29,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.Read
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
+import org.apache.tinkerpop.gremlin.structure.geo.Geometry;
+import org.apache.tinkerpop.gremlin.structure.geo.Model;
 import org.apache.tinkerpop.gremlin.structure.io.pdt.PrimitivePDT;
 import org.apache.tinkerpop.gremlin.structure.io.pdt.CompositePDT;
 import org.hamcrest.Matchers;
@@ -1074,6 +1076,225 @@ public class GeneralLiteralVisitorTest {
             } catch (GremlinParserException gpe) {
                 assertThat(gpe.getMessage().contains("Invalid Binary literal:"), Matchers.is(true));
             }
+        }
+    }
+
+    @RunWith(Parameterized.class)
+    public static class ValidGeometryLiteralTest {
+        @Parameterized.Parameter(value = 0)
+        public String script;
+
+        @Parameterized.Parameter(value = 1)
+        public Geometry expected;
+
+        @Parameterized.Parameter(value = 2)
+        public int expectedSrid;
+
+        @Parameterized.Parameter(value = 3)
+        public Model expectedModel;
+
+        @Parameterized.Parameters(name = "{0}")
+        public static Iterable<Object[]> generateTestParameters() {
+            return Arrays.asList(new Object[][]{
+                    {"Geometry(\"POINT(1 2)\")", Geometry.fromWkt("POINT(1 2)"), 0, Model.CARTESIAN},
+                    {"Geometry(\"POINT(1 2)\", CARTESIAN)", Geometry.fromWkt("POINT(1 2)", Model.CARTESIAN), 0, Model.CARTESIAN},
+                    {"Geometry(\"POINT(1 2)\", Model.CARTESIAN)", Geometry.fromWkt("POINT(1 2)", Model.CARTESIAN), 0, Model.CARTESIAN},
+                    {"Geometry(\"POINT(1 2)\", GEOGRAPHIC)", Geometry.fromWkt("POINT(1 2)", Model.GEOGRAPHIC), 4326, Model.GEOGRAPHIC},
+                    {"Geometry(\"POINT(1 2)\", Model.GEOGRAPHIC)", Geometry.fromWkt("POINT(1 2)", Model.GEOGRAPHIC), 4326, Model.GEOGRAPHIC},
+                    {"Geometry(\"POINT(1 2)\", 0)", Geometry.fromWkt("POINT(1 2)", 0), 0, Model.CARTESIAN},
+                    {"Geometry(\"POINT(1 2)\", 4326)", Geometry.fromWkt("POINT(1 2)", 4326), 4326, Model.GEOGRAPHIC},
+                    {"Geometry(\"POINT(1 2)\", 4326L)", Geometry.fromWkt("POINT(1 2)", 4326), 4326, Model.GEOGRAPHIC},
+                    {"Geometry(\"POINT(1 2)\", 32618)", Geometry.fromWkt("POINT(1 2)", 32618), 32618, Model.OTHER},
+                    {"Geometry(\"POINT(1 2)\", 32618N)", Geometry.fromWkt("POINT(1 2)", 32618), 32618, Model.OTHER},
+                    // the largest SRID a 32-bit integer holds
+                    {"Geometry(\"POINT(1 2)\", 2147483647)", Geometry.fromWkt("POINT(1 2)", 2147483647), 2147483647, Model.OTHER},
+                    {"Geometry(\"SRID=4326;POINT(1 2)\")", Geometry.fromWkt("SRID=4326;POINT(1 2)"), 4326, Model.GEOGRAPHIC},
+                    {"Geometry(\"SRID=4326;POINT(1 2)\", GEOGRAPHIC)", Geometry.fromWkt("SRID=4326;POINT(1 2)", Model.GEOGRAPHIC), 4326, Model.GEOGRAPHIC},
+                    {"Geometry(\"SRID=4326;POINT(1 2)\", 4326)", Geometry.fromWkt("SRID=4326;POINT(1 2)", 4326), 4326, Model.GEOGRAPHIC},
+                    {"Geometry(\"POLYGON((0 0, 4 0, 4 4, 0 4, 0 0), (1 1, 1 2, 2 2, 2 1, 1 1))\")",
+                            Geometry.fromWkt("POLYGON((0 0, 4 0, 4 4, 0 4, 0 0), (1 1, 1 2, 2 2, 2 1, 1 1))"), 0, Model.CARTESIAN},
+                    // the lowercase spelling is an accepted alias of the same literal
+                    {"geometry(\"POINT(1 2)\")", Geometry.fromWkt("POINT(1 2)"), 0, Model.CARTESIAN},
+                    {"geometry(\"POINT(1 2)\", GEOGRAPHIC)", Geometry.fromWkt("POINT(1 2)", Model.GEOGRAPHIC), 4326, Model.GEOGRAPHIC},
+                    {"geometry(\"POINT(1 2)\", 32618)", Geometry.fromWkt("POINT(1 2)", 32618), 32618, Model.OTHER},
+            });
+        }
+
+        @Test
+        public void shouldParse() {
+            final GremlinLexer lexer = new GremlinLexer(CharStreams.fromString(script));
+            final GremlinParser parser = new GremlinParser(new CommonTokenStream(lexer));
+            final GremlinParser.GeometryLiteralContext ctx = parser.geometryLiteral();
+            final Object actual = new GenericLiteralVisitor(new GremlinAntlrToJava()).visitGeometryLiteral(ctx);
+            assertEquals(expected, actual);
+            assertEquals(expectedSrid, ((Geometry) actual).srid());
+            assertEquals(expectedModel, ((Geometry) actual).model());
+            assertEquals(expected.hasZ(), ((Geometry) actual).hasZ());
+        }
+    }
+
+    public static class InvalidGeometryLiteralTest {
+        private static void visit(final String script) {
+            final GremlinLexer lexer = new GremlinLexer(CharStreams.fromString(script));
+            final GremlinParser parser = new GremlinParser(new CommonTokenStream(lexer));
+            final GremlinParser.GeometryLiteralContext ctx = parser.geometryLiteral();
+            new GenericLiteralVisitor(new GremlinAntlrToJava()).visitGeometryLiteral(ctx);
+        }
+
+        @Test
+        public void shouldFailOnEwktSridConflictingWithModel() {
+            try {
+                visit("Geometry(\"SRID=4326;POINT(1 2)\", CARTESIAN)");
+                fail("An EWKT SRID that conflicts with the model should have thrown exception");
+            } catch (GremlinParserException gpe) {
+                assertThat(gpe.getMessage().contains("EWKT SRID 4326 conflicts with model CARTESIAN"), Matchers.is(true));
+            }
+        }
+
+        @Test
+        public void shouldFailOnEwktSridConflictingWithArgumentSrid() {
+            try {
+                visit("Geometry(\"SRID=4326;POINT(1 2)\", 32618)");
+                fail("An EWKT SRID that conflicts with the argument SRID should have thrown exception");
+            } catch (GremlinParserException gpe) {
+                assertThat(gpe.getMessage().contains("EWKT SRID 4326 conflicts with argument SRID 32618"), Matchers.is(true));
+            }
+        }
+
+        @Test
+        public void shouldFailOnZeroEwktSridConflictingWithModel() {
+            try {
+                visit("Geometry(\"SRID=0;POINT(1 2)\", GEOGRAPHIC)");
+                fail("An EWKT SRID of 0 that conflicts with the model should have thrown exception");
+            } catch (GremlinParserException gpe) {
+                assertThat(gpe.getMessage().contains("EWKT SRID 0 conflicts with model GEOGRAPHIC"), Matchers.is(true));
+            }
+        }
+
+        @Test
+        public void shouldFailOnMissingOrdinate() {
+            try {
+                visit("Geometry(\"POINT(1)\")");
+                fail("A point with one ordinate should have thrown exception");
+            } catch (GremlinParserException gpe) {
+                assertThat(gpe.getMessage().contains("Expected number at position"), Matchers.is(true));
+            }
+        }
+
+        @Test
+        public void shouldFailOnUnclosedRing() {
+            try {
+                visit("Geometry(\"POLYGON((0 0, 4 0, 4 4, 0 4))\")");
+                fail("An unclosed ring should have thrown exception");
+            } catch (GremlinParserException gpe) {
+                assertThat(gpe.getMessage().contains("Shell ring must be closed"), Matchers.is(true));
+            }
+        }
+
+        @Test
+        public void shouldFailOnUnsupportedGeometryType() {
+            try {
+                visit("Geometry(\"CIRCULARSTRING(0 0, 1 1, 2 0)\")");
+                fail("An unsupported geometry type should have thrown exception");
+            } catch (GremlinParserException gpe) {
+                assertThat(gpe.getMessage().startsWith("Invalid Geometry literal:"), Matchers.is(true));
+                assertThat(gpe.getMessage().contains("Unsupported geometry type"), Matchers.is(true));
+            }
+        }
+
+        @Test
+        public void shouldFailOnSridOutsideIntRange() {
+            try {
+                visit("Geometry(\"POINT(1 2)\", 2147483648)");
+                fail("An SRID outside the 32-bit integer range should have thrown exception");
+            } catch (GremlinParserException gpe) {
+                assertThat(gpe.getMessage().contains("SRID is out of range for a 32-bit integer"), Matchers.is(true));
+            }
+        }
+
+        @Test
+        public void shouldFailOnSridOutsideLongRange() {
+            try {
+                visit("Geometry(\"POINT(1 2)\", 18446744073709555942)");
+                fail("An SRID outside the 64-bit integer range should have thrown exception");
+            } catch (GremlinParserException gpe) {
+                assertThat(gpe.getMessage().contains("SRID is out of range for a 32-bit integer"), Matchers.is(true));
+            }
+        }
+
+        @Test
+        public void shouldFailOnSridBelowIntRange() {
+            try {
+                visit("Geometry(\"POINT(1 2)\", -2147483649)");
+                fail("An SRID below the 32-bit integer range should have thrown exception");
+            } catch (GremlinParserException gpe) {
+                assertThat(gpe.getMessage().contains("SRID is out of range for a 32-bit integer"), Matchers.is(true));
+            }
+        }
+    }
+
+    public static class GeometryLiteralInCollectionTest {
+        private static Object visitGenericLiteral(final String script) {
+            final GremlinLexer lexer = new GremlinLexer(CharStreams.fromString(script));
+            final GremlinParser parser = new GremlinParser(new CommonTokenStream(lexer));
+            final GremlinParser.GenericLiteralContext ctx = parser.genericLiteral();
+            return new GenericLiteralVisitor(new GremlinAntlrToJava()).visitGenericLiteral(ctx);
+        }
+
+        @Test
+        public void shouldParseGeometryInList() {
+            final Object literal = visitGenericLiteral("[Geometry(\"POINT(1 2)\"), Geometry(\"LINESTRING(0 0, 1 1)\")]");
+            assertEquals(Arrays.asList(Geometry.fromWkt("POINT(1 2)"), Geometry.fromWkt("LINESTRING(0 0, 1 1)")), literal);
+        }
+
+        @Test
+        public void shouldParseGeometryInSet() {
+            final Object literal = visitGenericLiteral("{Geometry(\"POINT(1 2)\")}");
+            assertEquals(new HashSet<>(Arrays.asList(Geometry.fromWkt("POINT(1 2)"))), literal);
+        }
+
+        @Test
+        public void shouldParseGeometryAsMapValue() {
+            final Object literal = visitGenericLiteral("[\"loc\":Geometry(\"POINT(1 2)\")]");
+            final Map<Object, Object> expected = new HashMap<>();
+            expected.put("loc", Geometry.fromWkt("POINT(1 2)"));
+            assertEquals(expected, literal);
+        }
+
+        @Test
+        public void shouldParseGeometryAsMapKey() {
+            final Object literal = visitGenericLiteral("[Geometry(\"POINT(1 2)\", 4326):\"home\"]");
+            final Map<Object, Object> expected = new HashMap<>();
+            expected.put(Geometry.fromWkt("POINT(1 2)", 4326), "home");
+            assertEquals(expected, literal);
+        }
+
+        @Test
+        public void shouldParseParenthesizedGeometryAsMapKey() {
+            final Object literal = visitGenericLiteral("[(Geometry(\"POINT(1 2)\")):\"home\"]");
+            final Map<Object, Object> expected = new HashMap<>();
+            expected.put(Geometry.fromWkt("POINT(1 2)"), "home");
+            assertEquals(expected, literal);
+        }
+
+        @Test
+        public void shouldParseGeometryKeywordsAsMapKeys() {
+            final Object literal = visitGenericLiteral("[Geometry:1, point:2, lineString:3, geographic:4, geometry:5]");
+            final Map<Object, Object> expected = new HashMap<>();
+            expected.put("Geometry", 1);
+            expected.put("point", 2);
+            expected.put("lineString", 3);
+            expected.put("geographic", 4);
+            expected.put("geometry", 5);
+            assertEquals(expected, literal);
+        }
+
+        @Test
+        public void shouldParseLowercaseGeometryAsMapKey() {
+            final Object literal = visitGenericLiteral("[geometry(\"POINT(1 2)\", 4326):\"home\"]");
+            final Map<Object, Object> expected = new HashMap<>();
+            expected.put(Geometry.fromWkt("POINT(1 2)", 4326), "home");
+            assertEquals(expected, literal);
         }
     }
 

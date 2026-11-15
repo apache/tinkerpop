@@ -100,9 +100,9 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
 
     /**
      * Constructs a {@code P} with multiple child traversals resolved at runtime against the current traverser.
-     * Only valid for collection predicates ({@link Contains#within}, {@link Contains#without}). Each traversal
-     * contributes its first result only. The literals and variables are left at their defaults and will be
-     * populated when {@link #resolve(Traverser.Admin)} is called.
+     * Only valid for collection predicates ({@link Contains#within}, {@link Contains#without}) and for
+     * {@link Geo#geoWithinDistance}. Each traversal contributes its first result only. The literals and variables
+     * are left at their defaults and will be populated when {@link #resolve(Traverser.Admin)} is called.
      *
      * @since 4.0.0
      */

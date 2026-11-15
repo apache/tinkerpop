@@ -106,6 +106,10 @@ public class TestFiles {
             if (useGraphSON)
                 throw new RuntimeException("The air-routes graph is only available as Gryo");
             return PATHS.get("air-routes" + type);
+        } else if (graphData.equals(LoadGraphWith.GraphData.DELIVERY)) {
+            // the delivery graph holds geometry values, which no serialization format can write to a data file
+            throw new UnsupportedOperationException(
+                    "There is no data file for the delivery graph since its geometry values cannot be serialized");
         } else
             throw new RuntimeException("Could not load graph with " + graphData);
     }

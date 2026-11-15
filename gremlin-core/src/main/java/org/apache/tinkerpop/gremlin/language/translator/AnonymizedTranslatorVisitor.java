@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.language.translator;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.apache.tinkerpop.gremlin.language.antlr.GremlinParser;
+import org.apache.tinkerpop.gremlin.structure.geo.Geometry;
 import org.apache.tinkerpop.gremlin.structure.io.pdt.PrimitivePDT;
 import org.apache.tinkerpop.gremlin.structure.io.pdt.CompositePDT;
 
@@ -205,6 +206,11 @@ public class AnonymizedTranslatorVisitor extends TranslateVisitor {
     @Override
     public Void visitBinaryLiteral(final GremlinParser.BinaryLiteralContext ctx) {
         return anonymize(ctx, ByteBuffer.class);
+    }
+
+    @Override
+    public Void visitGeometryLiteral(final GremlinParser.GeometryLiteralContext ctx) {
+        return anonymize(ctx, Geometry.class);
     }
 
     @Override

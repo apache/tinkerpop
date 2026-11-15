@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.language.translator;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.apache.tinkerpop.gremlin.language.antlr.GremlinParser;
 import org.apache.tinkerpop.gremlin.language.antlr.GremlinParser.GenericLiteralVarargsContext;
+import org.apache.tinkerpop.gremlin.language.grammar.GenericLiteralVisitor;
 import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceVertex;
 
 /**
@@ -167,6 +168,12 @@ public class GroovyTranslateVisitor extends TranslateVisitor {
             sb.append(ctx.stringLiteral(1).getText());
             sb.append(")");
         }
+        return null;
+    }
+
+    @Override
+    public Void visitGeometryLiteral(final GremlinParser.GeometryLiteralContext ctx) {
+        appendGeometryFromWkt(GenericLiteralVisitor.parseGeometry(ctx));
         return null;
     }
 

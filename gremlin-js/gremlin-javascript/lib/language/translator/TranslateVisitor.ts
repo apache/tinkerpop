@@ -30,6 +30,16 @@ import { GremlinLexer } from '../grammar/GremlinLexer.js';
  */
 export default class TranslateVisitor {
 
+    /**
+     * The names of the `GType` entries that identify a geometry, which includes the model based
+     * `CARTESIAN` and `GEOGRAPHIC` entries. Kept in step with the geometry entries of
+     * org.apache.tinkerpop.gremlin.process.traversal.GType.
+     */
+    protected static readonly GEOMETRY_GTYPE_NAMES: ReadonlySet<string> = new Set([
+        'CARTESIAN', 'GEOGRAPHIC', 'GEOMETRY', 'GEOMETRYCOLLECTION', 'LINESTRING',
+        'MULTILINESTRING', 'MULTIPOINT', 'MULTIPOLYGON', 'POINT', 'POLYGON',
+    ]);
+
     protected readonly graphTraversalSourceName: string;
     protected readonly sb: string[] = [];
     protected readonly parameters: Set<string> = new Set();
@@ -268,6 +278,55 @@ export default class TranslateVisitor {
         this.appendExplicitNaming(ctx.getText(), 'GType');
     }
 
+    /**
+     * Extracts the name of the type from a `GType` which may be written with or without the `GType`
+     * prefix and in either the camel case or the upper case form, as in `lineString` and `LINESTRING`.
+     */
+    protected static extractGTypeName(ctx: any): string {
+        const split: string[] = ctx.getText().split('.');
+        return split[split.length - 1];
+    }
+
+    /**
+     * Determines if a `GType` names a geometry type, which the translators that have no geometry support use
+     * to reject the type.
+     */
+    protected static isGeometryGType(ctx: any): boolean {
+        return TranslateVisitor.GEOMETRY_GTYPE_NAMES.has(TranslateVisitor.extractGTypeName(ctx).toUpperCase());
+    }
+
+    /**
+     * Appends `Geometry.fromWkt("...")`, the form the JVM languages use since they have a WKT reader, with
+     * `Model.GEOGRAPHIC` or the SRID as a second argument where the geometry carries one. The WKT is written
+     * as the Gremlin spells it, since this translator has no WKT reader of its own to normalize it through.
+     * WKT holds no quote or backslash, so the text needs no escaping.
+     */
+    protected appendGeometryFromWkt(ctx: any): void {
+        this.sb.push('Geometry.fromWkt("');
+        this.sb.push(TranslateVisitor.removeFirstAndLastCharacters(ctx.stringLiteral().getText()));
+        this.sb.push('"');
+
+        const modelCtx = ctx.traversalModel();
+        if (modelCtx != null) {
+            const modelName: string = modelCtx.getText().split('.').pop().toUpperCase();
+            // CARTESIAN is the default model and so goes unwritten
+            if (modelName === 'GEOGRAPHIC') {
+                this.sb.push(', Model.GEOGRAPHIC');
+            }
+        } else if (ctx.integerLiteral() != null) {
+            const srid = parseSridLiteral(ctx.integerLiteral().getText());
+            // SRID 0 is CARTESIAN and SRID 4326 is GEOGRAPHIC, so those name their model instead
+            if (srid === GEOGRAPHIC_SRID) {
+                this.sb.push(', Model.GEOGRAPHIC');
+            } else if (srid !== CARTESIAN_SRID) {
+                this.sb.push(', ');
+                this.sb.push(String(srid));
+            }
+        }
+
+        this.sb.push(')');
+    }
+
     visitTraversalPredicate(ctx: any): void {
         switch (ctx.getChildCount()) {
             case 1:
@@ -306,6 +365,9 @@ export default class TranslateVisitor {
                 name === 'GenericArgumentVarargsContext' ||
                 name === 'StringArgumentContext' ||
                 name === 'StringLiteralContext' ||
+                name === 'GeometryArgumentContext' ||
+                name === 'NumericArgumentContext' ||
+                name === 'NestedTraversalContext' ||
                 name === 'TraversalGTypeContext' ||
                 name === 'TraversalPredicateContext') {
                 children.push(child);
@@ -343,6 +405,9 @@ export default class TranslateVisitor {
     visitTraversalPredicate_notEndingWith(ctx: any): void { this.visitP(ctx, 'TextP', 'notEndingWith'); }
     visitTraversalPredicate_regex(ctx: any): void { this.visitP(ctx, 'TextP', 'regex'); }
     visitTraversalPredicate_notRegex(ctx: any): void { this.visitP(ctx, 'TextP', 'notRegex'); }
+    visitTraversalPredicate_geoWithin(ctx: any): void { this.visitP(ctx, 'GeoP', 'geoWithin'); }
+    visitTraversalPredicate_geoContains(ctx: any): void { this.visitP(ctx, 'GeoP', 'geoContains'); }
+    visitTraversalPredicate_geoWithinDistance(ctx: any): void { this.visitP(ctx, 'GeoP', 'geoWithinDistance'); }
 
     visitBooleanArgument(ctx: any): void {
         if (ctx.booleanLiteral() != null) {
@@ -355,6 +420,14 @@ export default class TranslateVisitor {
     visitGenericArgument(ctx: any): void {
         if (ctx.genericLiteral() != null) {
             this.visitGenericLiteral(ctx.genericLiteral());
+        } else {
+            this.visitVariable(ctx.variable());
+        }
+    }
+
+    visitGeometryArgument(ctx: any): void {
+        if (ctx.geometryLiteral() != null) {
+            this.visitGeometryLiteral(ctx.geometryLiteral());
         } else {
             this.visitVariable(ctx.variable());
         }
@@ -406,6 +479,19 @@ export default class TranslateVisitor {
         this.sb.push(ctx.getText());
     }
 
+    visitGeometryLiteral(ctx: any): void {
+        // the keyword and the arguments are echoed as written, which keeps the "Geometry" and "geometry"
+        // spellings apart, while the arguments are separated the way every other argument list is
+        this.sb.push(ctx.getChild(0).getText());
+        this.appendStepOpen();
+        this.sb.push(ctx.stringLiteral().getText());
+        if (ctx.COMMA() != null) {
+            this.appendArgumentSeparator();
+            this.sb.push(ctx.traversalModel() != null ? ctx.traversalModel().getText() : ctx.integerLiteral().getText());
+        }
+        this.appendStepClose();
+    }
+
     visitStringLiteral(ctx: any): void {
         const text = TranslateVisitor.removeFirstAndLastCharacters(ctx.getText());
         this.handleStringLiteralText(text);
@@ -449,4 +535,39 @@ export default class TranslateVisitor {
     visitMapEntry(ctx: any): void {
         this.visitChildren(ctx);
     }
+}
+
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+
+/** The SRID of the CARTESIAN model. */
+const CARTESIAN_SRID = 0;
+
+/** The SRID of the GEOGRAPHIC model, which is WGS84. */
+const GEOGRAPHIC_SRID = 4326;
+
+/**
+ * Reads the SRID of a geometry literal, which the grammar writes in the decimal, hexadecimal or octal
+ * form, with underscore separators and an optional integer type suffix.
+ */
+function parseSridLiteral(text: string): number {
+    let digits = text.replace(/_/g, '');
+
+    let sign = 1;
+    if (digits.startsWith('-')) {
+        sign = -1;
+        digits = digits.slice(1);
+    } else if (digits.startsWith('+')) {
+        digits = digits.slice(1);
+    }
+
+    // a hexadecimal literal keeps a trailing b or s, which the lexer reads as a digit rather than a suffix
+    if (/^0[xX]/.test(digits)) {
+        return sign * parseInt(digits.slice(2).replace(/[ilnILN]$/, ''), 16);
+    }
+
+    digits = digits.replace(/[bsilnBSILN]$/, '');
+    if (/^0[0-7]+$/.test(digits)) {
+        return sign * parseInt(digits.slice(1), 8);
+    }
+    return sign * parseInt(digits, 10);
 }

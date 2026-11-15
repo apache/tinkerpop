@@ -177,3 +177,42 @@ Feature: Equality
       | d[1].n |
       | d[1].m |
       | d[1].b |
+
+  @GraphComputerVerificationInjectionNotSupported @DataGeometry
+  Scenario: Geometry_eqXpointX
+    Given the empty graph
+    And using the parameter xx1 defined as "geo[POINT(1 2)]"
+    And the traversal of
+      """
+      g.inject([Geometry("POINT(1 2)"),Geometry("POINT(1 3)"),Geometry("POINT(1 2)", GEOGRAPHIC)]).unfold().where(__.is(xx1))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | geo[POINT(1 2)] |
+
+  @GraphComputerVerificationInjectionNotSupported @DataGeometry
+  Scenario: Geometry_eqXnegativeZeroX
+    Given the empty graph
+    And using the parameter xx1 defined as "geo[POINT(0 0)]"
+    And the traversal of
+      """
+      g.inject([Geometry("POINT(-0 0)")]).unfold().where(__.is(xx1))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | geo[POINT(-0 0)] |
+
+  @GraphComputerVerificationInjectionNotSupported @DataGeometry
+  Scenario: Geometry_eqXemptyPointX
+    Given the empty graph
+    And using the parameter xx1 defined as "geo[POINT EMPTY]"
+    And the traversal of
+      """
+      g.inject([Geometry("POINT EMPTY"),Geometry("POLYGON EMPTY")]).unfold().where(__.is(xx1))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | geo[POINT EMPTY] |

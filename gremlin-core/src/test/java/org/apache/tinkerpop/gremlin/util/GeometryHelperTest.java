@@ -34,36 +34,36 @@ public class GeometryHelperTest {
 
     @Test
     public void shouldProxyWkt() {
-        assertEquals(Geometry.fromWkt(POINT), GeometryHelper.Geometry(POINT));
-        assertEquals(Geometry.fromWkt("SRID=4326;" + POINT), GeometryHelper.Geometry("SRID=4326;" + POINT));
+        assertEquals(Geometry.fromWkt(POINT), GeometryHelper.geometry(POINT));
+        assertEquals(Geometry.fromWkt("SRID=4326;" + POINT), GeometryHelper.geometry("SRID=4326;" + POINT));
     }
 
     @Test
     public void shouldProxyWktWithModel() {
-        assertEquals(Geometry.fromWkt(POINT, Model.CARTESIAN), GeometryHelper.Geometry(POINT, Model.CARTESIAN));
-        assertEquals(Geometry.fromWkt(POINT, Model.GEOGRAPHIC), GeometryHelper.Geometry(POINT, Model.GEOGRAPHIC));
+        assertEquals(Geometry.fromWkt(POINT, Model.CARTESIAN), GeometryHelper.geometry(POINT, Model.CARTESIAN));
+        assertEquals(Geometry.fromWkt(POINT, Model.GEOGRAPHIC), GeometryHelper.geometry(POINT, Model.GEOGRAPHIC));
     }
 
     @Test
     public void shouldProxyWktWithSrid() {
-        assertEquals(Geometry.fromWkt(POINT, 32618), GeometryHelper.Geometry(POINT, 32618));
-        assertEquals(32618, GeometryHelper.Geometry(POINT, 32618).srid());
+        assertEquals(Geometry.fromWkt(POINT, 32618), GeometryHelper.geometry(POINT, 32618));
+        assertEquals(32618, GeometryHelper.geometry(POINT, 32618).srid());
     }
 
     @Test
     public void shouldMapGTypeToModel() {
-        assertEquals(Geometry.fromWkt(POINT, Model.CARTESIAN), GeometryHelper.Geometry(POINT, GType.CARTESIAN));
-        assertEquals(Model.CARTESIAN, GeometryHelper.Geometry(POINT, GType.CARTESIAN).model());
+        assertEquals(Geometry.fromWkt(POINT, Model.CARTESIAN), GeometryHelper.geometry(POINT, GType.CARTESIAN));
+        assertEquals(Model.CARTESIAN, GeometryHelper.geometry(POINT, GType.CARTESIAN).model());
 
-        assertEquals(Geometry.fromWkt(POLYGON, Model.GEOGRAPHIC), GeometryHelper.Geometry(POLYGON, GType.GEOGRAPHIC));
-        assertEquals(Model.GEOGRAPHIC, GeometryHelper.Geometry(POLYGON, GType.GEOGRAPHIC).model());
-        assertEquals(4326, GeometryHelper.Geometry(POLYGON, GType.GEOGRAPHIC).srid());
+        assertEquals(Geometry.fromWkt(POLYGON, Model.GEOGRAPHIC), GeometryHelper.geometry(POLYGON, GType.GEOGRAPHIC));
+        assertEquals(Model.GEOGRAPHIC, GeometryHelper.geometry(POLYGON, GType.GEOGRAPHIC).model());
+        assertEquals(4326, GeometryHelper.geometry(POLYGON, GType.GEOGRAPHIC).srid());
     }
 
     @Test
     public void shouldRejectGTypeThatIsNotAModel() {
         try {
-            GeometryHelper.Geometry(POINT, GType.POINT);
+            GeometryHelper.geometry(POINT, GType.POINT);
             fail("Expected IAE for a GType that does not name a coordinate model");
         } catch (IllegalArgumentException e) {
             assertTrue("Message should name the accepted values, was: " + e.getMessage(),
@@ -78,7 +78,7 @@ public class GeometryHelperTest {
     @Test
     public void shouldRejectNullGType() {
         try {
-            GeometryHelper.Geometry(POINT, (GType) null);
+            GeometryHelper.geometry(POINT, (GType) null);
             fail("Expected IAE for a null GType");
         } catch (IllegalArgumentException e) {
             assertTrue("Message should name the null model, was: " + e.getMessage(),

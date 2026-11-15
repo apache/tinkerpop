@@ -87,6 +87,7 @@ public class ReferenceGrammarTest extends AbstractGrammarTest {
         add(Pair.with(Pattern.compile("m\\[(.*)\\]"), (k,v) -> v.replace('{','[').replace('}', ']')));
         add(Pair.with(Pattern.compile("t\\[(.*)\\]"), (k,v) -> String.format("T.%s", v)));
         add(Pair.with(Pattern.compile("D\\[(.*)\\]"), (k,v) -> String.format("Direction.%s", v)));
+        add(Pair.with(Pattern.compile("geo\\[(.*)\\]"), (k,v) -> String.format("Geometry(\"%s\")", v)));
 
         // the grammar doesn't support all the Gremlin we have in the gherkin set, so try to coerce it into
         // something that can be parsed so that we get maximum exercise over the parser itself.

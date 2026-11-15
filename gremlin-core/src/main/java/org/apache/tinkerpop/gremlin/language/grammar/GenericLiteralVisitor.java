@@ -28,6 +28,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
+import org.apache.tinkerpop.gremlin.structure.geo.Geometry;
+import org.apache.tinkerpop.gremlin.structure.geo.Model;
 import org.apache.tinkerpop.gremlin.structure.io.pdt.PrimitivePDT;
 import org.apache.tinkerpop.gremlin.structure.io.pdt.CompositePDT;
 import org.apache.tinkerpop.gremlin.util.DatetimeHelper;
@@ -56,6 +58,13 @@ public class GenericLiteralVisitor extends DefaultGremlinBaseVisitor<Object> {
      * Limit for integer range result count. It is used to avoid OOM in JVM.
      */
     public static final int TOTAL_INTEGER_RANGE_RESULT_COUNT_LIMIT = 1_000_000;
+
+    /**
+     * Serves {@link #parseGeometry(GremlinParser.GeometryLiteralContext)}, which visits only the
+     * string and integer literals of a geometry literal and so needs no {@link Traversal}.
+     */
+    private static final GenericLiteralVisitor LITERAL_ONLY_VISITOR = new GenericLiteralVisitor(null);
+
     protected final GremlinAntlrToJava antlr;
 
     public GenericLiteralVisitor(final GremlinAntlrToJava antlr) {
@@ -359,6 +368,8 @@ public class GenericLiteralVisitor extends DefaultGremlinBaseVisitor<Object> {
                 key = visitGenericSetLiteral((GremlinParser.GenericSetLiteralContext) kctx);
             } else if (kctx instanceof GremlinParser.GenericMapLiteralContext) {
                 key = visitGenericMapLiteral((GremlinParser.GenericMapLiteralContext) kctx);
+            } else if (kctx instanceof GremlinParser.GeometryLiteralContext) {
+                key = visitGeometryLiteral((GremlinParser.GeometryLiteralContext) kctx);
             } else if (kctx instanceof GremlinParser.KeywordContext) {
                 final String keywordText = ((GremlinParser.KeywordContext) kctx).getText();
                 key = keywordText.equals("null") ? null : keywordText;
@@ -586,6 +597,40 @@ public class GenericLiteralVisitor extends DefaultGremlinBaseVisitor<Object> {
         } catch (IllegalArgumentException e) {
             throw new GremlinParserException(
                     String.format("Invalid Binary literal: '%s' is not valid base64", base64));
+        }
+    }
+
+    /**
+     * Parses a geometry literal into its value, for callers that hold a context but no
+     * {@link Traversal}, such as the language translators.
+     */
+    public static Geometry parseGeometry(final GremlinParser.GeometryLiteralContext ctx) {
+        return (Geometry) LITERAL_ONLY_VISITOR.visitGeometryLiteral(ctx);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Object visitGeometryLiteral(final GremlinParser.GeometryLiteralContext ctx) {
+        final String wkt = (String) this.visitStringLiteral(ctx.stringLiteral());
+        try {
+            if (ctx.traversalModel() != null) {
+                return Geometry.fromWkt(wkt, TraversalEnumParser.parseTraversalEnumFromContext(Model.class, ctx.traversalModel()));
+            }
+            if (ctx.integerLiteral() != null) {
+                final Number srid = (Number) this.visitIntegerLiteral(ctx.integerLiteral());
+                // an integer literal may be any width up to BigInteger, so the range is checked exactly
+                final BigInteger sridValue = srid instanceof BigInteger
+                        ? (BigInteger) srid : BigInteger.valueOf(srid.longValue());
+                if (sridValue.bitLength() > 31) {
+                    throw new IllegalArgumentException("SRID is out of range for a 32-bit integer");
+                }
+                return Geometry.fromWkt(wkt, sridValue.intValue());
+            }
+            return Geometry.fromWkt(wkt);
+        } catch (IllegalArgumentException iae) {
+            throw new GremlinParserException("Invalid Geometry literal: " + iae.getMessage(), iae);
         }
     }
 

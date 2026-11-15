@@ -167,6 +167,26 @@ public class GoTranslateVisitor extends AbstractTranslateVisitor {
     }
 
     @Override
+    public Void visitGeometryLiteral(final GremlinParser.GeometryLiteralContext ctx) {
+        throw new TranslatorException("Go does not support geometry literals");
+    }
+
+    @Override
+    public Void visitTraversalPredicate_geoWithin(final GremlinParser.TraversalPredicate_geoWithinContext ctx) {
+        throw new TranslatorException("Go does not support geo predicates");
+    }
+
+    @Override
+    public Void visitTraversalPredicate_geoContains(final GremlinParser.TraversalPredicate_geoContainsContext ctx) {
+        throw new TranslatorException("Go does not support geo predicates");
+    }
+
+    @Override
+    public Void visitTraversalPredicate_geoWithinDistance(final GremlinParser.TraversalPredicate_geoWithinDistanceContext ctx) {
+        throw new TranslatorException("Go does not support geo predicates");
+    }
+
+    @Override
     public Void visitGenericSetLiteral(final GremlinParser.GenericSetLiteralContext ctx) {
         sb.append(GO_PACKAGE_NAME);
         sb.append("NewSimpleSet(");
@@ -248,6 +268,9 @@ public class GoTranslateVisitor extends AbstractTranslateVisitor {
 
     @Override
     public Void visitTraversalGType(GremlinParser.TraversalGTypeContext ctx) {
+        if (isGeometryGType(ctx))
+            throw new TranslatorException("Go does not support geometry types");
+
         final String[] split = ctx.getText().split("\\.");
         sb.append(GO_PACKAGE_NAME);
         sb.append(processGremlinSymbol(split[0])).append(".");

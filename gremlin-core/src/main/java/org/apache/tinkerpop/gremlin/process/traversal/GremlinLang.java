@@ -30,6 +30,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversal;
 import org.apache.tinkerpop.gremlin.structure.Column;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.geo.Geometry;
 import org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefined;
 import org.apache.tinkerpop.gremlin.structure.io.pdt.PrimitivePDTAdapter;
 import org.apache.tinkerpop.gremlin.structure.io.pdt.PrimitivePDT;
@@ -47,6 +48,7 @@ import java.nio.ByteBuffer;
 import java.time.Duration;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -191,6 +193,13 @@ public class GremlinLang implements Cloneable, Serializable {
             return String.format("Binary(\"%s\")", Base64.getEncoder().encodeToString((byte[]) arg));
         }
 
+        if (arg instanceof Geometry) {
+            // WKT contains no quotes or backslashes, so the text needs no escaping. The SRID is
+            // always written as an int so that every model round trips, including OTHER.
+            final Geometry geometry = (Geometry) arg;
+            return "Geometry(\"" + geometry.toWKT() + "\"," + geometry.srid() + ")";
+        }
+
         if (arg instanceof PrimitivePDT) {
             final PrimitivePDT pdt = (PrimitivePDT) arg;
             return "PDT(" + argAsString(pdt.getName()) + "," + argAsString(pdt.getValue()) + ")";
@@ -332,6 +341,21 @@ public class GremlinLang implements Cloneable, Serializable {
                 sb.append(argAsString(p.getChildTraversals().get(0)));
             } else {
                 sb.append(argAsString(p.getValue()));
+            }
+        } else if (p instanceof GeoP) {
+            // geoWithinDistance holds [geometry, distance], so write each as its own argument
+            sb.append("GeoP.").append(p.getPredicateName()).append("(");
+            final List<?> arguments;
+            if (p.hasTraversal()) {
+                arguments = p.getChildTraversals();
+            } else if (p.getValue() instanceof List) {
+                arguments = (List<?>) p.getValue();
+            } else {
+                arguments = Collections.singletonList(p.getValue());
+            }
+            for (int i = 0; i < arguments.size(); i++) {
+                if (i > 0) sb.append(",");
+                sb.append(argAsString(arguments.get(i)));
             }
         } else if (p instanceof ConnectiveP) {
             // ConnectiveP gets some special handling because it's reduced to and(P, P, P) and we want it

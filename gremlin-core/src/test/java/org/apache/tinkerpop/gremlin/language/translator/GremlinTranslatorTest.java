@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.language.translator;
 
+import org.apache.tinkerpop.gremlin.language.grammar.GremlinParserException;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
@@ -31,6 +32,7 @@ import java.util.List;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
 
 @RunWith(Enclosed.class)
 public class GremlinTranslatorTest {
@@ -107,6 +109,47 @@ public class GremlinTranslatorTest {
         @Test
         public void shouldExtractVariablesFromPython() {
             final Translation translation = GremlinTranslator.translate(query, Translator.PYTHON);
+            assertEquals(expectedVariables.size(), translation.getParameters().size());
+            assertThat(translation.getParameters().toArray(), arrayContainingInAnyOrder(expectedVariables.toArray()));
+        }
+    }
+
+    /**
+     * A geo predicate takes its arguments as variables, which are extracted by the translators that support geo.
+     */
+    @RunWith(Parameterized.class)
+    public static class GeoVariableTest {
+
+        @Parameterized.Parameter(value = 0)
+        public String query;
+
+        @Parameterized.Parameter(value = 1)
+        public List<String> expectedVariables;
+
+        @Parameterized.Parameters(name = "{0}")
+        public static Collection<Object[]> data() {
+            return Arrays.asList(new Object[][]{
+                    {"g.V().has('loc', geoWithin(x))", Collections.singletonList("x")},
+                    {"g.V().has('loc', geoWithinDistance(x, y))", Arrays.asList("x", "y")},
+            });
+        }
+
+        @Test
+        public void shouldExtractVariablesFromCanonical() {
+            assertVariables(GremlinTranslator.translate(query, Translator.CANONICAL));
+        }
+
+        @Test
+        public void shouldExtractVariablesFromGroovy() {
+            assertVariables(GremlinTranslator.translate(query, Translator.GROOVY));
+        }
+
+        @Test
+        public void shouldExtractVariablesFromJava() {
+            assertVariables(GremlinTranslator.translate(query, Translator.JAVA));
+        }
+
+        private void assertVariables(final Translation translation) {
             assertEquals(expectedVariables.size(), translation.getParameters().size());
             assertThat(translation.getParameters().toArray(), arrayContainingInAnyOrder(expectedVariables.toArray()));
         }
@@ -794,6 +837,51 @@ public class GremlinTranslatorTest {
                             null,
                             "g.inject(123).is(P.typeOf(GType.uuid))",
                             "g.inject(123).is_(P.type_of(GType.UUID))"},
+                    {"g.inject(123).is(P.typeOf(GType.lineString))",
+                            "g.inject(123).is(P.typeOf(GType.LINESTRING))",
+                            "g.inject(number0).is(P.typeOf(GType.LINESTRING))",
+                            ".NET does not support geometry types",
+                            "Go does not support geometry types",
+                            "g.inject(123).is(P.typeOf(GType.LINESTRING))",
+                            "g.inject(123).is(P.typeOf(GType.LINESTRING))",
+                            "Javascript does not support geometry types",
+                            "Python does not support geometry types"},
+                    {"g.inject(123).is(P.typeOf(cartesian))",
+                            "g.inject(123).is(P.typeOf(GType.CARTESIAN))",
+                            "g.inject(number0).is(P.typeOf(GType.CARTESIAN))",
+                            ".NET does not support geometry types",
+                            "Go does not support geometry types",
+                            "g.inject(123).is(P.typeOf(GType.CARTESIAN))",
+                            "g.inject(123).is(P.typeOf(GType.CARTESIAN))",
+                            "Javascript does not support geometry types",
+                            "Python does not support geometry types"},
+                    {"g.inject(123).is(P.typeOf(GType.geometryCollection))",
+                            "g.inject(123).is(P.typeOf(GType.GEOMETRYCOLLECTION))",
+                            "g.inject(number0).is(P.typeOf(GType.GEOMETRYCOLLECTION))",
+                            ".NET does not support geometry types",
+                            "Go does not support geometry types",
+                            "g.inject(123).is(P.typeOf(GType.GEOMETRYCOLLECTION))",
+                            "g.inject(123).is(P.typeOf(GType.GEOMETRYCOLLECTION))",
+                            "Javascript does not support geometry types",
+                            "Python does not support geometry types"},
+                    {"g.inject(123).is(P.typeOf(lineString))",
+                            "g.inject(123).is(P.typeOf(GType.LINESTRING))",
+                            "g.inject(number0).is(P.typeOf(GType.LINESTRING))",
+                            ".NET does not support geometry types",
+                            "Go does not support geometry types",
+                            "g.inject(123).is(P.typeOf(GType.LINESTRING))",
+                            "g.inject(123).is(P.typeOf(GType.LINESTRING))",
+                            "Javascript does not support geometry types",
+                            "Python does not support geometry types"},
+                    {"g.inject(1).is(P.typeOf(GType.bigDecimal))",
+                            "g.inject(1).is(P.typeOf(GType.BIGDECIMAL))",
+                            "g.inject(number0).is(P.typeOf(GType.BIGDECIMAL))",
+                            "g.Inject<object>(1).Is(P.TypeOf(GType.BigDecimal))",
+                            "g.Inject(1).Is(gremlingo.P.TypeOf(gremlingo.GType.BigDecimal))",
+                            "g.inject(1).is(P.typeOf(GType.BIGDECIMAL))",
+                            "g.inject(1).is(P.typeOf(GType.BIGDECIMAL))",
+                            "g.inject(1).is(P.typeOf(GType.bigDecimal))",
+                            "g.inject(1).is_(P.type_of(GType.BIGDECIMAL))"},
                     {"g.inject(null, null).inject(null, null)",
                             null,
                             "g.inject(object0, object0).inject(object0, object0)",
@@ -1577,6 +1665,250 @@ public class GremlinTranslatorTest {
                             "g.inject(new PrimitivePDT(\"Uint32\", \"42\"))",
                             "g.inject(new PrimitivePDT(\"Uint32\", \"42\"))",
                             "g.inject(PrimitivePDT('Uint32', '42'))"},
+                    // a geometry literal passes through in gremlin-lang with its keyword and arguments as written and
+                    // its arguments separated by ", ", while the JVM languages read the value back from its WKT and
+                    // the non-JVM translators reject it
+                    {"g.inject(Geometry(\"POINT(1 2)\"))",
+                            null,
+                            "g.inject(geometry0)",
+                            ".NET does not support geometry literals",
+                            "Go does not support geometry literals",
+                            "g.inject(Geometry.fromWkt(\"POINT(1 2)\"))",
+                            "g.inject(Geometry.fromWkt(\"POINT(1 2)\"))",
+                            "Javascript does not support geometry literals",
+                            "Python does not support geometry literals"},
+                    {"g.inject(Geometry(\"POINT(1 2)\", GEOGRAPHIC))",
+                            null,
+                            "g.inject(geometry0)",
+                            ".NET does not support geometry literals",
+                            "Go does not support geometry literals",
+                            "g.inject(Geometry.fromWkt(\"POINT(1 2)\", Model.GEOGRAPHIC))",
+                            "g.inject(Geometry.fromWkt(\"POINT(1 2)\", Model.GEOGRAPHIC))",
+                            "Javascript does not support geometry literals",
+                            "Python does not support geometry literals"},
+                    // the argument separator is normalized, so a literal written without a space gets one
+                    {"g.inject(Geometry(\"POINT(1 2)\",GEOGRAPHIC))",
+                            "g.inject(Geometry(\"POINT(1 2)\", GEOGRAPHIC))",
+                            "g.inject(geometry0)",
+                            ".NET does not support geometry literals",
+                            "Go does not support geometry literals",
+                            "g.inject(Geometry.fromWkt(\"POINT(1 2)\", Model.GEOGRAPHIC))",
+                            "g.inject(Geometry.fromWkt(\"POINT(1 2)\", Model.GEOGRAPHIC))",
+                            "Javascript does not support geometry literals",
+                            "Python does not support geometry literals"},
+                    {"g.inject(Geometry(\"POINT(1 2)\", 32618))",
+                            null,
+                            "g.inject(geometry0)",
+                            ".NET does not support geometry literals",
+                            "Go does not support geometry literals",
+                            "g.inject(Geometry.fromWkt(\"POINT(1 2)\", 32618))",
+                            "g.inject(Geometry.fromWkt(\"POINT(1 2)\", 32618))",
+                            "Javascript does not support geometry literals",
+                            "Python does not support geometry literals"},
+                    // SRID 4326 names the GEOGRAPHIC model on the JVM, while SRID 0 is the default and needs no
+                    // second argument there
+                    {"g.inject(Geometry(\"POINT(1 2)\", 4326))",
+                            null,
+                            "g.inject(geometry0)",
+                            ".NET does not support geometry literals",
+                            "Go does not support geometry literals",
+                            "g.inject(Geometry.fromWkt(\"POINT(1 2)\", Model.GEOGRAPHIC))",
+                            "g.inject(Geometry.fromWkt(\"POINT(1 2)\", Model.GEOGRAPHIC))",
+                            "Javascript does not support geometry literals",
+                            "Python does not support geometry literals"},
+                    {"g.inject(Geometry(\"POINT(1 2)\", 0))",
+                            null,
+                            "g.inject(geometry0)",
+                            ".NET does not support geometry literals",
+                            "Go does not support geometry literals",
+                            "g.inject(Geometry.fromWkt(\"POINT(1 2)\"))",
+                            "g.inject(Geometry.fromWkt(\"POINT(1 2)\"))",
+                            "Javascript does not support geometry literals",
+                            "Python does not support geometry literals"},
+                    // an EWKT prefix carries the SRID in the string, which gremlin-lang keeps and the JVM languages
+                    // turn into the model it names
+                    {"g.inject(Geometry(\"SRID=4326;POINT(1 2)\"))",
+                            null,
+                            "g.inject(geometry0)",
+                            ".NET does not support geometry literals",
+                            "Go does not support geometry literals",
+                            "g.inject(Geometry.fromWkt(\"POINT(1 2)\", Model.GEOGRAPHIC))",
+                            "g.inject(Geometry.fromWkt(\"POINT(1 2)\", Model.GEOGRAPHIC))",
+                            "Javascript does not support geometry literals",
+                            "Python does not support geometry literals"},
+                    // the lowercase spelling is an accepted alias that canonical echoes as written
+                    {"g.inject(geometry(\"POINT(1 2)\", GEOGRAPHIC))",
+                            null,
+                            "g.inject(geometry0)",
+                            ".NET does not support geometry literals",
+                            "Go does not support geometry literals",
+                            "g.inject(Geometry.fromWkt(\"POINT(1 2)\", Model.GEOGRAPHIC))",
+                            "g.inject(Geometry.fromWkt(\"POINT(1 2)\", Model.GEOGRAPHIC))",
+                            "Javascript does not support geometry literals",
+                            "Python does not support geometry literals"},
+                    {"g.inject(Geometry(\"POINT Z (1 2 3)\"))",
+                            null,
+                            "g.inject(geometry0)",
+                            ".NET does not support geometry literals",
+                            "Go does not support geometry literals",
+                            "g.inject(Geometry.fromWkt(\"POINT Z (1 2 3)\"))",
+                            "g.inject(Geometry.fromWkt(\"POINT Z (1 2 3)\"))",
+                            "Javascript does not support geometry literals",
+                            "Python does not support geometry literals"},
+                    // a WKT with its own commas and parentheses is carried through untouched, since it is a string
+                    // argument rather than an argument list
+                    {"g.inject(Geometry(\"POLYGON((0 0, 4 0, 4 4, 0 4, 0 0), (1 1, 1 2, 2 2, 2 1, 1 1))\"))",
+                            null,
+                            "g.inject(geometry0)",
+                            ".NET does not support geometry literals",
+                            "Go does not support geometry literals",
+                            "g.inject(Geometry.fromWkt(\"POLYGON((0 0, 4 0, 4 4, 0 4, 0 0), (1 1, 1 2, 2 2, 2 1, 1 1))\"))",
+                            "g.inject(Geometry.fromWkt(\"POLYGON((0 0, 4 0, 4 4, 0 4, 0 0), (1 1, 1 2, 2 2, 2 1, 1 1))\"))",
+                            "Javascript does not support geometry literals",
+                            "Python does not support geometry literals"},
+                    {"g.inject(Geometry(\"POLYGON EMPTY\", GEOGRAPHIC))",
+                            null,
+                            "g.inject(geometry0)",
+                            ".NET does not support geometry literals",
+                            "Go does not support geometry literals",
+                            "g.inject(Geometry.fromWkt(\"POLYGON EMPTY\", Model.GEOGRAPHIC))",
+                            "g.inject(Geometry.fromWkt(\"POLYGON EMPTY\", Model.GEOGRAPHIC))",
+                            "Javascript does not support geometry literals",
+                            "Python does not support geometry literals"},
+                    // an SRID of another spatial reference system is carried as the number, since there is no model
+                    // to name
+                    {"g.inject(Geometry(\"GEOMETRYCOLLECTION EMPTY\", 32618))",
+                            null,
+                            "g.inject(geometry0)",
+                            ".NET does not support geometry literals",
+                            "Go does not support geometry literals",
+                            "g.inject(Geometry.fromWkt(\"GEOMETRYCOLLECTION EMPTY\", 32618))",
+                            "g.inject(Geometry.fromWkt(\"GEOMETRYCOLLECTION EMPTY\", 32618))",
+                            "Javascript does not support geometry literals",
+                            "Python does not support geometry literals"},
+                    {"g.inject(Geometry(\"POINT Z (1 2 3)\", 32618))",
+                            null,
+                            "g.inject(geometry0)",
+                            ".NET does not support geometry literals",
+                            "Go does not support geometry literals",
+                            "g.inject(Geometry.fromWkt(\"POINT Z (1 2 3)\", 32618))",
+                            "g.inject(Geometry.fromWkt(\"POINT Z (1 2 3)\", 32618))",
+                            "Javascript does not support geometry literals",
+                            "Python does not support geometry literals"},
+                    // gremlin-lang keeps the coordinates as written, while the JVM languages write the WKT of the
+                    // doubles they parse to
+                    {"g.inject(Geometry(\"POINT(1e21 1e-7)\"))",
+                            null,
+                            "g.inject(geometry0)",
+                            ".NET does not support geometry literals",
+                            "Go does not support geometry literals",
+                            "g.inject(Geometry.fromWkt(\"POINT(1000000000000000000000 0.0000001)\"))",
+                            "g.inject(Geometry.fromWkt(\"POINT(1000000000000000000000 0.0000001)\"))",
+                            "Javascript does not support geometry literals",
+                            "Python does not support geometry literals"},
+                    // two geometry literals in one traversal get a name each from the anonymizer
+                    {"g.inject(Geometry(\"POINT(1 2)\"), Geometry(\"POINT(3 4)\"))",
+                            null,
+                            "g.inject(geometry0, geometry1)",
+                            ".NET does not support geometry literals",
+                            "Go does not support geometry literals",
+                            "g.inject(Geometry.fromWkt(\"POINT(1 2)\"), Geometry.fromWkt(\"POINT(3 4)\"))",
+                            "g.inject(Geometry.fromWkt(\"POINT(1 2)\"), Geometry.fromWkt(\"POINT(3 4)\"))",
+                            "Javascript does not support geometry literals",
+                            "Python does not support geometry literals"},
+                    // a negative zero keeps its sign in the WKT the JVM languages write
+                    {"g.inject(Geometry(\"POINT(-0.0 1)\"))",
+                            null,
+                            "g.inject(geometry0)",
+                            ".NET does not support geometry literals",
+                            "Go does not support geometry literals",
+                            "g.inject(Geometry.fromWkt(\"POINT(-0 1)\"))",
+                            "g.inject(Geometry.fromWkt(\"POINT(-0 1)\"))",
+                            "Javascript does not support geometry literals",
+                            "Python does not support geometry literals"},
+                    // the geo predicates, with the bare form canonicalized and the JVM naming
+                    {"g.V().has('loc', geoWithin(Geometry(\"POINT(1 2)\")))",
+                            "g.V().has('loc', GeoP.geoWithin(Geometry(\"POINT(1 2)\")))",
+                            "g.V().has(string0, GeoP.geoWithin(geometry0))",
+                            ".NET does not support geo predicates",
+                            "Go does not support geo predicates",
+                            "g.V().has('loc', GeoP.geoWithin(Geometry.fromWkt(\"POINT(1 2)\")))",
+                            "g.V().has(\"loc\", GeoP.geoWithin(Geometry.fromWkt(\"POINT(1 2)\")))",
+                            "Javascript does not support geo predicates",
+                            "Python does not support geo predicates"},
+                    {"g.V().has('loc', GeoP.geoContains(Geometry(\"POINT(1 2)\", GEOGRAPHIC)))",
+                            null,
+                            "g.V().has(string0, GeoP.geoContains(geometry0))",
+                            ".NET does not support geo predicates",
+                            "Go does not support geo predicates",
+                            "g.V().has('loc', GeoP.geoContains(Geometry.fromWkt(\"POINT(1 2)\", Model.GEOGRAPHIC)))",
+                            "g.V().has(\"loc\", GeoP.geoContains(Geometry.fromWkt(\"POINT(1 2)\", Model.GEOGRAPHIC)))",
+                            "Javascript does not support geo predicates",
+                            "Python does not support geo predicates"},
+                    {"g.V().has('loc', geoWithinDistance(Geometry(\"POINT(1 2)\", GEOGRAPHIC), 10000))",
+                            "g.V().has('loc', GeoP.geoWithinDistance(Geometry(\"POINT(1 2)\", GEOGRAPHIC), 10000))",
+                            "g.V().has(string0, GeoP.geoWithinDistance(geometry0, number0))",
+                            ".NET does not support geo predicates",
+                            "Go does not support geo predicates",
+                            "g.V().has('loc', GeoP.geoWithinDistance(Geometry.fromWkt(\"POINT(1 2)\", Model.GEOGRAPHIC), 10000))",
+                            "g.V().has(\"loc\", GeoP.geoWithinDistance(Geometry.fromWkt(\"POINT(1 2)\", Model.GEOGRAPHIC), 10000))",
+                            "Javascript does not support geo predicates",
+                            "Python does not support geo predicates"},
+                    {"g.V().has('loc', geoWithinDistance(Geometry(\"POINT(1 2)\"), 10.5))",
+                            "g.V().has('loc', GeoP.geoWithinDistance(Geometry(\"POINT(1 2)\"), 10.5))",
+                            "g.V().has(string0, GeoP.geoWithinDistance(geometry0, number0))",
+                            ".NET does not support geo predicates",
+                            "Go does not support geo predicates",
+                            "g.V().has('loc', GeoP.geoWithinDistance(Geometry.fromWkt(\"POINT(1 2)\"), 10.5))",
+                            "g.V().has(\"loc\", GeoP.geoWithinDistance(Geometry.fromWkt(\"POINT(1 2)\"), 10.5))",
+                            "Javascript does not support geo predicates",
+                            "Python does not support geo predicates"},
+                    {"g.V().has('loc', geoWithin(__.select('zone')))",
+                            "g.V().has('loc', GeoP.geoWithin(__.select('zone')))",
+                            "g.V().has(string0, GeoP.geoWithin(__.select(string1)))",
+                            ".NET does not support geo predicates",
+                            "Go does not support geo predicates",
+                            "g.V().has('loc', GeoP.geoWithin(__.select('zone')))",
+                            "g.V().has(\"loc\", GeoP.geoWithin(__.select(\"zone\")))",
+                            "Javascript does not support geo predicates",
+                            "Python does not support geo predicates"},
+                    {"g.V().has('loc', geoWithinDistance(__.select('zone'), 10))",
+                            "g.V().has('loc', GeoP.geoWithinDistance(__.select('zone'), 10))",
+                            "g.V().has(string0, GeoP.geoWithinDistance(__.select(string1), number0))",
+                            ".NET does not support geo predicates",
+                            "Go does not support geo predicates",
+                            "g.V().has('loc', GeoP.geoWithinDistance(__.select('zone'), 10))",
+                            "g.V().has(\"loc\", GeoP.geoWithinDistance(__.select(\"zone\"), 10))",
+                            "Javascript does not support geo predicates",
+                            "Python does not support geo predicates"},
+                    {"g.V().has('loc', geoWithin(Geometry(\"POINT(1 2)\")).negate())",
+                            "g.V().has('loc', GeoP.geoWithin(Geometry(\"POINT(1 2)\")).negate())",
+                            "g.V().has(string0, GeoP.geoWithin(geometry0).negate())",
+                            ".NET does not support geo predicates",
+                            "Go does not support geo predicates",
+                            "g.V().has('loc', GeoP.geoWithin(Geometry.fromWkt(\"POINT(1 2)\")).negate())",
+                            "g.V().has(\"loc\", GeoP.geoWithin(Geometry.fromWkt(\"POINT(1 2)\")).negate())",
+                            "Javascript does not support geo predicates",
+                            "Python does not support geo predicates"},
+                    // a geo predicate joined to another one by a connective keeps both sides in every language
+                    {"g.V().has('loc', geoWithin(Geometry(\"POINT(1 2)\")).and(geoContains(Geometry(\"POINT(1 2)\"))))",
+                            "g.V().has('loc', GeoP.geoWithin(Geometry(\"POINT(1 2)\")).and(GeoP.geoContains(Geometry(\"POINT(1 2)\"))))",
+                            "g.V().has(string0, GeoP.geoWithin(geometry0).and(GeoP.geoContains(geometry0)))",
+                            ".NET does not support geo predicates",
+                            "Go does not support geo predicates",
+                            "g.V().has('loc', GeoP.geoWithin(Geometry.fromWkt(\"POINT(1 2)\")).and(GeoP.geoContains(Geometry.fromWkt(\"POINT(1 2)\"))))",
+                            "g.V().has(\"loc\", GeoP.geoWithin(Geometry.fromWkt(\"POINT(1 2)\")).and(GeoP.geoContains(Geometry.fromWkt(\"POINT(1 2)\"))))",
+                            "Javascript does not support geo predicates",
+                            "Python does not support geo predicates"},
+                    {"g.V().has('loc', geoWithin(x))",
+                            "g.V().has('loc', GeoP.geoWithin(x))",
+                            "g.V().has(string0, GeoP.geoWithin(x))",
+                            ".NET does not support geo predicates",
+                            "Go does not support geo predicates",
+                            "g.V().has('loc', GeoP.geoWithin(x))",
+                            "g.V().has(\"loc\", GeoP.geoWithin(x))",
+                            "Javascript does not support geo predicates",
+                            "Python does not support geo predicates"},
             });
         }
 
@@ -1726,6 +2058,111 @@ public class GremlinTranslatorTest {
         public void shouldTranslateForDotNetParameterize() {
             final String translatedQuery = GremlinTranslator.translate(query, new DotNetTranslateVisitor("g", true)).getTranslated();
             assertEquals(expected, translatedQuery);
+        }
+    }
+
+    /**
+     * An empty 3D geometry is read from its WKT by the JVM languages and carried through as written by gremlin-lang.
+     */
+    @RunWith(Parameterized.class)
+    public static class EmptyThreeDimensionalGeometryTranslationTest {
+
+        @Parameterized.Parameter(value = 0)
+        public String query;
+
+        @Parameterized.Parameter(value = 1)
+        public String expectedForJvm;
+
+        @Parameterized.Parameter(value = 2)
+        public String expectedForLang;
+
+        @Parameterized.Parameters(name = "{0}")
+        public static Collection<Object[]> data() {
+            return Arrays.asList(new Object[][]{
+                    {"g.inject(Geometry(\"POINT Z EMPTY\"))",
+                            "g.inject(Geometry.fromWkt(\"POINT Z EMPTY\"))",
+                            "g.inject(Geometry(\"POINT Z EMPTY\"))"},
+                    {"g.inject(Geometry(\"LINESTRING Z EMPTY\", GEOGRAPHIC))",
+                            "g.inject(Geometry.fromWkt(\"LINESTRING Z EMPTY\", Model.GEOGRAPHIC))",
+                            "g.inject(Geometry(\"LINESTRING Z EMPTY\", GEOGRAPHIC))"},
+                    {"g.inject(Geometry(\"GEOMETRYCOLLECTION Z (POINT Z EMPTY)\"))",
+                            "g.inject(Geometry.fromWkt(\"GEOMETRYCOLLECTION Z (POINT Z EMPTY)\"))",
+                            "g.inject(Geometry(\"GEOMETRYCOLLECTION Z (POINT Z EMPTY)\"))"},
+            });
+        }
+
+        @Test
+        public void shouldTranslateForCanonical() {
+            assertEquals(expectedForLang, GremlinTranslator.translate(query, Translator.CANONICAL).getTranslated());
+        }
+
+        @Test
+        public void shouldTranslateForAnonymized() {
+            assertEquals("g.inject(geometry0)",
+                    GremlinTranslator.translate(query, Translator.ANONYMIZED).getTranslated());
+        }
+
+        @Test
+        public void shouldTranslateForGroovy() {
+            assertEquals(expectedForJvm, GremlinTranslator.translate(query, "g", Translator.GROOVY).getTranslated());
+        }
+
+        @Test
+        public void shouldTranslateForJava() {
+            assertEquals(expectedForJvm, GremlinTranslator.translate(query, "g", Translator.JAVA).getTranslated());
+        }
+    }
+
+    /**
+     * An SRID may be written in any integer width and in decimal, hexadecimal or octal form. Java
+     * reads the same number from each of them.
+     */
+    @RunWith(Parameterized.class)
+    public static class GeometrySridFormTest {
+
+        @Parameterized.Parameter(value = 0)
+        public String srid;
+
+        @Parameterized.Parameter(value = 1)
+        public int expected;
+
+        @Parameterized.Parameters(name = "{0}")
+        public static Collection<Object[]> data() {
+            return Arrays.asList(new Object[][]{
+                    {"32618I", 32618},
+                    {"32618L", 32618},
+                    {"32618N", 32618},
+                    {"32_618", 32618},
+                    {"0x7F5A", 32602},
+                    {"017", 15},
+                    {"-32618", -32618},
+            });
+        }
+
+        private String translate(final Translator translator) {
+            return GremlinTranslator.translate(
+                    String.format("g.inject(Geometry(\"POINT(1 2)\", %s))", srid), "g", translator).getTranslated();
+        }
+
+        @Test
+        public void shouldTranslateForJava() {
+            assertEquals(String.format("g.inject(Geometry.fromWkt(\"POINT(1 2)\", %d))", expected),
+                    translate(Translator.JAVA));
+        }
+    }
+
+    /**
+     * An SRID that no 32-bit integer holds is rejected while the literal is read, before any
+     * dialect is given the value.
+     */
+    public static class InvalidGeometrySridTest {
+
+        @Test
+        public void shouldRejectAnSridOutsideTheSigned32BitRange() {
+            final GremlinParserException gpe = assertThrows(GremlinParserException.class,
+                    () -> GremlinTranslator.translate(
+                            "g.inject(Geometry(\"POINT(1 2)\", 99999999999999))", "g", Translator.JAVA));
+            assertEquals("Invalid Geometry literal: SRID is out of range for a 32-bit integer", gpe.getMessage());
         }
     }
 }

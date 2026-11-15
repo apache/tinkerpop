@@ -40,6 +40,8 @@ import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty.Cardinality;
+import org.apache.tinkerpop.gremlin.structure.geo.Geometry;
+import org.apache.tinkerpop.gremlin.structure.geo.Model;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 import org.junit.Before;
 import org.junit.Test;
@@ -627,6 +629,11 @@ public class TraversalMethodVisitorTest {
     }
 
     @Test
+    public void shouldParseTraversalMethod_has_String_Geometry() throws Exception {
+        compare(g.V().has("loc", Geometry.fromWkt("POINT(1 2)")), eval("g.V().has('loc', Geometry(\"POINT(1 2)\"))"));
+    }
+
+    @Test
     public void shouldParseTraversalMethod_has_T_Object() throws Exception {
         compare(g.V().has(T.id, 6), eval("g.V().has(id, 6)"));
     }
@@ -968,6 +975,15 @@ public class TraversalMethodVisitorTest {
     @Test
     public void shouldParseTraversalMethod_property_Object_Object_Object() throws Exception {
         compare(g.V().property(1,2,"key", 4), eval("g.V().property(1,2,'key',4)"));
+    }
+
+    @Test
+    public void shouldParseTraversalMethod_property_String_Geometry() throws Exception {
+        compare(g.V().property("loc", Geometry.fromWkt("POINT(1 2)")), eval("g.V().property('loc', Geometry(\"POINT(1 2)\"))"));
+        compare(g.V().property("loc", Geometry.fromWkt("POINT(1 2)", Model.GEOGRAPHIC)),
+                eval("g.V().property('loc', Geometry(\"POINT(1 2)\", GEOGRAPHIC))"));
+        compare(g.V().property(Cardinality.list, "loc", Geometry.fromWkt("POINT(1 2)")),
+                eval("g.V().property(list, 'loc', Geometry(\"POINT(1 2)\"))"));
     }
 
     @Test

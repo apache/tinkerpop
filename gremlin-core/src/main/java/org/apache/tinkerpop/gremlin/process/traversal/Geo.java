@@ -32,12 +32,7 @@ import java.util.List;
  * in a coordinate system other than {@code CARTESIAN} or {@code GEOGRAPHIC}. All math is 2D, so z
  * is ignored.
  * <p>
- * In the geographic model an edge is treated as straight in longitude and latitude rather than as
- * a geodesic. The relate predicates and the distance of a geometry that is not a point are
- * therefore accurate for an edge shorter than about 100 km that crosses neither the antimeridian
- * nor a pole, where they stay within about 1% of the WGS84 measure. The distance between two
- * points is measured on the sphere directly, so it is accurate at any separation and is unaffected
- * by the antimeridian.
+ * Accuracy in the geographic model is described on {@link GeoP}.
  *
  * @since 4.0.0
  */

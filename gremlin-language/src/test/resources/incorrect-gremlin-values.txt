@@ -19,3 +19,17 @@ test"
 [Order.asc: 100]
 ""c
 "ab"c
+Geometry()
+Geometry(1)
+Geometry
+Geometry("POINT(1 2)", OTHER)
+Geometry("POINT(1 2)", Model.OTHER)
+Geometry("POINT(1 2)", GType.GEOGRAPHIC)
+Geometry("POINT(1 2)", "4326")
+Geometry("POINT(1 2)", 4326.0)
+Geometry("POINT(1 2)", 4326, 0)
+geometry()
+geometry(1)
+geometry("POINT(1 2)", OTHER)
+geometry("POINT(1 2)", GType.GEOGRAPHIC)
+geometry("POINT(1 2)", "4326")

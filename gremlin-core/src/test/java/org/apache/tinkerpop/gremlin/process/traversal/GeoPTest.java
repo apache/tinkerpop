@@ -62,7 +62,15 @@ public class GeoPTest {
     private static final double ONE_DEGREE_OF_LATITUDE = 111195.08;
 
     private static Traverser.Admin<?> traverser() {
-        return new B_O_Traverser<>("start", 1L);
+        return traverser("start");
+    }
+
+    /**
+     * A traverser whose object a child traversal reads, so that a map object gives
+     * {@code select(key)} a value of its own for each traverser.
+     */
+    private static Traverser.Admin<?> traverser(final Object object) {
+        return new B_O_Traverser<>(object, 1L);
     }
 
     /**
@@ -152,6 +160,9 @@ public class GeoPTest {
                     {"POINT(1 1)", "POINT(0 0)", -2, false},
                     {"POINT(1 1)", "POINT(0 0)", Double.NaN, false},
                     {"POINT(1000000 1000000)", "POINT(0 0)", Double.POSITIVE_INFINITY, true},
+                    // z is ignored, so the distance of a 3D operand is measured in 2D
+                    {"POINT Z (3 4 100)", "POINT(0 0)", 5, true},
+                    {"POINT(3 4)", "POINT Z (0 0 100)", 5, true},
             });
         }
 
@@ -170,6 +181,8 @@ public class GeoPTest {
     public static class TraversalArgumentTest {
 
         private static final Geometry SQUARE_VALUE = Geometry.fromWkt(SQUARE);
+        private static final Geometry FAR_SQUARE_VALUE =
+                Geometry.fromWkt("POLYGON((10 10, 14 10, 14 14, 10 14, 10 10))");
 
         @Test
         public void shouldEvaluateWithinFromATraversalArgument() {
@@ -186,6 +199,18 @@ public class GeoPTest {
             // 1 from the nearest edge of the square, and 2 from it
             assertTrue(predicate.test(Point.of(5, 2)));
             assertFalse(predicate.test(Point.of(6, 2)));
+        }
+
+        @Test
+        public void shouldResolveATraversalArgumentForEachTraverser() {
+            final P<Object> predicate = GeoP.geoWithin(__.select("zone"));
+
+            // the same value is within the first traverser's zone and outside the second's
+            predicate.resolve(traverser(Collections.singletonMap("zone", SQUARE_VALUE)));
+            assertTrue(predicate.test(Point.of(2, 2)));
+
+            predicate.resolve(traverser(Collections.singletonMap("zone", FAR_SQUARE_VALUE)));
+            assertFalse(predicate.test(Point.of(2, 2)));
         }
     }
 
@@ -528,6 +553,23 @@ public class GeoPTest {
             final IllegalArgumentException iae = assertThrows(IllegalArgumentException.class,
                     () -> GeoP.geoWithinDistance(GValue.of("zone", SQUARE_VALUE), GValue.of("radius", (Number) null)));
             assertEquals("The distance of geoWithinDistance must be a number, but was null", iae.getMessage());
+        }
+
+        @Test
+        public void shouldRejectAGeometryVariableThatTakesAValueThatIsNotAGeometry() {
+            final GeoP within = GeoP.geoWithin(GValue.of("zone", SQUARE_VALUE));
+            final IllegalArgumentException iae = assertThrows(IllegalArgumentException.class,
+                    () -> within.updateVariable("zone", "not a geometry"));
+            assertEquals("The geometry of geoWithin must be a Geometry, but was String", iae.getMessage());
+        }
+
+        @Test
+        public void shouldRejectADistanceVariableThatTakesAValueThatIsNotANumber() {
+            final GeoP predicate = GeoP.geoWithinDistance(GValue.of("zone", SQUARE_VALUE),
+                    GValue.of("radius", (Number) 1));
+            final IllegalArgumentException iae = assertThrows(IllegalArgumentException.class,
+                    () -> predicate.updateVariable("radius", "1000"));
+            assertEquals("The distance of geoWithinDistance must be a number, but was String", iae.getMessage());
         }
     }
 

@@ -153,6 +153,10 @@ export default class AnonymizedTranslateVisitor extends TranslateVisitor {
         this.anonymize(ctx, 'ByteBuffer');
     }
 
+    visitGeometryLiteral(ctx: any): void {
+        this.anonymize(ctx, 'Geometry');
+    }
+
     // ─── Keys — output unquoted (only values are anonymized) ─────────────────
 
     visitNakedKey(ctx: any): void {

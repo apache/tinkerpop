@@ -62,6 +62,10 @@ export default class DotNetTranslateVisitor extends TranslateVisitor {
     }
 
     visitTraversalGType(ctx: any): void {
+        if (TranslateVisitor.isGeometryGType(ctx)) {
+            throw new TranslatorException('.NET does not support geometry types');
+        }
+
         const parts: string[] = ctx.getText().split('.');
         this.sb.push(this.processGremlinSymbol(parts[0]));
         this.sb.push('.');
@@ -170,6 +174,22 @@ export default class DotNetTranslateVisitor extends TranslateVisitor {
 
     visitGenericRangeLiteral(_ctx: any): void {
         throw new TranslatorException('.NET does not support range literals');
+    }
+
+    visitGeometryLiteral(_ctx: any): void {
+        throw new TranslatorException('.NET does not support geometry literals');
+    }
+
+    visitTraversalPredicate_geoWithin(_ctx: any): void {
+        throw new TranslatorException('.NET does not support geo predicates');
+    }
+
+    visitTraversalPredicate_geoContains(_ctx: any): void {
+        throw new TranslatorException('.NET does not support geo predicates');
+    }
+
+    visitTraversalPredicate_geoWithinDistance(_ctx: any): void {
+        throw new TranslatorException('.NET does not support geo predicates');
     }
 
     visitGenericSetLiteral(ctx: any): void {

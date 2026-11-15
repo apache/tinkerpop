@@ -408,3 +408,33 @@ Direction.BOTH
 [label: "purchased", keys: ["date"], values: [date: "2023-05-15", amount: 150.50]]
 [name: "marko", age: 29, location: [longitude: 65.35, latitude: 45.12]]
 [skills: ["java", "python", "gremlin"], created: ["lop", "ripple"]]
+
+# geometryLiteral
+Geometry("POINT(1 2)")
+Geometry("POINT(1 2)", CARTESIAN)
+Geometry("POINT(1 2)", Model.CARTESIAN)
+Geometry("POINT(1 2)", GEOGRAPHIC)
+Geometry("POINT(1 2)", Model.GEOGRAPHIC)
+Geometry("POINT(1 2)", 0)
+Geometry("POINT(1 2)", 4326)
+Geometry("POINT(1 2)", 32618)
+Geometry("POINT(1 2)", 32618N)
+geometry("POINT(1 2)")
+geometry("POINT(1 2)", GEOGRAPHIC)
+geometry("POINT(1 2)", 32618)
+[Geometry("POINT(1 2)"), Geometry("POINT(3 4)")]
+{Geometry("POINT(1 2)"), Geometry("POINT(3 4)")}
+[loc:Geometry("POINT(1 2)")]
+[Geometry("POINT(1 2)"):"home"]
+[Geometry("POINT(1 2)", 4326):"home"]
+[(Geometry("POINT(1 2)")):"home"]
+[Geometry: 1]
+[point: 1, lineString: 2, polygon: 3]
+[multiPoint: 1, multiLineString: 2, multiPolygon: 3]
+[geometry: 1, geometryCollection: 2]
+[cartesian: 1, geographic: 2]
+[Model: 1]
+
+# traversalGType, where the geometry keyword in value position is the GType
+geometry
+GType.geometry

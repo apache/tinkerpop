@@ -1328,3 +1328,109 @@ Feature: Comparability
       """
     When iterated to list
     Then the result should be empty
+
+  ######################################################
+  ## Geometry vs. Double
+  ######################################################
+
+  @GraphComputerVerificationInjectionNotSupported @DataGeometry
+  Scenario: InjectXpointX_eqX1dX
+    Given the empty graph
+    And the traversal of
+      """
+      g.inject(Geometry("POINT(1 2)")).is(P.eq(1.0d))
+      """
+    When iterated to list
+    Then the result should be empty
+
+  @GraphComputerVerificationInjectionNotSupported @DataGeometry
+  Scenario: InjectXpointX_neqX1dX
+    Given the empty graph
+    And the traversal of
+      """
+      g.inject(Geometry("POINT(1 2)")).is(P.neq(1.0d))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | geo[POINT(1 2)] |
+
+  @GraphComputerVerificationInjectionNotSupported @DataGeometry
+  Scenario: InjectXpointX_ltX1dX
+    Given the empty graph
+    And the traversal of
+      """
+      g.inject(Geometry("POINT(1 2)")).is(P.lt(1.0d))
+      """
+    When iterated to list
+    Then the result should be empty
+
+  @GraphComputerVerificationInjectionNotSupported @DataGeometry
+  Scenario: InjectXpointX_lteX1dX
+    Given the empty graph
+    And the traversal of
+      """
+      g.inject(Geometry("POINT(1 2)")).is(P.lte(1.0d))
+      """
+    When iterated to list
+    Then the result should be empty
+
+  @GraphComputerVerificationInjectionNotSupported @DataGeometry
+  Scenario: InjectXpointX_gtX1dX
+    Given the empty graph
+    And the traversal of
+      """
+      g.inject(Geometry("POINT(1 2)")).is(P.gt(1.0d))
+      """
+    When iterated to list
+    Then the result should be empty
+
+  @GraphComputerVerificationInjectionNotSupported @DataGeometry
+  Scenario: InjectXpointX_gteX1dX
+    Given the empty graph
+    And the traversal of
+      """
+      g.inject(Geometry("POINT(1 2)")).is(P.gte(1.0d))
+      """
+    When iterated to list
+    Then the result should be empty
+
+  ######################################################
+  ## Geometry vs. Geometry
+  ######################################################
+
+  @GraphComputerVerificationInjectionNotSupported @DataGeometry
+  Scenario: InjectXemptyPointX_ltXpointX
+    Given the empty graph
+    And the traversal of
+      """
+      g.inject(Geometry("POINT EMPTY")).is(P.lt(Geometry("POINT(1 2)")))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | geo[POINT EMPTY] |
+
+  @GraphComputerVerificationInjectionNotSupported @DataGeometry
+  Scenario: InjectXpointX_gtXemptyPointX
+    Given the empty graph
+    And the traversal of
+      """
+      g.inject(Geometry("POINT(1 2)")).is(P.gt(Geometry("POINT EMPTY")))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | geo[POINT(1 2)] |
+
+  @GraphComputerVerificationInjectionNotSupported @DataGeometry
+  Scenario: InjectXcartesianPointX_ltXgeographicPointX
+    Given the empty graph
+    And the traversal of
+      """
+      g.inject(Geometry("POINT(1 2)")).is(P.lt(Geometry("POINT(1 2)", GEOGRAPHIC)))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | geo[POINT(1 2)] |

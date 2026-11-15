@@ -159,6 +159,30 @@ export default class PythonTranslateVisitor extends TranslateVisitor {
         throw new TranslatorException('Python does not support range literals');
     }
 
+    visitTraversalGType(ctx: any): void {
+        if (TranslateVisitor.isGeometryGType(ctx)) {
+            throw new TranslatorException('Python does not support geometry types');
+        }
+
+        super.visitTraversalGType(ctx);
+    }
+
+    visitGeometryLiteral(_ctx: any): void {
+        throw new TranslatorException('Python does not support geometry literals');
+    }
+
+    visitTraversalPredicate_geoWithin(_ctx: any): void {
+        throw new TranslatorException('Python does not support geo predicates');
+    }
+
+    visitTraversalPredicate_geoContains(_ctx: any): void {
+        throw new TranslatorException('Python does not support geo predicates');
+    }
+
+    visitTraversalPredicate_geoWithinDistance(_ctx: any): void {
+        throw new TranslatorException('Python does not support geo predicates');
+    }
+
     visitGenericSetLiteral(ctx: any): void {
         const literals: any[] = ctx.genericLiteral();
         if (literals.length === 0) {

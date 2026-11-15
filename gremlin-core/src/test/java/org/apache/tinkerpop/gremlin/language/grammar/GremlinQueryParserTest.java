@@ -18,18 +18,28 @@
  */
 package org.apache.tinkerpop.gremlin.language.grammar;
 
+import org.apache.tinkerpop.gremlin.process.traversal.GeoP;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
+import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
+import org.apache.tinkerpop.gremlin.structure.geo.Geometry;
 import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 import org.junit.Test;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
 
 public class GremlinQueryParserTest {
     private static final GraphTraversalSource g = EmptyGraph.instance().traversal();
+
+    private static final Geometry SQUARE = Geometry.fromWkt("POLYGON((0 0, 4 0, 4 4, 0 4, 0 0))");
 
     @Test
     public void shouldParseEmpty() {
@@ -121,5 +131,88 @@ public class GremlinQueryParserTest {
             ex.printStackTrace();
             throw ex;
         }
+    }
+
+    @Test
+    public void shouldParseGeoPredicateVariables() {
+        final GremlinAntlrToJava gremlinAntlrToJava = new GremlinAntlrToJava("g",
+                EmptyGraph.instance(), __::start, g,
+                new VariableResolver.DefaultVariableResolver(ElementHelper.asMap("xx1", SQUARE, "xx2", 10)));
+
+        final GraphTraversal<?, ?> within = (GraphTraversal<?, ?>) GremlinQueryParser.parse(
+                "g.V().has('loc',geoWithin(xx1))", gremlinAntlrToJava);
+        assertEquals(g.V().has("loc", GeoP.geoWithin(GValue.of("xx1", SQUARE))).asAdmin().getGremlinLang(),
+                within.asAdmin().getGremlinLang());
+        assertEquals(Collections.singleton("xx1"), within.asAdmin().getGValueManager().getVariableNames());
+
+        final GraphTraversal<?, ?> withinDistance = (GraphTraversal<?, ?>) GremlinQueryParser.parse(
+                "g.V().has('loc',geoWithinDistance(xx1, xx2))", gremlinAntlrToJava);
+        assertEquals(g.V().has("loc", GeoP.geoWithinDistance(GValue.of("xx1", SQUARE),
+                        GValue.of("xx2", (Number) 10))).asAdmin().getGremlinLang(),
+                withinDistance.asAdmin().getGremlinLang());
+        assertEquals(new HashSet<>(Arrays.asList("xx1", "xx2")),
+                withinDistance.asAdmin().getGValueManager().getVariableNames());
+    }
+
+    @Test
+    public void shouldParseGeoPredicateVariablesAsValues() {
+        final GremlinAntlrToJava gremlinAntlrToJava = new GremlinAntlrToJava("g",
+                EmptyGraph.instance(), __::start, g,
+                new VariableResolver.DirectVariableResolver(ElementHelper.asMap("xx1", SQUARE, "xx2", 10)));
+
+        final GraphTraversal<?, ?> t = (GraphTraversal<?, ?>) GremlinQueryParser.parse(
+                "g.V().has('loc',geoWithinDistance(xx1, xx2))", gremlinAntlrToJava);
+        assertEquals(g.V().has("loc", GeoP.geoWithinDistance(SQUARE, 10)).asAdmin().getGremlinLang(),
+                t.asAdmin().getGremlinLang());
+    }
+
+    @Test
+    public void shouldNotParseAGeoPredicateArgumentThatCanNeverMatch() {
+        final GremlinParserException gpe = assertThrows(GremlinParserException.class,
+                () -> GremlinQueryParser.parse("g.V().has('loc',geoWithin(Geometry(\"POINT(1 2)\", 32618)))"));
+        assertEquals("Invalid geo predicate: The geometry of geoWithin must be in the CARTESIAN or " +
+                "GEOGRAPHIC model, but SRID 32618 is OTHER", gpe.getMessage());
+    }
+
+    @Test
+    public void shouldNotParseAGeoContainsArgumentThatCanNeverMatch() {
+        final GremlinParserException gpe = assertThrows(GremlinParserException.class,
+                () -> GremlinQueryParser.parse("g.V().has('loc',geoContains(Geometry(\"POINT(1 2)\", 32618)))"));
+        assertEquals("Invalid geo predicate: The geometry of geoContains must be in the CARTESIAN or " +
+                "GEOGRAPHIC model, but SRID 32618 is OTHER", gpe.getMessage());
+    }
+
+    @Test
+    public void shouldNotParseAGeoWithinDistanceGeometryThatCanNeverMatch() {
+        final GremlinParserException gpe = assertThrows(GremlinParserException.class,
+                () -> GremlinQueryParser.parse(
+                        "g.V().has('loc',geoWithinDistance(Geometry(\"POINT(1 2)\", 32618), 10))"));
+        assertEquals("Invalid geo predicate: The geometry of geoWithinDistance must be in the CARTESIAN or " +
+                "GEOGRAPHIC model, but SRID 32618 is OTHER", gpe.getMessage());
+    }
+
+    @Test
+    public void shouldNotParseAGeoWithinDistanceVariableThatIsNotADistance() {
+        final GremlinAntlrToJava gremlinAntlrToJava = new GremlinAntlrToJava("g",
+                EmptyGraph.instance(), __::start, g,
+                new VariableResolver.DirectVariableResolver(ElementHelper.asMap("xx1", "10")));
+
+        final GremlinParserException gpe = assertThrows(GremlinParserException.class,
+                () -> GremlinQueryParser.parse("g.V().has('loc',geoWithinDistance(Geometry(\"POINT(1 2)\"), xx1))",
+                        gremlinAntlrToJava));
+        assertEquals("Invalid geo predicate: The distance of geoWithinDistance must be a number, but was String",
+                gpe.getMessage());
+    }
+
+    @Test
+    public void shouldNotParseAGeoPredicateVariableThatIsNotAGeometry() {
+        final GremlinAntlrToJava gremlinAntlrToJava = new GremlinAntlrToJava("g",
+                EmptyGraph.instance(), __::start, g,
+                new VariableResolver.DirectVariableResolver(ElementHelper.asMap("xx1", "POINT(1 2)")));
+
+        final GremlinParserException gpe = assertThrows(GremlinParserException.class,
+                () -> GremlinQueryParser.parse("g.V().has('loc',geoWithin(xx1))", gremlinAntlrToJava));
+        assertEquals("Invalid geo predicate: The geometry of geoWithin must be a Geometry, but was String",
+                gpe.getMessage());
     }
 }

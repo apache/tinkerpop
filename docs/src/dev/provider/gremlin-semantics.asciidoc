@@ -284,6 +284,7 @@ Dates are evaluated based on the numerical comparison of Unix Epoch time.
 Durations are evaluated based on the numerical comparison of their total length. `A == B` if `A` and `B` represent the
 same total length.
 
+[[gremlin-semantics-geometry-type]]
 ===== GEOMETRY
 
 A geometry value satisfies these construction invariants on every path that builds it (a Java factory, the
@@ -570,12 +571,130 @@ The following table maps the notions proposed above to the various `P` operators
 |P.outside|Comparability
 |P.between|Equality, Comparability
 |P.typeOf |Comparability
+|GeoP.geoWithin |Spatial relationship
+|GeoP.geoContains |Spatial relationship
+|GeoP.geoWithinDistance |Spatial relationship
 |================
+
+The geometry predicates relate two geometries spatially rather than by Equality or Comparability, and are defined in
+<<gremlin-semantics-geometry,Geometry>>.
 
 ==== See Also
 
 link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-test/src/main/resources/org/apache/tinkerpop/gremlin/test/features/semantics/Equality.feature[Equality Tests],
 link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-test/src/main/resources/org/apache/tinkerpop/gremlin/test/features/semantics/Comparability.feature[Comparability Tests]
+
+[[gremlin-semantics-geometry]]
+[llms-summary="Geometry semantics: the Geometry() literal and the geoWithin, geoContains and geoWithinDistance predicates with the rules that govern their evaluation."]
+== Geometry
+
+The `GEOMETRY` type and the kinds it is a supertype of are listed in the Types section, and their equality,
+comparability and orderability are defined in the <<gremlin-semantics-geometry-type,GEOMETRY section>> above. This
+section defines how a geometry is written in Gremlin and how the geometry predicates evaluate.
+
+=== The Geometry Literal
+
+A geometry value is written as `Geometry(wkt)`, `Geometry(wkt, model)` or `Geometry(wkt, srid)`. The name may also be
+written all lowercase as `geometry`, with identical meaning, as the datetime literal may be written `DateTime` or
+`datetime`. The first argument is a Well-Known Text or Extended Well-Known Text string, and the optional second
+argument fixes the spatial reference system:
+
+* With no second argument the SRID is `0`, which is the `CARTESIAN` model, as in `Geometry("POINT(1 2)")`.
+* The second argument may be the model token `CARTESIAN` or `GEOGRAPHIC`, written bare or prefixed as
+`Model.CARTESIAN` and `Model.GEOGRAPHIC`. `CARTESIAN` is SRID `0` and `GEOGRAPHIC` is SRID `4326`.
+* The second argument may be an SRID as an integer, as in `Geometry("POINT(1 2)", 32618)`. SRID `0` is the `CARTESIAN`
+model and SRID `4326` is the `GEOGRAPHIC` model, and any other SRID names a coordinate reference system for which
+Gremlin defines no spatial math.
+
+An `SRID=` prefix in the string sets the SRID, so `Geometry("SRID=4326;POINT(1 2)")` is a geographic point. A prefix
+that disagrees with the second argument is an `Argument Error`, as is text that is not valid Well-Known Text, a polygon
+ring that is not closed, and a `GEOGRAPHIC` coordinate outside longitude `-180` to `180` or latitude `-90` to `90`. A z
+coordinate is accepted and preserved, as in `Geometry("POINT Z (1 2 3)")`, and every kind has an empty form, as in
+`Geometry("POINT EMPTY")`.
+
+The literal is a generic literal, so it may appear wherever a value may appear, including inside a list or set and as a
+map key or map value.
+
+=== Geometry Predicates
+
+Three predicates filter a geometry by its spatial relationship to another geometry. Each has a `GeoP` form and a bare
+form, so `GeoP.geoWithin(g)` and `geoWithin(g)` are the same predicate.
+
+[width="100%",cols="4,11",options="header"]
+|=========================================================
+|Predicate |True when
+|`geoWithin(g)` |The value lies entirely inside `g`. A value lying only on `g`'s boundary is not within it.
+|`geoContains(g)` |The value entirely contains `g`. A geometry does not contain a value lying only on its boundary.
+|`geoWithinDistance(g,d)` |The distance between the value and `g` is at most `d`.
+|=========================================================
+
+`geoWithin` and `geoContains` are converses, so `a geoWithin b` holds exactly when `b geoContains a`. Each argument may
+be a constant value, a parameter, or a child traversal whose first result is used, following the same first-result
+semantics as the other predicates that accept a traversal.
+
+==== Evaluation
+
+The following rules govern every geometry predicate. A value the predicate cannot compare does not match, rather than
+raising an error, because a graph may hold any value under a property key.
+
+* *Spatial reference system.* The value and the argument must have the same SRID. A value with a different SRID does
+not match, so a `CARTESIAN` value never matches a `GEOGRAPHIC` argument.
+* *Unsupported systems.* A value whose SRID is neither `0` nor `4326` does not match, since Gremlin defines no spatial
+math for it.
+* *Null and other types.* A `null` value, and a value of any type other than `GEOMETRY`, does not match. The `STRING`
+holding a geometry's Well-Known Text is a `STRING` and does not match.
+* *Empty geometries.* An empty value never matches, and no value matches an empty argument.
+* *z.* All spatial math is two dimensional, so z is ignored. `POINT Z (2 2 9)` is within the square
+`POLYGON((0 0, 4 0, 4 4, 0 4, 0 0))`.
+* *Collections.* A `GEOMETRYCOLLECTION` is a valid operand on either side.
+* *Distance.* `geoWithinDistance` is inclusive, matching when the distance is less than or equal to `d`. The distance
+is in coordinate units in the `CARTESIAN` model and in meters in the `GEOGRAPHIC` model. A `d` of `0` matches
+geometries that touch or overlap, a negative or `NaN` `d` matches nothing, and an infinite `d` matches every value the
+predicate can compare.
+* *Invalid constants.* A constant or parameter argument is checked when the predicate is built, and an
+`Argument Error` is raised for a geometry argument that is `null` or not a `GEOMETRY`, a geometry argument whose SRID
+is neither `0` nor `4326`, and a `d` that is `null` or not a number. A `geoWithinDistance` that is not given exactly a
+geometry and a distance raises the same error. An empty geometry, a negative `d` and a `NaN` `d` are accepted and
+match nothing, as described above. The same values arriving from a child traversal do not raise an error. They do not
+match, per traverser, because they are data.
+* *Negation.* `negate()` yields the complement of the predicate, so every value that does not match, including a
+`null`, an empty geometry and a value of another type, matches the negated predicate.
+
+==== Coordinate Models
+
+In the `CARTESIAN` model the relationships are planar and the distance is the planar distance, both exactly defined. In
+the `GEOGRAPHIC` model the relationships are evaluated in longitude and latitude, which treats an edge as straight in
+those coordinates rather than as a geodesic, and the distance is measured in meters on a sphere of the WGS84 mean
+radius, 6,371,008.8 m. The distance between two points is measured between the points themselves, and the distance
+between other geometries is measured between the nearest pair of points found in longitude and latitude.
+
+This is the reference approximation and it is held to an accuracy bar rather than to an exact geodetic result. Within
+the bar, a distance or other measure stays within about 1% of its WGS84 value, and a relationship is correct, for an
+edge shorter than about 100 km that crosses neither the antimeridian nor a pole. A provider may compute a more precise
+geodetic result through its own strategies, and results outside the bar, such as a relationship across the
+antimeridian, are permitted to differ between providers.
+
+==== Examples
+
+The square below is `POLYGON((0 0, 4 0, 4 4, 0 4, 0 0))` and every value is `CARTESIAN` unless stated otherwise.
+
+|===
+|Value|Predicate|Result|Reason
+
+|`POINT(2 2)`|`geoWithin(square)`|`true`|the point lies in the interior
+|`POINT(0 2)`|`geoWithin(square)`|`false`|the boundary is excluded
+|`square`|`geoContains(POINT(2 2))`|`true`|the converse of the first row
+|`POINT Z (2 2 9)`|`geoWithin(square)`|`true`|z is ignored
+|`POINT EMPTY`|`geoWithin(square)`|`false`|an empty value never matches
+|`SRID=4326;POINT(2 2)`|`geoWithin(square)`|`false`|the SRIDs differ
+|`POINT(3 4)`|`geoWithinDistance(POINT(0 0), 5)`|`true`|exactly at the bound, which is inclusive
+|`POINT(3 4.1)`|`geoWithinDistance(POINT(0 0), 5)`|`false`|beyond the bound
+|===
+
+==== See Also
+
+link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-test/src/main/resources/org/apache/tinkerpop/gremlin/test/features/data/Geometry.feature[Geometry Tests],
+link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-test/src/main/resources/org/apache/tinkerpop/gremlin/test/features/filter/GeoP.feature[GeoP Tests]
 
 [llms-summary="Per-step semantic definitions: the precise input/output behavior each Gremlin step must exhibit, used to verify provider implementations for correctness."]
 == Steps

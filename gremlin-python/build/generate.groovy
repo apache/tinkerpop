@@ -19,6 +19,7 @@
 
 import org.apache.tinkerpop.gremlin.language.translator.GremlinTranslator
 import org.apache.tinkerpop.gremlin.language.translator.Translator
+import org.apache.tinkerpop.gremlin.language.translator.TranslatorException
 import org.apache.tinkerpop.gremlin.language.corpus.FeatureReader
 
 import java.nio.file.Paths
@@ -83,26 +84,34 @@ radishGremlinFile.withWriter('UTF-8') { Writer writer ->
         if (staticTranslate.containsKey(k)) {
             writer.writeLine(staticTranslate[k])
         } else {
-            writer.write("    '")
-            writer.write(k)
-            writer.write("': [")
-            def collected = v.collect { GremlinTranslator.translate(it, Translator.PYTHON) }
-            def uniqueBindings = collected.collect { it.getParameters() }.flatten().unique()
-            def gremlinItty = collected.iterator()
-            while (gremlinItty.hasNext()) {
-                def t = gremlinItty.next()
-                writer.write("(lambda g")
-                if (!uniqueBindings.isEmpty()) {
-                    writer.write(", ")
-                    writer.write(uniqueBindings.join("=None,"))
-                    writer.write("=None")
+            try {
+                def collected = v.collect { GremlinTranslator.translate(it, Translator.PYTHON) }
+                def uniqueBindings = collected.collect { it.getParameters() }.flatten().unique()
+                writer.write("    '")
+                writer.write(k)
+                writer.write("': [")
+                def gremlinItty = collected.iterator()
+                while (gremlinItty.hasNext()) {
+                    def t = gremlinItty.next()
+                    writer.write("(lambda g")
+                    if (!uniqueBindings.isEmpty()) {
+                        writer.write(", ")
+                        writer.write(uniqueBindings.join("=None,"))
+                        writer.write("=None")
+                    }
+                    writer.write(":")
+                    writer.write(t.getTranslated())
+                    writer.write(")")
+                    if (gremlinItty.hasNext()) writer.write(', ')
                 }
-                writer.write(":")
-                writer.write(t.getTranslated())
-                writer.write(")")
-                if (gremlinItty.hasNext()) writer.write(', ')
+                writer.writeLine('], ')
+            } catch (TranslatorException ignored) {
+                // emit a placeholder for scenarios with unsupported literals to keep the file
+                // syntactically valid; the scenario will be skipped at test runtime via tag exclusions
+                writer.write("    '")
+                writer.write(k)
+                writer.writeLine("': [(lambda g: None)], ")
             }
-            writer.writeLine('], ')
         }
     }
     writer.writeLine('}')

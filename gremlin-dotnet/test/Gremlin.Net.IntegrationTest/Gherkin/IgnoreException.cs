@@ -70,6 +70,11 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
         /// <summary>
         /// The GLV suite does not test against a graph that defaults to multi-label output.
         /// </summary>
-        MultiLabelDefaultNotSupportedOnTestGraph
+        MultiLabelDefaultNotSupportedOnTestGraph,
+
+        /// <summary>
+        /// Geometry values cannot be serialized.
+        /// </summary>
+        GeometryNotSupported
     }
 }
