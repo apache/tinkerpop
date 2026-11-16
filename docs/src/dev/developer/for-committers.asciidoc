@@ -362,8 +362,9 @@ but never a release label, as the release is not known until the change lands.
 The code an errand fixes usually exists only on the branch of the pull request under review, so the
 errand cannot begin until that pull request merges. A `gh:pr` gate, which is a bead that stays open
 until GitHub reports the pull request merged, blocks it until then. Each pull request has one gate
-shared by all of the errands raised against it, and that gate is the only bead an errand connects
-to. Gates do not resolve on their own, and `bin/beads-gates.py` is what resolves them:
+shared by all of the errands raised against it. Gates are the only beads an errand connects to, and
+an errand is held by at most one open gate at a time. Gates do not resolve on their own, and
+`bin/beads-gates.py` is what resolves them:
 
 [source,text]
 ----
@@ -377,6 +378,25 @@ When a pull request was closed without merging, its errands are closed along wit
 the code they would have fixed never landed. Any committer may run the script, and it also runs as
 part of the beads administration that follows a release. An errand itself closes once its own change
 merges to a release line, and nothing records its commits.
+
+Whoever picks up an errand may find that it cannot be completed as written, because the build fails,
+the change breaks a test, or the reasoning in its Change section does not hold against the code. Such
+an errand must not stay available to be attempted again, and the finding needs to reach the person
+who wrote it. The one who attempted it returns the errand to an open, unclaimed state and blocks it
+with a `human` gate assigned to the email address in the errand's `owner` field. The gate's reason
+explains what was tried, why it failed and what the specification would need to change, so the
+errand itself remains the specification. A `human` gate resolves only by hand, and
+`bin/beads-gates.py` never touches it, so the errand stays out of `bd ready` for everyone until its
+creator deals with it. A committer finds the errands of theirs that are waiting in this way with:
+
+[source,text]
+----
+bd list --type gate --status open --assignee <email>
+----
+
+For each gate, the committer reads the reason and either revises the errand's Change and Acceptance
+sections and then runs `bd gate resolve` on the gate, which makes the errand available again, or
+abandons the errand by closing it together with its gate.
 
 [[beads-shared]]
 === A Shared Database

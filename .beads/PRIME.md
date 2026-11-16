@@ -18,7 +18,7 @@ without reading it.
 5. **Never rewrite or discard history** — section 5
 6. **Records, fields, edge types and bead IDs follow fixed conventions; text goes in `--description`, not `--design`** — section 6
 7. **Never invent a label** — section 7
-8. **An errand is a non-blocking review follow-up: no root, no parent, never pinned; only when the operator asks** — section 8
+8. **An errand is a non-blocking review follow-up: no root, no parent, never pinned; only when the operator asks; an attempt that cannot finish blocks it with a human gate for its creator** — section 8
 
 ---
 
@@ -452,7 +452,9 @@ bd dep add <errand> <gate> # one exists
 bd gate create --type=gh:pr --await-id=N --blocks <errand> --reason="apache/tinkerpop#N"  # none yet
 ```
 
-That `blocks` edge is the only edge an errand has. Never parent, relate or record it.
+**An errand carries at most one open gate at a time**: the `gh:pr` gate before the PR
+merges, or a single `human` gate after an attempt could not finish (below). Its only edges are
+`blocks` edges onto gates. Never parent, relate or record it.
 
 **Lifecycle.** `bin/beads-gates.py` resolves gates against GitHub; someone runs it, nothing
 does so automatically. A merged PR resolves its gate and its errands appear in
@@ -460,6 +462,34 @@ does so automatically. A merged PR resolves its gate and its errands appear in
 behind it, since the code they fix never landed. An errand closes when its own fix merges to
 a release line. It is not pinned, and its commits are not recorded — `bin/beads-commits.py`
 is for roots.
+
+**When an attempt cannot finish.** Whoever picks up an errand may find it cannot be completed
+as written: the build fails, the change breaks a test, or the reasoning in `## Change` does not
+hold once the code is in front of them. Such an errand must not stay in `bd ready` to be tried
+again. The finding has to reach the person who wrote it, so block it with a single `human`
+gate assigned to the errand's creator:
+
+```bash
+bd show <errand> --json                    # its `owner` is the creator's email
+bd update <errand> -s open --assignee ""   # unclaim, or resolving the gate will not return it to bd ready
+bd gate create --type=human --blocks <errand> \
+  --reason="Attempted and could not complete. <what was tried> <why it failed> <what the spec needs>."
+bd update <gate> --assignee "<errand owner>"   # gate create takes no --assignee
+```
+
+The reason is the handoff, so keep it self-contained: what was tried, why it failed, and what
+the spec would need to change. It lives on the gate, not the errand. The errand stays the
+spec, and the gate is the record that the spec did not work. A bead's own `owner` cannot be
+set, so the gate's owner is whoever attempted the errand; `--assignee` is what routes it. A
+`human` gate resolves only by hand, since `bin/beads-gates.py` never touches it, and a
+blocked errand drops out of `bd ready` for everyone.
+
+The creator finds their gates with `bd list --type gate --status open --assignee <email>` and,
+for each, reads the reason and then either:
+
+- **revises and re-releases** — edit the errand's `## Change` and `## Acceptance`, then
+  `bd gate resolve <gate>`, which returns it to `bd ready`; or
+- **abandons** — `bd close <errand> <gate>`.
 
 ---
 
@@ -482,6 +512,7 @@ bd search <text>
 bd query 'notes="<sha>"' --all   # which record holds this commit; quote the sha
 bd ready --type=errand           # errands whose PR has merged; the one unscoped bd ready
 bin/beads-gates.py [--apply]     # resolve PR gates: merged releases errands, closed closes them
+bd list --type gate --status open --assignee <email>   # errands of yours an attempt could not finish
 ```
 
 Priority is `0-4` (0 = critical), never "high"/"medium"/"low".
