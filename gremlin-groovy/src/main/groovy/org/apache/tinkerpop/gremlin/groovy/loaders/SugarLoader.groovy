@@ -45,8 +45,13 @@ class SugarLoader {
             ((Traverser) delegate).get()."$name"(*args);
         }
 
-        // g.V.age
+        // g.V.age() - only a call with no arguments is treated as property access. a call with arguments is a
+        // misspelled step or one with argument types that match no overload, so it should fail rather than
+        // quietly become values(name)
         GraphTraversal.metaClass.methodMissing = { final String name, final def args ->
+            final Object[] arguments = (Object[]) args
+            if (null != arguments && arguments.length > 0)
+                throw new MissingMethodException(name, delegate.getClass(), arguments)
             return ((GraphTraversal) delegate).values(name);
         }
 
