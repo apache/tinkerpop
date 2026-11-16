@@ -40,6 +40,9 @@ bin/beads-commits.py uses. `bd gate check` is not used because it runs
 a fork it would read the fork's PR #N. A bead blocked by a gate that is not an
 errand is reported and never closed.
 
+Only `gh:pr` gates are read. The `human` gate that blocks an errand an attempt
+could not finish (PRIME.md section 8) resolves by hand and is never touched here.
+
 Nothing here pins anything. Errands and their gates are built to be purged.
 """
 
