@@ -105,7 +105,7 @@ class SugarLoaderTest {
         SugarLoader.load()
         assertEquals(g.V().values('age').toList(), g.V().age.toList())
         assertEquals(g.V().values('age').toList(), g.V().age().toList())
-        assertEquals(g.V().values('age').bytecode, g.V().age().bytecode)
+        assertEquals(g.V().values('age').gremlinLang.gremlin, g.V().age().gremlinLang.gremlin)
     }
 
     @Test

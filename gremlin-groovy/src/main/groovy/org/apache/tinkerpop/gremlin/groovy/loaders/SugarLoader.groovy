@@ -33,6 +33,7 @@ import org.apache.tinkerpop.gremlin.structure.util.StringFactory
 class SugarLoader {
 
     private static final String NAME = "name";
+    private static final Object[] NO_ARGS = new Object[0];
 
     static void load() {
 
@@ -54,6 +55,14 @@ class SugarLoader {
             if (null != arguments && arguments.length > 0)
                 throw new MissingMethodException(name, delegate.getClass(), arguments)
             return ((GraphTraversal) delegate).values(name);
+        }
+
+        // g.V.out and g.V.age - uses propertyMissing because Groovy 5+ would route unmatched method calls through
+        // a get(String) getter instead of methodMissing
+        GraphTraversal.metaClass.propertyMissing = { final String name ->
+            final GraphTraversal traversal = (GraphTraversal) delegate
+            final MetaMethod step = traversal.metaClass.getMetaMethod(name, NO_ARGS)
+            return null != step ? step.invoke(traversal, NO_ARGS) : traversal.values(name)
         }
 
         GraphTraversalSource.metaClass.getProperty = { final String key ->
@@ -178,14 +187,6 @@ class SugarLoader {
     }
 
     public static class GraphTraversalCategory {
-
-        public static final get(final GraphTraversal graphTraversal, final String key) {
-            // a dynamic graphTraversal."$key"() for a missing step recurses back into this getter on Groovy 5+
-            final MetaMethod step = graphTraversal.metaClass.getMetaMethod(key, NO_ARGS)
-            return null != step ? step.invoke(graphTraversal, NO_ARGS) : graphTraversal.values(key)
-        }
-
-        private static final Object[] NO_ARGS = new Object[0]
 
         public static final getAt(final GraphTraversal graphTraversal, final Integer index) {
             graphTraversal.range(index, index + 1);
