@@ -898,6 +898,20 @@ func (serializer *graphBinaryTypeSerializer) writeValue(value interface{}, buffe
 	return message, nil
 }
 
+var _ GraphBinaryWriter = (*graphBinaryTypeSerializer)(nil)
+
+// Write implements GraphBinaryWriter.
+func (serializer *graphBinaryTypeSerializer) Write(value interface{}, buffer *bytes.Buffer) error {
+	_, err := serializer.write(value, buffer)
+	return err
+}
+
+// WriteValue implements GraphBinaryWriter.
+func (serializer *graphBinaryTypeSerializer) WriteValue(value interface{}, buffer *bytes.Buffer, nullable bool) error {
+	_, err := serializer.writeValue(value, buffer, nullable)
+	return err
+}
+
 func (serializer *graphBinaryTypeSerializer) writeValueFlagNull(buffer *bytes.Buffer) {
 	buffer.WriteByte(valueFlagNull)
 }

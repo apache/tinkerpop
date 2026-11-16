@@ -30,6 +30,7 @@ This release also includes changes from prior 3.7.x releases.
 * Fixed `AddPropertyStep` not passing the old property to `EventStrategy` listeners when the cardinality was not specified in `property()`.
 * Fixed integer range literal parsing in Gremlin-Lang where certain ranges bypassed the range size limit.
 * Added an experimental native-async WebSocket driver, traversal DSL, and transaction API to `gremlin-python` (`AsyncDriverRemoteConnection`, `AsyncClient`, `async_traversal()`, `AsyncGraphTraversalSource`, `AsyncGraphTraversal`, and `AsyncTransaction`) for `asyncio` applications.
+* Fixed `CustomTypeWriter` in `gremlin-go` being impossible to implement outside the driver.
 
 [[release-3-8-2]]
 === TinkerPop 3.8.2 (Release Date: September 1, 2026)

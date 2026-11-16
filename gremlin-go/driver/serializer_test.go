@@ -120,6 +120,34 @@ func TestSerializer(t *testing.T) {
 		}
 		assert.True(t, found, "Expected serialized data to contain custom type name")
 	})
+	t.Run("test custom type writer serializes nested values with GraphBinaryWriter", func(t *testing.T) {
+		valueType := reflect.TypeOf((*TestCustomType)(nil))
+		typeName := "test.CustomType"
+		RegisterCustomTypeWriter(valueType, typeName, func(value interface{}, buffer *bytes.Buffer, writer GraphBinaryWriter) error {
+			customValue := value.(*TestCustomType)
+			if err := writer.WriteValue(customValue.ID, buffer, false); err != nil {
+				return err
+			}
+			if err := writer.Write(customValue.Value, buffer); err != nil {
+				return err
+			}
+			return writer.WriteValue(nil, buffer, true)
+		})
+		defer UnregisterCustomTypeWriter(valueType)
+
+		var buffer bytes.Buffer
+		ser := &graphBinaryTypeSerializer{newLogHandler(&defaultLogger{}, Error, language.English)}
+		_, err := ser.write(&TestCustomType{ID: 1, Value: "ab"}, &buffer)
+		assert.Nil(t, err)
+
+		expected := []byte{customType.getCodeByte()}
+		expected = append(expected, 0, 0, 0, byte(len(typeName)))
+		expected = append(expected, []byte(typeName)...)
+		expected = append(expected, 0, 0, 0, 0, 0, 0, 0, 1)                                        // ID: long value only
+		expected = append(expected, stringType.getCodeByte(), valueFlagNone, 0, 0, 0, 2, 'a', 'b') // Value: fully-qualified string
+		expected = append(expected, valueFlagNull)                                                 // nullable nil value
+		assert.Equal(t, expected, buffer.Bytes())
+	})
 }
 
 func TestSerializerFailures(t *testing.T) {
@@ -171,6 +199,27 @@ func TestSerializerFailures(t *testing.T) {
 		assert.NotNil(t, err)
 		assert.True(t, isSameErrorCode(newError(err0407GetSerializerToWriteUnknownTypeError), err))
 	})
+	t.Run("test custom type writer GraphBinaryWriter failure", func(t *testing.T) {
+		valueType := reflect.TypeOf((*TestCustomType)(nil))
+		RegisterCustomTypeWriter(valueType, "test.CustomType", func(_ interface{}, buffer *bytes.Buffer, writer GraphBinaryWriter) error {
+			return writer.WriteValue(nil, buffer, false)
+		})
+		defer UnregisterCustomTypeWriter(valueType)
+
+		var u, _ = uuid.Parse("41d2e28a-20a4-4ab0-b379-d810dede3786")
+		testRequest := request{
+			requestID: u,
+			op:        "eval",
+			processor: "",
+			args:      map[string]interface{}{"gremlin": "g.V().count()", "customArg": &TestCustomType{}},
+		}
+
+		serializer := newGraphBinarySerializer(newLogHandler(&defaultLogger{}, Error, language.English))
+		serialized, err := serializer.SerializeMessage(&testRequest)
+
+		assert.Nil(t, serialized)
+		assert.True(t, isSameErrorCode(newError(err0403WriteValueUnexpectedNullError), err))
+	})
 }
 
 // TestCustomType is a test custom type for writer tests
@@ -180,7 +229,7 @@ type TestCustomType struct {
 }
 
 // testCustomTypeWriter is a writer for the test custom type
-var testCustomTypeWriter = func(value interface{}, buffer *bytes.Buffer, _ *graphBinaryTypeSerializer) error {
+var testCustomTypeWriter = func(value interface{}, buffer *bytes.Buffer, _ GraphBinaryWriter) error {
 	customValue, ok := value.(*TestCustomType)
 	if !ok {
 		return errors.New("expected *TestCustomType")
