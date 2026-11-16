@@ -65,6 +65,19 @@ as `map()`, `sideEffect()` and `coalesce()` still occur once per bulked traverse
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-3295[TINKERPOP-3295]
 
+==== Python 3.14 and 3.15 Support
+
+Gremlin-Python now supports Python 3.14 and 3.15. To make that possible, the `nest_asyncio` dependency, which is no
+longer maintained and does not work on Python 3.14, was replaced with its maintained fork, `nest-asyncio2`. The two
+libraries share the same API, and `call_from_event_loop=True` on `AiohttpTransport` works as before.
+
+Applications that also call `nest_asyncio.apply()` themselves and then create a transport with
+`call_from_event_loop=True` may see a warning on Python 3.12 and later that asyncio "is already patched by
+nest_asyncio". Gremlin-Python continues to work in that case, but the warning can be avoided by switching the
+application to `nest_asyncio2` as well.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-3297[TINKERPOP-3297]
+
 == TinkerPop 3.7.7
 
 *Release Date: September 1, 2026*

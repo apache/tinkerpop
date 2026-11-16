@@ -40,6 +40,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Fixed bug in `TinkerTransactionGraph` where an edge could not be dropped and re-added with the same id in one transaction.
 * Fixed the Gremlin Groovy sugar syntax turning a misspelled step or a step called with mismatched argument types into `values()`, which now throws a `MissingMethodException`.
 * Bumped `jackson-databind` to 2.18.12.
+* Added support for Python 3.14 and 3.15 to `gremlin-python` by replacing the unmaintained `nest_asyncio` dependency with `nest-asyncio2`.
 
 [[release-3-7-7]]
 === TinkerPop 3.7.7 (Release Date: September 1, 2026)

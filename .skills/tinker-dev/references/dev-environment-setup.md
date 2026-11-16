@@ -21,7 +21,7 @@ GLV builds and many integration tests will be skipped.
 - **Docker and Docker Compose** — required for all GLV test execution. Docker Desktop includes
   both. GLV tests run inside Docker containers, so local language runtimes are optional for
   test execution via Maven.
-- **Python 3.9–3.13** — optional for local development; Docker handles test execution.
+- **Python 3.9–3.15** — optional for local development; Docker handles test execution.
 - **Node.js 20+ / npm 10+** — optional; Maven downloads a local copy via `frontend-maven-plugin`
   (`node.version` and `npm.version` in the root `pom.xml` pin the exact versions used by the
   build). Consider [nvm](https://github.com/nvm-sh/nvm) for version management.

@@ -2489,6 +2489,7 @@ The following table outlines recommended runtime versions by the release in whic
 |3.6.8 |3.9 |aiohttp
 |3.7.0 |3.8-3.13 |aiohttp
 |3.7.3 |3.9-3.13 |aiohttp
+|3.7.8 |3.9-3.15 |aiohttp
 |===
 
 [[gremlin-python-connecting]]
@@ -2991,7 +2992,7 @@ no `Graph` instance to deserialize a result into on the client-side. A workaroun
 `aggregate(local)` and then convert those results to something the client can use locally.
 * Use of the aiohttp library in the default transport requires the use of asyncio's event loop to run the async functions.
 This can be an issue in situations where the application calling Gremlin-Python is already using an event loop.
-Certain types of event loops can be patched using nest-asyncio which allows Gremlin-Python to proceed without an error like
+Certain types of event loops can be patched using nest-asyncio2 which allows Gremlin-Python to proceed without an error like
 "Cannot run the event loop while another loop is running". This is the preferred approach to avoiding the issue and can be
 enabled by passing `call_from_event_loop=True` to the `AiohttpTransport` class.
 
