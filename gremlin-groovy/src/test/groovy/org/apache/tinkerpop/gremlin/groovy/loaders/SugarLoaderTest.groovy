@@ -99,6 +99,36 @@ class SugarLoaderTest {
     }
 
     @Test
+    public void shouldTreatPropertyAndNoArgumentCallAsValues() {
+        def graph = TinkerFactory.createModern()
+        def g = graph.traversal()
+        SugarLoader.load()
+        assertEquals(g.V().values('age').toList(), g.V().age.toList())
+        assertEquals(g.V().values('age').toList(), g.V().age().toList())
+        assertEquals(g.V().values('age').bytecode, g.V().age().bytecode)
+    }
+
+    @Test
+    public void shouldNotTreatUnmatchedCallWithArgumentsAsValues() {
+        def graph = TinkerFactory.createModern()
+        def g = graph.traversal()
+        SugarLoader.load()
+        try {
+            g.V().hasLabl('person')
+            fail("A misspelled step with arguments should not become values()")
+        } catch (MissingMethodException e) {
+            assertEquals('hasLabl', e.method)
+        }
+
+        try {
+            g.V().limit('2')
+            fail("A step called with argument types that match no overload should not become values()")
+        } catch (MissingMethodException e) {
+            assertEquals('limit', e.method)
+        }
+    }
+
+    @Test
     public void shouldUseTraverserCategoryCorrectly() {
         def graph = TinkerFactory.createModern()
         def g = graph.traversal()
