@@ -568,6 +568,14 @@ services. The build status can be found link:https://github.com/apache/tinkerpop
 "build-test" workflow that runs a number of jobs that break the test execution into a series of smaller test executions.
 Taken together, they provide a solid cross section of coverage of the code base
 
+== Experimental APIs
+
+Committers introducing or maintaining experimental APIs and features must follow the
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#api-stability[Experimental API policy]. In particular, the
+designation must only be applied when an API or feature is first made public, and its source and user documentation
+must use the mechanism defined for that release branch. Committers should evaluate an experimental API for graduation
+after two consecutive `MINOR` releases without significant changes.
+
 == Deprecation
 
 When possible, committers should avoid direct "breaking" change (e.g. removing a method from a class) and favor

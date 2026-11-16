@@ -252,6 +252,11 @@ As of TinkerPop 4.0.0, version numbers follow a format of `MAJOR.MINOR.PATCH`, w
 * `MINOR` version is incremented for backward compatible changes and is part of a complete release.
 * `PATCH` version is incremented for backward compatible bug fixes and typically only applied to client modules for partial release.
 
+New public APIs and features explicitly designated as experimental when they are first released are an exception to
+these compatibility rules. They may have breaking changes or be removed in a subsequent `MINOR` release. An API or
+feature previously released as stable cannot later be reclassified as experimental. Public APIs and features without
+that designation remain covered by the compatibility rules above.
+
 The above definitions refer to notions of "complete" and "partial" releases. A complete release is one that releases
 all TinkerPop components across all languages. A partial release is one that releases just a single module of a
 driver/client. A partial release is helpful in that it decouples the release of client/driver modules from what are
