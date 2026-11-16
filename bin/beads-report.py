@@ -179,7 +179,9 @@ def main():
     report("Rationale on closed beads (lost at next purge -- pin to keep)", at_risk)
 
     # An errand is read by someone with nothing but the bead, so a missing piece of
-    # its spec is a defect. Its one permitted edge is `blocks` onto a gh:pr gate.
+    # its spec is a defect. Its only permitted edges are `blocks` onto gates: the
+    # gh:pr gate on its PR, and a human gate when an attempt could not finish. At
+    # most one of those may be open at a time.
     # Only open errands matter: a closed one has done its job and is due for purge.
     misshapen = []
     for bead in beads.values():
@@ -193,14 +195,19 @@ def main():
         flaws += [f"no {h[3:]}" for h in ERRAND_SECTIONS if h not in text]
         if bead.get("parent"):
             flaws.append("has a parent")
+        open_gates = []
         for src, dst, typ in edges:
             if bead["id"] not in (src, dst):
                 continue
             other = beads.get(dst if src == bead["id"] else src) or {}
             if not (src == bead["id"] and typ == "blocks"
                     and other.get("issue_type") == "gate"
-                    and other.get("await_type") == "gh:pr"):
+                    and other.get("await_type") in ("gh:pr", "human")):
                 flaws.append(f"{typ} edge to {other.get('id', dst)}")
+            elif other.get("status") != "closed":
+                open_gates.append(other["id"])
+        if len(open_gates) > 1:
+            flaws.append(f"{len(open_gates)} open gates ({', '.join(open_gates)})")
         if flaws:
             misshapen.append(f"{bead['id']:18} {bead['title'][:30]:30}  {', '.join(flaws)}")
     report("Errands that break their shape (defect)", misshapen)
