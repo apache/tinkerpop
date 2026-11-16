@@ -171,6 +171,14 @@ public class Settings {
     public int maxGraphBinaryInitialCapacity = GraphBinaryReadLimits.DEFAULT_MAX_INITIAL_CAPACITY;
 
     /**
+     * The maximum number of entries that a single bulked list in a GraphBinary request may expand to. A bulked list
+     * sends each distinct item once with a repeat count, so a small request can otherwise describe a very large list.
+     * A bulked list that would expand beyond this size is rejected. Each entry held in memory costs a reference of
+     * 4 or 8 bytes. This setting applies only to GraphBinary. The default is 16,777,216.
+     */
+    public int maxGraphBinaryBulkedListLength = GraphBinaryReadLimits.DEFAULT_MAX_BULKED_LIST_LENGTH;
+
+    /**
      * If the number of bytes in the network send buffer exceeds this value then the channel is no longer writeable,
      * accepting no additional writes until buffer is drained and the {@link #writeBufferLowWaterMark} is met.
      */

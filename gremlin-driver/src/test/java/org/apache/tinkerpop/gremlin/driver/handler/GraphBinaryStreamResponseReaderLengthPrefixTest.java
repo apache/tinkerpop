@@ -35,6 +35,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -139,6 +140,49 @@ public class GraphBinaryStreamResponseReaderLengthPrefixTest {
         }
     }
 
+    private static ByteBuf bulkedListResponse(final long bulk) {
+        final ByteBuf payload = Unpooled.buffer();
+        payload.writeByte(GraphBinaryWriterVersionByte());
+        payload.writeByte(0);
+        payload.writeByte(DataType.LIST.getCodeByte());
+        payload.writeByte(2);
+        payload.writeInt(1);
+        payload.writeByte(DataType.INT.getCodeByte());
+        payload.writeByte(0);
+        payload.writeInt(42);
+        payload.writeLong(bulk);
+        payload.writeByte(DataType.MARKER.getCodeByte());
+        payload.writeByte(0);
+        payload.writeByte(0);
+        payload.writeInt(0);
+        payload.writeByte(1);
+        payload.writeByte(1);
+        return payload;
+    }
+
+    @Test
+    public void shouldRejectBulkedListExpandingBeyondTheLimitOnStreamingBuffer() throws Exception {
+        final ResultSet rs = runAgainstRawPayload(bulkedListResponse(Long.MAX_VALUE));
+
+        assertTrue(rs.allItemsAvailable());
+        try {
+            rs.all().get();
+            fail("A bulked list expanding beyond the limit must be refused, not expanded");
+        } catch (Exception e) {
+            assertTrue(e.getCause().getMessage(), e.getCause().getMessage().contains("maxGraphBinaryBulkedListLength"));
+        }
+    }
+
+    @Test
+    public void shouldReadBulkedListWithinTheLimitOnStreamingBuffer() throws Exception {
+        final ResultSet rs = runAgainstRawPayload(bulkedListResponse(3));
+
+        assertTrue(rs.allItemsAvailable());
+        final List<Result> results = rs.all().get();
+        assertEquals(1, results.size());
+        assertEquals(Arrays.asList(42, 42, 42), results.get(0).getObject());
+    }
+
     @Test
     public void shouldStillReadLegitimateStringAcrossChunksOnStreamingBuffer() throws Exception {
         final String value = String.join("", Collections.nCopies(200, "0123456789"));
@@ -160,7 +204,7 @@ public class GraphBinaryStreamResponseReaderLengthPrefixTest {
 
     @Test
     public void shouldRejectValueAboveConfiguredLimitOnStreamingBuffer() throws Exception {
-        final GraphBinaryReader limited = reader.withLimits(GraphBinaryReadLimits.of(100, 100, 100));
+        final GraphBinaryReader limited = reader.withLimits(GraphBinaryReadLimits.of(100, 100, 100, 100));
         final String value = String.join("", Collections.nCopies(200, "x"));
 
         final ResultSet rs = runAgainstPayloadChunks(limited, stringResponse(value));
@@ -176,8 +220,8 @@ public class GraphBinaryStreamResponseReaderLengthPrefixTest {
     @Test
     public void shouldReadValueAboveDefaultLimitOnStreamingBufferWhenLimitIsRaised() throws Exception {
         final String value = String.join("", Collections.nCopies(200, "x"));
-        final GraphBinaryReader lowered = reader.withLimits(GraphBinaryReadLimits.of(100, 100, 100));
-        final GraphBinaryReader raised = lowered.withLimits(GraphBinaryReadLimits.of(1000, 100, 100));
+        final GraphBinaryReader lowered = reader.withLimits(GraphBinaryReadLimits.of(100, 100, 100, 100));
+        final GraphBinaryReader raised = lowered.withLimits(GraphBinaryReadLimits.of(1000, 100, 100, 100));
 
         final ResultSet rejected = runAgainstPayloadChunks(lowered, stringResponse(value));
         assertTrue(rejected.allItemsAvailable());

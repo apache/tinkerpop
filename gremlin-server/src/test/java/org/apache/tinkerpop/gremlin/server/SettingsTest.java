@@ -203,18 +203,21 @@ public class SettingsTest {
         assertEquals(64 * 1024 * 1024, settings.maxGraphBinaryValueLength);
         assertEquals(1_048_576, settings.maxGraphBinaryArrayLength);
         assertEquals(16_384, settings.maxGraphBinaryInitialCapacity);
+        assertEquals(16_777_216, settings.maxGraphBinaryBulkedListLength);
     }
 
     @Test
     public void graphBinaryLimitsParsedFromYaml() {
         final String yaml = "maxGraphBinaryValueLength: 134217728\n" +
                 "maxGraphBinaryArrayLength: 2000000\n" +
-                "maxGraphBinaryInitialCapacity: 32768\n";
+                "maxGraphBinaryInitialCapacity: 32768\n" +
+                "maxGraphBinaryBulkedListLength: 33554432\n";
 
         final Settings settings = Settings.read(new ByteArrayInputStream(yaml.getBytes(StandardCharsets.UTF_8)));
 
         assertEquals(134217728, settings.maxGraphBinaryValueLength);
         assertEquals(2000000, settings.maxGraphBinaryArrayLength);
         assertEquals(32768, settings.maxGraphBinaryInitialCapacity);
+        assertEquals(33554432, settings.maxGraphBinaryBulkedListLength);
     }
 }

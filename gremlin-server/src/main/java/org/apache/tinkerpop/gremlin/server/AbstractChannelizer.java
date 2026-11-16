@@ -240,7 +240,8 @@ public abstract class AbstractChannelizer extends ChannelInitializer<SocketChann
         // built outside of the stream below so that an invalid value fails the server startup rather than being
         // logged as a serializer that is silently unavailable
         final GraphBinaryReadLimits readLimits = GraphBinaryReadLimits.of(settings.maxGraphBinaryValueLength,
-                settings.maxGraphBinaryArrayLength, settings.maxGraphBinaryInitialCapacity);
+                settings.maxGraphBinaryArrayLength, settings.maxGraphBinaryInitialCapacity,
+                settings.maxGraphBinaryBulkedListLength);
 
         serializerSettings.stream().map(config -> {
             try {

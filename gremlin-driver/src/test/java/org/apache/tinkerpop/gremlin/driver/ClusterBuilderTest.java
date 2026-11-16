@@ -64,7 +64,9 @@ public class ClusterBuilderTest {
                 {"maxGraphBinaryArrayLength0", Cluster.build().maxGraphBinaryArrayLength(0), "maxGraphBinaryArrayLength must be greater than zero"},
                 {"maxGraphBinaryArrayLengthNeg1", Cluster.build().maxGraphBinaryArrayLength(-1), "maxGraphBinaryArrayLength must be greater than zero"},
                 {"maxGraphBinaryInitialCapacity0", Cluster.build().maxGraphBinaryInitialCapacity(0), "maxGraphBinaryInitialCapacity must be greater than zero"},
-                {"maxGraphBinaryInitialCapacityNeg1", Cluster.build().maxGraphBinaryInitialCapacity(-1), "maxGraphBinaryInitialCapacity must be greater than zero"}});
+                {"maxGraphBinaryInitialCapacityNeg1", Cluster.build().maxGraphBinaryInitialCapacity(-1), "maxGraphBinaryInitialCapacity must be greater than zero"},
+                {"maxGraphBinaryBulkedListLength0", Cluster.build().maxGraphBinaryBulkedListLength(0), "maxGraphBinaryBulkedListLength must be greater than zero"},
+                {"maxGraphBinaryBulkedListLengthNeg1", Cluster.build().maxGraphBinaryBulkedListLength(-1), "maxGraphBinaryBulkedListLength must be greater than zero"}});
     }
 
     @Parameterized.Parameter(value = 0)

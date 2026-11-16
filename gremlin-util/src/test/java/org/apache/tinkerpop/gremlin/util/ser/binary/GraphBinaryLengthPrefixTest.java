@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.util.ser.binary;
 
 import io.netty.buffer.ByteBufAllocator;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
 import org.apache.tinkerpop.gremlin.structure.io.Buffer;
 import org.apache.tinkerpop.gremlin.structure.io.binary.DataType;
 import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryReadLimits;
@@ -30,6 +31,8 @@ import org.junit.Test;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -212,7 +215,7 @@ public class GraphBinaryLengthPrefixTest {
     @Test
     public void shouldRejectWellFormedStringAboveConfiguredLimit() throws IOException {
         final GraphBinaryReader limited = new GraphBinaryReader(TypeSerializerRegistry.INSTANCE, null,
-                GraphBinaryReadLimits.of(10, 10, 10));
+                GraphBinaryReadLimits.of(10, 10, 10, 10));
         final Buffer buffer = bufferFactory.create(ByteBufAllocator.DEFAULT.buffer());
         try {
             writer.write("01234567890", buffer);
@@ -228,7 +231,7 @@ public class GraphBinaryLengthPrefixTest {
     @Test
     public void shouldAcceptWellFormedStringAtConfiguredLimit() throws IOException {
         final GraphBinaryReader limited = new GraphBinaryReader(TypeSerializerRegistry.INSTANCE, null,
-                GraphBinaryReadLimits.of(10, 10, 10));
+                GraphBinaryReadLimits.of(10, 10, 10, 10));
         final Buffer buffer = bufferFactory.create(ByteBufAllocator.DEFAULT.buffer());
         try {
             writer.write("0123456789", buffer);
@@ -241,7 +244,7 @@ public class GraphBinaryLengthPrefixTest {
     @Test
     public void shouldRejectWellFormedBinaryAboveConfiguredLimit() throws IOException {
         final GraphBinaryReader limited = new GraphBinaryReader(TypeSerializerRegistry.INSTANCE, null,
-                GraphBinaryReadLimits.of(10, 10, 10));
+                GraphBinaryReadLimits.of(10, 10, 10, 10));
         final Buffer buffer = bufferFactory.create(ByteBufAllocator.DEFAULT.buffer());
         try {
             writer.write(ByteBuffer.wrap(new byte[11]), buffer);
@@ -257,12 +260,114 @@ public class GraphBinaryLengthPrefixTest {
     @Test
     public void shouldReadLargeListWithSmallInitialCapacity() throws IOException {
         final GraphBinaryReader limited = new GraphBinaryReader(TypeSerializerRegistry.INSTANCE, null,
-                GraphBinaryReadLimits.of(1000, 10, 2));
+                GraphBinaryReadLimits.of(1000, 10, 2, 10));
         final List<Integer> list = IntStream.range(0, 500).boxed().collect(Collectors.toList());
         final Buffer buffer = bufferFactory.create(ByteBufAllocator.DEFAULT.buffer());
         try {
             writer.write(list, buffer);
             assertEquals(list, limited.read(buffer));
+        } finally {
+            buffer.release();
+        }
+    }
+
+    private static Buffer bulkedList(final long... bulks) {
+        final Buffer buffer = bufferFactory.create(ByteBufAllocator.DEFAULT.buffer());
+        buffer.writeByte(DataType.LIST.getCodeByte());
+        buffer.writeByte(2);
+        buffer.writeInt(bulks.length);
+        for (final long bulk : bulks) {
+            buffer.writeByte(DataType.INT.getCodeByte());
+            buffer.writeByte(0);
+            buffer.writeInt(42);
+            buffer.writeLong(bulk);
+        }
+        return buffer;
+    }
+
+    private void assertRejectsBulkedList(final GraphBinaryReader graphBinaryReader, final long... bulks) {
+        final Buffer buffer = bulkedList(bulks);
+        try {
+            graphBinaryReader.read(buffer);
+            fail("a bulked list expanding beyond the limit must be refused");
+        } catch (IOException expected) {
+            assertThat(expected.getMessage(), containsString("maxGraphBinaryBulkedListLength"));
+        } finally {
+            buffer.release();
+        }
+    }
+
+    @Test
+    public void shouldRejectBulkedListWithHugeBulkWithoutExpandingIt() {
+        assertRejectsBulkedList(reader, 300_000_000L);
+        assertRejectsBulkedList(reader, Long.MAX_VALUE);
+        assertRejectsBulkedList(reader, Integer.MAX_VALUE);
+        assertRejectsBulkedList(reader, (long) Integer.MAX_VALUE + 1);
+    }
+
+    @Test
+    public void shouldRejectBulkedListJustAboveTheDefaultLimit() {
+        assertRejectsBulkedList(reader, GraphBinaryReadLimits.DEFAULT_MAX_BULKED_LIST_LENGTH + 1L);
+    }
+
+    @Test
+    public void shouldRejectBulkedListWhoseBulksExceedTheLimitTogether() {
+        final GraphBinaryReader limited = new GraphBinaryReader(TypeSerializerRegistry.INSTANCE, null,
+                GraphBinaryReadLimits.of(1000, 1000, 1000, 10));
+        assertRejectsBulkedList(limited, 6, 6);
+    }
+
+    @Test
+    public void shouldReadBulkedListAtConfiguredLimit() throws IOException {
+        final GraphBinaryReader limited = new GraphBinaryReader(TypeSerializerRegistry.INSTANCE, null,
+                GraphBinaryReadLimits.of(1000, 1000, 1000, 10));
+        final Buffer buffer = bulkedList(4, 6);
+        try {
+            assertEquals(Collections.nCopies(10, 42), limited.read(buffer));
+        } finally {
+            buffer.release();
+        }
+        assertRejectsBulkedList(limited, 4, 7);
+    }
+
+    @Test
+    public void shouldReadBulkedListThatExceededALoweredLimitOnceRaised() throws IOException {
+        final GraphBinaryReader lowered = new GraphBinaryReader(TypeSerializerRegistry.INSTANCE, null,
+                GraphBinaryReadLimits.of(1000, 1000, 1000, 5));
+        final GraphBinaryReader raised = lowered.withLimits(GraphBinaryReadLimits.of(1000, 1000, 1000, 20));
+
+        assertRejectsBulkedList(lowered, 10);
+
+        final Buffer buffer = bulkedList(10);
+        try {
+            assertEquals(Collections.nCopies(10, 42), raised.read(buffer));
+        } finally {
+            buffer.release();
+        }
+    }
+
+    @Test
+    public void shouldStillReadAWrittenBulkSetAsAnExpandedList() throws IOException {
+        final BulkSet<String> bulkSet = new BulkSet<>();
+        bulkSet.add("marko", 1);
+        bulkSet.add("josh", 2);
+        final List<String> expected = new ArrayList<>();
+        bulkSet.iterator().forEachRemaining(expected::add);
+
+        final Buffer buffer = bufferFactory.create(ByteBufAllocator.DEFAULT.buffer());
+        try {
+            writer.write(bulkSet, buffer);
+            assertEquals(expected, reader.read(buffer));
+        } finally {
+            buffer.release();
+        }
+    }
+
+    @Test
+    public void shouldReadEmptyBulkedList() throws IOException {
+        final Buffer buffer = bulkedList();
+        try {
+            assertEquals(Collections.emptyList(), reader.read(buffer));
         } finally {
             buffer.release();
         }

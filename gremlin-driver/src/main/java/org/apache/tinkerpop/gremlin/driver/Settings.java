@@ -120,6 +120,14 @@ public final class Settings {
     public int maxGraphBinaryInitialCapacity = GraphBinaryReadLimits.DEFAULT_MAX_INITIAL_CAPACITY;
 
     /**
+     * The maximum number of entries that a single bulked list in a GraphBinary response may expand to. A bulked list
+     * sends each distinct item once with a repeat count, so a small response can otherwise describe a very large
+     * list. A response containing a bulked list that would expand beyond this size fails. Each entry held in memory
+     * costs a reference of 4 or 8 bytes. This setting applies only to GraphBinary. The default is 16,777,216.
+     */
+    public int maxGraphBinaryBulkedListLength = GraphBinaryReadLimits.DEFAULT_MAX_BULKED_LIST_LENGTH;
+
+    /**
      * Read configuration from a file into a new {@link Settings} object.
      *
      * @param stream an input stream containing a Gremlin Server YAML configuration
@@ -167,6 +175,9 @@ public final class Settings {
 
         if (conf.containsKey("maxGraphBinaryInitialCapacity"))
             settings.maxGraphBinaryInitialCapacity = conf.getInt("maxGraphBinaryInitialCapacity");
+
+        if (conf.containsKey("maxGraphBinaryBulkedListLength"))
+            settings.maxGraphBinaryBulkedListLength = conf.getInt("maxGraphBinaryBulkedListLength");
 
         if (conf.containsKey("hosts"))
             settings.hosts = conf.getList("hosts").stream().map(Object::toString).collect(Collectors.toList());

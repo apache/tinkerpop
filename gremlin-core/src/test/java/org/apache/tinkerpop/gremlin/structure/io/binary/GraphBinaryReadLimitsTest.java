@@ -32,45 +32,56 @@ public class GraphBinaryReadLimitsTest {
         assertEquals(64 * 1024 * 1024, GraphBinaryReadLimits.DEFAULT.getMaxValueLength());
         assertEquals(1_048_576, GraphBinaryReadLimits.DEFAULT.getMaxArrayLength());
         assertEquals(16_384, GraphBinaryReadLimits.DEFAULT.getMaxInitialCapacity());
+        assertEquals(16_777_216, GraphBinaryReadLimits.DEFAULT.getMaxBulkedListLength());
     }
 
     @Test
     public void shouldCreateFromValues() {
-        final GraphBinaryReadLimits limits = GraphBinaryReadLimits.of(1, 2, 3);
+        final GraphBinaryReadLimits limits = GraphBinaryReadLimits.of(1, 2, 3, 4);
         assertEquals(1, limits.getMaxValueLength());
         assertEquals(2, limits.getMaxArrayLength());
         assertEquals(3, limits.getMaxInitialCapacity());
+        assertEquals(4, limits.getMaxBulkedListLength());
     }
 
     @Test
     public void shouldAcceptIntegerMaxValue() {
-        final GraphBinaryReadLimits limits = GraphBinaryReadLimits.of(Integer.MAX_VALUE, Integer.MAX_VALUE, Integer.MAX_VALUE);
+        final GraphBinaryReadLimits limits = GraphBinaryReadLimits.of(
+                Integer.MAX_VALUE, Integer.MAX_VALUE, Integer.MAX_VALUE, Integer.MAX_VALUE);
         assertEquals(Integer.MAX_VALUE, limits.getMaxValueLength());
+        assertEquals(Integer.MAX_VALUE, limits.getMaxBulkedListLength());
     }
 
     @Test
     public void shouldRejectNonPositiveValueLength() {
-        assertRejected(0, 1, 1, "maxGraphBinaryValueLength must be greater than zero");
-        assertRejected(-1, 1, 1, "maxGraphBinaryValueLength must be greater than zero");
+        assertRejected(0, 1, 1, 1, "maxGraphBinaryValueLength must be greater than zero");
+        assertRejected(-1, 1, 1, 1, "maxGraphBinaryValueLength must be greater than zero");
     }
 
     @Test
     public void shouldRejectNonPositiveArrayLength() {
-        assertRejected(1, 0, 1, "maxGraphBinaryArrayLength must be greater than zero");
-        assertRejected(1, -1, 1, "maxGraphBinaryArrayLength must be greater than zero");
+        assertRejected(1, 0, 1, 1, "maxGraphBinaryArrayLength must be greater than zero");
+        assertRejected(1, -1, 1, 1, "maxGraphBinaryArrayLength must be greater than zero");
     }
 
     @Test
     public void shouldRejectNonPositiveInitialCapacity() {
-        assertRejected(1, 1, 0, "maxGraphBinaryInitialCapacity must be greater than zero");
-        assertRejected(1, 1, -1, "maxGraphBinaryInitialCapacity must be greater than zero");
+        assertRejected(1, 1, 0, 1, "maxGraphBinaryInitialCapacity must be greater than zero");
+        assertRejected(1, 1, -1, 1, "maxGraphBinaryInitialCapacity must be greater than zero");
+    }
+
+    @Test
+    public void shouldRejectNonPositiveBulkedListLength() {
+        assertRejected(1, 1, 1, 0, "maxGraphBinaryBulkedListLength must be greater than zero");
+        assertRejected(1, 1, 1, -1, "maxGraphBinaryBulkedListLength must be greater than zero");
     }
 
     @Test
     public void shouldImplementEqualsAndHashCode() {
-        assertEquals(GraphBinaryReadLimits.of(1, 2, 3), GraphBinaryReadLimits.of(1, 2, 3));
-        assertEquals(GraphBinaryReadLimits.of(1, 2, 3).hashCode(), GraphBinaryReadLimits.of(1, 2, 3).hashCode());
-        assertNotEquals(GraphBinaryReadLimits.of(1, 2, 3), GraphBinaryReadLimits.of(1, 2, 4));
+        assertEquals(GraphBinaryReadLimits.of(1, 2, 3, 4), GraphBinaryReadLimits.of(1, 2, 3, 4));
+        assertEquals(GraphBinaryReadLimits.of(1, 2, 3, 4).hashCode(), GraphBinaryReadLimits.of(1, 2, 3, 4).hashCode());
+        assertNotEquals(GraphBinaryReadLimits.of(1, 2, 3, 4), GraphBinaryReadLimits.of(1, 2, 3, 5));
+        assertNotEquals(GraphBinaryReadLimits.of(1, 2, 3, 4), GraphBinaryReadLimits.of(1, 2, 4, 4));
     }
 
     @Test
@@ -82,14 +93,14 @@ public class GraphBinaryReadLimitsTest {
 
     @Test
     public void readerShouldExposeConfiguredLimits() {
-        final GraphBinaryReadLimits limits = GraphBinaryReadLimits.of(1, 2, 3);
+        final GraphBinaryReadLimits limits = GraphBinaryReadLimits.of(1, 2, 3, 4);
         assertSame(limits, new GraphBinaryReader(TypeSerializerRegistry.INSTANCE, null, limits).getLimits());
     }
 
     @Test
     public void withLimitsShouldReturnReaderWithNewLimitsAndLeaveOriginalUnchanged() {
         final GraphBinaryReader original = new GraphBinaryReader();
-        final GraphBinaryReadLimits limits = GraphBinaryReadLimits.of(1, 2, 3);
+        final GraphBinaryReadLimits limits = GraphBinaryReadLimits.of(1, 2, 3, 4);
 
         final GraphBinaryReader changed = original.withLimits(limits);
 
@@ -102,9 +113,10 @@ public class GraphBinaryReadLimitsTest {
         new GraphBinaryReader(TypeSerializerRegistry.INSTANCE, null, null);
     }
 
-    private static void assertRejected(final int value, final int array, final int capacity, final String message) {
+    private static void assertRejected(final int value, final int array, final int capacity, final int bulked,
+                                       final String message) {
         try {
-            GraphBinaryReadLimits.of(value, array, capacity);
+            GraphBinaryReadLimits.of(value, array, capacity, bulked);
             fail("Should have rejected the limits");
         } catch (IllegalArgumentException ex) {
             assertEquals(message, ex.getMessage());

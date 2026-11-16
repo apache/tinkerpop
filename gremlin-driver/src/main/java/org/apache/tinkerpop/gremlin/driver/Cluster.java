@@ -181,6 +181,7 @@ public final class Cluster {
                 .maxGraphBinaryValueLength(settings.maxGraphBinaryValueLength)
                 .maxGraphBinaryArrayLength(settings.maxGraphBinaryArrayLength)
                 .maxGraphBinaryInitialCapacity(settings.maxGraphBinaryInitialCapacity)
+                .maxGraphBinaryBulkedListLength(settings.maxGraphBinaryBulkedListLength)
                 .validationRequest(settings.connectionPool.validationRequest);
 
         if (!settings.auth.type.isEmpty()) {
@@ -561,6 +562,7 @@ public final class Cluster {
         private int maxGraphBinaryValueLength = GraphBinaryReadLimits.DEFAULT_MAX_VALUE_LENGTH;
         private int maxGraphBinaryArrayLength = GraphBinaryReadLimits.DEFAULT_MAX_ARRAY_LENGTH;
         private int maxGraphBinaryInitialCapacity = GraphBinaryReadLimits.DEFAULT_MAX_INITIAL_CAPACITY;
+        private int maxGraphBinaryBulkedListLength = GraphBinaryReadLimits.DEFAULT_MAX_BULKED_LIST_LENGTH;
 
         private Builder() {
         }
@@ -1051,6 +1053,18 @@ public final class Cluster {
             return this;
         }
 
+        /**
+         * The maximum number of entries that a single bulked list in a GraphBinary response may expand to. A bulked
+         * list sends each distinct item once with a repeat count, so a small response can otherwise describe a very
+         * large list. A response containing a bulked list that would expand beyond this size fails. Each entry held
+         * in memory costs a reference of 4 or 8 bytes. This applies only to the
+         * {@link GraphBinaryMessageSerializerV4}. Defaults to 16,777,216.
+         */
+        public Builder maxGraphBinaryBulkedListLength(final int maxGraphBinaryBulkedListLength) {
+            this.maxGraphBinaryBulkedListLength = maxGraphBinaryBulkedListLength;
+            return this;
+        }
+
         List<InetSocketAddress> getContactPoints() {
             return addresses.stream().map(addy -> new InetSocketAddress(addy, port)).collect(Collectors.toList());
         }
@@ -1184,7 +1198,7 @@ public final class Cluster {
             if (serializer instanceof GraphBinaryMessageSerializerV4) {
                 ((GraphBinaryMessageSerializerV4) serializer).setReadLimits(GraphBinaryReadLimits.of(
                         builder.maxGraphBinaryValueLength, builder.maxGraphBinaryArrayLength,
-                        builder.maxGraphBinaryInitialCapacity));
+                        builder.maxGraphBinaryInitialCapacity, builder.maxGraphBinaryBulkedListLength));
             }
 
             this.executor = new ScheduledThreadPoolExecutor(builder.workerPoolSize,
@@ -1252,6 +1266,9 @@ public final class Cluster {
 
             if (builder.maxGraphBinaryInitialCapacity < 1)
                 throw new IllegalArgumentException("maxGraphBinaryInitialCapacity must be greater than zero");
+
+            if (builder.maxGraphBinaryBulkedListLength < 1)
+                throw new IllegalArgumentException("maxGraphBinaryBulkedListLength must be greater than zero");
 
             // zero value will disable idle connection detection
             // non-zero will be converted to seconds so any value between 1 and 999 is invalid as it will be less than 1 second

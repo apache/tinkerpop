@@ -37,7 +37,8 @@ public class SimpleTypeSerializerPrefixValidationTest {
 
     private static GraphBinaryReader readerWith(final int maxValueLength, final int maxArrayLength, final int maxInitialCapacity) {
         return new GraphBinaryReader(TypeSerializerRegistry.INSTANCE, null,
-                GraphBinaryReadLimits.of(maxValueLength, maxArrayLength, maxInitialCapacity));
+                GraphBinaryReadLimits.of(maxValueLength, maxArrayLength, maxInitialCapacity,
+                        GraphBinaryReadLimits.DEFAULT_MAX_BULKED_LIST_LENGTH));
     }
 
     @Test

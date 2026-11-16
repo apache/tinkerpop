@@ -63,8 +63,9 @@ public class GraphBinaryReadLimitsChannelizerTest {
         settings.maxGraphBinaryValueLength = 100;
         settings.maxGraphBinaryArrayLength = 200;
         settings.maxGraphBinaryInitialCapacity = 300;
+        settings.maxGraphBinaryBulkedListLength = 400;
 
-        assertEquals(GraphBinaryReadLimits.of(100, 200, 300), limitsOf(initChannelizer(settings)));
+        assertEquals(GraphBinaryReadLimits.of(100, 200, 300, 400), limitsOf(initChannelizer(settings)));
     }
 
     @Test
@@ -75,7 +76,21 @@ public class GraphBinaryReadLimitsChannelizerTest {
                 GraphBinaryMessageSerializerV4.class.getName(), Collections.emptyMap()));
 
         assertEquals(GraphBinaryReadLimits.of(100, GraphBinaryReadLimits.DEFAULT_MAX_ARRAY_LENGTH,
-                GraphBinaryReadLimits.DEFAULT_MAX_INITIAL_CAPACITY), limitsOf(initChannelizer(settings)));
+                GraphBinaryReadLimits.DEFAULT_MAX_INITIAL_CAPACITY,
+                GraphBinaryReadLimits.DEFAULT_MAX_BULKED_LIST_LENGTH), limitsOf(initChannelizer(settings)));
+    }
+
+    @Test
+    public void shouldFailStartupOnInvalidBulkedListLimit() {
+        final Settings settings = new Settings();
+        settings.maxGraphBinaryBulkedListLength = 0;
+
+        try {
+            initChannelizer(settings);
+            fail("An invalid limit should fail the startup rather than leave the serializer unavailable");
+        } catch (IllegalArgumentException ex) {
+            assertEquals("maxGraphBinaryBulkedListLength must be greater than zero", ex.getMessage());
+        }
     }
 
     @Test

@@ -21,7 +21,9 @@ package org.apache.tinkerpop.gremlin.util.ser.binary;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.handler.codec.http.HttpResponseStatus;
+import org.apache.tinkerpop.gremlin.structure.io.binary.DataType;
 import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryReadLimits;
+import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryWriter;
 import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.util.ser.GraphBinaryMessageSerializerV4;
@@ -30,6 +32,8 @@ import org.junit.Test;
 
 import java.util.Collections;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertSame;
@@ -37,7 +41,7 @@ import static org.junit.Assert.fail;
 
 public class GraphBinaryMessageSerializerV4ReadLimitsTest {
 
-    private static final GraphBinaryReadLimits LOW_LIMITS = GraphBinaryReadLimits.of(50, 50, 50);
+    private static final GraphBinaryReadLimits LOW_LIMITS = GraphBinaryReadLimits.of(50, 50, 50, 50);
     private static final String LONG_VALUE = String.join("", Collections.nCopies(100, "x"));
 
     private final ByteBufAllocator allocator = ByteBufAllocator.DEFAULT;
@@ -98,6 +102,40 @@ public class GraphBinaryMessageSerializerV4ReadLimitsTest {
             serializer.deserializeBinaryRequest(buffer);
             fail("a request value longer than the configured limit must be refused");
         } catch (SerializationException expected) {
+        } finally {
+            buffer.release();
+        }
+    }
+
+    private ByteBuf requestWithBulkedListField(final long bulk) {
+        final ByteBuf buf = allocator.buffer();
+        buf.writeByte(GraphBinaryWriter.VERSION_BYTE);
+        buf.writeInt(1);
+        buf.writeByte(DataType.STRING.getCodeByte());
+        buf.writeByte(0);
+        buf.writeInt(1);
+        buf.writeByte('k');
+        buf.writeByte(DataType.LIST.getCodeByte());
+        buf.writeByte(2);
+        buf.writeInt(1);
+        buf.writeByte(DataType.INT.getCodeByte());
+        buf.writeByte(0);
+        buf.writeInt(42);
+        buf.writeLong(bulk);
+        buf.writeInt(1);
+        buf.writeByte('g');
+        return buf;
+    }
+
+    @Test
+    public void shouldRejectRequestCarryingHugeBulkedListWithDefaultLimits() {
+        final GraphBinaryMessageSerializerV4 serializer = new GraphBinaryMessageSerializerV4();
+        final ByteBuf buffer = requestWithBulkedListField(Long.MAX_VALUE);
+        try {
+            serializer.deserializeBinaryRequest(buffer);
+            fail("a request carrying a bulked list that expands beyond the limit must be refused");
+        } catch (SerializationException expected) {
+            assertThat(expected.getCause().getMessage(), containsString("maxGraphBinaryBulkedListLength"));
         } finally {
             buffer.release();
         }
