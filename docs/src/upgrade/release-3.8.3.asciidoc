@@ -22,3 +22,11 @@ under the License.
 
 Please see the link:https://github.com/apache/tinkerpop/blob/3.8.3/CHANGELOG.asciidoc#release-3-8-3[changelog] for a
 complete list of all the modifications that are part of this release.
+
+==== Experimental API Designation
+
+TinkerPop now defines a common *Experimental API* designation for public APIs and features that are still under
+development. An explicitly designated experimental API may have breaking changes or be removed in a subsequent minor
+release.
+
+See: link:https://tinkerpop.apache.org/docs/3.8.3/reference/#api-stability[Reference Documentation - API Stability]

@@ -622,3 +622,47 @@ mode. If using embedded mode, simply write code as though the `Graph` instance i
 In other words, write code as though the GTM is not available locally. Taking that approach and isolating the points
 of concern above makes it so that swapping graph providers largely comes down to a configuration task (i.e. modifying
 configuration files to point at a different graph system).
+
+[[api-stability]]
+[llms-summary="The stability guarantees for TinkerPop APIs and features, including how experimental APIs are identified across each Gremlin Language Variant."]
+== API Stability
+
+TinkerPop maintains backward compatibility within a release line for public APIs and features that are not explicitly
+designated as experimental. An API or feature with the *Experimental API* designation is still under development and is
+exempt from that compatibility guarantee. It may have breaking changes or be removed in a subsequent minor release.
+Applications that use an experimental API should account for those changes when upgrading TinkerPop. For details on the
+compatibility expectations for each release category, see the
+link:https://tinkerpop.apache.org/docs/x.y.z/dev/developer/#versioning[Versioning section].
+
+Each Gremlin Language Variant uses the customary mechanism supported by its release branch to identify experimental
+APIs. The API documentation must also contain the compatibility warning shown below. When a branch does not support
+the listed source-level mechanism, this warning serves as the experimental designation.
+
+[cols="1,3",options="header"]
+|===
+|Language
+|Experimental designation
+
+|Gremlin-Java
+|The TinkerPop `@Experimental` annotation marks the API. Its Javadoc contains the following `@apiNote`:
+`Experimental API. This API may have breaking changes or be removed in a subsequent minor release.`
+
+|Gremlin-JavaScript
+|The TSDoc `@experimental` tag marks the API when the branch uses TSDoc. The TSDoc or JSDoc description begins with:
+`Experimental API. This API may have breaking changes or be removed in a subsequent minor release.`
+
+|Gremlin.Net
+|The `System.Diagnostics.CodeAnalysis.ExperimentalAttribute` marks the API with a diagnostic identifier when the
+branch's target frameworks support it. The diagnostic identifier is stable and assigned by TinkerPop, such as
+`TPNET0001`. Its XML documentation begins with: `Experimental API. This API may have breaking changes or be removed in a
+subsequent minor release.`
+
+|Gremlin-Python
+|The docstring begins with: `Experimental API. This API may have breaking changes or be removed in a subsequent minor
+release.` This convention applies to public modules, classes, methods, properties, and functions. The primary user
+documentation carries the warning for exported constants and other APIs that cannot have a docstring.
+
+|Gremlin-Go
+|After the initial symbol summary, the documentation comment contains a separate paragraph beginning with
+`Experimental: This API may have breaking changes or be removed in a subsequent minor release.`
+|===
