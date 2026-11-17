@@ -61,8 +61,6 @@ public class ClusterBuilderTest {
                 {"workerPoolSizeNeg1", Cluster.build().workerPoolSize(-1), "workerPoolSize must be greater than zero"},
                 {"maxGraphBinaryValueLength0", Cluster.build().maxGraphBinaryValueLength(0), "maxGraphBinaryValueLength must be greater than zero"},
                 {"maxGraphBinaryValueLengthNeg1", Cluster.build().maxGraphBinaryValueLength(-1), "maxGraphBinaryValueLength must be greater than zero"},
-                {"maxGraphBinaryArrayLength0", Cluster.build().maxGraphBinaryArrayLength(0), "maxGraphBinaryArrayLength must be greater than zero"},
-                {"maxGraphBinaryArrayLengthNeg1", Cluster.build().maxGraphBinaryArrayLength(-1), "maxGraphBinaryArrayLength must be greater than zero"},
                 {"maxGraphBinaryInitialCapacity0", Cluster.build().maxGraphBinaryInitialCapacity(0), "maxGraphBinaryInitialCapacity must be greater than zero"},
                 {"maxGraphBinaryInitialCapacityNeg1", Cluster.build().maxGraphBinaryInitialCapacity(-1), "maxGraphBinaryInitialCapacity must be greater than zero"},
                 {"maxGraphBinaryBulkedListLength0", Cluster.build().maxGraphBinaryBulkedListLength(0), "maxGraphBinaryBulkedListLength must be greater than zero"},

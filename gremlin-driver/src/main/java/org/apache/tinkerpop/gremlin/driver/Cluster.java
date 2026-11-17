@@ -179,7 +179,6 @@ public final class Cluster {
                 .enableUserAgentOnConnect(settings.enableUserAgentOnConnect)
                 .bulkResults(settings.bulkResults)
                 .maxGraphBinaryValueLength(settings.maxGraphBinaryValueLength)
-                .maxGraphBinaryArrayLength(settings.maxGraphBinaryArrayLength)
                 .maxGraphBinaryInitialCapacity(settings.maxGraphBinaryInitialCapacity)
                 .maxGraphBinaryBulkedListLength(settings.maxGraphBinaryBulkedListLength)
                 .validationRequest(settings.connectionPool.validationRequest);
@@ -560,7 +559,6 @@ public final class Cluster {
         private boolean enableUserAgentOnConnect = true;
         private boolean bulkResults = false;
         private int maxGraphBinaryValueLength = GraphBinaryReadLimits.DEFAULT_MAX_VALUE_LENGTH;
-        private int maxGraphBinaryArrayLength = GraphBinaryReadLimits.DEFAULT_MAX_ARRAY_LENGTH;
         private int maxGraphBinaryInitialCapacity = GraphBinaryReadLimits.DEFAULT_MAX_INITIAL_CAPACITY;
         private int maxGraphBinaryBulkedListLength = GraphBinaryReadLimits.DEFAULT_MAX_BULKED_LIST_LENGTH;
 
@@ -1034,16 +1032,6 @@ public final class Cluster {
         }
 
         /**
-         * The maximum number of elements in a fixed-size array read from a GraphBinary response, such as the
-         * arguments of a predicate. A response declaring a larger count fails. This applies only to the
-         * {@link GraphBinaryMessageSerializerV4}. Defaults to 1,048,576.
-         */
-        public Builder maxGraphBinaryArrayLength(final int maxGraphBinaryArrayLength) {
-            this.maxGraphBinaryArrayLength = maxGraphBinaryArrayLength;
-            return this;
-        }
-
-        /**
          * The maximum capacity reserved up front for a collection or map read from a GraphBinary response. This does
          * not limit the size of the collection, which grows as elements are read. It only bounds the memory reserved
          * before they are. This applies only to the {@link GraphBinaryMessageSerializerV4}. Defaults to 16,384.
@@ -1197,8 +1185,8 @@ public final class Cluster {
             this.serializer = builder.responseSerializer;
             if (serializer instanceof GraphBinaryMessageSerializerV4) {
                 ((GraphBinaryMessageSerializerV4) serializer).setReadLimits(GraphBinaryReadLimits.of(
-                        builder.maxGraphBinaryValueLength, builder.maxGraphBinaryArrayLength,
-                        builder.maxGraphBinaryInitialCapacity, builder.maxGraphBinaryBulkedListLength));
+                        builder.maxGraphBinaryValueLength, builder.maxGraphBinaryInitialCapacity,
+                        builder.maxGraphBinaryBulkedListLength));
             }
 
             this.executor = new ScheduledThreadPoolExecutor(builder.workerPoolSize,
@@ -1260,9 +1248,6 @@ public final class Cluster {
 
             if (builder.maxGraphBinaryValueLength < 1)
                 throw new IllegalArgumentException("maxGraphBinaryValueLength must be greater than zero");
-
-            if (builder.maxGraphBinaryArrayLength < 1)
-                throw new IllegalArgumentException("maxGraphBinaryArrayLength must be greater than zero");
 
             if (builder.maxGraphBinaryInitialCapacity < 1)
                 throw new IllegalArgumentException("maxGraphBinaryInitialCapacity must be greater than zero");

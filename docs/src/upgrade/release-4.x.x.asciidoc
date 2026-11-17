@@ -339,11 +339,10 @@ Gremlin Server and the Java driver now validate that prefix before reserving mem
 message can no longer request an allocation far larger than the data it carries. A negative prefix, or one that exceeds
 the bytes remaining in a fully received message, is rejected.
 
-Four settings bound the values that a well-formed message can carry. A single `String`, `BigInteger` or binary value is
-limited to 64MB by `maxGraphBinaryValueLength`, a fixed-size array such as the arguments of a predicate is limited to
-1,048,576 elements by `maxGraphBinaryArrayLength`, and a bulked list, which sends each distinct item once with a repeat
+Three settings bound the values that a well-formed message can carry. A single `String`, `BigInteger` or binary value
+is limited to 64MB by `maxGraphBinaryValueLength`, and a bulked list, which sends each distinct item once with a repeat
 count and is expanded into a full list when read, is limited to 16,777,216 entries by `maxGraphBinaryBulkedListLength`.
-The fourth, `maxGraphBinaryInitialCapacity`, caps the memory reserved up front for a collection at 16,384 entries. It
+The third, `maxGraphBinaryInitialCapacity`, caps the memory reserved up front for a collection at 16,384 entries. It
 does not limit the size of a collection, which still grows as elements are read. A single value larger than 64MB, or a
 bulked list that expands beyond 16,777,216 entries, was previously accepted and now fails unless the matching setting is
 raised. Gremlin Server also bounds each request by `maxRequestContentLength`, which defaults to 10MB, so that setting is

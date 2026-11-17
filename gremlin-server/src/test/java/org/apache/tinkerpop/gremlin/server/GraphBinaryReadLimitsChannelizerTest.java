@@ -61,11 +61,10 @@ public class GraphBinaryReadLimitsChannelizerTest {
     public void shouldApplyConfiguredLimits() {
         final Settings settings = new Settings();
         settings.maxGraphBinaryValueLength = 100;
-        settings.maxGraphBinaryArrayLength = 200;
         settings.maxGraphBinaryInitialCapacity = 300;
         settings.maxGraphBinaryBulkedListLength = 400;
 
-        assertEquals(GraphBinaryReadLimits.of(100, 200, 300, 400), limitsOf(initChannelizer(settings)));
+        assertEquals(GraphBinaryReadLimits.of(100, 300, 400), limitsOf(initChannelizer(settings)));
     }
 
     @Test
@@ -75,8 +74,7 @@ public class GraphBinaryReadLimitsChannelizerTest {
         settings.serializers = Collections.singletonList(new Settings.SerializerSettings(
                 GraphBinaryMessageSerializerV4.class.getName(), Collections.emptyMap()));
 
-        assertEquals(GraphBinaryReadLimits.of(100, GraphBinaryReadLimits.DEFAULT_MAX_ARRAY_LENGTH,
-                GraphBinaryReadLimits.DEFAULT_MAX_INITIAL_CAPACITY,
+        assertEquals(GraphBinaryReadLimits.of(100, GraphBinaryReadLimits.DEFAULT_MAX_INITIAL_CAPACITY,
                 GraphBinaryReadLimits.DEFAULT_MAX_BULKED_LIST_LENGTH), limitsOf(initChannelizer(settings)));
     }
 

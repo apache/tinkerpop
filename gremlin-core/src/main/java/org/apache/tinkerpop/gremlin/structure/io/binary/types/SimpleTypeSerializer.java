@@ -117,27 +117,6 @@ public abstract class SimpleTypeSerializer<T> implements TypeSerializer<T> {
     }
 
     /**
-     * Reads the element count of a fixed-size array that is allocated up front. The count is rejected if it is
-     * negative, exceeds {@link GraphBinaryReadLimits#getMaxArrayLength()} or, where the buffer's size is known,
-     * exceeds the bytes remaining.
-     */
-    protected static int readFixedArrayCount(final Buffer buffer, final GraphBinaryReader context) throws IOException {
-        final int count = readRawPrefix(buffer);
-        final int maxArrayLength = context.getLimits().getMaxArrayLength();
-        if (count > maxArrayLength) {
-            throw new IOException(String.format(
-                    "Invalid GraphBinary count prefix: %d exceeds the maximum allowed element count of %d. " +
-                            "The limit can be raised with the maxGraphBinaryArrayLength setting.",
-                    count, maxArrayLength));
-        }
-        if (buffer.hasKnownRemainingLength() && count > buffer.readableBytes()) {
-            throw new IOException(String.format("Invalid GraphBinary count prefix: %d (readable bytes: %d)",
-                    count, buffer.readableBytes()));
-        }
-        return count;
-    }
-
-    /**
      * Limits the pre-allocated capacity of a growable container to
      * {@link GraphBinaryReadLimits#getMaxInitialCapacity()}, as the count comes from untrusted input.
      */

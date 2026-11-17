@@ -118,7 +118,6 @@ public class SettingsTest {
         final Settings settings = new Settings();
 
         assertEquals(64 * 1024 * 1024, settings.maxGraphBinaryValueLength);
-        assertEquals(1_048_576, settings.maxGraphBinaryArrayLength);
         assertEquals(16_384, settings.maxGraphBinaryInitialCapacity);
         assertEquals(16_777_216, settings.maxGraphBinaryBulkedListLength);
     }
@@ -127,14 +126,12 @@ public class SettingsTest {
     public void shouldCreateGraphBinaryLimitsFromConfiguration() {
         final Configuration conf = new BaseConfiguration();
         conf.setProperty("maxGraphBinaryValueLength", 134217728);
-        conf.setProperty("maxGraphBinaryArrayLength", 2000000);
         conf.setProperty("maxGraphBinaryInitialCapacity", 32768);
         conf.setProperty("maxGraphBinaryBulkedListLength", 33554432);
 
         final Settings settings = Settings.from(conf);
 
         assertEquals(134217728, settings.maxGraphBinaryValueLength);
-        assertEquals(2000000, settings.maxGraphBinaryArrayLength);
         assertEquals(32768, settings.maxGraphBinaryInitialCapacity);
         assertEquals(33554432, settings.maxGraphBinaryBulkedListLength);
     }
@@ -144,7 +141,6 @@ public class SettingsTest {
         final Settings settings = Settings.from(new BaseConfiguration());
 
         assertEquals(64 * 1024 * 1024, settings.maxGraphBinaryValueLength);
-        assertEquals(1_048_576, settings.maxGraphBinaryArrayLength);
         assertEquals(16_384, settings.maxGraphBinaryInitialCapacity);
         assertEquals(16_777_216, settings.maxGraphBinaryBulkedListLength);
     }
@@ -153,14 +149,12 @@ public class SettingsTest {
     public void shouldReadGraphBinaryLimitsFromYaml() {
         final String yaml = "hosts: [localhost]\n" +
                 "maxGraphBinaryValueLength: 134217728\n" +
-                "maxGraphBinaryArrayLength: 2000000\n" +
                 "maxGraphBinaryInitialCapacity: 32768\n" +
                 "maxGraphBinaryBulkedListLength: 33554432\n";
 
         final Settings settings = Settings.read(new ByteArrayInputStream(yaml.getBytes(StandardCharsets.UTF_8)));
 
         assertEquals(134217728, settings.maxGraphBinaryValueLength);
-        assertEquals(2000000, settings.maxGraphBinaryArrayLength);
         assertEquals(32768, settings.maxGraphBinaryInitialCapacity);
         assertEquals(33554432, settings.maxGraphBinaryBulkedListLength);
     }

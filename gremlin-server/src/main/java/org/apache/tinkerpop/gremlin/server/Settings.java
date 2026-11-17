@@ -157,13 +157,6 @@ public class Settings {
     public int maxGraphBinaryValueLength = GraphBinaryReadLimits.DEFAULT_MAX_VALUE_LENGTH;
 
     /**
-     * The maximum number of elements in a fixed-size array read from a GraphBinary request, such as the arguments of
-     * a predicate. An array declaring a larger count is rejected. This setting applies only to GraphBinary. The
-     * default is 1,048,576.
-     */
-    public int maxGraphBinaryArrayLength = GraphBinaryReadLimits.DEFAULT_MAX_ARRAY_LENGTH;
-
-    /**
      * The maximum capacity reserved up front for a collection or map read from a GraphBinary request. This does not
      * limit the size of the collection, which grows as elements are read. It only bounds the memory reserved before
      * they are. This setting applies only to GraphBinary. The default is 16,384.

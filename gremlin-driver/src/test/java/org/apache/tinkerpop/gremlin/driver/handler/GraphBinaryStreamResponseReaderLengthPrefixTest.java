@@ -204,7 +204,7 @@ public class GraphBinaryStreamResponseReaderLengthPrefixTest {
 
     @Test
     public void shouldRejectValueAboveConfiguredLimitOnStreamingBuffer() throws Exception {
-        final GraphBinaryReader limited = reader.withLimits(GraphBinaryReadLimits.of(100, 100, 100, 100));
+        final GraphBinaryReader limited = reader.withLimits(GraphBinaryReadLimits.of(100, 100, 100));
         final String value = String.join("", Collections.nCopies(200, "x"));
 
         final ResultSet rs = runAgainstPayloadChunks(limited, stringResponse(value));
@@ -220,8 +220,8 @@ public class GraphBinaryStreamResponseReaderLengthPrefixTest {
     @Test
     public void shouldReadValueAboveDefaultLimitOnStreamingBufferWhenLimitIsRaised() throws Exception {
         final String value = String.join("", Collections.nCopies(200, "x"));
-        final GraphBinaryReader lowered = reader.withLimits(GraphBinaryReadLimits.of(100, 100, 100, 100));
-        final GraphBinaryReader raised = lowered.withLimits(GraphBinaryReadLimits.of(1000, 100, 100, 100));
+        final GraphBinaryReader lowered = reader.withLimits(GraphBinaryReadLimits.of(100, 100, 100));
+        final GraphBinaryReader raised = lowered.withLimits(GraphBinaryReadLimits.of(1000, 100, 100));
 
         final ResultSet rejected = runAgainstPayloadChunks(lowered, stringResponse(value));
         assertTrue(rejected.allItemsAvailable());

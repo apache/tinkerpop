@@ -215,7 +215,7 @@ public class GraphBinaryLengthPrefixTest {
     @Test
     public void shouldRejectWellFormedStringAboveConfiguredLimit() throws IOException {
         final GraphBinaryReader limited = new GraphBinaryReader(TypeSerializerRegistry.INSTANCE, null,
-                GraphBinaryReadLimits.of(10, 10, 10, 10));
+                GraphBinaryReadLimits.of(10, 10, 10));
         final Buffer buffer = bufferFactory.create(ByteBufAllocator.DEFAULT.buffer());
         try {
             writer.write("01234567890", buffer);
@@ -231,7 +231,7 @@ public class GraphBinaryLengthPrefixTest {
     @Test
     public void shouldAcceptWellFormedStringAtConfiguredLimit() throws IOException {
         final GraphBinaryReader limited = new GraphBinaryReader(TypeSerializerRegistry.INSTANCE, null,
-                GraphBinaryReadLimits.of(10, 10, 10, 10));
+                GraphBinaryReadLimits.of(10, 10, 10));
         final Buffer buffer = bufferFactory.create(ByteBufAllocator.DEFAULT.buffer());
         try {
             writer.write("0123456789", buffer);
@@ -244,7 +244,7 @@ public class GraphBinaryLengthPrefixTest {
     @Test
     public void shouldRejectWellFormedBinaryAboveConfiguredLimit() throws IOException {
         final GraphBinaryReader limited = new GraphBinaryReader(TypeSerializerRegistry.INSTANCE, null,
-                GraphBinaryReadLimits.of(10, 10, 10, 10));
+                GraphBinaryReadLimits.of(10, 10, 10));
         final Buffer buffer = bufferFactory.create(ByteBufAllocator.DEFAULT.buffer());
         try {
             writer.write(ByteBuffer.wrap(new byte[11]), buffer);
@@ -260,7 +260,7 @@ public class GraphBinaryLengthPrefixTest {
     @Test
     public void shouldReadLargeListWithSmallInitialCapacity() throws IOException {
         final GraphBinaryReader limited = new GraphBinaryReader(TypeSerializerRegistry.INSTANCE, null,
-                GraphBinaryReadLimits.of(1000, 10, 2, 10));
+                GraphBinaryReadLimits.of(1000, 2, 10));
         final List<Integer> list = IntStream.range(0, 500).boxed().collect(Collectors.toList());
         final Buffer buffer = bufferFactory.create(ByteBufAllocator.DEFAULT.buffer());
         try {
@@ -313,14 +313,14 @@ public class GraphBinaryLengthPrefixTest {
     @Test
     public void shouldRejectBulkedListWhoseBulksExceedTheLimitTogether() {
         final GraphBinaryReader limited = new GraphBinaryReader(TypeSerializerRegistry.INSTANCE, null,
-                GraphBinaryReadLimits.of(1000, 1000, 1000, 10));
+                GraphBinaryReadLimits.of(1000, 1000, 10));
         assertRejectsBulkedList(limited, 6, 6);
     }
 
     @Test
     public void shouldReadBulkedListAtConfiguredLimit() throws IOException {
         final GraphBinaryReader limited = new GraphBinaryReader(TypeSerializerRegistry.INSTANCE, null,
-                GraphBinaryReadLimits.of(1000, 1000, 1000, 10));
+                GraphBinaryReadLimits.of(1000, 1000, 10));
         final Buffer buffer = bulkedList(4, 6);
         try {
             assertEquals(Collections.nCopies(10, 42), limited.read(buffer));
@@ -333,8 +333,8 @@ public class GraphBinaryLengthPrefixTest {
     @Test
     public void shouldReadBulkedListThatExceededALoweredLimitOnceRaised() throws IOException {
         final GraphBinaryReader lowered = new GraphBinaryReader(TypeSerializerRegistry.INSTANCE, null,
-                GraphBinaryReadLimits.of(1000, 1000, 1000, 5));
-        final GraphBinaryReader raised = lowered.withLimits(GraphBinaryReadLimits.of(1000, 1000, 1000, 20));
+                GraphBinaryReadLimits.of(1000, 1000, 5));
+        final GraphBinaryReader raised = lowered.withLimits(GraphBinaryReadLimits.of(1000, 1000, 20));
 
         assertRejectsBulkedList(lowered, 10);
 

@@ -41,7 +41,7 @@ import static org.junit.Assert.fail;
 
 public class GraphBinaryMessageSerializerV4ReadLimitsTest {
 
-    private static final GraphBinaryReadLimits LOW_LIMITS = GraphBinaryReadLimits.of(50, 50, 50, 50);
+    private static final GraphBinaryReadLimits LOW_LIMITS = GraphBinaryReadLimits.of(50, 50, 50);
     private static final String LONG_VALUE = String.join("", Collections.nCopies(100, "x"));
 
     private final ByteBufAllocator allocator = ByteBufAllocator.DEFAULT;

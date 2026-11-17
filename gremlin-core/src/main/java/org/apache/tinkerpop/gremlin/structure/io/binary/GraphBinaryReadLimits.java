@@ -23,8 +23,7 @@ import java.util.Objects;
 /**
  * The bounds a {@link GraphBinaryReader} applies to the length and count prefixes it reads from the wire before
  * using them to size an allocation. The values are exposed as the {@code maxGraphBinaryValueLength},
- * {@code maxGraphBinaryArrayLength}, {@code maxGraphBinaryInitialCapacity} and
- * {@code maxGraphBinaryBulkedListLength} settings of Gremlin Server and the Java driver. A limit may be raised up to
+ * {@code maxGraphBinaryInitialCapacity} and {@code maxGraphBinaryBulkedListLength} settings of Gremlin Server and the Java driver. A limit may be raised up to
  * {@link Integer#MAX_VALUE}.
  */
 public final class GraphBinaryReadLimits {
@@ -33,11 +32,6 @@ public final class GraphBinaryReadLimits {
      * The default for {@link #getMaxValueLength()}, which is 64MB.
      */
     public static final int DEFAULT_MAX_VALUE_LENGTH = 64 * 1024 * 1024;
-
-    /**
-     * The default for {@link #getMaxArrayLength()}, which is 1,048,576.
-     */
-    public static final int DEFAULT_MAX_ARRAY_LENGTH = 1 << 20;
 
     /**
      * The default for {@link #getMaxInitialCapacity()}, which is 16,384.
@@ -53,18 +47,15 @@ public final class GraphBinaryReadLimits {
      * The limits applied when none are configured.
      */
     public static final GraphBinaryReadLimits DEFAULT = new GraphBinaryReadLimits(
-            DEFAULT_MAX_VALUE_LENGTH, DEFAULT_MAX_ARRAY_LENGTH, DEFAULT_MAX_INITIAL_CAPACITY,
-            DEFAULT_MAX_BULKED_LIST_LENGTH);
+            DEFAULT_MAX_VALUE_LENGTH, DEFAULT_MAX_INITIAL_CAPACITY, DEFAULT_MAX_BULKED_LIST_LENGTH);
 
     private final int maxValueLength;
-    private final int maxArrayLength;
     private final int maxInitialCapacity;
     private final int maxBulkedListLength;
 
-    private GraphBinaryReadLimits(final int maxValueLength, final int maxArrayLength, final int maxInitialCapacity,
+    private GraphBinaryReadLimits(final int maxValueLength, final int maxInitialCapacity,
                                   final int maxBulkedListLength) {
         this.maxValueLength = maxValueLength;
-        this.maxArrayLength = maxArrayLength;
         this.maxInitialCapacity = maxInitialCapacity;
         this.maxBulkedListLength = maxBulkedListLength;
     }
@@ -74,13 +65,11 @@ public final class GraphBinaryReadLimits {
      *
      * @throws IllegalArgumentException if a value is not greater than zero
      */
-    public static GraphBinaryReadLimits of(final int maxValueLength, final int maxArrayLength,
-                                           final int maxInitialCapacity, final int maxBulkedListLength) {
+    public static GraphBinaryReadLimits of(final int maxValueLength, final int maxInitialCapacity,
+                                           final int maxBulkedListLength) {
         if (maxValueLength < 1)
             throw new IllegalArgumentException("maxGraphBinaryValueLength must be greater than zero");
 
-        if (maxArrayLength < 1)
-            throw new IllegalArgumentException("maxGraphBinaryArrayLength must be greater than zero");
 
         if (maxInitialCapacity < 1)
             throw new IllegalArgumentException("maxGraphBinaryInitialCapacity must be greater than zero");
@@ -88,7 +77,7 @@ public final class GraphBinaryReadLimits {
         if (maxBulkedListLength < 1)
             throw new IllegalArgumentException("maxGraphBinaryBulkedListLength must be greater than zero");
 
-        return new GraphBinaryReadLimits(maxValueLength, maxArrayLength, maxInitialCapacity, maxBulkedListLength);
+        return new GraphBinaryReadLimits(maxValueLength, maxInitialCapacity, maxBulkedListLength);
     }
 
     /**
@@ -97,14 +86,6 @@ public final class GraphBinaryReadLimits {
      */
     public int getMaxValueLength() {
         return maxValueLength;
-    }
-
-    /**
-     * The maximum number of elements in a fixed-size array read from the wire, such as the arguments of a predicate.
-     * An array declaring a larger count is rejected.
-     */
-    public int getMaxArrayLength() {
-        return maxArrayLength;
     }
 
     /**
@@ -130,19 +111,18 @@ public final class GraphBinaryReadLimits {
         if (o == null || getClass() != o.getClass()) return false;
         final GraphBinaryReadLimits that = (GraphBinaryReadLimits) o;
         return maxValueLength == that.maxValueLength
-                && maxArrayLength == that.maxArrayLength
                 && maxInitialCapacity == that.maxInitialCapacity
                 && maxBulkedListLength == that.maxBulkedListLength;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(maxValueLength, maxArrayLength, maxInitialCapacity, maxBulkedListLength);
+        return Objects.hash(maxValueLength, maxInitialCapacity, maxBulkedListLength);
     }
 
     @Override
     public String toString() {
-        return "GraphBinaryReadLimits{maxValueLength=" + maxValueLength + ", maxArrayLength=" + maxArrayLength
+        return "GraphBinaryReadLimits{maxValueLength=" + maxValueLength
                 + ", maxInitialCapacity=" + maxInitialCapacity + ", maxBulkedListLength=" + maxBulkedListLength + "}";
     }
 }

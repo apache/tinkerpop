@@ -40,7 +40,7 @@ import static org.junit.Assert.assertTrue;
 
 public class ClusterGraphBinaryReadLimitsTest {
 
-    private static final GraphBinaryReadLimits CONFIGURED = GraphBinaryReadLimits.of(1000, 2000, 3000, 4000);
+    private static final GraphBinaryReadLimits CONFIGURED = GraphBinaryReadLimits.of(1000, 3000, 4000);
 
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
@@ -67,7 +67,6 @@ public class ClusterGraphBinaryReadLimitsTest {
     public void shouldApplyLimitsFromBuilder() {
         cluster = Cluster.build("localhost")
                 .maxGraphBinaryValueLength(1000)
-                .maxGraphBinaryArrayLength(2000)
                 .maxGraphBinaryInitialCapacity(3000)
                 .maxGraphBinaryBulkedListLength(4000)
                 .create();
@@ -81,7 +80,6 @@ public class ClusterGraphBinaryReadLimitsTest {
         cluster = Cluster.build("localhost")
                 .responseSerializer(serializer)
                 .maxGraphBinaryValueLength(1000)
-                .maxGraphBinaryArrayLength(2000)
                 .maxGraphBinaryInitialCapacity(3000)
                 .maxGraphBinaryBulkedListLength(4000)
                 .create();
@@ -95,7 +93,6 @@ public class ClusterGraphBinaryReadLimitsTest {
         final File file = temporaryFolder.newFile("cluster.yaml");
         Files.write(file.toPath(), ("hosts: [localhost]\n" +
                 "maxGraphBinaryValueLength: 1000\n" +
-                "maxGraphBinaryArrayLength: 2000\n" +
                 "maxGraphBinaryInitialCapacity: 3000\n" +
                 "maxGraphBinaryBulkedListLength: 4000\n").getBytes(StandardCharsets.UTF_8));
 
@@ -112,7 +109,6 @@ public class ClusterGraphBinaryReadLimitsTest {
                 "  className: " + GraphBinaryMessageSerializerV4.class.getName() + "\n" +
                 "  config: { }\n" +
                 "maxGraphBinaryValueLength: 1000\n" +
-                "maxGraphBinaryArrayLength: 2000\n" +
                 "maxGraphBinaryInitialCapacity: 3000\n" +
                 "maxGraphBinaryBulkedListLength: 4000\n").getBytes(StandardCharsets.UTF_8));
 
@@ -126,7 +122,6 @@ public class ClusterGraphBinaryReadLimitsTest {
         final Configuration conf = new BaseConfiguration();
         conf.setProperty("hosts", Collections.singletonList("localhost"));
         conf.setProperty("maxGraphBinaryValueLength", "1000");
-        conf.setProperty("maxGraphBinaryArrayLength", "2000");
         conf.setProperty("maxGraphBinaryInitialCapacity", "3000");
         conf.setProperty("maxGraphBinaryBulkedListLength", "4000");
 
