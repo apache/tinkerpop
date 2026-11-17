@@ -332,7 +332,7 @@ shown in examples in <<sack-step,sack()-step>>.
 The `withComputer()` configuration adds a `Computer` that will be used to process the traversal and is necessary for
 OLAP based processing and steps that require that processing. See <<sparkgraphcomputer,examples>> related to
 `SparkGraphComputer` or see examples in the computer required steps, like <<pagerank-step,pageRank()>> or
-<<shortestpath-shortestPath()>>.
+<<shortestpath-step,shortestPath()>>.
 
 [[configuration-steps-withsack]]
 === WithSack Configuration
@@ -3073,7 +3073,7 @@ link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gre
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#mergeE(java.util.Map)++[`mergeE(Map)`],
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#mergeE(org.apache.tinkerpop.gremlin.process.traversal.Traversal)++[`mergeE(Traversal)`],
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/Merge.html++[`Merge`],
-link:++https://tinkerpop.apache.org/docs/x.y.z/dev/provider/#_mergee++[Semantics]
+link:++https://tinkerpop.apache.org/docs/x.y.z/dev/provider/#merge-e-step++[Semantics]
 
 [llms-summary="The mergeV() -step is used to add vertices and their properties to a graph in a \"create if not exist\" fashion."]
 [[mergevertex-step]]
@@ -3282,7 +3282,7 @@ link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gre
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#mergeV(java.util.Map)++[`mergeV(Map)`],
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#mergeV(org.apache.tinkerpop.gremlin.process.traversal.Traversal)++[`mergeV(Traversal)`],
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/Merge.html++[`Merge`],
-link:++https://tinkerpop.apache.org/docs/x.y.z/dev/provider/#_mergee++[Semantics]
+link:++https://tinkerpop.apache.org/docs/x.y.z/dev/provider/#merge-v-step++[Semantics]
 
 [llms-summary="The min()-step (map) operates on a stream of comparable objects and determines which is the first object according to its natural order in the stream."]
 [[min-step]]

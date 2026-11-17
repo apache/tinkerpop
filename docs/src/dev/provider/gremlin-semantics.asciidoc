@@ -202,9 +202,9 @@ The `NOT` predicate inverts `TRUE` and `FALSE`, respectively, but maintains `ERR
 [[gremlin-semantics-equality-comparability]]
 === Equality and Comparability
 
-<<Equality,Equality>> and <<Comparability,Comparability>> can be understood to be semantically aligned with one another.
-As mentioned above, <<Equality,Equality>> is used for `P.eq/neq` (and derived predicates) and
-<<Comparability,Comparability>> is used for `P.lt/lte/gt/gte` (and derived predicates).
+<<gremlin-semantics-equality-comparability,Equality>> and <<gremlin-semantics-equality-comparability,Comparability>> can be understood to be semantically aligned with one another.
+As mentioned above, <<gremlin-semantics-equality-comparability,Equality>> is used for `P.eq/neq` (and derived predicates) and
+<<gremlin-semantics-equality-comparability,Comparability>> is used for `P.lt/lte/gt/gte` (and derived predicates).
 If we define Comparability using a `compare()` function over `A` and `B` as follows:
 
 [source,text]
@@ -228,11 +228,11 @@ For any (A, B):
   Comparability.compare(A, B) => ERROR implies Equality.equals(A, B) == FALSE
 ----
 
-The following table illustrates how <<Equality,Equality>> and <<Comparability,Comparability>> operate under various
+The following table illustrates how <<gremlin-semantics-equality-comparability,Equality>> and <<gremlin-semantics-equality-comparability,Comparability>> operate under various
 classes of comparison:
 
 |===
-|Class|Arguments|<<Comparability,Comparability>>|<<Equality,Equality>>
+|Class|Arguments|<<gremlin-semantics-equality-comparability,Comparability>>|<<gremlin-semantics-equality-comparability,Equality>>
 
 |Comparisons Involving `NaN`|`(NaN,X)` +
 
@@ -255,7 +255,7 @@ where `X` and `Y` of different type|`ERROR`|`FALSE`
 
 ==== Equality and Comparability Semantics by Type
 
-For <<Equality,Equality>> and <<Comparability,Comparability>> evaluation of values within the same type family, we
+For <<gremlin-semantics-equality-comparability,Equality>> and <<gremlin-semantics-equality-comparability,Comparability>> evaluation of values within the same type family, we
 define the semantics per type family as follows.
 
 ===== Number
@@ -267,13 +267,13 @@ Edge cases:
 * `-0.0 == 0.0 == +0.0`
 * `+INF == +INF`,  `-INF == -INF`,  `-INF != +INF`
 ** `Float.±Infinity` and `Double.±Infinity` adhere to the same type promotion rules.
-* As described above `NaN` is not <<Equality,Equal>> and not <<Comparability,Comparable>> to any Number (including itself).
+* As described above `NaN` is not <<gremlin-semantics-equality-comparability,Equal>> and not <<gremlin-semantics-equality-comparability,Comparable>> to any Number (including itself).
 
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-test/src/main/resources/org/apache/tinkerpop/gremlin/test/features/semantics/Equality.feature[Equality Tests - Scenarios prefixed with "Primitives_Number_"]
 
 ===== nulltype
 
-As described in the table above, `null == null`, but is not <<Equality,Equal>> and not <<Comparability,Comparable>> to
+As described in the table above, `null == null`, but is not <<gremlin-semantics-equality-comparability,Equal>> and not <<gremlin-semantics-equality-comparability,Comparable>> to
 any non-`null` value.
 
 ===== Boolean
@@ -288,7 +288,7 @@ We assume the common lexicographical order over unicode strings. `A` and `B` are
 ===== UUID
 
 UUID is evaluated based on its String representation. However, `UUID("b46d37e9-755c-477e-9ab6-44aabea51d50")` and the
-String `"b46d37e9-755c-477e-9ab6-44aabea51d50"` are not <<Equality,Equal>> and not <<Comparability,Comparable>>.
+String `"b46d37e9-755c-477e-9ab6-44aabea51d50"` are not <<gremlin-semantics-equality-comparability,Equal>> and not <<gremlin-semantics-equality-comparability,Comparable>>.
 
 ===== Date
 
@@ -298,13 +298,13 @@ Dates are evaluated based on the numerical comparison of Unix Epoch time.
 
 If they are the same type of Element, these are compared by the value of their `T.id` according to the semantics for
 the particular primitive type used for ids (implementation-specific). Elements of different types are
-not <<Equality,Equal>> and not <<Comparability,Comparable>>.
+not <<gremlin-semantics-equality-comparability,Equal>> and not <<gremlin-semantics-equality-comparability,Comparable>>.
 
 ===== Property
 
 Properties are compared first by key (String semantics), then by value, according to the semantics for the particular
 primitive type of the value. Properties with values in different type families are
-not <<Equality,Equal>> and not <<Comparability,Comparable>>.
+not <<gremlin-semantics-equality-comparability,Equal>> and not <<gremlin-semantics-equality-comparability,Comparable>>.
 
 ===== List
 
@@ -329,14 +329,14 @@ Empty lists are equal to other empty lists and less than non-empty lists.
 |`[1,2,3]`|`[1,2,3,4]`|`-1`|`P.lt`|`A` exhausts first
 |`[1,2,3,4]`|`[1,2,3]`|`1`|`P.gt`|`B` exhausts first
 |`[1,2]`|`[1.0,2.0]`|`0`|`P.eq`|type promotion
-|`[1,"a"]`|`[1,"b"]`|`-1`|`P.lt`|pairwise <<Comparability,Comparable>> and `"a" < "b"`
+|`[1,"a"]`|`[1,"b"]`|`-1`|`P.lt`|pairwise <<gremlin-semantics-equality-comparability,Comparable>> and `"a" < "b"`
 |`[1]`|`["a"]`|`ERROR`|`P.neq`|cross-type comparison
 |===
 
 ===== Path
 
 <<Equality and Comparability,Equality and Comparability>> semantics for `Paths` are similar to those for `Lists`, described above (though
-`Paths` and `Lists` are still of different types and thus not <<Equality,Equal>> and not <<Comparability,Comparable>>).
+`Paths` and `Lists` are still of different types and thus not <<gremlin-semantics-equality-comparability,Equal>> and not <<gremlin-semantics-equality-comparability,Comparable>>).
 
 ===== Set
 
@@ -391,7 +391,7 @@ treat pairwise entries with semantically equivalent keys as the same.
 === Orderability
 
 <<Equality and Comparability,Equality and Comparability>> were described in depth in the sections above, and their
-semantics map to the `P` predicates. <<Comparability,Comparability>> in particular is limited to
+semantics map to the `P` predicates. <<gremlin-semantics-equality-comparability,Comparability>> in particular is limited to
 comparison of values within the same type family. Comparability is complete within a given type (except for `NaN`,
 which results in `ERROR` for any comparison), but returns `ERROR` for comparisons across types (e.g., an integer cannot
 be compared to a string).
@@ -1313,7 +1313,7 @@ be set to `Merge.inV`. Other combinations are not allowed and will result in exc
 * As is common to Gremlin, it is expected that `Traversal` arguments may utilize `sideEffect()` steps.
 
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/MergeEdgeStep.java[source],
-link:https://tinkerpop.apache.org/docs/x.y.z/reference/#mergee-step[reference]
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#mergeedge-step[reference]
 
 [llms-summary="The formal semantics of the mergeV() step: provides upsert-like functionality for vertices."]
 [[merge-v-step]]
@@ -1383,7 +1383,7 @@ exception at traversal construction rather than the later value silently replaci
 * As is common to Gremlin, it is expected that `Traversal` arguments may utilize `sideEffect()` steps.
 
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/MergeVertexStep.java[source],
-link:https://tinkerpop.apache.org/docs/x.y.z/reference/#mergev-step[reference]
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#mergevertex-step[reference]
 
 [llms-summary="The formal semantics of the product() step: adds the cartesian product to the Traversal Stream."]
 [[product-step]]
