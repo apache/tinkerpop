@@ -107,7 +107,7 @@ The simplest property graph model consists of vertices and edges, each with a si
 properties. This baseline is consistent with the labelled property graph model and is the setup most widely
 supported across TinkerPop-enabled graphs. Beyond that baseline, TinkerPop allows graph providers to optionally
 support certain advanced variances on the data model that extend what a graph element can represent. Support for
-these variances differs from provider to provider and can be discovered at runtime via <<features,`Feature`>>. The
+these variances differs from provider to provider and can be discovered at runtime via <<_features,`Feature`>>. The
 variances covered in this section are:
 
 * Multiple properties (*multi-properties*): a vertex property key can have multiple values.

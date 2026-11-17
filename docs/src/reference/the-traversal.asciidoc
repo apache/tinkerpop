@@ -3574,7 +3574,7 @@ automatically uses the index for seed vertex lookup, reducing the initial scan t
 indexed property matches the filter value. This is especially effective when the parameterized query pattern is
 constant but the parameter values change across calls — the query graph is cached once and each invocation
 performs an index-backed seed lookup rather than a full scan. Whether `Graph.Index` is backed by a real index
-structure depends on the graph system; see <<tinkerpop-providers-tinkergql,the provider documentation>> and
+structure depends on the graph system; see link:https://tinkerpop.apache.org/docs/x.y.z/dev/provider/#tinkerpop-providers-tinkergql[the provider documentation] and
 your specific graph system's documentation for details.
 
 ===== Unsupported Features
@@ -6363,7 +6363,7 @@ g.V(1).out('created').in('created').where(out('created').count().is(gt(1))).valu
 <2> Of the co-creators of marko, only keep those whose name is josh or peter. (using a sideEffect)
 <3> Which of marko's collaborators have worked on more than 1 project? (using a traversal)
 
-IMPORTANT: Please see <<using-where-with-match,`match().where()`>> and <<using-where-with-select,`select().where()`>>
+IMPORTANT: Please see <<match-step,`match().where()`>> and <<using-where-with-select,`select().where()`>>
 for how `where()` can be used in conjunction with `Map<String,Object>` projecting steps -- i.e. `Scope.local`.
 
 A few more examples of filtering an arbitrary object based on a anonymous traversal is provided below.

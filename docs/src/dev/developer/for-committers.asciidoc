@@ -420,12 +420,6 @@ TinkerPop also has a link:https://the-asf.slack.com/archives/CUBJ577EW[Slack cha
 about the project among contributors, though it must be kept in mind that project discussion and decisions must occur
 on the dev mailing list mentioned above.
 
-Occasionally, online meetings via video conference are held. These meetings are scheduled via the dev mailing list
-about a week before they are to occur to find a day and time that is available for those interested in attending.
-On the day of the meeting, the meeting organizer will create a Google Hangout (or similar video conferencing link).
-At that point, all who are interested can attend.  Meeting minutes should be
-taken and added to the <<meetings,Meetings>> section of this document using the pattern already established.
-
 == Media Content Submission
 
 Tinkerpop hosts link:https://www.twitch.tv/apachetinkerpop[Twitch streams] for various knowledge sharing sessions and

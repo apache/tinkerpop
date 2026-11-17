@@ -1380,8 +1380,8 @@ however, will only contain the `Status` and `Exception` without the `Message`.
 ==== HTTP Examples
 
 For examples of actual requests and responses, take a look at the IO documentation for
-link:https://tinkerpop.apache.org/docs/x.y.z/dev/io/#_requestmessage[GraphSON requests] and
-link:https://tinkerpop.apache.org/docs/x.y.z/dev/io/#_responsemessage[GraphSON responses].
+link:https://tinkerpop.apache.org/docs/x.y.z/dev/io/#_standard_request[GraphSON requests] and
+link:https://tinkerpop.apache.org/docs/x.y.z/dev/io/#_standard_result[GraphSON responses].
 
 === Transactions
 

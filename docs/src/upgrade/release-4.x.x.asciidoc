@@ -580,8 +580,9 @@ a traverser against a dynamically computed value. In particular, patterns of the
 `__.as("x")...where("x", P.gt("y"))` can often be replaced with a single `has()` or `is()` step containing
 a traversal predicate.
 
-See: <<has-step,has()>>, <<v-step,V()>>, <<property-step,property()>>, <<is-step,is()>>,
-<<where-step,where()>>,
+See: link:https://tinkerpop.apache.org/docs/4.0.0-beta.3/reference/#has-step[has()], link:https://tinkerpop.apache.org/docs/4.0.0-beta.3/reference/#v-step[V()],
+link:https://tinkerpop.apache.org/docs/4.0.0-beta.3/reference/#property-step[property()], link:https://tinkerpop.apache.org/docs/4.0.0-beta.3/reference/#is-step[is()],
+link:https://tinkerpop.apache.org/docs/4.0.0-beta.3/reference/#where-step[where()],
 link:https://issues.apache.org/jira/browse/TINKERPOP-2586[TINKERPOP-2586],
 link:https://issues.apache.org/jira/browse/TINKERPOP-2777[TINKERPOP-2777],
 link:https://issues.apache.org/jira/browse/TINKERPOP-3005[TINKERPOP-3005],
@@ -1265,7 +1266,7 @@ The key improvement is that driver users now receive PDT values as structured `C
 default, without any configuration — eliminating the serializer errors that unknown custom types caused in TP3, and
 benefiting all driver users transparently.
 
-See <<provider-defined-types>> for full details on annotation usage, field filtering, nested types, and ServiceLoader
+See link:https://tinkerpop.apache.org/docs/4.0.0-beta.3/dev/provider/#provider-defined-types[Provider Defined Types] for full details on annotation usage, field filtering, nested types, and ServiceLoader
 registration.
 
 In addition to composite PDTs (which carry a map of fields), providers can also expose *Primitive PDTs*, types
@@ -1274,7 +1275,7 @@ ideal for types with no native TinkerPop representation that can be expressed as
 integers or WKT geometry strings. Each GLV provides an adapter interface for primitive PDTs
 (`PrimitivePDTAdapter` in Java, `register_primitive` in Python, `registerPrimitive` in JavaScript,
 `RegisterPrimitiveFuncs` in Go, `IPrimitivePdtAdapter<T>` in .NET). A type may be registered as composite or
-primitive, not both. See <<primitive-provider-defined-types>> for details.
+primitive, not both. See link:https://tinkerpop.apache.org/docs/4.0.0-beta.3/dev/provider/#primitive-provider-defined-types[Primitive Provider Defined Types] for details.
 
 ===== Tree Serialization and API Changes
 
@@ -1916,7 +1917,7 @@ See <<java-requestinterceptor, Changes to Java RequestInterceptor>> for more det
 
 The `:remote` and `:submit` commands, used to establish connections and send scripts to a remote `gremlin-server`, are
 no longer supported in `gremlin-console`. If sending a traversal, users should instead create a `RemoteTraversalSource`
-(see <<simplified-g-creation, Simplification to g Creation for examples>>).
+(see link:https://tinkerpop.apache.org/docs/4.0.0-beta.1/reference/#connecting-gremlin-server[Connecting to Gremlin Server] for examples).
 
 While a `RemoteTraversalSource` is the preferred method of executing remote traversals from `gremlin-console`, it
 remains possible to send scripts directly using a `gremlin-driver` `Client`.

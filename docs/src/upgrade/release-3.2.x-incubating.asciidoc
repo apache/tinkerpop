@@ -65,7 +65,7 @@ The packaged `*-secure.yaml` files now restrict the protocol to `TLSv1.2` by def
 
 PEM-based configurations are deprecated and may be removed in a future release.
 
-See also https://tinkerpop.apache.org/docs/x.y.z/reference/#_configuration[Connecting via Java Configuration],
+See also https://tinkerpop.apache.org/docs/3.2.10/reference/#_configuration[Connecting via Java Configuration],
 https://tinkerpop.apache.org/docs/3.2.10/reference/#_configuring_2[Gremlin Server Configuration].
 
 link:https://issues.apache.org/jira/browse/TINKERPOP-2022[TINKERPOP-2022]
@@ -888,7 +888,7 @@ The "force" argument is passed on the "close" message and is a boolean value. Th
 and defaults to `false`.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-932[TINKERPOP-932],
-link:https://tinkerpop.apache.org/docs/x.y.z/dev/provider/#_session_opprocessor[Provider Documentation - Session OpProcessor]
+link:https://tinkerpop.apache.org/docs/3.2.4/dev/provider/#_session_opprocessor[Provider Documentation - Session OpProcessor]
 
 ===== SASL Authentication
 

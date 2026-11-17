@@ -1876,8 +1876,7 @@ client.submit("[1,2,3,x]", params);
 ----
 
 The more parameters that are used in a script the more expensive the compilation step becomes. Gremlin Server has a
-`OpProcessor` setting called `maxParameters`, which is mentioned in the <<opprocessor-configurations,OpProcessor Configuration>>
-section. It controls the maximum number of parameters that can be passed to the server for script evaluation purposes.
+setting called `maxParameters`, which is mentioned in the <<server-configuring,Configuring>> section. It controls the maximum number of parameters that can be passed to the server for script evaluation purposes.
 Use of this setting can prevent accidental long run compilations, which individually are not terribly oppressive to
 the server, but taken as a group under high concurrency would be considered detrimental.
 
