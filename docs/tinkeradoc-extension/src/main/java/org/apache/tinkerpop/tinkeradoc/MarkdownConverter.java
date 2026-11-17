@@ -101,6 +101,26 @@ public class MarkdownConverter extends StringConverter {
             System.out.println("[MD-CONV] transform=" + transform + " nodeName=" + node.getNodeName());
         }
 
+        final String rendered = render(name, node);
+        return isAnchoredBlock(node) ? anchorLine(node.getId()) + rendered : rendered;
+    }
+
+    /**
+     * Whether {@code node} is a block (not the document or a section, which place their own anchor
+     * before their heading) carrying an id, as an AsciiDoc {@code [[id]]} or {@code [#id]} on a
+     * paragraph, admonition, listing, table and so on. The HTML backend gives such a block its id,
+     * so links to it resolve there; the Markdown has to carry the same anchor for them to resolve
+     * here too.
+     */
+    private static boolean isAnchoredBlock(final ContentNode node) {
+        if (!(node instanceof StructuralNode) || node instanceof Document || node instanceof Section) {
+            return false;
+        }
+        final String id = node.getId();
+        return id != null && !id.isEmpty();
+    }
+
+    private String render(final String name, final ContentNode node) {
         switch (name) {
             case "document":
             case "embedded":
@@ -167,8 +187,15 @@ public class MarkdownConverter extends StringConverter {
         }
     }
 
-    /** Renders an {@code inline_anchor} (link/xref) as a Markdown link, or bare text if no target. */
+    /**
+     * Renders an {@code inline_anchor}: a link or xref as a Markdown link (bare text if it has no
+     * target), and an inline {@code anchor:id[]} or {@code [[id]]} as an HTML anchor.
+     */
     private String convertInlineAnchor(final org.asciidoctor.ast.PhraseNode node) {
+        if ("ref".equals(node.getType())) {
+            final String id = node.getId();
+            return id == null || id.isEmpty() ? "" : "<a id=\"" + id + "\"></a>";
+        }
         final String text = node.getText();
         final Object target = node.getTarget();
         if (target == null) return text == null ? "" : text;
@@ -281,9 +308,11 @@ public class MarkdownConverter extends StringConverter {
 
     /** Emits {@code <a id="..."></a>} on its own line when the node has a non-empty id. */
     private static void appendAnchor(final StringBuilder sb, final String id) {
-        if (id != null && !id.isEmpty()) {
-            sb.append("<a id=\"").append(id).append("\"></a>\n");
-        }
+        if (id != null && !id.isEmpty()) sb.append(anchorLine(id));
+    }
+
+    private static String anchorLine(final String id) {
+        return "<a id=\"" + id + "\"></a>\n";
     }
 
     /**

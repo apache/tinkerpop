@@ -412,7 +412,7 @@ shown in examples in <<sack-step,sack()-step>>.
 The `withComputer()` configuration adds a `Computer` that will be used to process the traversal and is necessary for
 OLAP based processing and steps that require that processing. See <<sparkgraphcomputer,examples>> related to
 `SparkGraphComputer` or see examples in the computer required steps, like <<pagerank-step,pageRank()>> or
-<<shortestpath-shortestPath()>>.
+<<shortestpath-step,shortestPath()>>.
 
 [[configuration-steps-withsack]]
 === WithSack Configuration

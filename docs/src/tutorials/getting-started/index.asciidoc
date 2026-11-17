@@ -149,8 +149,8 @@ NOTE: The `traversal()` method is statically imported from the `AnonymousTravers
 in a more fluent fashion. There are common imports for all languages that support Gremlin to make it easier to read
 and to write (link:https://tinkerpop.apache.org/docs/x.y.z/reference/#java-imports[Java],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#python-imports[Python],
-link:https://tinkerpop.apache.org/docs/x.y.z/reference/#dotnet-imports[.NET],
-link:https://tinkerpop.apache.org/docs/x.y.z/reference/#javascript-imports[Javascript]).
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#gremlin-dotnet-imports[.NET],
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#gremlin-javascript-imports[Javascript]).
 
 With your `TraversalSource` `g` available it is now possible to ask Gremlin to traverse the `Graph`:
 

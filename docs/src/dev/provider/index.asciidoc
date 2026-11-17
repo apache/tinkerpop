@@ -1532,7 +1532,7 @@ returned.
 
 In addition to authenticating users at the start of a connection, Gremlin Server allows providers to authorize users on
 a per request basis. If
-link:https://tinkerpop.apache.org/docs/x.y.z/reference/#_configuring_2[a java class is configured] that implements the
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#server-configuring[a java class is configured] that implements the
 link:https://tinkerpop.apache.org/javadocs/x.y.z/full/org/apache/tinkerpop/gremlin/server/authz/Authorizer.html[Authorizer interface],
 Gremlin Server passes each request to this `Authorizer`. The `Authorizer` can deny authorization for the request by
 throwing an exception and Gremlin Server returns `UNAUTHORIZED` (status code `401`) to the client. The `Authorizer`

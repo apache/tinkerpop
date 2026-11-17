@@ -163,7 +163,7 @@ g.V().has('vp2',0.65780294d)    <3>
 <3> The explicit `double` will only match the `double` and `BigDecimal` values.
 
 Unlike other graphs, the above demonstration shows that TinkerGraph does not do any form of type coercion (except for
-type coercion related to element identifiers as described in the <<next section,tinkergraph-configuration>>).
+type coercion related to element identifiers as described in the <<tinkergraph-configuration,next section>>).
 
 [[tinkergraph-configuration]]
 === Configuration

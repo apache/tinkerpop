@@ -47,6 +47,17 @@ import java.util.regex.Pattern;
  * the anchor id becomes both the page's file name (for pages that start a file) and the link
  * fragment. Links of the form {@code [label](#anchor)} are rewritten to {@code [label](file.md#anchor)}
  * when the target anchor lives on a different page.
+ * <p>
+ * <b>Links between books.</b> The AsciiDoc source links from one book to another with absolute site
+ * URLs such as {@code https://tinkerpop.apache.org/docs/x.y.z/reference/#addedge-step}. They resolve
+ * in the HTML, where each book is a single page, but in the Markdown the book is split into many
+ * pages, so the URL names no page. When the books are split together under a common root (see
+ * {@link #splitBooks}), such a link to a book in the same run and the same version is rewritten to a
+ * relative link to the page that owns the anchor. Links pinned to another version, as the upgrade
+ * docs do, are left alone.
+ * <p>
+ * <b>Broken links.</b> A link to an anchor that no page owns, within the book or in another book of
+ * the run, is reported as a violation alongside the size lint, so {@code --strict} fails the build.
  */
 class MarkdownSplitter {
 
@@ -58,6 +69,8 @@ class MarkdownSplitter {
     static final int DEFAULT_BUDGET = 50_000;
 
     private static final Pattern ANCHOR = Pattern.compile("^<a id=\"([^\"]+)\"></a>$");
+    // Any anchor, including one inside a line (an inline anchor:id[] in the AsciiDoc).
+    private static final Pattern ANY_ANCHOR = Pattern.compile("<a id=\"([^\"]+)\"></a>");
     private static final Pattern HEADING = Pattern.compile("^(#{1,6}) +(.*)$");
     // Intra-document links: [label](#anchor). Capture label and anchor separately.
     private static final Pattern INTRA_LINK = Pattern.compile("\\]\\(#([^)]+)\\)");
@@ -71,7 +84,10 @@ class MarkdownSplitter {
     private static final Logger LOG = Logger.getLogger(MarkdownSplitter.class.getName());
 
     private final int budget;
+    private final String version;
     private final String llmsPointer;
+    /** Links between books for {@link #version}, or {@code null} without a version. */
+    private final Pattern crossBookLink;
 
     MarkdownSplitter() {
         this(DEFAULT_BUDGET);
@@ -88,7 +104,9 @@ class MarkdownSplitter {
      */
     MarkdownSplitter(final int budget, final String version) {
         this.budget = budget;
+        this.version = version == null || version.isEmpty() ? null : version;
         this.llmsPointer = llmsPointer(version);
+        this.crossBookLink = this.version == null ? null : crossBookLink(this.version);
         if (version == null || version.isEmpty()) {
             LOG.warning("No version supplied; pages will point at the site-root /llms.txt rather "
                     + "than this version's index. Pass --version to make the pointer version-correct.");
@@ -117,45 +135,87 @@ class MarkdownSplitter {
      * @return the file names written into the book's directory
      */
     List<String> splitFile(final Path bookFile, final List<String> violations) throws IOException {
-        final String markdown = new String(Files.readAllBytes(bookFile), StandardCharsets.UTF_8);
-        final Path dir = bookFile.getParent();
-        final String indexName = bookFile.getFileName().toString();
-        final List<Page> pages = split(markdown, indexName);
-
-        final List<String> written = new ArrayList<>();
-        for (final Page page : pages) {
-            final Path out = dir.resolve(page.getFileName());
-            final byte[] bytes = page.getContent().getBytes(StandardCharsets.UTF_8);
-            Files.write(out, bytes);
-            written.add(page.getFileName());
-            if (bytes.length > budget && !page.isOversizeAllowed()) {
-                violations.add(out + " is " + bytes.length + " bytes, over the " + budget
-                        + "-byte budget; add an llms-summary to a subsection to split it, "
-                        + "or mark the section allow-oversize=\"true\" if it must stay whole");
-            }
-        }
-        LOG.info("Split " + bookFile + " into " + written.size() + " pages: " + written);
-        return written;
+        return splitBooks(null, List.of(bookFile), violations).get(0);
     }
 
     /**
-     * CLI entry point:
-     * {@code MarkdownSplitter [--budget N] [--strict] [--version x.y.z] <book.md> [<book.md> ...]}.
+     * Splits several rendered books in place, as {@link #splitFile(Path, List)} does for one, and
+     * resolves the links between them. With a {@code root}, each book is known by its directory
+     * relative to it ({@code reference}, {@code dev/provider}), which is also its path on the site,
+     * so an absolute link to {@code https://tinkerpop.apache.org/docs/<version>/<book>/#anchor} for
+     * this splitter's version is rewritten to a relative link to the page owning the anchor. Without
+     * a root, or without a version, links between books are left as they are.
+     * <p>
+     * Every link to an anchor no page owns, in its own book or in another book of the run, is added
+     * to {@code violations}, as is every page over the byte budget.
+     *
+     * @return the file names written into each book's directory, in the order of {@code bookFiles}
+     */
+    List<List<String>> splitBooks(final Path root, final List<Path> bookFiles,
+                                  final List<String> violations) throws IOException {
+        final List<SplitBook> books = new ArrayList<>();
+        final Map<String, SplitBook> byPath = new LinkedHashMap<>();
+        for (final Path bookFile : bookFiles) {
+            final String markdown = new String(Files.readAllBytes(bookFile), StandardCharsets.UTF_8);
+            final String path = root == null ? null : bookPath(root, bookFile.getParent());
+            final SplitBook book = splitBook(markdown, bookFile.getFileName().toString(), path);
+            books.add(book);
+            if (path != null) byPath.put(path, book);
+        }
+
+        final List<List<String>> written = new ArrayList<>();
+        for (int i = 0; i < books.size(); i++) {
+            final Path bookFile = bookFiles.get(i);
+            final SplitBook book = books.get(i);
+            final Path dir = bookFile.getParent();
+            final List<String> names = new ArrayList<>();
+            for (final Page split : book.pages) {
+                final Path out = dir.resolve(split.getFileName());
+                final Page page = resolveLinks(book, split, byPath, out, violations);
+                final byte[] bytes = page.getContent().getBytes(StandardCharsets.UTF_8);
+                Files.write(out, bytes);
+                names.add(page.getFileName());
+                if (bytes.length > budget && !page.isOversizeAllowed()) {
+                    violations.add(out + " is " + bytes.length + " bytes, over the " + budget
+                            + "-byte budget; add an llms-summary to a subsection to split it, "
+                            + "or mark the section allow-oversize=\"true\" if it must stay whole");
+                }
+            }
+            LOG.info("Split " + bookFile + " into " + names.size() + " pages: " + names);
+            written.add(names);
+        }
+        return written;
+    }
+
+    /** A book's directory relative to the docs root, with {@code /} separators. */
+    private static String bookPath(final Path root, final Path bookDir) {
+        final Path rel = root.toAbsolutePath().normalize().relativize(bookDir.toAbsolutePath().normalize());
+        return rel.toString().replace('\\', '/');
+    }
+
+    /**
+     * CLI entry point: {@code MarkdownSplitter [--budget N] [--strict] [--version x.y.z]
+     * [--root dir] <book.md> [<book.md> ...]}.
      * Each named rendered book file is split in place (summary-driven) into pages in its own
-     * directory. Pages over the byte budget that are not flagged {@code allow-oversize} are reported;
-     * with {@code --strict} the process exits non-zero when any such violation exists, so the docs
-     * build can gate on it. {@code --version} sets the version the per-page index pointer resolves to.
+     * directory. Pages over the byte budget that are not flagged {@code allow-oversize}, and links to
+     * anchors no page owns, are reported; with {@code --strict} the process exits non-zero when any
+     * such violation exists, so the docs build can gate on it. {@code --version} sets the version the
+     * per-page index pointer resolves to. {@code --root} is the docs root the books sit under, which
+     * turns on rewriting of links between books (see {@link #splitBooks}).
      */
     public static void main(final String[] args) throws IOException {
         int budget = DEFAULT_BUDGET;
         boolean strict = false;
         String version = null;
+        Path root = null;
         final List<String> files = new ArrayList<>();
         for (int i = 0; i < args.length; i++) {
             if ("--budget".equals(args[i]) && i + 1 < args.length) {
                 budget = Integer.parseInt(args[++i]);
             } else if ("--version".equals(args[i]) && i + 1 < args.length) {
                 version = args[++i];
+            } else if ("--root".equals(args[i]) && i + 1 < args.length) {
+                root = Path.of(args[++i]);
             } else if ("--strict".equals(args[i])) {
                 strict = true;
             } else {
@@ -164,24 +224,26 @@ class MarkdownSplitter {
         }
         if (files.isEmpty()) {
             System.err.println("usage: MarkdownSplitter [--budget N] [--strict] [--version x.y.z] "
-                    + "<book.md> [<book.md> ...]");
+                    + "[--root dir] <book.md> [<book.md> ...]");
             System.exit(2);
         }
         final MarkdownSplitter splitter = new MarkdownSplitter(budget, version);
         final List<String> violations = new ArrayList<>();
+        final List<Path> books = new ArrayList<>();
         for (final String f : files) {
             final Path p = Path.of(f);
             if (Files.isRegularFile(p)) {
-                splitter.splitFile(p, violations);
+                books.add(p);
             } else {
                 System.err.println("skip (not a file): " + f);
             }
         }
+        splitter.splitBooks(root, books, violations);
         if (!violations.isEmpty()) {
-            System.err.println("\nMarkdown page-size budget violations (" + violations.size() + "):");
+            System.err.println("\nMarkdown page-size and link violations (" + violations.size() + "):");
             for (final String v : violations) System.err.println("  - " + v);
             if (strict) {
-                System.err.println("\nFailing due to --strict. Curate the offending sections and re-run.");
+                System.err.println("\nFailing due to --strict. Fix the offending sections or links and re-run.");
                 System.exit(1);
             }
         }
@@ -237,6 +299,25 @@ class MarkdownSplitter {
      * @return the ordered list of pages (always at least one)
      */
     List<Page> split(final String markdown, final String indexFileName) {
+        return splitBook(markdown, indexFileName, null).pages;
+    }
+
+    /** One book split into pages, with links inside the book already rewritten. */
+    static final class SplitBook {
+        /** The book's directory relative to the docs root, or {@code null} if not known. */
+        final String path;
+        final List<Page> pages;
+        /** Which page each anchor in the book lands on. */
+        final Map<String, String> anchorToFile;
+
+        SplitBook(final String path, final List<Page> pages, final Map<String, String> anchorToFile) {
+            this.path = path;
+            this.pages = pages;
+            this.anchorToFile = anchorToFile;
+        }
+    }
+
+    SplitBook splitBook(final String markdown, final String indexFileName, final String path) {
         // The license comment MarkdownConverter puts at the top of the book belongs on every page,
         // not only the landing page that would otherwise inherit the book's preamble.
         final boolean licensed = markdown.startsWith(MarkdownConverter.LICENSE_COMMENT);
@@ -279,7 +360,7 @@ class MarkdownSplitter {
             final String rewritten = rewriteLinks(body.toString(), plan.fileName, anchorToFile);
             pages.add(new Page(plan.fileName, header + rewritten, isAllowOversize(plan.owner)));
         }
-        return pages;
+        return new SplitBook(path, pages, anchorToFile);
     }
 
     /**
@@ -327,8 +408,8 @@ class MarkdownSplitter {
                                          final Map<String, String> anchorToFile) {
         if (node.anchor != null) anchorToFile.put(node.anchor, fileName);
         for (final String line : node.lines) {
-            final Matcher am = ANCHOR.matcher(line);
-            if (am.matches()) anchorToFile.put(am.group(1), fileName);
+            final Matcher am = ANY_ANCHOR.matcher(line);
+            while (am.find()) anchorToFile.put(am.group(1), fileName);
         }
         for (final Node child : node.children) {
             if (hasSummary(child)) continue; // child owns its own page; recorded when its page is made
@@ -456,6 +537,9 @@ class MarkdownSplitter {
             }
             final Matcher am = inFence ? null : ANCHOR.matcher(line);
             if (am != null && am.matches()) {
+                // Two anchor lines in a row: only the second can belong to a heading, so the first
+                // (a block's anchor) stays as content.
+                if (pendingAnchor != null) stack.peek().lines.add("<a id=\"" + pendingAnchor + "\"></a>");
                 pendingAnchor = am.group(1);
                 // The anchor line belongs to the heading node it precedes; hold it.
                 continue;
@@ -559,5 +643,58 @@ class MarkdownSplitter {
         }
         m.appendTail(sb);
         return sb.toString();
+    }
+
+    /**
+     * Rewrites a page's links to other books of the run to relative links to the pages owning their
+     * anchors, and reports every link, within the book or to another book of the run, whose anchor
+     * no page owns.
+     */
+    private Page resolveLinks(final SplitBook book, final Page page, final Map<String, SplitBook> books,
+                              final Path out, final List<String> violations) {
+        final String body = page.getContent();
+        final Matcher local = INTRA_LINK.matcher(body);
+        while (local.find()) {
+            if (!book.anchorToFile.containsKey(local.group(1))) {
+                violations.add(out + " links to #" + local.group(1) + ", which no page in its book has");
+            }
+        }
+        if (version == null || book.path == null) return page;
+
+        final Matcher m = crossBookLink.matcher(body);
+        final StringBuffer sb = new StringBuffer();
+        while (m.find()) {
+            final String target = m.group(1);
+            final String anchor = m.group(2);
+            final SplitBook other = books.get(target);
+            String replacement = m.group();
+            if (other != null) {
+                final String file = other.anchorToFile.get(anchor);
+                if (file == null) {
+                    violations.add(out + " links to " + DOCS_BASE_URL + "/" + version + "/" + target
+                            + "/#" + anchor + ", which no page in that book has");
+                } else {
+                    replacement = "](" + relativeLink(book.path, other.path, file) + "#" + anchor + ")";
+                }
+            }
+            m.appendReplacement(sb, Matcher.quoteReplacement(replacement));
+        }
+        m.appendTail(sb);
+        return new Page(page.getFileName(), sb.toString(), page.isOversizeAllowed());
+    }
+
+    /**
+     * An absolute link into this version's docs with an anchor and no page:
+     * {@code ](https://tinkerpop.apache.org/docs/<version>/<book>/#anchor)}, the trailing slash after
+     * the book optional. Captures the book path and the anchor.
+     */
+    private static Pattern crossBookLink(final String version) {
+        return Pattern.compile("\\]\\(" + Pattern.quote(DOCS_BASE_URL + "/" + version + "/")
+                + "([^)#\\s]*?)/?#([^)\\s]+)\\)");
+    }
+
+    /** The relative link from a page in book {@code from} to {@code file} in book {@code to}. */
+    static String relativeLink(final String from, final String to, final String file) {
+        return Path.of(from).relativize(Path.of(to, file)).toString().replace('\\', '/');
     }
 }

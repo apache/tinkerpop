@@ -72,6 +72,26 @@ public class MarkdownConverterProbeTest {
         assertThat(countOccurrences(md, "- b"), is(1));
     }
 
+    @Test
+    public void blockIdBecomesAnchorBeforeTheBlock() {
+        final String md = toMarkdown("= D\n\n[[crew]]\nTIP: The crew graph.\n\n[[para]]\nA paragraph.\n");
+        assertThat(md, containsString("<a id=\"crew\"></a>\n> **TIP:** The crew graph."));
+        assertThat(md, containsString("<a id=\"para\"></a>\nA paragraph."));
+    }
+
+    @Test
+    public void inlineAnchorBecomesAnchor() {
+        final String md = toMarkdown("= D\n\nanchor:graph-step[]\n\nText with [[mid]]an anchor inside.\n");
+        assertThat(md, containsString("<a id=\"graph-step\"></a>"));
+        assertThat(md, containsString("Text with <a id=\"mid\"></a>an anchor inside."));
+    }
+
+    @Test
+    public void blockWithoutIdHasNoAnchor() {
+        final String md = toMarkdown("= D\n\nTIP: No id here.\n");
+        assertThat(md, not(containsString("<a id=")));
+    }
+
     private static int countOccurrences(final String haystack, final String needle) {
         int c = 0, i = 0;
         while ((i = haystack.indexOf(needle, i)) >= 0) { c++; i += needle.length(); }

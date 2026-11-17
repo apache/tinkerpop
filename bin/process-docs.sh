@@ -106,7 +106,7 @@ TP_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout 2>/
 # Markdown split (agentdocsspec.com)
 # ---------------------------------------------------------------------------
 # After the Markdown mirror is rendered under target/docs/markdown/, split each rendered book into
-# pages driven by llms-summary markers and rewrite intra-book links. Runs MarkdownSplitter from the
+# pages driven by llms-summary markers and rewrite links within and between books. Runs MarkdownSplitter from the
 # tinkeradoc-extension classes (built by the asciidoc profile). The split is summary-driven: a
 # section is a page iff it has an llms-summary. --strict fails the build on any page that exceeds
 # the size budget and is not marked allow-oversize, so uncurated/oversized content is surfaced.
@@ -125,7 +125,7 @@ split_markdown() {
   echo "Splitting Markdown books into agent-sized pages (summary-driven)..."
   # shellcheck disable=SC2086
   java -cp "${ext_classes}" org.apache.tinkerpop.tinkeradoc.MarkdownSplitter \
-    --strict --version "${TP_VERSION}" ${books}
+    --strict --version "${TP_VERSION}" --root "${md_root}" ${books}
 
   # Generate the llms.txt discovery index over the split pages (agentdocsspec.com).
   echo "Generating llms.txt discovery index..."
