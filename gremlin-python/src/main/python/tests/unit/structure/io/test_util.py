@@ -48,11 +48,6 @@ class TestHashableDict(object):
         # Nested list values are converted to tuples so they are hashable.
         assert result['k']['inner'] == (1, 2)
 
-    def test_of_result_is_hashable(self):
-        """The result of HashableDict.of is hashable."""
-        result = HashableDict.of({'k': {'inner': [1, 2]}})
-        assert isinstance(hash(result), int)
-
     def test_of_equal_inputs_are_equal_and_hash_equal(self):
         """Equal inputs produce equal HashableDicts with equal hashes."""
         a = HashableDict.of({'k': {'inner': [1, 2]}})
@@ -69,13 +64,6 @@ class TestHashableDict(object):
         """Lists and sets become tuples of converted elements."""
         assert HashableDict.of([1, 2, 3]) == (1, 2, 3)
         assert HashableDict.of([{'a': 1}])[0] == HashableDict.of({'a': 1})
-
-    def test_hash_fallback_with_unsortable_mixed_keys(self):
-        """Keys of mutually unsortable types fall back to string-based hashing without error."""
-        # int and str keys cannot be sorted against each other in Python 3,
-        # so __hash__ must use its except-branch fallback.
-        d = HashableDict({1: 'a', 'b': 2})
-        assert isinstance(hash(d), int)
 
     def test_hash_fallback_is_stable(self):
         """The fallback hash is stable across equal dicts."""

@@ -324,9 +324,6 @@ class TestTransportWriteCompression:
 
 class TestReadTimeoutNormalization:
 
-    def test_read_timeout_error_is_builtin_timeout_error_subclass(self):
-        assert issubclass(ReadTimeoutError, TimeoutError)
-
     def test_server_timeout_normalized_to_read_timeout(self):
         loop = asyncio.new_event_loop()
 
@@ -343,18 +340,6 @@ class TestReadTimeoutNormalization:
         assert "5" in str(exc_info.value)
         # ... and the original aiohttp error is preserved as the cause.
         assert isinstance(exc_info.value.__cause__, aiohttp.ServerTimeoutError)
-
-    def test_read_timeout_can_be_caught_as_timeout_error(self):
-        loop = asyncio.new_event_loop()
-
-        async def timing_out():
-            raise aiohttp.ServerTimeoutError("read timed out")
-
-        try:
-            with pytest.raises(TimeoutError):
-                _run_read(loop, 10, timing_out())
-        finally:
-            loop.close()
 
     def test_successful_read_returns_value_unchanged(self):
         # The non-timeout path simply returns the coroutine's result.

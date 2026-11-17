@@ -30,7 +30,6 @@ from gremlin_python.structure.graph import VertexProperty
 from gremlin_python.structure.graph import Path
 from gremlin_python.structure.graph import Tree
 from gremlin_python.structure.graph import CompositePDT
-from gremlin_python.structure.graph import PrimitivePDT
 from gremlin_python.structure.graph import PDTRegistry
 
 

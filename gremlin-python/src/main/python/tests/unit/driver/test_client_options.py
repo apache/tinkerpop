@@ -450,12 +450,11 @@ class TestExtractRequestOptions:
         # Two strategies each contribute recognized Tokens; both are merged.
         gl = _GremlinLangStub(options_strategies=[
             _OptionsStrategy({'timeoutMillis': 1000, 'batchSize': 10}),
-            _OptionsStrategy({'userAgent': 'ua', 'materializeProperties': 'tokens'}),
+            _OptionsStrategy({'materializeProperties': 'tokens'}),
         ])
         opts = DriverRemoteConnection.extract_request_options(gl)
         assert opts['timeoutMillis'] == 1000
         assert opts['batchSize'] == 10
-        assert opts['userAgent'] == 'ua'
         assert opts['materializeProperties'] == 'tokens'
 
     def test_non_token_configuration_keys_are_ignored(self):

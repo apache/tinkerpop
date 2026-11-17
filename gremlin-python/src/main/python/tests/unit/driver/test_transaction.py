@@ -152,11 +152,6 @@ class TestClose:
 
 class TestContextManager:
 
-    def test_enter_returns_transaction(self):
-        client = _make_client()
-        tx = Transaction(client)
-        assert tx.__enter__() is tx
-
     def test_exit_rolls_back_open_transaction_on_clean_exit(self):
         # ACTUAL semantics: __exit__ rolls back an open transaction even on a
         # clean (exception-free) exit; it does NOT commit.

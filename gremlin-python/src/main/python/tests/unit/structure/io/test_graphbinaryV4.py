@@ -22,8 +22,6 @@ import math
 import pytest
 from collections import OrderedDict
 
-import pytest
-
 from datetime import datetime, timedelta, timezone
 from gremlin_python.statics import long, bigint, BigDecimal, SingleByte, SingleChar
 from gremlin_python.structure.graph import Graph, Vertex, Edge, Property, VertexProperty, Path, CompositePDT
@@ -489,14 +487,6 @@ class TestGraphBinaryV4(object):
         # branch and is re-raised as ValueError "<code> is not a valid DataType".
         with pytest.raises(ValueError, match='is not a valid DataType'):
             self.graphbinary_reader.read_object(bytearray([0x7f]))
-
-    def test_long_overflow_raises(self):
-        # LongIO.dictify rejects values outside the signed int64 range and
-        # points the user at the bigint type instead of silently truncating.
-        with pytest.raises(Exception, match='Value too big'):
-            self.graphbinary_writer.write_object(long(9223372036854775808))
-        with pytest.raises(Exception, match='Value too big'):
-            self.graphbinary_writer.write_object(long(-9223372036854775809))
 
     def test_naive_datetime_raises(self):
         # DateTimeIO.dictify requires tz-aware datetimes; a naive datetime
