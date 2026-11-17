@@ -93,7 +93,7 @@ port_open() {
   if command -v nc >/dev/null 2>&1; then
     nc -z "${host}" "${port}" 2>/dev/null
   else
-    (exec 3<>"/dev/tcp/${host}/${port}") 2>/dev/null && exec 3>&- 2>/dev/null
+    (exec 3<>"/dev/tcp/${host}/${port}") 2>/dev/null
   fi
 }
 
