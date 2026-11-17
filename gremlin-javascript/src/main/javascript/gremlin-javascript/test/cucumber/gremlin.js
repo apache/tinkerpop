@@ -445,6 +445,7 @@ const gremlins = {
     g_V_both_both_addVXanimalX: [function({g}) { return g.addV("person").property("name","marko").as("marko").addV("person").property("name","vadas").as("vadas").addV("person").property("name","josh").as("josh").addE("knows").from_("marko").to("vadas").addE("knows").from_("marko").to("josh") }, function({g}) { return g.V().both().both().addV("animal") }, function({g}) { return g.V().hasLabel("animal") }], 
     g_injectX1_1X_addVXanimalX_propertyXT_id_1X: [function({g}) { return g.inject(1,1).addV("animal").property(T.id,"1") }], 
     g_V_hasXperson_name_aliceX_unionXidentity_identityX_barrier_propertyXlist_nickname_alX: [function({g}) { return g.addV("person").property("name","alice") }, function({g}) { return g.V().has("person","name","alice").union(__.identity(),__.identity()).barrier().property(Cardinality.list,"nickname","al") }, function({g}) { return g.V().has("person","name","alice").properties("nickname") }], 
+    g_injectXperson_person_person_person_softwareX_localXaddVXanimalX_propertyXsource_identityX_limitX1XX: [function({g}) { return g.inject("person","person","person","person","software").local(__.addV("animal").property("source",__.identity()).limit(1)) }, function({g}) { return g.V().has("animal","source","software") }], 
     g_injectXstrX_asDate: [function({g}) { return g.inject("2023-08-02T00:00:00Z").asDate() }], 
     g_injectX1694017707000X_asDate: [function({g}) { return g.inject(1694017707000).asDate() }], 
     g_injectX1694017708000LX_asDate: [function({g, xx1}) { return g.inject(xx1).asDate() }], 

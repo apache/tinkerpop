@@ -427,6 +427,7 @@ world.gremlins = {
     'g_V_both_both_addVXanimalX': [(lambda g:g.add_v('person').property('name','marko').as_('marko').add_v('person').property('name','vadas').as_('vadas').add_v('person').property('name','josh').as_('josh').add_e('knows').from_('marko').to('vadas').add_e('knows').from_('marko').to('josh')), (lambda g:g.V().both().both().add_v('animal')), (lambda g:g.V().has_label('animal'))], 
     'g_injectX1_1X_addVXanimalX_propertyXT_id_1X': [(lambda g:g.inject(1,1).add_v('animal').property(T.id_,'1'))], 
     'g_V_hasXperson_name_aliceX_unionXidentity_identityX_barrier_propertyXlist_nickname_alX': [(lambda g:g.add_v('person').property('name','alice')), (lambda g:g.V().has('person','name','alice').union(__.identity(),__.identity()).barrier().property(Cardinality.list_,'nickname','al')), (lambda g:g.V().has('person','name','alice').properties('nickname'))], 
+    'g_injectXperson_person_person_person_softwareX_localXaddVXanimalX_propertyXsource_identityX_limitX1XX': [(lambda g:g.inject('person','person','person','person','software').local(__.add_v('animal').property('source',__.identity())[0:1])), (lambda g:g.V().has('animal','source','software'))], 
     'g_injectXstrX_asDate': [(lambda g:g.inject('2023-08-02T00:00:00Z').as_date())], 
     'g_injectX1694017707000X_asDate': [(lambda g:g.inject(long(1694017707000)).as_date())], 
     'g_injectX1694017708000LX_asDate': [(lambda g, xx1=None:g.inject(xx1).as_date())], 

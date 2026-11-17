@@ -661,3 +661,13 @@ Feature: Step - addV()
     When iterated to list
     Then the result should have a count of 2
     And the graph should return 2 for count of "g.V().has(\"person\",\"name\",\"alice\").properties(\"nickname\")"
+
+  Scenario: g_injectXperson_person_person_person_softwareX_localXaddVXanimalX_propertyXsource_identityX_limitX1XX
+    Given the empty graph
+    And the traversal of
+      """
+      g.inject("person", "person", "person", "person", "software").local(__.addV("animal").property("source", __.identity()).limit(1))
+      """
+    When iterated to list
+    Then the result should have a count of 2
+    And the graph should return 1 for count of "g.V().has(\"animal\",\"source\",\"software\")"
