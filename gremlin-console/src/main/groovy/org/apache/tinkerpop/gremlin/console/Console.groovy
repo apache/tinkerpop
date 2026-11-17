@@ -117,9 +117,7 @@ class Console {
             }
         }
 
-        // without a plugins.txt, e.g. outside the distribution, every plugin found is activated
-        def activePlugins = new File(ConsoleFs.PLUGIN_CONFIG_FILE).exists() ?
-                Mediator.readPluginState() : mediator.availablePlugins.keySet().toList()
+        def activePlugins = Mediator.readPluginState()
 
         // if there are active plugins then initialize them in the order that they are listed
         activePlugins.each { pluginName ->

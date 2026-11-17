@@ -186,7 +186,6 @@ class ConsoleEvalSessionTest extends AbstractConsoleSessionTest {
 
     @Test
     void shouldRunConsoleCommandsInsideAScriptFile() {
-        writePluginsFile(DEFAULT_PLUGINS)
         final File script = writeFile("commands.groovy", ":plugin unuse tinkerpop.utilities\nafterCommand = 'ran'\n")
         final ConsoleSession console = start([[script.absolutePath]])
         assertEquals(["==>ran"], console.results("afterCommand"))
@@ -213,7 +212,6 @@ class ConsoleEvalSessionTest extends AbstractConsoleSessionTest {
 
     @Test
     void shouldRunScriptCommandsByAliasWithLeadingSpacesAndSingleQuotes() {
-        writePluginsFile(DEFAULT_PLUGINS)
         final File script = writeFile("aliases.groovy",
                 "  :pin unuse tinkerpop.utilities\nx = [1,\n  2]\n:set result.prompt 'c d> '\n")
         final ConsoleSession console = start([[script.absolutePath]])

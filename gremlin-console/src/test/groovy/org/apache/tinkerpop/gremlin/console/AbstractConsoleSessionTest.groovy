@@ -68,6 +68,7 @@ abstract class AbstractConsoleSessionTest {
         oldAnsi = Ansi.isEnabled()
         // as with -C
         Ansi.enabled = false
+        writePluginsFile(DEFAULT_PLUGINS)
     }
 
     @After
@@ -78,10 +79,8 @@ abstract class AbstractConsoleSessionTest {
         Ansi.enabled = oldAnsi
         resetPreferences()
         home.toFile().deleteDir()
-        if (pluginsFile != null) {
-            pluginsFile.delete()
-            if (createdPluginsDir) pluginsFile.parentFile.delete()
-        }
+        pluginsFile.delete()
+        if (createdPluginsDir) pluginsFile.parentFile.delete()
     }
 
     protected ConsoleSession start(final List<List<String>> scriptsAndArgs = null, final int columns = 120) {
@@ -91,7 +90,7 @@ abstract class AbstractConsoleSessionTest {
     }
 
     /**
-     * Writes the plugins.txt that consoles started afterwards read, so that plugin changes can be saved.
+     * Writes the plugins.txt that consoles started afterwards read.
      */
     protected void writePluginsFile(final List<String> classNames) {
         pluginsFile = new File(ConsoleFs.PLUGIN_CONFIG_FILE)

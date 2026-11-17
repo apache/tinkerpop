@@ -105,6 +105,16 @@ class ConsoleCommandsSessionTest extends AbstractConsoleSessionTest {
     }
 
     @Test
+    void shouldActivateNoPluginsWithoutAPluginsFile() {
+        new File(ConsoleFs.PLUGIN_CONFIG_FILE).delete()
+        final ConsoleSession console = start()
+        final List<String> listed = console.results(":plugin list")
+        assertFalse(listed.isEmpty())
+        assertTrue(listed.toString(), listed.every { it.endsWith("[inactive]") })
+        console.fails("TinkerFactory", "No such property: TinkerFactory")
+    }
+
+    @Test
     void shouldShowTheHelpOfOneCommand() {
         final ConsoleSession console = start()
         for (String help : [":help /plugin", ":plugin --help"]) {
