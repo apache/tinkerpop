@@ -16,6 +16,10 @@
 # specific language governing permissions and limitations
 # under the License.
 #
+"""Experimental API. This API may have breaking changes or be removed in a subsequent minor release.
+
+Native-async Gremlin client using WebSocket transport.
+"""
 import asyncio
 import logging
 
@@ -29,7 +33,9 @@ log = logging.getLogger("gremlinpython")
 
 
 class AsyncClient:
-    """Native-async Gremlin client using WebSocket transport.
+    """Experimental API. This API may have breaking changes or be removed in a subsequent minor release.
+
+    Native-async Gremlin client using WebSocket transport.
 
     The connection pool is an asyncio.Queue and all submit/close methods are
     coroutines that must be awaited.
@@ -163,13 +169,16 @@ class AsyncClient:
 
     @property
     def available_pool_size(self):
+        """Experimental API. This API may have breaking changes or be removed in a subsequent minor release."""
         return self._pool.qsize()
 
     @property
     def traversal_source(self):
+        """Experimental API. This API may have breaking changes or be removed in a subsequent minor release."""
         return self._traversal_source
 
     def is_closed(self):
+        """Experimental API. This API may have breaking changes or be removed in a subsequent minor release."""
         return self._closed
 
     # ------------------------------------------------------------------
@@ -201,7 +210,10 @@ class AsyncClient:
     # ------------------------------------------------------------------
 
     async def close(self):
-        """Close all connections, including requests still receiving results."""
+        """Experimental API. This API may have breaking changes or be removed in a subsequent minor release.
+
+        Close all connections, including requests still receiving results.
+        """
         if self._close_task is None:
             self._closed = True
             self._close_task = asyncio.create_task(self._close())
@@ -259,13 +271,18 @@ class AsyncClient:
     # ------------------------------------------------------------------
 
     async def submit(self, message, bindings=None, request_options=None):
-        """Submit *message* and return an AsyncResultSet."""
+        """Experimental API. This API may have breaking changes or be removed in a subsequent minor release.
+
+        Submit *message* and return an AsyncResultSet.
+        """
         return await self.submit_async(
             message, bindings=bindings, request_options=request_options
         )
 
     async def submit_async(self, message, bindings=None, request_options=None):
-        """Submit *message* and return an AsyncResultSet.
+        """Experimental API. This API may have breaking changes or be removed in a subsequent minor release.
+
+        Submit *message* and return an AsyncResultSet.
 
         Returns before all results have arrived; the result set can be
         iterated asynchronously (``async for``) or consumed via

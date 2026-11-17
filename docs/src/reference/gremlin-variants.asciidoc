@@ -3053,6 +3053,9 @@ that makes traversals a bit more concise.
 [[gremlin-python-async]]
 === Asynchronous Usage
 
+NOTE: Experimental API. This API may have breaking changes or be removed in a subsequent minor release. See
+<<api-stability,API Stability>> for details.
+
 Applications running inside an `asyncio` event loop can use `AsyncDriverRemoteConnection` and `async_traversal()`
 to execute traversals asynchronously without blocking the event loop:
 

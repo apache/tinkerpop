@@ -16,6 +16,10 @@
 # specific language governing permissions and limitations
 # under the License.
 #
+"""Experimental API. This API may have breaking changes or be removed in a subsequent minor release.
+
+Native-async WebSocket connection managed by AsyncClient.
+"""
 import asyncio
 import logging
 import uuid
@@ -27,7 +31,9 @@ log = logging.getLogger("gremlinpython")
 
 
 class AsyncConnection:
-    """Native-async WebSocket connection with keepalive.
+    """Experimental API. This API may have breaking changes or be removed in a subsequent minor release.
+
+    Native-async WebSocket connection with keepalive.
 
     Features:
 
@@ -84,7 +90,10 @@ class AsyncConnection:
     # ------------------------------------------------------------------
 
     async def connect(self):
-        """Open (or re-open) the WebSocket connection."""
+        """Experimental API. This API may have breaking changes or be removed in a subsequent minor release.
+
+        Open (or re-open) the WebSocket connection.
+        """
         if self._ping_task is not None:
             self._ping_task.cancel()
             self._ping_task = None
@@ -98,7 +107,10 @@ class AsyncConnection:
             self._ping_task = asyncio.create_task(self._ping_forever())
 
     async def close(self):
-        """Close the connection and stop its background tasks."""
+        """Experimental API. This API may have breaking changes or be removed in a subsequent minor release.
+
+        Close the connection and stop its background tasks.
+        """
         await asyncio.shield(self._close())
 
     async def _close(self):
@@ -138,7 +150,9 @@ class AsyncConnection:
     # ------------------------------------------------------------------
 
     async def write(self, request_message):
-        """Send *request_message* and return an AsyncResultSet.
+        """Experimental API. This API may have breaking changes or be removed in a subsequent minor release.
+
+        Send *request_message* and return an AsyncResultSet.
 
         Lazily connects on the first call (or if the transport was closed
         while idle).  Returns as soon as the first response chunk arrives; a

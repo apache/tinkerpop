@@ -16,7 +16,9 @@
 # specific language governing permissions and limitations
 # under the License.
 #
-"""Async traversal layer for gremlin-python.
+"""Experimental API. This API may have breaking changes or be removed in a subsequent minor release.
+
+Async traversal layer for gremlin-python.
 
 Async counterpart for the standard traversal() factory::
 
@@ -49,7 +51,9 @@ log = logging.getLogger("gremlinpython")
 # ---------------------------------------------------------------------------
 
 def async_traversal():
-    """Return an _AsyncAnonymousTraversalSource.
+    """Experimental API. This API may have breaking changes or be removed in a subsequent minor release.
+
+    Return an _AsyncAnonymousTraversalSource.
 
     Use in place of traversal() when working with AsyncDriverRemoteConnection.
     """
@@ -58,7 +62,10 @@ def async_traversal():
 
 class _AsyncAnonymousTraversalSource:
     def with_remote(self, remote_connection):
-        """Bind *remote_connection* and return an AsyncGraphTraversalSource."""
+        """Experimental API. This API may have breaking changes or be removed in a subsequent minor release.
+
+        Bind *remote_connection* and return an AsyncGraphTraversalSource.
+        """
         return AsyncGraphTraversalSource(
             Graph(),
             AsyncTraversalStrategies(),
@@ -71,13 +78,16 @@ class _AsyncAnonymousTraversalSource:
 # ---------------------------------------------------------------------------
 
 class AsyncTraversalStrategies(TraversalStrategies):
-    """Async-aware strategy pipeline.
+    """Experimental API. This API may have breaking changes or be removed in a subsequent minor release.
+
+    Async-aware strategy pipeline.
 
     Calls ``await strategy.apply(traversal)`` for coroutine strategies and
     ``strategy.apply(traversal)`` for plain sync strategies so both can coexist.
     """
 
-    async def apply_strategies(self, traversal):  # noqa: D102
+    async def apply_strategies(self, traversal):
+        """Experimental API. This API may have breaking changes or be removed in a subsequent minor release."""
         for strategy in self.traversal_strategies:
             if asyncio.iscoroutinefunction(strategy.apply):
                 await strategy.apply(traversal)
@@ -86,7 +96,9 @@ class AsyncTraversalStrategies(TraversalStrategies):
 
 
 class AsyncRemoteStrategy(TraversalStrategy):
-    """Client-side strategy that submits bytecode to the remote server asynchronously.
+    """Experimental API. This API may have breaking changes or be removed in a subsequent minor release.
+
+    Client-side strategy that submits bytecode to the remote server asynchronously.
 
     Registered with the ``py:AsyncRemoteStrategy`` fqcn so it is never sent
     to the server as part of the serialized traversal.
@@ -97,6 +109,7 @@ class AsyncRemoteStrategy(TraversalStrategy):
         self.remote_connection = remote_connection
 
     async def apply(self, traversal):
+        """Experimental API. This API may have breaking changes or be removed in a subsequent minor release."""
         if traversal.traversers is None:
             remote_traversal = await self.remote_connection.submit(traversal.bytecode)
             traversal.remote_results = remote_traversal
@@ -108,7 +121,9 @@ class AsyncRemoteStrategy(TraversalStrategy):
 # ---------------------------------------------------------------------------
 
 class AsyncTraversal(Traversal):
-    """Base traversal class that replaces blocking terminal steps with coroutines.
+    """Experimental API. This API may have breaking changes or be removed in a subsequent minor release.
+
+    Base traversal class that replaces blocking terminal steps with coroutines.
 
     Concrete subclasses must be used with AsyncTraversalStrategies so that
     apply_strategies() can be awaited inside __anext__().
@@ -152,18 +167,26 @@ class AsyncTraversal(Traversal):
     # ------------------------------------------------------------------
 
     async def to_list(self):
-        """Execute the traversal and return all results as a list."""
+        """Experimental API. This API may have breaking changes or be removed in a subsequent minor release.
+
+        Execute the traversal and return all results as a list.
+        """
         results = []
         async for item in self:
             results.append(item)
         return results
 
     async def to_set(self):
-        """Execute the traversal and return all results as a set."""
+        """Experimental API. This API may have breaking changes or be removed in a subsequent minor release.
+
+        Execute the traversal and return all results as a set.
+        """
         return set(await self.to_list())
 
     async def next(self, amount=None):
-        """Execute and return the first result, or the first *amount* results.
+        """Experimental API. This API may have breaking changes or be removed in a subsequent minor release.
+
+        Execute and return the first result, or the first *amount* results.
 
         Raises StopAsyncIteration when *amount* is None and the result set is
         empty.
@@ -179,7 +202,9 @@ class AsyncTraversal(Traversal):
         return results
 
     async def iterate(self):
-        """Execute the traversal, discarding all results.
+        """Experimental API. This API may have breaking changes or be removed in a subsequent minor release.
+
+        Execute the traversal, discarding all results.
 
         Use for write operations (add_v, add_e, property, ...) where no return
         value is needed.
@@ -196,7 +221,10 @@ class AsyncTraversal(Traversal):
                 return self
 
     async def has_next(self):
-        """Return True if the traversal produces at least one result."""
+        """Experimental API. This API may have breaking changes or be removed in a subsequent minor release.
+
+        Return True if the traversal produces at least one result.
+        """
         try:
             if self.traversers is None:
                 await self.traversal_strategies.apply_strategies(self)
@@ -212,7 +240,10 @@ class AsyncTraversal(Traversal):
             raise
 
     async def next_traverser(self):
-        """Return the next raw Traverser."""
+        """Experimental API. This API may have breaking changes or be removed in a subsequent minor release.
+
+        Return the next raw Traverser.
+        """
         try:
             if self.traversers is None:
                 await self.traversal_strategies.apply_strategies(self)
@@ -234,7 +265,9 @@ class AsyncTraversal(Traversal):
 # ---------------------------------------------------------------------------
 
 class AsyncGraphTraversal(GraphTraversal, AsyncTraversal):
-    """Async graph traversal.
+    """Experimental API. This API may have breaking changes or be removed in a subsequent minor release.
+
+    Async graph traversal.
 
     Inherits all Gremlin DSL steps from GraphTraversal and async terminal
     steps from AsyncTraversal via Python's MRO.
@@ -247,11 +280,14 @@ class AsyncGraphTraversal(GraphTraversal, AsyncTraversal):
     """
 
     def clone(self):
+        """Experimental API. This API may have breaking changes or be removed in a subsequent minor release."""
         return AsyncGraphTraversal(self.graph, self.traversal_strategies, copy.deepcopy(self.bytecode))
 
 
 class AsyncRemoteTraversal(AsyncTraversal):
-    """Holds the AsyncResultSet returned by AsyncDriverRemoteConnection.submit().
+    """Experimental API. This API may have breaking changes or be removed in a subsequent minor release.
+
+    Holds the AsyncResultSet returned by AsyncDriverRemoteConnection.submit().
 
     traversers is set directly to the result set; strategies are never
     applied (there is nothing to apply on an already-executed traversal).
@@ -267,7 +303,9 @@ class AsyncRemoteTraversal(AsyncTraversal):
 # ---------------------------------------------------------------------------
 
 class AsyncGraphTraversalSource(GraphTraversalSource):
-    """Async traversal source.
+    """Experimental API. This API may have breaking changes or be removed in a subsequent minor release.
+
+    Async traversal source.
 
     All spawned traversals are AsyncGraphTraversal instances.
     Configuration steps (with_bulk(), with_path(), ...) return a new
@@ -287,7 +325,10 @@ class AsyncGraphTraversalSource(GraphTraversalSource):
             self.traversal_strategies.add_strategies([AsyncRemoteStrategy(remote_connection)])
 
     def get_graph_traversal_source(self):
-        """Return a copy of this source (used by configuration steps)."""
+        """Experimental API. This API may have breaking changes or be removed in a subsequent minor release.
+
+        Return a copy of this source (used by configuration steps).
+        """
         # Strategies are copied — do NOT pass remote_connection to avoid
         # registering AsyncRemoteStrategy a second time.
         return AsyncGraphTraversalSource(
@@ -297,7 +338,10 @@ class AsyncGraphTraversalSource(GraphTraversalSource):
         )
 
     def get_graph_traversal(self):
-        """Return a fresh AsyncGraphTraversal for this source."""
+        """Experimental API. This API may have breaking changes or be removed in a subsequent minor release.
+
+        Return a fresh AsyncGraphTraversal for this source.
+        """
         return AsyncGraphTraversal(
             self.graph,
             self.traversal_strategies,
@@ -305,7 +349,9 @@ class AsyncGraphTraversalSource(GraphTraversalSource):
         )
 
     async def tx(self):
-        """Return an AsyncTransaction for this connection.
+        """Experimental API. This API may have breaking changes or be removed in a subsequent minor release.
+
+        Return an AsyncTransaction for this connection.
 
         Raises if the connection is already session-bound.
         """
@@ -328,7 +374,9 @@ class AsyncGraphTraversalSource(GraphTraversalSource):
 # ---------------------------------------------------------------------------
 
 class AsyncTransaction:
-    """Async transaction over a session-bound connection.
+    """Experimental API. This API may have breaking changes or be removed in a subsequent minor release.
+
+    Async transaction over a session-bound connection.
 
     Supports the async context-manager protocol::
 
@@ -357,6 +405,7 @@ class AsyncTransaction:
 
     @property
     def is_open(self):
+        """Experimental API. This API may have breaking changes or be removed in a subsequent minor release."""
         if (
             self._session_connection is not None
             and self._session_connection.is_closed()
@@ -366,12 +415,16 @@ class AsyncTransaction:
 
     @property
     def gtx(self):
+        """Experimental API. This API may have breaking changes or be removed in a subsequent minor release."""
         if self._gtx is None:
             raise Exception("Transaction not started — call begin() first")
         return self._gtx
 
     async def begin(self):
-        """Open a session and return a session-bound AsyncGraphTraversalSource."""
+        """Experimental API. This API may have breaking changes or be removed in a subsequent minor release.
+
+        Open a session and return a session-bound AsyncGraphTraversalSource.
+        """
         async with self._mutex:
             if self.is_open:
                 raise Exception("Transaction is already open")
@@ -387,7 +440,10 @@ class AsyncTransaction:
             return self._gtx
 
     async def commit(self):
-        """Commit the transaction and close the session."""
+        """Experimental API. This API may have breaking changes or be removed in a subsequent minor release.
+
+        Commit the transaction and close the session.
+        """
         async with self._mutex:
             if not self.is_open:
                 raise Exception("Transaction is not open")
@@ -395,7 +451,10 @@ class AsyncTransaction:
             await self._close_session()
 
     async def rollback(self):
-        """Roll back the transaction and close the session."""
+        """Experimental API. This API may have breaking changes or be removed in a subsequent minor release.
+
+        Roll back the transaction and close the session.
+        """
         async with self._mutex:
             if not self.is_open:
                 raise Exception("Transaction is not open")
@@ -403,7 +462,10 @@ class AsyncTransaction:
             await self._close_session()
 
     async def close(self):
-        """Close the session without committing or rolling back."""
+        """Experimental API. This API may have breaking changes or be removed in a subsequent minor release.
+
+        Close the session without committing or rolling back.
+        """
         async with self._mutex:
             if self.is_open:
                 await self._close_session()

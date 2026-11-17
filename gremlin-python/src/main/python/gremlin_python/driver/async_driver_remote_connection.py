@@ -16,6 +16,10 @@
 # specific language governing permissions and limitations
 # under the License.
 #
+"""Experimental API. This API may have breaking changes or be removed in a subsequent minor release.
+
+Asynchronous remote connection backed by AsyncClient.
+"""
 import asyncio
 import logging
 import uuid
@@ -29,7 +33,9 @@ log = logging.getLogger("gremlinpython")
 
 
 class AsyncDriverRemoteConnection:
-    """Async remote connection backed by AsyncClient.
+    """Experimental API. This API may have breaking changes or be removed in a subsequent minor release.
+
+    Async remote connection backed by AsyncClient.
 
     Primary entry point for the async Gremlin driver.  Works with
     async_traversal() to provide an async traversal DSL::
@@ -157,10 +163,12 @@ class AsyncDriverRemoteConnection:
 
     @property
     def url(self):
+        """Experimental API. This API may have breaking changes or be removed in a subsequent minor release."""
         return self._url
 
     @property
     def traversal_source(self):
+        """Experimental API. This API may have breaking changes or be removed in a subsequent minor release."""
         return self._traversal_source
 
     def __repr__(self):
@@ -171,7 +179,9 @@ class AsyncDriverRemoteConnection:
     # ------------------------------------------------------------------
 
     async def submit(self, bytecode):
-        """Execute *bytecode* and return an AsyncRemoteTraversal.
+        """Experimental API. This API may have breaking changes or be removed in a subsequent minor release.
+
+        Execute *bytecode* and return an AsyncRemoteTraversal.
 
         Called automatically by AsyncRemoteStrategy when a terminal step
         (to_list(), next(), ...) is awaited on a traversal.  Application code
@@ -186,7 +196,9 @@ class AsyncDriverRemoteConnection:
     # ------------------------------------------------------------------
 
     async def submit_async(self, traversal_or_bytecode, request_options=None):
-        """Execute a traversal or bytecode and return all results as a list.
+        """Experimental API. This API may have breaking changes or be removed in a subsequent minor release.
+
+        Execute a traversal or bytecode and return all results as a list.
 
         Results are automatically unwrapped from their Traverser wrappers.
         Prefer the DSL (g.V().to_list()) for most use-cases; use this
@@ -208,7 +220,9 @@ class AsyncDriverRemoteConnection:
         return await AsyncRemoteTraversal(result_set).to_list()
 
     async def submit_stream(self, traversal_or_bytecode, request_options=None):
-        """Execute a traversal and return an AsyncResultSet.
+        """Experimental API. This API may have breaking changes or be removed in a subsequent minor release.
+
+        Execute a traversal and return an AsyncResultSet.
 
         Use when you need to stream results one at a time (``async for``)
         rather than collecting them into memory.
@@ -223,7 +237,10 @@ class AsyncDriverRemoteConnection:
     # ------------------------------------------------------------------
 
     async def close(self):
-        """Close all spawned session connections and the underlying client."""
+        """Experimental API. This API may have breaking changes or be removed in a subsequent minor release.
+
+        Close all spawned session connections and the underlying client.
+        """
         await asyncio.shield(self._close())
 
     async def _close(self):
@@ -254,9 +271,11 @@ class AsyncDriverRemoteConnection:
     # ------------------------------------------------------------------
 
     def is_closed(self):
+        """Experimental API. This API may have breaking changes or be removed in a subsequent minor release."""
         return self._async_client.is_closed()
 
     def is_session_bound(self):
+        """Experimental API. This API may have breaking changes or be removed in a subsequent minor release."""
         return self.__session is not None
 
     # ------------------------------------------------------------------
@@ -264,7 +283,10 @@ class AsyncDriverRemoteConnection:
     # ------------------------------------------------------------------
 
     def create_session(self):
-        """Return a new session-bound AsyncDriverRemoteConnection."""
+        """Experimental API. This API may have breaking changes or be removed in a subsequent minor release.
+
+        Return a new session-bound AsyncDriverRemoteConnection.
+        """
         if self.is_session_bound():
             raise Exception(
                 "Connection is already bound to a session — nested sessions are not allowed"
@@ -293,7 +315,10 @@ class AsyncDriverRemoteConnection:
         return conn
 
     async def remove_session(self, session_based_connection):
-        """Close and untrack a previously spawned session connection."""
+        """Experimental API. This API may have breaking changes or be removed in a subsequent minor release.
+
+        Close and untrack a previously spawned session connection.
+        """
         try:
             await session_based_connection.close()
         finally:
@@ -305,12 +330,18 @@ class AsyncDriverRemoteConnection:
     # ------------------------------------------------------------------
 
     async def commit(self):
-        """Commit the current transaction."""
+        """Experimental API. This API may have breaking changes or be removed in a subsequent minor release.
+
+        Commit the current transaction.
+        """
         result_set = await self._async_client.submit(Bytecode.GraphOp.commit())
         await result_set.all()
 
     async def rollback(self):
-        """Roll back the current transaction."""
+        """Experimental API. This API may have breaking changes or be removed in a subsequent minor release.
+
+        Roll back the current transaction.
+        """
         result_set = await self._async_client.submit(Bytecode.GraphOp.rollback())
         await result_set.all()
 

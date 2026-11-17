@@ -16,15 +16,23 @@
 # specific language governing permissions and limitations
 # under the License.
 #
+"""Experimental API. This API may have breaking changes or be removed in a subsequent minor release.
+
+Asynchronous result set backed by an asyncio.Queue and an asyncio.Future.
+"""
 import asyncio
 import queue
 
 # Internal sentinel used to signal that the stream is exhausted.
 _EXHAUSTED = object()
+# Internal sentinel enqueued when a pending background receive task finishes.
+_STREAM_END = object()
 
 
 class AsyncResultSet:
-    """Result set backed by an asyncio.Queue and an asyncio.Future.
+    """Experimental API. This API may have breaking changes or be removed in a subsequent minor release.
+
+    Result set backed by an asyncio.Queue and an asyncio.Future.
 
     Consumption methods (one, all) are coroutines.  The class also supports
     async for iteration.
@@ -47,6 +55,7 @@ class AsyncResultSet:
 
     @property
     def aggregate_to(self):
+        """Experimental API. This API may have breaking changes or be removed in a subsequent minor release."""
         return self._aggregate_to
 
     @aggregate_to.setter
@@ -55,6 +64,7 @@ class AsyncResultSet:
 
     @property
     def status_attributes(self):
+        """Experimental API. This API may have breaking changes or be removed in a subsequent minor release."""
         return self._status_attributes
 
     @status_attributes.setter
@@ -63,10 +73,12 @@ class AsyncResultSet:
 
     @property
     def request_id(self):
+        """Experimental API. This API may have breaking changes or be removed in a subsequent minor release."""
         return self._request_id
 
     @property
     def stream(self):
+        """Experimental API. This API may have breaking changes or be removed in a subsequent minor release."""
         return self._stream
 
     # ------------------------------------------------------------------
@@ -75,11 +87,14 @@ class AsyncResultSet:
 
     @property
     def future(self):
+        """Experimental API. This API may have breaking changes or be removed in a subsequent minor release."""
         return self._future
 
     @future.setter
     def future(self, value):
         self._future = value
+        if value is not None and not value.done():
+            value.add_done_callback(lambda _: self._stream.put_nowait(_STREAM_END))
 
     # ------------------------------------------------------------------
     # Disable the synchronous interface
@@ -113,7 +128,9 @@ class AsyncResultSet:
     # ------------------------------------------------------------------
 
     async def one(self):
-        """Return the next individual result or the _EXHAUSTED sentinel.
+        """Experimental API. This API may have breaking changes or be removed in a subsequent minor release.
+
+        Return the next individual result or the _EXHAUSTED sentinel.
 
         Unlike the synchronous ResultSet.one() which returns a full batch
         list per server frame, AsyncResultSet.one() unpacks each server frame
@@ -141,26 +158,32 @@ class AsyncResultSet:
     async def _one_chunk(self):
         """Return the next raw chunk (list) from the stream or _EXHAUSTED.
 
-        Polls the stream queue while the background receive task is still
-        running, yielding control for up to 100 ms between checks so that
-        other coroutines can make progress.
+        Awaits the stream queue directly instead of polling the receive task.
+        When a pending receive task completes (normally, with an exception, or
+        via cancellation), its done callback enqueues _STREAM_END so any
+        waiting consumer wakes up immediately.
         """
-        while not self._future.done():
-            if not self.stream.empty():
-                return self.stream.get_nowait()
-            # Brief yield so other coroutines can run while we wait.
-            await asyncio.wait([self._future], timeout=0.1)
+        while not self.stream.empty():
+            chunk = self.stream.get_nowait()
+            if chunk is not _STREAM_END:
+                return chunk
 
-        # Future is done; drain whatever landed in the queue.
-        if not self.stream.empty():
-            return await self.stream.get()
+        if self._future.done():
+            self._future.result()
+            return _EXHAUSTED
 
-        # Re-raise if the background task failed; return sentinel on success.
-        self._future.result()
-        return _EXHAUSTED
+        chunk = await self.stream.get()
+        if chunk is _STREAM_END:
+            self.stream.put_nowait(_STREAM_END)
+            self._future.result()
+            return _EXHAUSTED
+        return chunk
 
     async def all(self):
-        """Collect every result and return them as a flat list."""
+        """Experimental API. This API may have breaking changes or be removed in a subsequent minor release.
+
+        Collect every result and return them as a flat list.
+        """
         results = []
         while not self._item_cache.empty():
             results.append(self._item_cache.get_nowait())

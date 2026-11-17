@@ -30,3 +30,19 @@ development. An explicitly designated experimental API may have breaking changes
 release.
 
 See: link:https://tinkerpop.apache.org/docs/3.8.3/reference/#api-stability[Reference Documentation - API Stability]
+
+==== Experimental Asynchronous Gremlin-Python Driver
+
+`gremlin-python` now includes an experimental native `asyncio` WebSocket driver and traversal API (`AsyncDriverRemoteConnection`,
+`AsyncClient`, `async_traversal()`, and `AsyncTransaction`) for executing traversals, streaming results, and managing
+session-bound transactions without blocking an `asyncio` event loop.
+
+[source,python]
+----
+async with AsyncDriverRemoteConnection('ws://localhost:8182/gremlin', 'g') as rc:
+    g = async_traversal().with_remote(rc)
+    names = await g.V().has_label('person').values('name').to_list()
+----
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2774[TINKERPOP-2774],
+link:https://tinkerpop.apache.org/docs/3.8.3/reference/#gremlin-python-async[Reference Documentation - Asynchronous Usage]

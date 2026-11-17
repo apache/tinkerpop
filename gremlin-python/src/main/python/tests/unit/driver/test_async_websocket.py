@@ -435,6 +435,92 @@ class TestAsyncResultSet(_AsyncioTestCase):
         self.assertFalse(issubclass(AsyncResultSet, ResultSet))
         self.assertFalse(hasattr(rs, "done"))
 
+    async def test_streaming_multi_chunk_delivers_without_polling_delay(self):
+        """Chunks pushed while future is still pending are delivered immediately."""
+        import time
+        q = asyncio.Queue()
+        rs = AsyncResultSet(q, "req-stream")
+        allow_finish = asyncio.Event()
+
+        async def _producer():
+            for batch in ([1, 2], [3, 4], [5]):
+                await asyncio.sleep(0.005)
+                q.put_nowait(batch)
+            await allow_finish.wait()
+
+        task = asyncio.create_task(_producer())
+        rs.future = task
+
+        start = time.monotonic()
+        received = [await rs.one() for _ in range(5)]
+        elapsed = time.monotonic() - start
+
+        # Task is still pending while all 5 items have already been delivered
+        # without incurring 100 ms polling delays per frame.
+        self.assertFalse(task.done())
+        self.assertEqual(received, [1, 2, 3, 4, 5])
+        self.assertLess(elapsed, 0.1)
+
+        allow_finish.set()
+        self.assertIs(await rs.one(), _EXHAUSTED)
+
+    async def test_all_with_pending_future_and_delayed_puts(self):
+        """all() collects chunks arriving asynchronously from a pending task."""
+        q = asyncio.Queue()
+        rs = AsyncResultSet(q, "req-all-stream")
+
+        async def _producer():
+            await asyncio.sleep(0.005)
+            q.put_nowait(["a", "b"])
+            await asyncio.sleep(0.005)
+            q.put_nowait(["c"])
+
+        rs.future = asyncio.create_task(_producer())
+        self.assertEqual(await rs.all(), ["a", "b", "c"])
+
+    async def test_streaming_cancel_mid_stream_propagates_cancelled_error(self):
+        """Cancelling the receive task mid-stream wakes the consumer and raises CancelledError."""
+        q = asyncio.Queue()
+        rs = AsyncResultSet(q, "req-cancel")
+        first_chunk_sent = asyncio.Event()
+
+        async def _producer():
+            q.put_nowait([10])
+            first_chunk_sent.set()
+            await asyncio.sleep(10)
+
+        task = asyncio.create_task(_producer())
+        rs.future = task
+
+        await first_chunk_sent.wait()
+        self.assertEqual(await rs.one(), 10)
+
+        async def _cancel_soon():
+            await asyncio.sleep(0.01)
+            task.cancel()
+
+        asyncio.create_task(_cancel_soon())
+        with self.assertRaises(asyncio.CancelledError):
+            await asyncio.wait_for(rs.one(), timeout=1.0)
+
+    async def test_streaming_error_mid_stream_propagates_exception(self):
+        """An exception in the receive task mid-stream wakes the consumer and raises it."""
+        q = asyncio.Queue()
+        rs = AsyncResultSet(q, "req-err")
+
+        async def _producer():
+            q.put_nowait([10])
+            await asyncio.sleep(0.01)
+            raise RuntimeError("mid-stream failure")
+
+        rs.future = asyncio.create_task(_producer())
+
+        items = []
+        with self.assertRaisesRegex(RuntimeError, "mid-stream failure"):
+            async for item in rs:
+                items.append(item)
+        self.assertEqual(items, [10])
+
 
 # ---------------------------------------------------------------------------
 # AsyncConnection
@@ -966,6 +1052,77 @@ class TestAsyncClient(_AsyncioTestCase):
         conn.write.assert_not_awaited()
         conn.close.assert_awaited_once()
         self.assertTrue(client.is_closed())
+
+
+# ---------------------------------------------------------------------------
+# Experimental API docstring convention
+# ---------------------------------------------------------------------------
+
+class TestExperimentalDocstrings(unittest.TestCase):
+    EXPECTED_PREFIX = (
+        "Experimental API. This API may have breaking changes or be removed "
+        "in a subsequent minor release."
+    )
+
+    def test_all_new_public_async_apis_carry_experimental_docstring(self):
+        import inspect
+        from gremlin_python.driver import (
+            async_client,
+            async_connection,
+            async_driver_remote_connection,
+            async_graph_traversal,
+            async_protocol,
+            async_resultset,
+        )
+        from gremlin_python.driver.aiohttp import async_transport
+
+        modules = [
+            async_transport,
+            async_protocol,
+            async_resultset,
+            async_connection,
+            async_client,
+            async_driver_remote_connection,
+            async_graph_traversal,
+        ]
+
+        for mod in modules:
+            doc = inspect.getdoc(mod) or ""
+            self.assertTrue(
+                doc.startswith(self.EXPECTED_PREFIX),
+                f"Module {mod.__name__} docstring missing Experimental API prefix",
+            )
+
+            for name, obj in vars(mod).items():
+                if name.startswith("_"):
+                    continue
+                if inspect.isfunction(obj) and obj.__module__ == mod.__name__:
+                    fdoc = inspect.getdoc(obj) or ""
+                    self.assertTrue(
+                        fdoc.startswith(self.EXPECTED_PREFIX),
+                        f"Function {mod.__name__}.{name} missing Experimental API prefix",
+                    )
+                elif inspect.isclass(obj) and obj.__module__ == mod.__name__:
+                    cdoc = inspect.getdoc(obj) or ""
+                    self.assertTrue(
+                        cdoc.startswith(self.EXPECTED_PREFIX),
+                        f"Class {mod.__name__}.{name} missing Experimental API prefix",
+                    )
+                    for attr_name, attr_val in obj.__dict__.items():
+                        if attr_name.startswith("_"):
+                            continue
+                        if isinstance(attr_val, property):
+                            pdoc = inspect.getdoc(attr_val.fget) or ""
+                            self.assertTrue(
+                                pdoc.startswith(self.EXPECTED_PREFIX),
+                                f"Property {name}.{attr_name} missing Experimental API prefix",
+                            )
+                        elif inspect.isfunction(attr_val):
+                            mdoc = inspect.getdoc(attr_val) or ""
+                            self.assertTrue(
+                                mdoc.startswith(self.EXPECTED_PREFIX),
+                                f"Method {name}.{attr_name} missing Experimental API prefix",
+                            )
 
 
 if __name__ == "__main__":

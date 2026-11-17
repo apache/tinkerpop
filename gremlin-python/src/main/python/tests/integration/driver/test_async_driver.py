@@ -197,6 +197,15 @@ class TestAsyncRemoteConnectionDSL(_AsyncioTestCase):
         self.assertIn("vadas", names)
         self.assertIn("josh", names)
 
+    async def test_multi_frame_streaming_206(self):
+        # Default Gremlin Server resultIterationBatchSize is 64, so 150 items
+        # span multiple 206 partial-content WebSocket frames before final 200.
+        expected = list(range(150))
+        streamed = []
+        async for item in self.g.inject(expected).unfold():
+            streamed.append(item)
+        self.assertEqual(streamed, expected)
+
 
 # ---------------------------------------------------------------------------
 # AsyncDriverRemoteConnection — submit_async / submit_stream

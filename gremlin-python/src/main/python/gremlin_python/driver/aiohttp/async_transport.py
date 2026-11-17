@@ -16,6 +16,10 @@
 # specific language governing permissions and limitations
 # under the License.
 #
+"""Experimental API. This API may have breaking changes or be removed in a subsequent minor release.
+
+Native-async WebSocket transport built on aiohttp.
+"""
 import asyncio
 import sys
 
@@ -30,7 +34,9 @@ else:
     from async_timeout import timeout as _async_timeout
 
 class AsyncAiohttpWSTransport(AbstractBaseTransport):
-    """Native-async WebSocket transport built on aiohttp.
+    """Experimental API. This API may have breaking changes or be removed in a subsequent minor release.
+
+    Native-async WebSocket transport built on aiohttp.
 
     Unlike AiohttpTransport, every I/O method is a coroutine.  The transport
     does not create its own event loop; callers must already be running inside
@@ -76,7 +82,9 @@ class AsyncAiohttpWSTransport(AbstractBaseTransport):
             self._aiohttp_kwargs["compress"] = 15
 
     async def connect(self, url, headers=None):
-        """Open the WebSocket connection to *url*.
+        """Experimental API. This API may have breaking changes or be removed in a subsequent minor release.
+
+        Open the WebSocket connection to *url*.
 
         Parameters
         ----------
@@ -102,12 +110,17 @@ class AsyncAiohttpWSTransport(AbstractBaseTransport):
             raise
 
     async def write(self, message):
-        """Send *message* (bytes) as a WebSocket binary frame."""
+        """Experimental API. This API may have breaking changes or be removed in a subsequent minor release.
+
+        Send *message* (bytes) as a WebSocket binary frame.
+        """
         async with _async_timeout(self._write_timeout):
             await self._websocket.send_bytes(message)
 
     async def read(self):
-        """Receive the next WebSocket message and return its payload as bytes.
+        """Experimental API. This API may have breaking changes or be removed in a subsequent minor release.
+
+        Receive the next WebSocket message and return its payload as bytes.
 
         Text frames are UTF-8 encoded before returning.  Close/error frames
         raise RuntimeError.
@@ -127,11 +140,16 @@ class AsyncAiohttpWSTransport(AbstractBaseTransport):
         return msg.data
 
     async def ping(self):
-        """Send a WebSocket ping frame to keep the connection alive."""
+        """Experimental API. This API may have breaking changes or be removed in a subsequent minor release.
+
+        Send a WebSocket ping frame to keep the connection alive.
+        """
         await self._websocket.ping()
 
     async def close(self):
-        """Close the WebSocket and the underlying HTTP session gracefully.
+        """Experimental API. This API may have breaking changes or be removed in a subsequent minor release.
+
+        Close the WebSocket and the underlying HTTP session gracefully.
 
         Both resources are closed concurrently and each close is shielded from
         external cancellation so that the connection is always cleaned up even
@@ -147,7 +165,10 @@ class AsyncAiohttpWSTransport(AbstractBaseTransport):
 
     @property
     def closed(self):
-        """``True`` if the WebSocket or the underlying session is closed."""
+        """Experimental API. This API may have breaking changes or be removed in a subsequent minor release.
+
+        ``True`` if the WebSocket or the underlying session is closed.
+        """
         return (
             self._websocket is None
             or self._websocket.closed

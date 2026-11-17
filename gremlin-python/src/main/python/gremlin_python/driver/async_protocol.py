@@ -16,6 +16,10 @@
 # specific language governing permissions and limitations
 # under the License.
 #
+"""Experimental API. This API may have breaking changes or be removed in a subsequent minor release.
+
+Asynchronous Gremlin Server WebSocket subprotocol implementation.
+"""
 import asyncio
 import base64
 import logging
@@ -30,7 +34,9 @@ from gremlin_python.driver.protocol import (
 log = logging.getLogger("gremlinpython")
 
 class AsyncGremlinServerWSProtocol(GremlinServerWSProtocol):
-    """Async version of GremlinServerWSProtocol.
+    """Experimental API. This API may have breaking changes or be removed in a subsequent minor release.
+
+    Async version of GremlinServerWSProtocol.
 
     Both write() and data_received() are coroutines that must be awaited.
     The transport assigned via connection_made() must be an
@@ -39,14 +45,19 @@ class AsyncGremlinServerWSProtocol(GremlinServerWSProtocol):
     """
 
     async def write(self, request_id, request_message):
-        """Serialize *request_message* and send it over the WebSocket."""
+        """Experimental API. This API may have breaking changes or be removed in a subsequent minor release.
+
+        Serialize *request_message* and send it over the WebSocket.
+        """
         message = self._message_serializer.serialize_message(
             request_id, request_message
         )
         await self._transport.write(message)
 
     async def data_received(self, message, results_dict):
-        """Deserialize a raw WebSocket frame and dispatch results.
+        """Experimental API. This API may have breaking changes or be removed in a subsequent minor release.
+
+        Deserialize a raw WebSocket frame and dispatch results.
 
         Deserialization is offloaded to the default executor so that the event
         loop is not blocked by CPU-bound work.
