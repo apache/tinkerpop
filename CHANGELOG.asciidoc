@@ -294,6 +294,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Fixed `gremlin-javascript` not exporting `CardinalityValue` from `gremlin.process`.
 * Fixed bug in `TinkerTransactionGraph` where an edge could not be dropped and re-added with the same id in one transaction.
 * Fixed the Gremlin Groovy sugar syntax turning a misspelled step or a step called with mismatched argument types into `values()`, which now throws a `MissingMethodException`.
+* Bumped `jackson-databind` to 2.18.12.
 
 [[release-3-7-7]]
 === TinkerPop 3.7.7 (Release Date: September 1, 2026)
