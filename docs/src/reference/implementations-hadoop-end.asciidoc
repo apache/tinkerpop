@@ -143,6 +143,7 @@ def stringify(vertex) {
 
 
 
+[llms-summary="Hadoop-Gremlin's Storage API for inspecting OLAP input and output: FileSystemStorage for HDFS and the local file system, and SparkContextStorage for persisted Spark RDDs."]
 === Storage Systems
 
 Hadoop-Gremlin provides two implementations of the `Storage` API:

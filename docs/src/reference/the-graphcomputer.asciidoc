@@ -163,6 +163,7 @@ MapReduce jobs are executed is irrelevant. This is made apparent when realizing 
 `Vertex` as its input and the `reduce()`-stage yields key/value pairs. Thus, the results of reduce can not fed back
 into a `map()`.
 
+[llms-summary="The VertexPrograms TinkerPop provides for common graph algorithms: PageRank, PeerPressure, connected components, shortest path, cloning, and the TraversalVertexProgram behind distributed Gremlin OLAP traversals."]
 == A Collection of VertexPrograms
 
 TinkerPop provides a collection of VertexPrograms that implement common algorithms. This section discusses the various

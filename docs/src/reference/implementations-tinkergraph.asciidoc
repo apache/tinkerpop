@@ -482,6 +482,7 @@ g.V().valueMap()
 <4> Add a second vertex without committing
 <5> Rollback the change
 
+[llms-summary="Persisting TinkerStorageGraph to disk: selecting a storage engine, durability and concurrent writes, what a store holds, settings fixed at creation, failure recovery, and use with Gremlin Server."]
 [[tinkergraph-gremlin-persistence]]
 === Persistence
 
