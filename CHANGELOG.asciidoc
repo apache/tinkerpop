@@ -54,16 +54,16 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Changed `GqlExecutor.execute()` to return `Iterator<GqlRow>`, a new public row type, instead of `Iterator<Element[]>` so that a result row can carry the edge list bound to a quantified relationship variable. *(breaking)*
 * Fixed TinkerGQL `match()` to close the provider iterators it opens when the match is exhausted or reset, and when the traversal is closed, including when it finishes early because of a downstream `limit()`.
 * Fixed TinkerGQL undirected relationships matching a self-loop edge twice.
+* Added variable-length path patterns to TinkerGQL using quantified relationships.
+* Changed `GqlExecutor.execute()` to return `Iterator<GqlRow>`, a new public row type, instead of `Iterator<Element[]>` so that a result row can carry the edge list bound to a quantified relationship variable.
+* Fixed TinkerGQL `match()` to close the provider iterators it opens when the match is exhausted or reset, and when the traversal is closed, including when it finishes early because of a downstream `limit()`.
+* Fixed TinkerGQL undirected relationships matching a self-loop edge twice.
 * Bumped `zod` to 4.6.7 for `gremlin-mcp`, which requires an explicit key schema on `z.record()`.
 * Bumped `jackson-databind` to 2.22.4.
 * Bumped Spark to 4.3.0 and Hadoop to 3.5.0.
 * Changed `gremlin-javascript` to export Gremlin symbols by name using their Gremlin spelling, such as `T`, `Order` and `__`.
 * Bumped Groovy to 6.0.0.
 * Changed `:plugin list` in the Gremlin Console to mark plugins `[active]`, `[inactive]`, `[active until restart]` or `[inactive until restart]`.
-* Added variable-length path patterns to TinkerGQL using quantified relationships.
-* Changed `GqlExecutor.execute()` to return `Iterator<GqlRow>`, a new public row type, instead of `Iterator<Element[]>` so that a result row can carry the edge list bound to a quantified relationship variable.
-* Fixed TinkerGQL `match()` to close the provider iterators it opens when the match is exhausted or reset, and when the traversal is closed, including when it finishes early because of a downstream `limit()`.
-* Fixed TinkerGQL undirected relationships matching a self-loop edge twice.
 
 [[release-4-0-0-beta-3]]
 === TinkerPop 4.0.0-beta.3 (July 20, 2026)

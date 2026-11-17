@@ -3400,6 +3400,8 @@ The following `MATCH` patterns are supported:
 |`-[e:Label]->{m}` |Quantified edge that matches a walk of exactly `m` edges
 |`-[e:Label]->{m,}` |Quantified edge that matches a walk of `m` or more edges
 |`-[e:Label]->+` |Quantified edge that matches a walk of one or more edges, equivalent to `{1,}`
+|`-[e:Label]-{m,n}` |Quantified undirected edge that matches a walk of `m` to `n` edges, each followed in either direction
+|`-[e:Label]-+` |Quantified undirected edge that matches a walk of one or more edges, each followed in either direction
 |=========================================================
 
 Multiple comma-separated path patterns are supported in a single `MATCH` clause. Patterns that share a variable
@@ -3408,17 +3410,65 @@ clause — `match()` always returns the full binding `Map` and any projection is
 `select()`. An undirected edge pattern, quantified or not, matches a self-loop once, unlike `bothE()`, which returns
 it once for each of its ends.
 
-A quantifier may follow any directed, reverse, or undirected edge, as in `<-[e:Label]-{m,n}` or
-`-[e:Label]-{m,n}`, and the quantified walk matches once at every length in its range. Bounds may not exceed
-`2147483646`. A walk never repeats an edge, though it may pass through the same vertex more than once, for example
-around a triangle or across parallel edges. Each distinct walk produces its own row, so the same endpoints can appear
-in several rows, and `dedup()` reduces the result to distinct endpoints. An inline property filter on a
-quantified edge, as in `-[e:Label {key: 'value'}]->{1,3}`, applies to every edge of the walk, while the labels and
-property filters of the two nodes apply only to the walk's endpoints and not to the vertices in between. A named edge
-variable binds to a `List` of the walk's edges in pattern order, from left to right, and it is a `List` even for
-`{1}`. Every quantifier, including `{1}` and `{1,1}`, matches a walk, so an anonymous `{1}` edge over parallel edges
-produces one row per edge. A quantified edge may close a pattern cycle or loop back to its own node, as in
-`(a)-[r:knows]->{2,3}(a)`, and in that case only walks that end at the already-matched vertex produce rows.
+A quantifier may follow any directed, reverse, or undirected edge, and the quantified walk matches once at every length
+in its range. Bounds may not exceed `2147483646`. A named edge variable binds to a `List` of the walk's edges in
+pattern order, even for `{1}`. Node labels and property filters apply only to the endpoints of the walk, while an
+inline property filter on the edge applies to every edge of the walk:
+
+[gremlin-groovy,modern]
+----
+g.match("MATCH (a:person {name: 'vadas'})-[:knows]-{1,2}(b:person)").
+  select("b").by("name")                                                     <1>
+g.match("MATCH (a:person {name: 'marko'})-[r]->{2}(s:software)").
+  select("s", "r").by("name").by()                                           <2>
+g.match("MATCH (a:person {name: 'marko'})-[r {weight: 1.0}]->{2}(s:software)").
+  select("s").by("name")                                                     <3>
+----
+
+<1> The undirected walk reaches marko directly and josh through marko.
+<2> The intermediate vertex is unconstrained, and `r` holds both edges of each walk in order.
+<3> Only the walk to ripple has a `weight` of `1.0` on both of its edges.
+
+A walk never repeats an edge but may revisit a vertex, and each distinct walk produces its own row. A quantified edge
+may also close a pattern cycle or loop back to its own node, in which case only walks that end at the already-matched
+vertex produce rows:
+
+[gremlin-groovy,modern]
+----
+g.match("MATCH (a:person {name: 'marko'})-[]-{1,3}(b:software {name: 'lop'})").
+  select("a", "b").by("name")                                                <1>
+g.match("MATCH (a:person {name: 'marko'})-[]-{1,3}(b:software {name: 'lop'})").
+  select("a", "b").by("name").dedup()                                        <2>
+g.match("MATCH (a:person {name: 'marko'})-[r]-{3}(a)").
+  select("r")                                                                <3>
+----
+
+<1> Marko reaches lop directly and through josh, so the same endpoints appear twice.
+<2> `dedup()` reduces the result to distinct endpoints.
+<3> The marko, josh and lop triangle is walked once in each direction.
+
+A plain anonymous edge such as `-[]->` produces at most one row for each vertex it reaches, while a named edge or any
+quantified edge, including `{1}`, produces one row per edge. The difference appears where parallel edges join two
+vertices:
+
+[gremlin-groovy]
+----
+graph = TinkerGraph.open()
+g = traversal().with(graph)
+g.addV("airport").property("code", "AUS").as("aus").
+  addV("airport").property("code", "DFW").as("dfw").
+  addE("route").from("aus").to("dfw").
+  addE("route").from("aus").to("dfw").iterate()                              <1>
+g.match("MATCH (a:airport {code: 'AUS'})-[]->(b:airport)").
+  select("b").by("code")                                                     <2>
+g.match("MATCH (a:airport {code: 'AUS'})-[]->{1}(b:airport)").
+  select("b").by("code")                                                     <3>
+----
+
+<1> Two parallel routes connect AUS to DFW.
+<2> The plain anonymous edge collapses both routes into one row.
+<3> The quantified edge produces one row per route.
+
 Matching is lazy, so `limit()` ends the search once enough rows are produced, and a traversal timeout or
 interruption stops a match in progress. The unbounded forms `{m,}` and `+` can still be expensive on dense or cyclic
 graphs because the number of walks can grow exponentially with their length.
