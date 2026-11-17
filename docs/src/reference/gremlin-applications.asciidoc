@@ -1365,7 +1365,7 @@ metrics are exposed in a variety of ways:
 * link:http://www.slf4j.org/[SLF4j]
 * link:https://en.wikipedia.org/wiki/Java_Management_Extensions[JMX]
 
-The configuration of each of these outputs is described in the Gremlin Server <<_configuring_2, Configuring>> section.
+The configuration of each of these outputs is described in the Gremlin Server <<server-configuring, Configuring>> section.
 Note that Graphite and Ganglia are not included as part of the Gremlin Server distribution and must be installed
 to the server manually.
 

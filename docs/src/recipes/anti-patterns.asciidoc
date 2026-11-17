@@ -266,7 +266,7 @@ g.V().choose(label).
 <1> Note, that tokens use a `fold()` reducer by default.
 <2> `by("name")` doesn't use a token, but falls into the same category as the String `"name"` is translated into an optimized traversal.
 
-[has-traversal]
+[[has-traversal]]
 == has() and Traversal Arguments
 
 There is an understandable assumption that the `has(String,Traversal)` overload indicates that the value returned by

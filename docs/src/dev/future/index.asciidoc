@@ -39,7 +39,7 @@ the only one that need be maintained.
 = Roadmap
 
 image:gremlin-explorer-old-photo.png[width=250,float=left]This section provides some expectations as to what features
-might be provided in future link:https://tinkerpop.apache.org/docs/x.y.z/dev/developer/#_versioning[major versions]. It
+might be provided in future link:https://tinkerpop.apache.org/docs/x.y.z/dev/developer/#versioning[major versions]. It
 is not a guarantee of a feature landing in a particular version, but it yields some sense of what core developers have
 some focus on. The most up-to-date version of this document will always be in the
 link:https://github.com/apache/tinkerpop/blob/master/docs/src/dev/future/index.asciidoc[git repository].

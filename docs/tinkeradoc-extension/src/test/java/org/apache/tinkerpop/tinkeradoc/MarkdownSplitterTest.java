@@ -18,8 +18,15 @@
  */
 package org.apache.tinkerpop.tinkeradoc;
 
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -27,6 +34,8 @@ import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
@@ -36,6 +45,9 @@ import static org.hamcrest.MatcherAssert.assertThat;
  * byte budget is only a lint, with intentional exceptions flagged {@code allow-oversize}.
  */
 public class MarkdownSplitterTest {
+
+    @Rule
+    public TemporaryFolder tmp = new TemporaryFolder();
 
     /** A heading with an anchor, no summary (does NOT start a page). */
     private static String heading(final String id, final int level, final String title) {
@@ -245,5 +257,105 @@ public class MarkdownSplitterTest {
     public void pointerFallsBackToSiteRootWithoutAVersion() {
         assertThat(MarkdownSplitter.llmsPointer(null), containsString("[llms.txt](/llms.txt)"));
         assertThat(MarkdownSplitter.llmsPointer(""), containsString("[llms.txt](/llms.txt)"));
+    }
+
+    private static final String SITE = "https://tinkerpop.apache.org/docs/3.7.7/";
+
+    /** Writes a rendered book at {@code <root>/<path>/index.md}. */
+    private Path book(final Path root, final String path, final String markdown) throws IOException {
+        final Path file = root.resolve(path).resolve("index.md");
+        Files.createDirectories(file.getParent());
+        Files.write(file, markdown.getBytes(StandardCharsets.UTF_8));
+        return file;
+    }
+
+    private static String read(final Path root, final String path) throws IOException {
+        return new String(Files.readAllBytes(root.resolve(path)), StandardCharsets.UTF_8);
+    }
+
+    /** A reference book with an addE() page, and a provider book whose page links into it. */
+    private List<String> splitReferenceAndProvider(final Path root, final String providerBody) throws IOException {
+        final Path reference = book(root, "reference", "preamble\n\n" + heading("ref", 1, "Reference")
+                + "\nintro\n\n" + summarized("addedge-step", 1, "AddEdge Step", "addE().") + "\nbody\n");
+        final Path provider = book(root, "dev/provider", "preamble\n\n" + heading("prov", 1, "Provider")
+                + "\nintro\n\n" + summarized("adde-step", 1, "addE()", "addE semantics.") + "\n"
+                + providerBody + "\n");
+        final List<String> violations = new ArrayList<>();
+        final List<Path> books = new ArrayList<>();
+        books.add(reference);
+        books.add(provider);
+        new MarkdownSplitter(MarkdownSplitter.DEFAULT_BUDGET, "3.7.7").splitBooks(root, books, violations);
+        return violations;
+    }
+
+    @Test
+    public void linkToAnotherBookBecomesRelativeLinkToOwningPage() throws IOException {
+        final Path root = tmp.getRoot().toPath();
+        final List<String> violations = splitReferenceAndProvider(root,
+                "See [addE()](" + SITE + "reference/#addedge-step) and [again](" + SITE + "reference#addedge-step).");
+        assertThat(violations, is(empty()));
+        final String page = read(root, "dev/provider/adde-step.md");
+        assertThat(page, containsString("[addE()](../../reference/addedge-step.md#addedge-step)"));
+        assertThat(page, containsString("[again](../../reference/addedge-step.md#addedge-step)"));
+    }
+
+    @Test
+    public void linksPinnedToAnotherVersionOrToBooksOutsideTheRunAreLeftAlone() throws IOException {
+        final Path root = tmp.getRoot().toPath();
+        final String pinned = "[old](https://tinkerpop.apache.org/docs/3.2.10/reference/#_configuring_2)";
+        final String elsewhere = "[recipe](" + SITE + "recipes/#has-traversal)";
+        final List<String> violations = splitReferenceAndProvider(root, pinned + " " + elsewhere);
+        assertThat(violations, is(empty()));
+        final String page = read(root, "dev/provider/adde-step.md");
+        assertThat(page, containsString(pinned));
+        assertThat(page, containsString(elsewhere));
+    }
+
+    @Test
+    public void linkToAnchorNoPageInTheOtherBookHasIsAViolation() throws IOException {
+        final Path root = tmp.getRoot().toPath();
+        final String broken = "[gone](" + SITE + "reference/#mergev-step)";
+        final List<String> violations = splitReferenceAndProvider(root, broken);
+        assertThat(violations, hasSize(1));
+        assertThat(violations.get(0), containsString("reference/#mergev-step"));
+        assertThat(read(root, "dev/provider/adde-step.md"), containsString(broken));
+    }
+
+    @Test
+    public void linkToAnchorNoPageInTheSameBookHasIsAViolation() throws IOException {
+        final Path root = tmp.getRoot().toPath();
+        final List<String> violations = splitReferenceAndProvider(root, "See [nothing](#Equality).");
+        assertThat(violations, hasSize(1));
+        assertThat(violations.get(0), containsString("#Equality"));
+    }
+
+    @Test
+    public void anchorInsideALineIsALinkTarget() {
+        final String md = "preamble\n\n" + heading("io", 1, "IO Reference") + "\nintro\n\n"
+                + summarized("graphml", 1, "GraphML", "GraphML.") + "\nText <a id=\"inline\"></a>here.\n\n"
+                + summarized("graphson", 1, "GraphSON", "GraphSON.") + "\nSee [it](#inline).\n";
+        final MarkdownSplitter.SplitBook book = new MarkdownSplitter().splitBook(md, "index.md", null);
+        assertThat(page(book.pages, "graphson.md").getContent(), containsString("[it](graphml.md#inline)"));
+    }
+
+    @Test
+    public void blockAnchorBeforeAHeadingAnchorIsKept() {
+        final String md = "preamble\n\n" + heading("io", 1, "IO Reference") + "\nintro\n\n"
+                + "<a id=\"graph-step\"></a>\n" + summarized("v-step", 1, "V Step", "V().") + "\nbody\n\n"
+                + summarized("other", 1, "Other", "Other.") + "\nSee [graph](#graph-step) and [V](#v-step).\n";
+        final MarkdownSplitter.SplitBook book = new MarkdownSplitter().splitBook(md, "index.md", null);
+        assertThat(fileNames(book.pages), hasItem("v-step.md"));
+        final String other = page(book.pages, "other.md").getContent();
+        assertThat(other, containsString("[V](v-step.md#v-step)"));
+        assertThat(book.anchorToFile.containsKey("graph-step"), is(true));
+        assertThat(other, containsString("[graph](" + book.anchorToFile.get("graph-step") + "#graph-step)"));
+    }
+
+    @Test
+    public void relativeLinkBetweenBooks() {
+        assertThat(MarkdownSplitter.relativeLink("dev/provider", "reference", "a.md"), is("../../reference/a.md"));
+        assertThat(MarkdownSplitter.relativeLink("reference", "dev/provider", "b.md"), is("../dev/provider/b.md"));
+        assertThat(MarkdownSplitter.relativeLink("tutorials/getting-started", "tutorials/the-gremlin-console",
+                "index.md"), is("../the-gremlin-console/index.md"));
     }
 }
