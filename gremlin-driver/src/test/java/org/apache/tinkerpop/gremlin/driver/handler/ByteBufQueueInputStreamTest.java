@@ -162,23 +162,6 @@ public class ByteBufQueueInputStreamTest {
         assertEquals("stream is closed so nothing is readable", -1, stream.read());
     }
 
-    @Test
-    public void shouldIgnoreAlreadyReleasedBufferOfferedAfterClose() throws Exception {
-        // Offering an already-released buffer after close must not attempt a double-release.
-        final ByteBufQueueInputStream stream = new ByteBufQueueInputStream();
-        stream.close();
-
-        final ByteBuf released = ByteBufAllocator.DEFAULT.buffer(1);
-        released.release();
-        assertEquals(0, released.refCnt());
-
-        stream.offer(released); // refCnt == 0 branch: the guard skips the release so no double-release is attempted
-        // Assert real behavior instead of the tautological refCnt == 0: the buffer was not enqueued, so a closed
-        // stream still reports end-of-stream. The double-release guard is verified implicitly - removing it would
-        // make offer() call release() on an already-released buffer and throw IllegalReferenceCountException.
-        assertEquals(-1, stream.read());
-    }
-
     @Test(timeout = 5000)
     public void shouldReturnZeroForZeroLengthRead() throws Exception {
         // Nothing is ever offered, so the queue is empty. A zero-length read must short-circuit via

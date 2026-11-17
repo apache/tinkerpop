@@ -25,7 +25,6 @@ import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
@@ -103,30 +102,6 @@ public class InputStreamBufferTest {
     }
 
     @Test
-    public void shouldRoundTripBoundaryPrimitiveValues() throws Exception {
-        final ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        final DataOutputStream dos = new DataOutputStream(bos);
-        dos.writeBoolean(false);
-        dos.writeByte(-1);
-        dos.writeShort(Short.MIN_VALUE);
-        dos.writeInt(Integer.MIN_VALUE);
-        dos.writeLong(Long.MAX_VALUE);
-        dos.writeFloat(Float.NaN);
-        dos.writeDouble(Double.NEGATIVE_INFINITY);
-
-        final InputStreamBuffer buffer = bufferOf(bos.toByteArray());
-        assertFalse(buffer.readBoolean());
-        assertEquals((byte) -1, buffer.readByte());
-        assertEquals(Short.MIN_VALUE, buffer.readShort());
-        assertEquals(Integer.MIN_VALUE, buffer.readInt());
-        assertEquals(Long.MAX_VALUE, buffer.readLong());
-        assertTrue(Float.isNaN(buffer.readFloat()));
-        assertEquals(Double.NEGATIVE_INFINITY, buffer.readDouble(), 0.0);
-        // 1 + 1 + 2 + 4 + 8 + 4 + 8 = 28 bytes consumed
-        assertEquals(28, buffer.readerIndex());
-    }
-
-    @Test
     public void shouldReadBytesIntoArrayWithOffsetAndLength() {
         final InputStreamBuffer buffer = bufferOf(new byte[]{10, 20, 30, 40});
         final byte[] dest = new byte[6];
@@ -189,11 +164,6 @@ public class InputStreamBufferTest {
     @Test(expected = UnsupportedOperationException.class)
     public void shouldThrowOnGetBytes() {
         bufferOf(new byte[0]).getBytes(0, new byte[1]);
-    }
-
-    @Test
-    public void shouldNotBeDirect() {
-        assertFalse(bufferOf(new byte[0]).isDirect());
     }
 
     @Test

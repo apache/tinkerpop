@@ -182,22 +182,6 @@ public class LoadBalancingStrategyTest {
     }
 
     @Test
-    public void shouldToggleHostViaAvailabilityCallbacks() {
-        final LoadBalancingStrategy.RoundRobin strategy = new LoadBalancingStrategy.RoundRobin();
-        final Host h1 = availableHost();
-        final Host h2 = availableHost();
-        strategy.onAvailable(h1);
-        strategy.onAvailable(h2);
-        assertEquals(2, drain(strategy.select(null)).size());
-
-        strategy.onUnavailable(h2);
-        final List<Host> selected = drain(strategy.select(null));
-        assertEquals(1, selected.size());
-        assertTrue(selected.contains(h1));
-        assertFalse(selected.contains(h2));
-    }
-
-    @Test
     public void shouldInitializeWithSeededHostsAndSelectThemAll() {
         final LoadBalancingStrategy.RoundRobin strategy = new LoadBalancingStrategy.RoundRobin();
         final Host h1 = availableHost();

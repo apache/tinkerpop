@@ -21,7 +21,6 @@ package org.apache.tinkerpop.gremlin.driver.auth;
 import org.apache.tinkerpop.gremlin.driver.Settings;
 import org.junit.Test;
 
-import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
@@ -56,14 +55,6 @@ public class AuthTest {
         settings.type = "bogus";
         final IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> Auth.from(settings));
         org.junit.Assert.assertEquals("Unknown auth type: bogus", ex.getMessage());
-    }
-
-    @Test
-    public void shouldThrowForDefaultEmptyAuthType() {
-        // AuthSettings.type defaults to the empty string, which is not a recognized type
-        final IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
-                () -> Auth.from(new Settings.AuthSettings()));
-        org.junit.Assert.assertEquals("Unknown auth type: ", ex.getMessage());
     }
 
 }

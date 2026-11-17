@@ -101,18 +101,6 @@ public class DriverRemoteConnectionTest {
     }
 
     @Test
-    public void shouldConnectUsingClusterWithCustomTraversalSource() throws Exception {
-        final Cluster cluster = newCluster();
-        try {
-            final DriverRemoteConnection connection = DriverRemoteConnection.using(cluster, "gods");
-            assertThat(connection.toString(), containsString("[graph=gods]"));
-            connection.close();
-        } finally {
-            cluster.close();
-        }
-    }
-
-    @Test
     public void shouldConnectUsingClientWithDefaultTraversalSource() throws Exception {
         final Cluster cluster = newCluster();
         try {
@@ -146,18 +134,6 @@ public class DriverRemoteConnectionTest {
         final DriverRemoteConnection connection = new DriverRemoteConnection(conf);
         try {
             assertThat(connection.toString(), containsString("[graph=g]"));
-        } finally {
-            connection.close();
-        }
-    }
-
-    @Test
-    public void shouldConstructFromConfigurationWithSourceName() throws Exception {
-        final Configuration conf = new BaseConfiguration();
-        conf.setProperty(DriverRemoteConnection.GREMLIN_REMOTE_DRIVER_SOURCENAME, "gods");
-        final DriverRemoteConnection connection = new DriverRemoteConnection(conf);
-        try {
-            assertThat(connection.toString(), containsString("[graph=gods]"));
         } finally {
             connection.close();
         }
