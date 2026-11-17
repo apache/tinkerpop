@@ -202,9 +202,9 @@ The `NOT` predicate inverts `TRUE` and `FALSE`, respectively, but maintains `ERR
 [[gremlin-semantics-equality-comparability]]
 === Equality and Comparability
 
-<<gremlin-semantics-equality-comparability,Equality>> and <<gremlin-semantics-equality-comparability,Comparability>> can be understood to be semantically aligned with one another.
-As mentioned above, <<gremlin-semantics-equality-comparability,Equality>> is used for `P.eq/neq` (and derived predicates) and
-<<gremlin-semantics-equality-comparability,Comparability>> is used for `P.lt/lte/gt/gte` (and derived predicates).
+<<gremlin-semantics-concepts,Equality>> and Comparability can be understood to be semantically aligned with one another.
+As mentioned above, Equality is used for `P.eq/neq` (and derived predicates) and
+Comparability is used for `P.lt/lte/gt/gte` (and derived predicates).
 If we define Comparability using a `compare()` function over `A` and `B` as follows:
 
 [source,text]
@@ -228,11 +228,11 @@ For any (A, B):
   Comparability.compare(A, B) => ERROR implies Equality.equals(A, B) == FALSE
 ----
 
-The following table illustrates how <<gremlin-semantics-equality-comparability,Equality>> and <<gremlin-semantics-equality-comparability,Comparability>> operate under various
+The following table illustrates how Equality and Comparability operate under various
 classes of comparison:
 
 |===
-|Class|Arguments|<<gremlin-semantics-equality-comparability,Comparability>>|<<gremlin-semantics-equality-comparability,Equality>>
+|Class|Arguments|Comparability|Equality
 
 |Comparisons Involving `NaN`|`(NaN,X)` +
 
@@ -255,7 +255,7 @@ where `X` and `Y` of different type|`ERROR`|`FALSE`
 
 ==== Equality and Comparability Semantics by Type
 
-For <<gremlin-semantics-equality-comparability,Equality>> and <<gremlin-semantics-equality-comparability,Comparability>> evaluation of values within the same type family, we
+For Equality and Comparability evaluation of values within the same type family, we
 define the semantics per type family as follows.
 
 ===== Number
@@ -267,13 +267,13 @@ Edge cases:
 * `-0.0 == 0.0 == +0.0`
 * `+INF == +INF`,  `-INF == -INF`,  `-INF != +INF`
 ** `Float.±Infinity` and `Double.±Infinity` adhere to the same type promotion rules.
-* As described above `NaN` is not <<gremlin-semantics-equality-comparability,Equal>> and not <<gremlin-semantics-equality-comparability,Comparable>> to any Number (including itself).
+* As described above `NaN` is not Equal and not Comparable to any Number (including itself).
 
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-test/src/main/resources/org/apache/tinkerpop/gremlin/test/features/semantics/Equality.feature[Equality Tests - Scenarios prefixed with "Primitives_Number_"]
 
 ===== nulltype
 
-As described in the table above, `null == null`, but is not <<gremlin-semantics-equality-comparability,Equal>> and not <<gremlin-semantics-equality-comparability,Comparable>> to
+As described in the table above, `null == null`, but is not Equal and not Comparable to
 any non-`null` value.
 
 ===== Boolean
@@ -288,7 +288,7 @@ We assume the common lexicographical order over unicode strings. `A` and `B` are
 ===== UUID
 
 UUID is evaluated based on its String representation. However, `UUID("b46d37e9-755c-477e-9ab6-44aabea51d50")` and the
-String `"b46d37e9-755c-477e-9ab6-44aabea51d50"` are not <<gremlin-semantics-equality-comparability,Equal>> and not <<gremlin-semantics-equality-comparability,Comparable>>.
+String `"b46d37e9-755c-477e-9ab6-44aabea51d50"` are not Equal and not Comparable.
 
 ===== Date
 
@@ -298,21 +298,21 @@ Dates are evaluated based on the numerical comparison of Unix Epoch time.
 
 If they are the same type of Element, these are compared by the value of their `T.id` according to the semantics for
 the particular primitive type used for ids (implementation-specific). Elements of different types are
-not <<gremlin-semantics-equality-comparability,Equal>> and not <<gremlin-semantics-equality-comparability,Comparable>>.
+not Equal and not Comparable.
 
 ===== Property
 
 Properties are compared first by key (String semantics), then by value, according to the semantics for the particular
 primitive type of the value. Properties with values in different type families are
-not <<gremlin-semantics-equality-comparability,Equal>> and not <<gremlin-semantics-equality-comparability,Comparable>>.
+not Equal and not Comparable.
 
 ===== List
 
 Lists are compared pairwise, element-by-element, in their natural list order. For each element, if the pairs are
-<<Equality and Comparability,Equal>>, we simply move on to the next element pair until we encounter a pair whose
+Equal, we simply move on to the next element pair until we encounter a pair whose
 `Comparability.compare()` value is non-zero (`-1`, `1`, or `ERROR`), and we return that value. Lists can be evaluated
-for <<Equality and Comparability,Equality and Comparability>> even if they contain multiple types of elements, so long
-as their elements are pairwise comparable per <<Equality and Comparability,Equality/Comparability>> semantics. During
+for Equality and Comparability even if they contain multiple types of elements, so long
+as their elements are pairwise comparable per Equality/Comparability semantics. During
 this element by element comparison, if iteration `A` exhausts its elements before iteration `B` then `A < B`, and
 vice-versa.
 
@@ -329,14 +329,14 @@ Empty lists are equal to other empty lists and less than non-empty lists.
 |`[1,2,3]`|`[1,2,3,4]`|`-1`|`P.lt`|`A` exhausts first
 |`[1,2,3,4]`|`[1,2,3]`|`1`|`P.gt`|`B` exhausts first
 |`[1,2]`|`[1.0,2.0]`|`0`|`P.eq`|type promotion
-|`[1,"a"]`|`[1,"b"]`|`-1`|`P.lt`|pairwise <<gremlin-semantics-equality-comparability,Comparable>> and `"a" < "b"`
+|`[1,"a"]`|`[1,"b"]`|`-1`|`P.lt`|pairwise Comparable and `"a" < "b"`
 |`[1]`|`["a"]`|`ERROR`|`P.neq`|cross-type comparison
 |===
 
 ===== Path
 
-<<Equality and Comparability,Equality and Comparability>> semantics for `Paths` are similar to those for `Lists`, described above (though
-`Paths` and `Lists` are still of different types and thus not <<gremlin-semantics-equality-comparability,Equal>> and not <<gremlin-semantics-equality-comparability,Comparable>>).
+Equality and Comparability semantics for `Paths` are similar to those for `Lists`, described above (though
+`Paths` and `Lists` are still of different types and thus not Equal and not Comparable).
 
 ===== Set
 
@@ -379,7 +379,7 @@ same time evaluating the same semantically equivalent numerics as equal during p
 'Map' semantics can be thought of as similar to `Set` semantics for the entry set the comprises the `Map`. So again,
 we compare pairwise, entry-by-entry, in the same way as `Lists`, and again, we first sort the entries using
 <<Orderability,Orderability>> semantics. Map entries are compared first by key, then by value using the
-<<Equality and Comparability Semantics by Type,Equality and Comparability>> semantics that apply to the specific type
+Equality and Comparability semantics that apply to the specific type
 of key and value.
 
 Maps semantics have the same logical inconsistency as set semantics, because of type promotion. Again, we leave room
@@ -391,7 +391,7 @@ treat pairwise entries with semantically equivalent keys as the same.
 === Orderability
 
 <<Equality and Comparability,Equality and Comparability>> were described in depth in the sections above, and their
-semantics map to the `P` predicates. <<gremlin-semantics-equality-comparability,Comparability>> in particular is limited to
+semantics map to the `P` predicates. Comparability in particular is limited to
 comparison of values within the same type family. Comparability is complete within a given type (except for `NaN`,
 which results in `ERROR` for any comparison), but returns `ERROR` for comparisons across types (e.g., an integer cannot
 be compared to a string).
@@ -432,7 +432,7 @@ Within a given type space, Orderability determines if two values are ordered at 
 positioned before or after the another. When the position is identical, which value comes first (in other words,
 whether it should perform stable sort) depends on graph providers' implementation.
 
-To allow for this total ordering, we must also address the cases in <<Equality and Comparability,Comparability>> that
+To allow for this total ordering, we must also address the cases in Comparability that
 produce an comparison `ERROR`:
 
 |===
