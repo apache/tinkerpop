@@ -1,0 +1,325 @@
+#
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+#
+"""Experimental API. This API may have breaking changes or be removed in a subsequent minor release.
+
+Native-async Gremlin client using WebSocket transport.
+"""
+import asyncio
+import logging
+
+from gremlin_python.driver import request, serializer
+from gremlin_python.driver.async_connection import AsyncConnection
+from gremlin_python.driver.async_protocol import AsyncGremlinServerWSProtocol
+from gremlin_python.driver.aiohttp.async_transport import AsyncAiohttpWSTransport
+from gremlin_python.process import traversal
+
+log = logging.getLogger("gremlinpython")
+
+
+class AsyncClient:
+    """Experimental API. This API may have breaking changes or be removed in a subsequent minor release.
+
+    Native-async Gremlin client using WebSocket transport.
+
+    The connection pool is an asyncio.Queue and all submit/close methods are
+    coroutines that must be awaited.
+
+    Features:
+
+    * WebSocket keepalive is supported via the default transport's
+      ``heartbeat`` option (passed through ``**transport_kwargs``).
+    * default_request_options are merged into every request so options
+      like evaluationTimeout can be set once per client.
+
+    Usage::
+
+        async with AsyncClient("ws://localhost:8182/gremlin", "g") as client:
+            result_set = await client.submit("g.V().count()")
+            print(await result_set.all())
+
+    Parameters
+    ----------
+    url:
+        WebSocket endpoint, e.g. ws://localhost:8182/gremlin.
+    traversal_source:
+        Gremlin traversal source name (default "g").
+    protocol_factory:
+        Zero-argument callable returning an AsyncGremlinServerWSProtocol.
+    transport_factory:
+        Zero-argument callable returning an async transport implementing
+        AbstractBaseTransport (default AsyncAiohttpWSTransport).
+    pool_size:
+        Number of concurrent WebSocket connections (default 8; forced to 1
+        in session mode).
+    message_serializer:
+        Serializer to use (default GraphBinarySerializersV1).
+    username, password:
+        Credentials for SASL/basic authentication.
+    kerberized_service:
+        Kerberos service principal for Kerberos authentication.
+    headers:
+        Mutable mapping (e.g. ``dict[str, str]``) of extra HTTP headers
+        included in every WebSocket handshake.  List-of-pair headers are not
+        supported.
+    session:
+        Session UUID string to enable server-side sessions.
+    enable_user_agent_on_connect:
+        Send the driver user-agent header (default True).
+    enable_compression:
+        Enable WebSocket per-message deflate compression (default False).
+    default_request_options:
+        Dict of request options merged into every request
+        (e.g. {"evaluationTimeout": 30000}).  Per-request options take
+        precedence over defaults.
+    **transport_kwargs:
+        Extra keyword arguments forwarded to the default
+        AsyncAiohttpWSTransport (e.g. ``heartbeat=60`` for WebSocket
+        keepalive).
+    """
+
+    def __init__(
+        self,
+        url,
+        traversal_source,
+        protocol_factory=None,
+        transport_factory=None,
+        pool_size=None,
+        message_serializer=None,
+        username="",
+        password="",
+        kerberized_service="",
+        headers=None,
+        session=None,
+        enable_user_agent_on_connect=True,
+        enable_compression=False,
+        default_request_options=None,
+        **transport_kwargs,
+    ):
+        log.info("Creating AsyncClient with url '%s'", url)
+
+        self._closed = False
+        self._close_task = None
+        self._url = url
+        self._headers = headers
+        self._enable_user_agent_on_connect = enable_user_agent_on_connect
+        self._enable_compression = enable_compression
+        self._traversal_source = traversal_source
+        self._default_request_options = default_request_options or {}
+
+        if "max_content_length" not in transport_kwargs:
+            transport_kwargs["max_content_length"] = 10 * 1024 * 1024
+
+        if message_serializer is None:
+            message_serializer = serializer.GraphBinarySerializersV1()
+
+        self._message_serializer = message_serializer
+        self._username = username
+        self._password = password
+        self._session = session
+        self._session_enabled = session is not None and session != ""
+
+        if transport_factory is None:
+            def transport_factory():
+                return AsyncAiohttpWSTransport(
+                    enable_compression=enable_compression, **transport_kwargs
+                )
+
+        self._transport_factory = transport_factory
+
+        if protocol_factory is None:
+            def protocol_factory():
+                return AsyncGremlinServerWSProtocol(
+                    self._message_serializer,
+                    username=self._username,
+                    password=self._password,
+                    kerberized_service=kerberized_service,
+                    max_content_length=transport_kwargs["max_content_length"],
+                )
+
+        self._protocol_factory = protocol_factory
+
+        if self._session_enabled:
+            if pool_size is None:
+                pool_size = 1
+            elif pool_size != 1:
+                raise Exception("PoolSize must be 1 on session mode!")
+        if pool_size is None:
+            pool_size = 8
+        self._pool_size = pool_size
+
+        self._pool = asyncio.Queue()
+        self._connections = []
+        self._fill_pool()
+
+    @property
+    def available_pool_size(self):
+        """Experimental API. This API may have breaking changes or be removed in a subsequent minor release."""
+        return self._pool.qsize()
+
+    @property
+    def traversal_source(self):
+        """Experimental API. This API may have breaking changes or be removed in a subsequent minor release."""
+        return self._traversal_source
+
+    def is_closed(self):
+        """Experimental API. This API may have breaking changes or be removed in a subsequent minor release."""
+        return self._closed
+
+    # ------------------------------------------------------------------
+    # Internal helpers
+    # ------------------------------------------------------------------
+
+    def _fill_pool(self):
+        for _ in range(self._pool_size):
+            conn = self._get_connection()
+            self._pool.put_nowait(conn)
+
+    def _get_connection(self):
+        proto = self._protocol_factory()
+        conn = AsyncConnection(
+            self._url,
+            self._traversal_source,
+            proto,
+            self._transport_factory,
+            self._pool,
+            headers=self._headers,
+            enable_user_agent_on_connect=self._enable_user_agent_on_connect,
+        )
+        self._connections.append(conn)
+        return conn
+
+    # ------------------------------------------------------------------
+    # Lifecycle
+    # ------------------------------------------------------------------
+
+    async def close(self):
+        """Experimental API. This API may have breaking changes or be removed in a subsequent minor release.
+
+        Close all connections, including requests still receiving results.
+        """
+        if self._close_task is None:
+            self._closed = True
+            self._close_task = asyncio.create_task(self._close())
+        await asyncio.shield(self._close_task)
+
+    async def _close(self):
+        error = None
+        try:
+            if self._session_enabled:
+                await self._close_session()
+        except BaseException as exc:
+            error = exc
+        log.info("Closing AsyncClient with url '%s'", self._url)
+        results = await asyncio.gather(
+            *(conn.close() for conn in self._connections), return_exceptions=True
+        )
+        while not self._pool.empty():
+            self._pool.get_nowait()
+        if error is not None:
+            raise error
+        for result in results:
+            if isinstance(result, BaseException):
+                raise result
+
+    async def _close_session(self):
+        if self._pool.empty():
+            return
+        conn = await self._pool.get()
+        try:
+            if not conn._inited or conn._transport.closed:
+                self._pool.put_nowait(conn)
+                return
+            message = request.RequestMessage(
+                processor="session",
+                op="close",
+                args={"session": str(self._session)},
+            )
+            result_set = await conn.write(message)
+            await result_set.all()
+        except Exception:
+            pass
+
+    # ------------------------------------------------------------------
+    # Context manager
+    # ------------------------------------------------------------------
+
+    async def __aenter__(self):
+        return self
+
+    async def __aexit__(self, *_):
+        await self.close()
+
+    # ------------------------------------------------------------------
+    # Submit
+    # ------------------------------------------------------------------
+
+    async def submit(self, message, bindings=None, request_options=None):
+        """Experimental API. This API may have breaking changes or be removed in a subsequent minor release.
+
+        Submit *message* and return an AsyncResultSet.
+        """
+        return await self.submit_async(
+            message, bindings=bindings, request_options=request_options
+        )
+
+    async def submit_async(self, message, bindings=None, request_options=None):
+        """Experimental API. This API may have breaking changes or be removed in a subsequent minor release.
+
+        Submit *message* and return an AsyncResultSet.
+
+        Returns before all results have arrived; the result set can be
+        iterated asynchronously (``async for``) or consumed via
+        AsyncResultSet.all().
+        """
+        if self.is_closed():
+            raise Exception("Client is closed")
+
+        args = {"gremlin": message, "aliases": {"g": self._traversal_source}}
+        processor = ""
+        op = "eval"
+        if isinstance(message, traversal.Bytecode):
+            op = "bytecode"
+            processor = "traversal"
+
+        if isinstance(message, str) and bindings:
+            args["bindings"] = bindings
+
+        if self._session_enabled:
+            args["session"] = str(self._session)
+            processor = "session"
+
+        if isinstance(message, (traversal.Bytecode, str)):
+            message = request.RequestMessage(
+                processor=processor, op=op, args=args
+            )
+
+        # Merge default options first; per-request options win.
+        if self._default_request_options:
+            merged = {**self._default_request_options}
+            if request_options:
+                merged.update(request_options)
+            message.args.update(merged)
+        elif request_options:
+            message.args.update(request_options)
+
+        conn = await self._pool.get()
+        if self.is_closed():
+            self._pool.put_nowait(conn)
+            raise Exception("Client is closed")
+        return await conn.write(message)

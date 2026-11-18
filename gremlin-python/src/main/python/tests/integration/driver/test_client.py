@@ -465,10 +465,9 @@ async def asyncio_func():
 
 def test_asyncio(client):
     try:
-        asyncio.get_event_loop().run_until_complete(asyncio_func())
+        asyncio.run(asyncio_func())
     except RuntimeError:
         assert False
-
 
 def test_client_custom_invalid_request_id_graphson_script(client):
     client = Client(test_no_auth_url, 'gmodern', message_serializer=serializer.GraphSONSerializersV3d0())
