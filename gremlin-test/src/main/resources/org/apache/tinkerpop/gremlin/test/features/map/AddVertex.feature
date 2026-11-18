@@ -704,3 +704,81 @@ Feature: Step - addV()
     Then the result should be unordered
       | result |
       | d[2010].i |
+
+  Scenario: g_injectX1_1X_addVXanimalX
+    Given the empty graph
+    And the traversal of
+      """
+      g.inject(1, 1).addV("animal")
+      """
+    When iterated to list
+    Then the result should have a count of 2
+    And the graph should return 2 for count of "g.V().hasLabel(\"animal\")"
+
+  Scenario: g_V_constantX1X_barrier_addVXanimalX
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("person").property("name", "marko").
+        addV("person").property("name", "vadas")
+      """
+    And the traversal of
+      """
+      g.V().constant(1).barrier().addV("animal")
+      """
+    When iterated to list
+    Then the result should have a count of 2
+    And the graph should return 2 for count of "g.V().hasLabel(\"animal\")"
+
+  Scenario: g_V_both_both_addVXanimalX
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("person").property("name", "marko").as("marko").
+        addV("person").property("name", "vadas").as("vadas").
+        addV("person").property("name", "josh").as("josh").
+        addE("knows").from("marko").to("vadas").
+        addE("knows").from("marko").to("josh")
+      """
+    And the traversal of
+      """
+      g.V().both().both().addV("animal")
+      """
+    When iterated to list
+    Then the result should have a count of 6
+    And the graph should return 6 for count of "g.V().hasLabel(\"animal\")"
+
+  @UserSuppliedVertexIds
+  Scenario: g_injectX1_1X_addVXanimalX_propertyXT_id_1X
+    Given the empty graph
+    And the traversal of
+      """
+      g.inject(1, 1).addV("animal").property(T.id, "1")
+      """
+    When iterated to list
+    Then the traversal will raise an error
+
+  @MultiProperties
+  Scenario: g_V_hasXperson_name_aliceX_unionXidentity_identityX_barrier_propertyXlist_nickname_alX
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("person").property("name", "alice")
+      """
+    And the traversal of
+      """
+      g.V().has("person", "name", "alice").union(__.identity(), __.identity()).barrier().property(Cardinality.list, "nickname", "al")
+      """
+    When iterated to list
+    Then the result should have a count of 2
+    And the graph should return 2 for count of "g.V().has(\"person\",\"name\",\"alice\").properties(\"nickname\")"
+
+  Scenario: g_injectXperson_person_person_person_softwareX_localXaddVXanimalX_propertyXsource_identityX_limitX1XX
+    Given the empty graph
+    And the traversal of
+      """
+      g.inject("person", "person", "person", "person", "software").local(__.addV("animal").property("source", __.identity()).limit(1))
+      """
+    When iterated to list
+    Then the result should have a count of 5
+    And the graph should return 1 for count of "g.V().has(\"animal\",\"source\",\"software\")"
