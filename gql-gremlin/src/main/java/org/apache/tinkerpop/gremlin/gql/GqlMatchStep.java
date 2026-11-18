@@ -23,8 +23,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.DeclarativeMatchStep;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.util.FastNoSuchElementException;
-import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.util.CloseableIterator;
 
 import java.util.Collections;
 import java.util.Iterator;
@@ -51,9 +51,20 @@ import java.util.Set;
  * <p>Only the {@code "gql"} query language is supported. If the step's query language is
  * set to any other non-null value, {@link UnsupportedOperationException} is thrown.</p>
  *
+ * <p>The step closes the executor's row iterator with
+ * {@link CloseableIterator#closeIterator(Iterator)} when it moves on to the next incoming
+ * traverser, on {@link #reset()}, and on {@link #close()}. An executor whose iterator holds
+ * provider resources, such as {@link DefaultGqlExecutor}, releases them then, including when the
+ * traversal finishes early because of a downstream {@code limit()}. A caller that stops pulling
+ * results before the traversal is exhausted keeps the iterator open until it closes the traversal.
+ * {@link org.apache.tinkerpop.gremlin.process.traversal.Traversal#close()} calls {@link #close()}
+ * only on the steps of the traversal it is called on, so a {@code match()} nested in a child
+ * traversal is not closed by it; as with {@code GraphStep}, such a step releases its row iterator
+ * when the parent step resets the child traversal or when its own match is exhausted.</p>
+ *
  * @param <S> the traverser start type
  */
-public final class GqlMatchStep<S> extends DeclarativeMatchStep<S> {
+public final class GqlMatchStep<S> extends DeclarativeMatchStep<S> implements AutoCloseable {
 
     /**
      * The query language identifier that this step accepts when set explicitly.
@@ -65,7 +76,7 @@ public final class GqlMatchStep<S> extends DeclarativeMatchStep<S> {
     private GqlExecutor executor;
     private GqlMatchPlan plan;
     // Lazy row source: one iterator per spawn execution or per incoming mid-traversal traverser.
-    private Iterator<Element[]> rowIterator = null;
+    private Iterator<GqlRow> rowIterator = null;
     // For mid-traversal: the upstream traverser whose rows rowIterator is currently serving.
     private Traverser.Admin<S> currentStart = null;
     private boolean done = false;
@@ -147,6 +158,7 @@ public final class GqlMatchStep<S> extends DeclarativeMatchStep<S> {
                 if (rowIterator.hasNext())
                     return rowToSpawnTraverser(rowIterator.next(), plan);
                 done = true;
+                closeRowIterator();
             }
             throw FastNoSuchElementException.instance();
         }
@@ -156,12 +168,20 @@ public final class GqlMatchStep<S> extends DeclarativeMatchStep<S> {
             if (rowIterator != null && rowIterator.hasNext())
                 return rowToSplitTraverser(rowIterator.next(), plan, currentStart);
 
-            // Current row iterator exhausted — advance to the next incoming traverser.
+            // Current row iterator exhausted — release it and advance to the next incoming traverser.
+            closeRowIterator();
             if (!this.starts.hasNext()) throw FastNoSuchElementException.instance();
             currentStart = this.starts.next();
             checkNoPathLabelOverlap(currentStart, plan);
             rowIterator = executor.execute(plan, resolvedParams);
         }
+    }
+
+    /** Closes the current row iterator, if any, and forgets it. */
+    private void closeRowIterator() {
+        final Iterator<GqlRow> it = rowIterator;
+        rowIterator = null;
+        CloseableIterator.closeIterator(it);
     }
 
     /**
@@ -184,7 +204,7 @@ public final class GqlMatchStep<S> extends DeclarativeMatchStep<S> {
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
-    private Traverser.Admin<Map<String, Object>> rowToSpawnTraverser(final Element[] row, final GqlMatchPlan plan) {
+    private Traverser.Admin<Map<String, Object>> rowToSpawnTraverser(final GqlRow row, final GqlMatchPlan plan) {
         final Traverser.Admin<Map<String, Object>> traverser =
                 this.getTraversal().getTraverserGenerator().generate(Collections.emptyMap(), (Step) this, 1L);
         bindRow(row, plan, (Traverser.Admin) traverser);
@@ -192,7 +212,7 @@ public final class GqlMatchStep<S> extends DeclarativeMatchStep<S> {
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
-    private Traverser.Admin<Map<String, Object>> rowToSplitTraverser(final Element[] row, final GqlMatchPlan plan,
+    private Traverser.Admin<Map<String, Object>> rowToSplitTraverser(final GqlRow row, final GqlMatchPlan plan,
                                                                       final Traverser.Admin<S> start) {
         final Traverser.Admin<Map<String, Object>> split =
                 (Traverser.Admin<Map<String, Object>>) start.split(Collections.emptyMap(), (Step) this);
@@ -201,17 +221,27 @@ public final class GqlMatchStep<S> extends DeclarativeMatchStep<S> {
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
-    private void bindRow(final Element[] row, final GqlMatchPlan plan,
+    private void bindRow(final GqlRow row, final GqlMatchPlan plan,
                          final Traverser.Admin traverser) {
+        if (row.size() != plan.getVariableCount())
+            throw new IllegalStateException(executor.getClass().getName() + " returned a GqlRow of size " +
+                    row.size() + " for a plan with " + plan.getVariableCount() + " variables");
+        // A variable index holds either a scalar Element or a group List<Edge>, never both. Every
+        // bound named variable is written to the two channels select() can read, using the same
+        // value instance so they always agree: the emitted binding Map (the traverser's final
+        // current object) and the traverser path label of that name.
         final String[] variables = plan.getVariables();
         final Map<String, Object> bindings = new LinkedHashMap<>();
         for (int i = 0; i < variables.length; i++) {
             final String var = variables[i];
-            if (!var.startsWith(GqlMatchPlan.ANON_VAR_PREFIX) && row[i] != null) {
-                traverser.set(row[i]);
-                traverser.addLabels(Collections.singleton(var));
-                bindings.put(var, row[i]);
-            }
+            if (var.startsWith(GqlMatchPlan.ANON_VAR_PREFIX))
+                continue;
+            final Object value = row.isGroup(i) ? row.getGroup(i) : row.getScalar(i);
+            if (value == null)
+                continue;
+            traverser.set(value);
+            traverser.addLabels(Collections.singleton(var));
+            bindings.put(var, value);
         }
         traverser.set(bindings);
     }
@@ -244,17 +274,31 @@ public final class GqlMatchStep<S> extends DeclarativeMatchStep<S> {
     }
 
     /**
-     * Resets lazy row state. The planner and executor singletons are preserved so the
+     * Resets lazy row state, closing the current row iterator. The planner and executor
+     * singletons are preserved so the
      * QueryGraph parse cache survives a traversal reset, but the compiled {@link GqlMatchPlan}
      * is cleared so that seed selection is recomputed from live label counts on the next
-     * execution — ensuring graph mutations between resets are reflected.
+     * execution — ensuring graph mutations between resets are reflected. The row state is cleared
+     * even when closing the row iterator throws, so the step is never left half-reset.
      */
     @Override
     public void reset() {
         super.reset();
-        rowIterator = null;
         currentStart = null;
         plan = null;
         done = false;
+        closeRowIterator();
+    }
+
+    /**
+     * Closes the current row iterator so that the executor can release any provider resources it
+     * holds, for example when a downstream {@code limit()} ends the traversal before the match is
+     * exhausted. A spawn step that has been closed produces no more rows, so a caller that keeps
+     * pulling from it does not run the match again; {@link #reset()} makes it runnable again.
+     */
+    @Override
+    public void close() {
+        done = true;
+        closeRowIterator();
     }
 }

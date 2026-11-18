@@ -320,3 +320,372 @@ Feature: Step - match() (String form)
       | result |
       | marko knows vadas |
       | marko knows josh  |
+
+  Scenario: g_match_personXknows_1_2X_person_selectXa_bX_byXnameX
+    Given the modern graph
+    And the traversal of
+      """
+      g.match("MATCH (a:person)-[:knows]->{1,2}(b:person)").select("a","b").by("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | m[{"a":"marko","b":"vadas"}] |
+      | m[{"a":"marko","b":"josh"}]  |
+
+  Scenario: g_match_airportXcode_KUKX_route_1_2X_airport_selectXbX_byXcodeX
+    Given the airroutes graph
+    And the traversal of
+      """
+      g.match("MATCH (a:airport {code: 'KUK'})-[:route]->{1,2}(b:airport)").select("b").by("code")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | NUP |
+      | BET |
+      | ATT |
+
+  Scenario: g_match_airportXcode_GYGX_route_2_X_airport_selectXbX_byXcodeX
+    Given the airroutes graph
+    And the traversal of
+      """
+      g.match("MATCH (a:airport {code: 'GYG'})-[:route]->{2,}(b:airport)").select("b").by("code")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | GYG |
+
+  Scenario: g_match_airportXcode_GYGX_route_plusX_airport_selectXbX_byXcodeX
+    Given the airroutes graph
+    And the traversal of
+      """
+      g.match("MATCH (a:airport {code: 'GYG'})-[:route]->+(b:airport)").select("b").by("code")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | UMS |
+      | GYG |
+
+  Scenario: g_match_airportXcode_NUPX_reversedRoute_1_2X_airport_selectXbX_byXcodeX
+    Given the airroutes graph
+    And the traversal of
+      """
+      g.match("MATCH (a:airport {code: 'NUP'})<-[:route]-{1,2}(b:airport)").select("b").by("code")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | KUK |
+      | BET |
+      | ATT |
+
+  Scenario: g_match_airportXcode_KUKX_undirectedRoute_1X_airport_selectXbX_byXcodeX
+    Given the airroutes graph
+    And the traversal of
+      """
+      g.match("MATCH (a:airport {code: 'KUK'})-[:route]-{1}(b:airport)").select("b").by("code")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | NUP |
+      | BET |
+      | ATT |
+
+  Scenario: g_match_airportXcode_BGCX_undirectedRoute_1_2X_airport_selectXbX_byXcodeX
+    Given the airroutes graph
+    And the traversal of
+      """
+      g.match("MATCH (a:airport {code: 'BGC'})-[:route]-{1,2}(b:airport)").select("b").by("code")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | VRL |
+      | VRL |
+      | BGC |
+      | BGC |
+      | VSE |
+      | VSE |
+      | VSE |
+      | VSE |
+
+  Scenario: g_match_airportXcode_BQJX_routeXrVar_1X_airport_selectXrX
+    Given the airroutes graph
+    And the traversal of
+      """
+      g.match("MATCH (a:airport {code: 'BQJ'})-[r:route]->{1}(b:airport)").select("r").by(__.unfold().map(__.inV().values("code")).fold())
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | l[DPT] |
+
+  Scenario: g_match_airportXcode_KUKX_routeXrVar_2X_airport_selectXrX
+    Given the airroutes graph
+    And the traversal of
+      """
+      g.match("MATCH (a:airport {code: 'KUK'})-[r:route]->{2}(b:airport)").select("r").by(__.unfold().map(__.inV().values("code")).fold())
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | l[NUP,BET] |
+      | l[NUP,ATT] |
+
+  Scenario: g_match_airportXrouteXrVar_2_3X_hub_selectXrX
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("airport").property("name", "AAA").as("a").
+        addV("airport").property("name", "BBB").as("b").
+        addV("airport").property("name", "CCC").as("c").
+        addV("hub").property("name", "DDD").as("d").
+        addE("route").from("a").to("b").
+        addE("route").from("b").to("c").
+        addE("route").from("c").to("d")
+      """
+    And the traversal of
+      """
+      g.match("MATCH (a:airport)-[r:route]->{2,3}(b:hub)").select("r")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | l[e[BBB-route->CCC],e[CCC-route->DDD]] |
+      | l[e[AAA-route->BBB],e[BBB-route->CCC],e[CCC-route->DDD]] |
+
+  Scenario: g_match_airportXreversedRouteXrVar_2X_hub_selectXrX
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("airport").property("name", "AAA").as("a").
+        addV("airport").property("name", "BBB").as("b").
+        addV("airport").property("name", "CCC").as("c").
+        addV("hub").property("name", "DDD").as("d").
+        addE("route").from("d").to("c").
+        addE("route").from("c").to("b").
+        addE("route").from("c").to("a")
+      """
+    And the traversal of
+      """
+      g.match("MATCH (a:airport)<-[r:route]-{2}(b:hub)").select("r")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | l[e[CCC-route->BBB],e[DDD-route->CCC]] |
+      | l[e[CCC-route->AAA],e[DDD-route->CCC]] |
+
+  Scenario: g_match_airportXundirectedRouteXrVar_2X_hub_selectXrX
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("airport").property("name", "AAA").as("a").
+        addV("airport").property("name", "BBB").as("b").
+        addV("airport").property("name", "CCC").as("c").
+        addV("hub").property("name", "DDD").as("d").
+        addE("route").from("c").to("b").
+        addE("route").from("c").to("d").
+        addE("route").from("b").to("a").
+        addE("route").from("d").to("a")
+      """
+    And the traversal of
+      """
+      g.match("MATCH (a:airport)-[r:route]-{2}(b:hub)").select("r")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | l[e[CCC-route->BBB],e[CCC-route->DDD]] |
+      | l[e[BBB-route->AAA],e[DDD-route->AAA]] |
+
+  Scenario: g_match_airportXparallelRoute_1X_airport_selectXbX_byXnameX
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("airport").property("name", "AAA").as("a").
+        addV("airport").property("name", "BBB").as("b").
+        addE("route").from("a").to("b").
+        addE("route").from("a").to("b")
+      """
+    And the traversal of
+      """
+      g.match("MATCH (a:airport {name: 'AAA'})-[:route]->{1}(b:airport)").select("b").by("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | BBB    |
+      | BBB    |
+
+  Scenario: g_match_personXknows_starX_person_selectXa_bX_byXnameX
+    Given the modern graph
+    And the traversal of
+      """
+      g.match("MATCH (a:person)-[:knows]->*(b:person)").select("a","b").by("name")
+      """
+    When iterated to list
+    Then the traversal will raise an error with message containing text of "zero-length paths"
+
+  Scenario: g_match_personXknows_0_2X_person_selectXa_bX_byXnameX
+    Given the modern graph
+    And the traversal of
+      """
+      g.match("MATCH (a:person)-[:knows]->{0,2}(b:person)").select("a","b").by("name")
+      """
+    When iterated to list
+    Then the traversal will raise an error with message containing text of "zero-length paths"
+
+  Scenario: g_match_personXknows_noMin_2X_person_selectXa_bX_byXnameX
+    Given the modern graph
+    And the traversal of
+      """
+      g.match("MATCH (a:person)-[:knows]->{,2}(b:person)").select("a","b").by("name")
+      """
+    When iterated to list
+    Then the traversal will raise an error with message containing text of "zero-length paths"
+
+  Scenario: g_match_airportXcode_BGCX_route_1_3X_airportXroute_1_3X_cycle_selectXa_bX_byXcodeX
+    Given the airroutes graph
+    And the traversal of
+      """
+      g.match("MATCH (a:airport {code: 'BGC'})-[:route]->{1,3}(b:airport), (b)-[:route]->{1,3}(a)").select("a","b").by("code")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | m[{"a":"BGC","b":"BGC"}] |
+      | m[{"a":"BGC","b":"CAT"}] |
+      | m[{"a":"BGC","b":"VRL"}] |
+      | m[{"a":"BGC","b":"VRL"}] |
+      | m[{"a":"BGC","b":"VRL"}] |
+      | m[{"a":"BGC","b":"VRL"}] |
+      | m[{"a":"BGC","b":"VSE"}] |
+
+  Scenario: g_match_airportXcode_BGCX_routeXr1Var_1_3X_airportXrouteXr2Var_1_3X_cycle_selectXr1_r2X
+    Given the airroutes graph
+    And the traversal of
+      """
+      g.match("MATCH (a:airport {code: 'BGC'})-[r1:route]->{1,3}(b:airport), (b)-[r2:route]->{1,3}(a)").select("r1","r2").by(__.unfold().map(__.inV().values("code")).fold())
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | m[{"r1":"l[VRL]","r2":"l[BGC]"}] |
+      | m[{"r1":"l[VRL]","r2":"l[VSE,VRL,BGC]"}] |
+      | m[{"r1":"l[VRL,BGC]","r2":"l[VRL,BGC]"}] |
+      | m[{"r1":"l[VRL,VSE]","r2":"l[VRL,BGC]"}] |
+      | m[{"r1":"l[VRL,VSE,CAT]","r2":"l[VSE,VRL,BGC]"}] |
+      | m[{"r1":"l[VRL,VSE,VRL]","r2":"l[BGC]"}] |
+      | m[{"r1":"l[VRL,VSE,VRL]","r2":"l[VSE,VRL,BGC]"}] |
+
+  Scenario: g_match_airportXparallelRoute_1X_airportXroute_1X_cycle_selectXa_bX_byXnameX
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("airport").property("name", "AAA").as("a").
+        addV("airport").property("name", "BBB").as("b").
+        addV("airport").property("name", "CCC").as("c").
+        addE("route").from("a").to("b").
+        addE("route").from("b").to("a").
+        addE("route").from("b").to("a").
+        addE("route").from("b").to("c")
+      """
+    And the traversal of
+      """
+      g.match("MATCH (a:airport)-[:route]->{1}(b:airport), (b)-[:route]->{1}(a)").select("a","b").by("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | m[{"a":"AAA","b":"BBB"}] |
+      | m[{"a":"AAA","b":"BBB"}] |
+      | m[{"a":"BBB","b":"AAA"}] |
+      | m[{"a":"BBB","b":"AAA"}] |
+
+  Scenario: g_match_anyXrVar_1_3X_selfLoop_selectXrX
+    Given the sink graph
+    And the traversal of
+      """
+      g.match("MATCH (a)-[r]->{1,3}(a)").select("r")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | l[e[loop-self->loop]] |
+      | l[e[a-link->a]] |
+
+  Scenario: g_match_airportXcode_ATTX_routeXrVar_1_3X_cycle_selectXrX
+    Given the airroutes graph
+    And the traversal of
+      """
+      g.match("MATCH (a:airport {code: 'ATT'})-[r:route]->{1,3}(a)").select("r").by(__.unfold().map(__.inV().values("code")).fold())
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | l[BET,ATT] |
+      | l[KUK,NUP,ATT] |
+
+  Scenario: g_match_airportXcode_ATTX_route_airportXcode_KUKX_routeXrVar_1_3X_airport_route_triangle_selectXc_rX
+    Given the airroutes graph
+    And the traversal of
+      """
+      g.match("MATCH (a:airport {code: 'ATT'})-[:route]->(b:airport {code: 'KUK'})-[r:route]->{1,3}(c:airport)-[:route]->(a)").select("c","r").by("code").by(__.unfold().map(__.inV().values("code")).fold())
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | m[{"c":"NUP","r":"l[NUP]"}] |
+      | m[{"c":"BET","r":"l[NUP,BET]"}] |
+      | m[{"c":"BET","r":"l[NUP,ATT,BET]"}] |
+
+  Scenario: g_match_messageXundirectedLinkXrVarX_selfLoop_selectXa_r_bX_byXnameX_by_byXnameX
+    Given the sink graph
+    And the traversal of
+      """
+      g.match("MATCH (a:message)-[r:link]-(b:message)").select("a","r","b").by("name").by().by("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | m[{"a":"a","r":"e[a-link->b]","b":"b"}] |
+      | m[{"a":"b","r":"e[a-link->b]","b":"a"}] |
+      | m[{"a":"a","r":"e[a-link->a]","b":"a"}] |
+
+  Scenario: g_match_messageXundirectedLinkXrVar_1_2X_selfLoop_selectXa_b_rX_byXnameX_byXnameX_by
+    Given the sink graph
+    And the traversal of
+      """
+      g.match("MATCH (a:message)-[r:link]-{1,2}(b:message)").select("a","b","r").by("name").by("name").by()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | m[{"a":"a","b":"b","r":"l[e[a-link->b]]"}] |
+      | m[{"a":"b","b":"a","r":"l[e[a-link->b]]"}] |
+      | m[{"a":"a","b":"a","r":"l[e[a-link->a]]"}] |
+      | m[{"a":"a","b":"b","r":"l[e[a-link->a],e[a-link->b]]"}] |
+      | m[{"a":"b","b":"a","r":"l[e[a-link->b],e[a-link->a]]"}] |
+
+  Scenario: g_match_personXknowsXrVar_1_2X_personXcreatedXrVarX_software_selectXrX
+    Given the modern graph
+    And the traversal of
+      """
+      g.match("MATCH (a:person)-[r:knows]->{1,2}(b:person), (b)-[r:created]->(s:software)").select("r")
+      """
+    When iterated to list
+    Then the traversal will raise an error with message containing text of "a quantified edge variable cannot be reused"
+
+  Scenario: g_match_personXknows_1_2147483647X_person_selectXa_bX_byXnameX
+    Given the modern graph
+    And the traversal of
+      """
+      g.match("MATCH (a:person)-[:knows]->{1,2147483647}(b:person)").select("a","b").by("name")
+      """
+    When iterated to list
+    Then the traversal will raise an error with message containing text of "exceeds the maximum supported value"

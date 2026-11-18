@@ -165,13 +165,26 @@ public final class DefaultGqlPlanner implements GqlPlanner {
     }
 
     /**
-     * Estimates the cost of traversing an extension step. Bounded by both the edge label
-     * density and the estimated cardinality of the target vertex set.
+     * Estimates the cost of traversing an extension step. A single hop is bounded by both the
+     * edge label density and the estimated cardinality of the target vertex set. A quantified
+     * step scales that by its maximum number of hops, saturating at {@code Long.MAX_VALUE}, and an
+     * unbounded quantified step costs {@code Long.MAX_VALUE}, so quantified steps rank after
+     * comparably selective plain steps. A quantified step whose single hop cannot match costs
+     * zero even when unbounded, so it still ranks first and fails fast.
      */
     private long estimateStepCost(final QueryEdge edge, final QueryVertex targetNode) {
         final long edgeCost = graph.countEdgesByLabel(edge.getLabel());
         final long targetCost = estimateCardinality(targetNode.getLabel(), targetNode.getPredicates());
-        return Math.min(edgeCost, targetCost);
+        final long hopCost = Math.min(edgeCost, targetCost);
+        if (!edge.isQuantified() || hopCost == 0) return hopCost;
+        if (edge.getMaxHops() == QueryEdge.UNBOUNDED) return Long.MAX_VALUE;
+        return saturatingMultiply(hopCost, edge.getMaxHops());
+    }
+
+    /** Multiplies two non-negative values, returning {@code Long.MAX_VALUE} on overflow. */
+    private static long saturatingMultiply(final long a, final long b) {
+        if (a == 0 || b == 0) return 0;
+        return a > Long.MAX_VALUE / b ? Long.MAX_VALUE : a * b;
     }
 
     // -------------------------------------------------------------------------
@@ -209,8 +222,12 @@ public final class DefaultGqlPlanner implements GqlPlanner {
      * {@link ExtensionStep} per edge. The BFS visit order guarantees each step's anchor
      * variable is bound before the step is emitted.
      *
-     * <p>Back edges (both endpoints already visited) are still emitted as steps so the
-     * executor can verify the join constraint against the already-bound variable.
+     * <p>A back edge, whose endpoints have both been visited, is emitted like any other edge and
+     * anchored at its earlier-visited endpoint. That includes a quantified back edge and a pattern
+     * self-loop such as {@code (a)-[r]->{2,3}(a)}. Back-edge status is a property of this plan order
+     * only: the executor may reorder steps at runtime, so a planned back edge can run with its
+     * target still unbound. When the target is already bound, the executor joins the step's end
+     * vertex against it, so only edges or walks that close the cycle produce rows.
      */
     private List<ExtensionStep> buildSteps(final QueryGraph queryGraph,
                                            final QueryVertex seed,
@@ -244,57 +261,29 @@ public final class DefaultGqlPlanner implements GqlPlanner {
             for (final QueryEdge edge : eligible) {
                 processedEdges.add(edge);
 
-                final boolean isSource = edge.getSource() == current;
-                final boolean isTarget = edge.getTarget() == current;
+                // For a self-loop the other endpoint is current itself, which is already visited,
+                // so a self-loop is treated as a back edge.
+                final QueryVertex other = edge.getSource() == current ? edge.getTarget() : edge.getSource();
+                final boolean isBackEdge = visitOrder.containsKey(other);
 
+                // Anchor at current, except for a back edge whose other endpoint was visited
+                // earlier, which is anchored there instead.
                 final QueryVertex anchor;
                 final QueryVertex targetNode;
-                final Direction stepDir;
-
-                if (isSource && isTarget) {
-                    // Self-loop: traverse from current to itself
-                    anchor = current;
+                if (isBackEdge && visitOrder.get(other) < currentOrder) {
+                    anchor = other;
                     targetNode = current;
-                    stepDir = edge.getDirection();
-                } else if (isSource) {
-                    final QueryVertex other = edge.getTarget();
-                    if (!visitOrder.containsKey(other)) {
-                        // Forward edge: current → other
-                        anchor = current;
-                        targetNode = other;
-                        stepDir = edge.getDirection();
-                    } else {
-                        // Back edge: pick the earlier-visited node as anchor
-                        if (currentOrder <= visitOrder.get(other)) {
-                            anchor = current;
-                            targetNode = other;
-                            stepDir = edge.getDirection();
-                        } else {
-                            anchor = other;
-                            targetNode = current;
-                            stepDir = flip(edge.getDirection());
-                        }
-                    }
-                } else { // isTarget
-                    final QueryVertex other = edge.getSource();
-                    if (!visitOrder.containsKey(other)) {
-                        // Forward edge (reversed): current ← other → emit as current traverses back
-                        anchor = current;
-                        targetNode = other;
-                        stepDir = flip(edge.getDirection());
-                    } else {
-                        // Back edge: pick the earlier-visited node as anchor
-                        if (visitOrder.get(other) <= currentOrder) {
-                            anchor = other;
-                            targetNode = current;
-                            stepDir = edge.getDirection();
-                        } else {
-                            anchor = current;
-                            targetNode = other;
-                            stepDir = flip(edge.getDirection());
-                        }
-                    }
+                } else {
+                    anchor = current;
+                    targetNode = other;
                 }
+
+                // The anchor is always one endpoint of the pattern edge. When it is not the
+                // source, the step walks the pattern edge right to left, so its direction is
+                // flipped. The flag is tracked separately from the direction because an
+                // undirected edge stays BOTH either way.
+                final boolean anchoredAtPatternTarget = anchor != edge.getSource();
+                final Direction stepDir = anchoredAtPatternTarget ? flip(edge.getDirection()) : edge.getDirection();
 
                 steps.add(new ExtensionStep(
                         effectiveVars.get(anchor),
@@ -305,7 +294,11 @@ public final class DefaultGqlPlanner implements GqlPlanner {
                         targetNode.getLabel(),
                         effectiveVars.get(targetNode),
                         targetNode.getPredicates(),
-                        estimateStepCost(edge, targetNode)));
+                        estimateStepCost(edge, targetNode),
+                        edge.getMinHops(),
+                        edge.getMaxHops(),
+                        edge.isQuantified(),
+                        anchoredAtPatternTarget));
 
                 if (!visitOrder.containsKey(targetNode)) {
                     visitOrder.put(targetNode, visitCounter++);

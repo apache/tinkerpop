@@ -3359,7 +3359,7 @@ provider-specific. See <<tinkergql>> below for the complete TinkerGQL syntax ref
 TinkerGQL is the name for the `MATCH` dialect shipped in TinkerPop's optional `gql-gremlin` module.
 It is a deliberate, minimal subset of link:https://www.iso.org/standard/76120.html[ISO GQL] `MATCH` syntax:
 just enough to express graph pattern matching queries, with the more complex ISO GQL features, like  `WHERE`,
-`RETURN`, variable-length paths, and aggregation functions, intentionally excluded. This keeps the grammar
+`RETURN`, and aggregation functions, intentionally excluded. This keeps the grammar
 tight, the implementation portable, and the semantics unambiguous.
 
 Any graph system provider may adopt TinkerGQL by depending on the `gql-gremlin` module. TinkerGraph
@@ -3396,12 +3396,82 @@ The following `MATCH` patterns are supported:
 |`-[:Label]-` |Labeled undirected edge
 |`-[e:Label]-` |Named and labeled undirected edge
 |`-[e:Label {key: 'value'}]-` |Named, labeled undirected edge with an inline property filter
+|`-[e:Label]->{m,n}` |Quantified edge that matches a walk of `m` to `n` edges
+|`-[e:Label]->{m}` |Quantified edge that matches a walk of exactly `m` edges
+|`-[e:Label]->{m,}` |Quantified edge that matches a walk of `m` or more edges
+|`-[e:Label]->+` |Quantified edge that matches a walk of one or more edges, equivalent to `{1,}`
+|`-[e:Label]-{m,n}` |Quantified undirected edge that matches a walk of `m` to `n` edges, each followed in either direction
+|`-[e:Label]-+` |Quantified undirected edge that matches a walk of one or more edges, each followed in either direction
 |=========================================================
 
 Multiple comma-separated path patterns are supported in a single `MATCH` clause. Patterns that share a variable
 name are joined on that variable, which must resolve to the same element across all patterns. There is no `RETURN`
 clause — `match()` always returns the full binding `Map` and any projection is performed with Gremlin steps like
-`select()`.
+`select()`. An undirected edge pattern, quantified or not, matches a self-loop once, unlike `bothE()`, which returns
+it once for each of its ends.
+
+A quantifier may follow any directed, reverse, or undirected edge, and the quantified walk matches once at every length
+in its range. Bounds may not exceed `2147483646`. A named edge variable binds to a `List` of the walk's edges in
+pattern order, even for `{1}`. Node labels and property filters apply only to the endpoints of the walk, while an
+inline property filter on the edge applies to every edge of the walk:
+
+[gremlin-groovy,modern]
+----
+g.match("MATCH (a:person {name: 'vadas'})-[:knows]-{1,2}(b:person)").
+  select("b").by("name")                                                     <1>
+g.match("MATCH (a:person {name: 'marko'})-[r]->{2}(s:software)").
+  select("s", "r").by("name").by()                                           <2>
+g.match("MATCH (a:person {name: 'marko'})-[r {weight: 1.0}]->{2}(s:software)").
+  select("s").by("name")                                                     <3>
+----
+
+<1> The undirected walk reaches marko directly and josh through marko.
+<2> The intermediate vertex is unconstrained, and `r` holds both edges of each walk in order.
+<3> Only the walk to ripple has a `weight` of `1.0` on both of its edges.
+
+A walk never repeats an edge but may revisit a vertex, and each distinct walk produces its own row. A quantified edge
+may also close a pattern cycle or loop back to its own node, in which case only walks that end at the already-matched
+vertex produce rows:
+
+[gremlin-groovy,modern]
+----
+g.match("MATCH (a:person {name: 'marko'})-[]-{1,3}(b:software {name: 'lop'})").
+  select("a", "b").by("name")                                                <1>
+g.match("MATCH (a:person {name: 'marko'})-[]-{1,3}(b:software {name: 'lop'})").
+  select("a", "b").by("name").dedup()                                        <2>
+g.match("MATCH (a:person {name: 'marko'})-[r]-{3}(a)").
+  select("r")                                                                <3>
+----
+
+<1> Marko reaches lop directly and through josh, so the same endpoints appear twice.
+<2> `dedup()` reduces the result to distinct endpoints.
+<3> The marko, josh and lop triangle is walked once in each direction.
+
+A plain anonymous edge such as `-[]->` produces at most one row for each vertex it reaches, while a named edge or any
+quantified edge, including `{1}`, produces one row per edge. The difference appears where parallel edges join two
+vertices:
+
+[gremlin-groovy]
+----
+graph = TinkerGraph.open()
+g = traversal().with(graph)
+g.addV("airport").property("code", "AUS").as("aus").
+  addV("airport").property("code", "DFW").as("dfw").
+  addE("route").from("aus").to("dfw").
+  addE("route").from("aus").to("dfw").iterate()                              <1>
+g.match("MATCH (a:airport {code: 'AUS'})-[]->(b:airport)").
+  select("b").by("code")                                                     <2>
+g.match("MATCH (a:airport {code: 'AUS'})-[]->{1}(b:airport)").
+  select("b").by("code")                                                     <3>
+----
+
+<1> Two parallel routes connect AUS to DFW.
+<2> The plain anonymous edge collapses both routes into one row.
+<3> The quantified edge produces one row per route.
+
+Matching is lazy, so `limit()` ends the search once enough rows are produced, and a traversal timeout or
+interruption stops a match in progress. The unbounded forms `{m,}` and `+` can still be expensive on dense or cyclic
+graphs because the number of walks can grow exponentially with their length.
 
 The following examples use the modern toy graph to demonstrate more complex usage patterns.
 
@@ -3437,6 +3507,14 @@ g.match("MATCH (a:person)-[:created]->(s:software), (b:person)-[:created]->(s)")
 g.match("MATCH (a:person)-[e:knows]-(b:person)").
   select("a", "e", "b").
     by("name").by("weight").by("name")
+----
+
+*Find people who created the same software as marko, using a quantified undirected edge to walk two `created` edges*
+
+[gremlin-groovy,modern]
+----
+g.match("MATCH (a:person {name: 'marko'})-[:created]-{2}(b:person)").
+  select("a", "b").by("name")
 ----
 
 The `match()` step becomes arguably preferable when the query involves a multi-way join, where several paths
@@ -3577,6 +3655,7 @@ performs an index-backed seed lookup rather than a full scan. Whether `Graph.Ind
 structure depends on the graph system; see link:https://tinkerpop.apache.org/docs/x.y.z/dev/provider/#tinkerpop-providers-tinkergql[the provider documentation] and
 your specific graph system's documentation for details.
 
+[[tinkergql-unsupported-features]]
 ===== Unsupported Features
 
 TinkerGQL is a minimal subset of ISO GQL. The following ISO GQL `MATCH` features are not yet implemented:
@@ -3587,7 +3666,9 @@ TinkerGQL is a minimal subset of ISO GQL. The following ISO GQL `MATCH` features
 |`WHERE` clause |Post-match filtering is not supported inside the `MATCH` string. Use Gremlin's `where()` step after `match()` instead.
 |`RETURN` clause |Projection inside the `MATCH` string is not supported. Use `select()` after `match()` to project named variables.
 |Inequality / range predicates |Only equality tests (`{key: value}`) are supported. Expressions like `n.age > 30` are not part of the grammar.
-|Variable-length paths |Quantified path patterns such as `(a)-[:KNOWS*1..3]->(b)` are not supported.
+|Zero-length quantifiers |`*`, `{0,n}`, and `{,n}` would match a path of no edges and are rejected. The minimum bound of a quantifier must be at least 1.
+|Pattern-wide edge uniqueness |Edge uniqueness is enforced within each quantified walk rather than across the whole pattern, so two walks in one match may share an edge.
+|Quantified edge variable reuse |A quantified edge variable, such as `r` in `-[r]->{1,3}`, cannot appear more than once in a `MATCH` clause.
 |Multiple labels per element |`(n:Person:Employee)` — more than one label per node pattern — is not supported.
 |`OPTIONAL MATCH` |Optional pattern matching (outer joins) is not supported.
 |Aggregation functions |`COUNT`, `SUM`, `AVG`, and similar functions are not part of the grammar.

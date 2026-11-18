@@ -27,6 +27,11 @@
  *   - Directed edges:               -[e:Label]->  or  -[:Label]->  or  -[e]->  or  -[]->
  *   - Reverse directed edges:       <-[e:Label]-  or  <-[:Label]-  or  <-[e]-  or  <-[]-
  *   - Undirected edges:             -[e:Label]-   or  -[:Label]-   or  -[e]-   or  -[]-
+ *   - Quantified relationships (trailing postfix, ISO GQL abbreviation form):
+ *                                   -[:KNOWS]->{1,3}   <-[:KNOWS]-{2,}   -[:KNOWS]-{2}
+ *                                   also {m}, {m,} and + (e.g. -[:KNOWS]->{2,}, -[:KNOWS]->+)
+ *                                   The zero-lower-bound forms {0,n}, {,n} and * are recognized by
+ *                                   the grammar but rejected by QueryGraph as not yet supported.
  *   - Multiple comma-separated path patterns in a single MATCH clause
  *   - Inline property filters on nodes: (n:Label {key: 'value', count: 42i, flag: true, x: $param})
  *
@@ -41,7 +46,7 @@
  *   Special:  NaN, Infinity, +Infinity, -Infinity
  *   Params:   $name (resolved from the params map at execution time)
  *
- * Out of scope: WHERE clause, RETURN, path quantifiers.
+ * Out of scope: WHERE clause, RETURN.
  */
 grammar GQL;
 
@@ -172,30 +177,70 @@ edgePattern
     ;
 
 /**
- * Directed edge:  -[var?:Label?]->
+ * Directed edge:  -[var?:Label?]->  with an optional trailing quantifier
  *
- * Example: -[e:KNOWS]->
+ * Examples: -[e:KNOWS]->   -[:KNOWS]->{1,3}   -[:KNOWS]->+
  */
 directedEdge
-    : DASH LBRACKET elementPatternFiller RBRACKET ARROW
+    : DASH LBRACKET elementPatternFiller RBRACKET ARROW quantifier?
     ;
 
 /**
- * Reverse directed edge:  <-[var?:Label?]-
+ * Reverse directed edge:  <-[var?:Label?]-  with an optional trailing quantifier
  *
- * Example: <-[e:KNOWS]-
+ * Examples: <-[e:KNOWS]-   <-[:KNOWS]-{2,}
  */
 reverseDirectedEdge
-    : LARROW LBRACKET elementPatternFiller RBRACKET DASH
+    : LARROW LBRACKET elementPatternFiller RBRACKET DASH quantifier?
     ;
 
 /**
- * Undirected edge:  -[var?:Label?]-
+ * Undirected edge:  -[var?:Label?]-  with an optional trailing quantifier
  *
- * Example: -[e:KNOWS]-
+ * Examples: -[e:KNOWS]-   -[:KNOWS]-{2}
  */
 undirectedEdge
-    : DASH LBRACKET elementPatternFiller RBRACKET DASH
+    : DASH LBRACKET elementPatternFiller RBRACKET DASH quantifier?
+    ;
+
+/**
+ * A trailing quantifier on a relationship, in the ISO GQL quantified-relationship
+ * abbreviation form (a)-[r]->{q}(b). The grammar accepts every structural form; semantic
+ * validation (zero lower bound, max less than min, bound range) is performed by QueryGraph.
+ *
+ * Forms:
+ *   {m,n}  fixed lower and upper bound
+ *   {m}    exactly m
+ *   {m,}   at least m
+ *   {,n}   at most n
+ *   *      zero or more
+ *   +      one or more
+ *
+ * Bounds go through the dedicated unsignedInteger production rather than referencing a
+ * numeric token directly, keeping the intended "bare, unsigned, unsuffixed" contract in
+ * one place for QueryGraph to validate.
+ */
+quantifier
+    : LBRACE unsignedInteger COMMA unsignedInteger RBRACE   // {m,n}
+    | LBRACE unsignedInteger RBRACE                         // {m}
+    | LBRACE unsignedInteger COMMA RBRACE                   // {m,}
+    | LBRACE COMMA unsignedInteger RBRACE                   // {,n}
+    | STAR                                                  // *
+    | PLUS                                                  // +
+    ;
+
+/**
+ * An unsigned-integer quantifier bound.
+ *
+ * A dedicated UNSIGNED_INTEGER lexer token (bare digits, no sign, no type suffix) would be
+ * the natural backing here, but a bare [0-9]+ token is unreachable: for a bare digit
+ * sequence it ties with INTEGER_LITERAL, which must win so that property-filter values keep
+ * their INTEGER_LITERAL token type, which QueryGraph relies on when parsing literals. The bound
+ * therefore accepts INTEGER_LITERAL; QueryGraph rejects a leading sign or type suffix, along
+ * with the zero-lower-bound, out-of-range and max-less-than-min cases.
+ */
+unsignedInteger
+    : INTEGER_LITERAL
     ;
 
 /**
@@ -247,6 +292,8 @@ DASH     : '-' ;
 COLON    : ':' ;
 COMMA    : ',' ;
 DOLLAR   : '$' ;
+STAR     : '*' ;
+PLUS     : '+' ;
 
 /**
  * Signed infinity: +Infinity or -Infinity.
