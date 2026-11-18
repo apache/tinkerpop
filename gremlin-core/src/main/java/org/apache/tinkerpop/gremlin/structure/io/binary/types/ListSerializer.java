@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.structure.io.binary.types;
 
 import org.apache.tinkerpop.gremlin.structure.io.binary.DataType;
+import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryReadLimits;
 import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryReader;
 import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryWriter;
 import org.apache.tinkerpop.gremlin.structure.io.Buffer;
@@ -42,20 +43,40 @@ public class ListSerializer extends SimpleTypeSerializer<List> {
                 return null;
             }
             if ((valueFlag & 2) == 2) {
-                final int length = buffer.readInt();
-                final ArrayList result = new ArrayList(length);
-                for (int i = 0; i < length; i++) {
-                    Object item = context.read(buffer);
-                    long bulk = buffer.readLong();
-                    for (int j = 0; j < bulk; j++) {
-                        result.add(item);
-                    }
-                }
-                return result;
+                return readBulkedList(buffer, context);
             }
         }
-
         return readValue(buffer, context);
+    }
+
+    /**
+     * Reads a bulked list, which holds each distinct item once followed by the number of times it repeats, and
+     * expands it to the full list. The expanded size is checked against
+     * {@link GraphBinaryReadLimits#getMaxBulkedListLength()} before each expansion because it is not bounded by the
+     * size of the message.
+     */
+    private static List readBulkedList(final Buffer buffer, final GraphBinaryReader context) throws IOException {
+        final int length = readElementCount(buffer);
+        final int maxLength = context.getLimits().getMaxBulkedListLength();
+        final ArrayList result = new ArrayList(cappedInitialCapacity(length, context));
+        for (int i = 0; i < length; i++) {
+            final Object item = context.read(buffer);
+            final long bulk = buffer.readLong();
+            if (bulk < 0) {
+                throw new IOException(String.format("Invalid GraphBinary bulked list bulk: %d", bulk));
+            }
+            // subtracting rather than adding keeps the comparison from overflowing
+            if (bulk > maxLength - result.size()) {
+                throw new IOException(String.format(
+                        "Invalid GraphBinary bulked list bulk: %d would expand the list beyond the maximum of %d entries. " +
+                                "The limit can be raised with the maxGraphBinaryBulkedListLength setting.",
+                        bulk, maxLength));
+            }
+            for (int j = 0; j < bulk; j++) {
+                result.add(item);
+            }
+        }
+        return result;
     }
 
     @Override

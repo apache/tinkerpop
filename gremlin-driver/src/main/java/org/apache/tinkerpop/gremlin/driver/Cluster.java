@@ -33,6 +33,7 @@ import org.apache.tinkerpop.gremlin.driver.auth.Auth;
 import org.apache.tinkerpop.gremlin.driver.exception.NoHostAvailableException;
 import org.apache.tinkerpop.gremlin.driver.remote.HttpRemoteTransaction;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
+import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryReadLimits;
 import org.apache.tinkerpop.gremlin.util.MessageSerializer;
 import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.util.ser.GraphBinaryMessageSerializerV4;
@@ -177,6 +178,9 @@ public final class Cluster {
                 .compression(settings.connectionPool.compression)
                 .enableUserAgentOnConnect(settings.enableUserAgentOnConnect)
                 .bulkResults(settings.bulkResults)
+                .maxGraphBinaryValueLength(settings.maxGraphBinaryValueLength)
+                .maxGraphBinaryInitialCapacity(settings.maxGraphBinaryInitialCapacity)
+                .maxGraphBinaryBulkedListLength(settings.maxGraphBinaryBulkedListLength)
                 .validationRequest(settings.connectionPool.validationRequest);
 
         if (!settings.auth.type.isEmpty()) {
@@ -554,6 +558,9 @@ public final class Cluster {
         private ProxyOptions proxyOptions = null;
         private boolean enableUserAgentOnConnect = true;
         private boolean bulkResults = false;
+        private int maxGraphBinaryValueLength = GraphBinaryReadLimits.DEFAULT_MAX_VALUE_LENGTH;
+        private int maxGraphBinaryInitialCapacity = GraphBinaryReadLimits.DEFAULT_MAX_INITIAL_CAPACITY;
+        private int maxGraphBinaryBulkedListLength = GraphBinaryReadLimits.DEFAULT_MAX_BULKED_LIST_LENGTH;
 
         private Builder() {
         }
@@ -1013,6 +1020,39 @@ public final class Cluster {
             return this;
         }
 
+        /**
+         * The maximum length in bytes of a single {@code String}, {@code BigInteger} or binary value in a GraphBinary
+         * response. A response declaring a value of a longer length fails. The driver has no other bound on the size
+         * of a response value, so raising this limit also raises how much memory a single value may require. This
+         * applies only to the {@link GraphBinaryMessageSerializerV4}. Defaults to 64MB.
+         */
+        public Builder maxGraphBinaryValueLength(final int maxGraphBinaryValueLength) {
+            this.maxGraphBinaryValueLength = maxGraphBinaryValueLength;
+            return this;
+        }
+
+        /**
+         * The maximum capacity reserved up front for a collection or map read from a GraphBinary response. This does
+         * not limit the size of the collection, which grows as elements are read. It only bounds the memory reserved
+         * before they are. This applies only to the {@link GraphBinaryMessageSerializerV4}. Defaults to 16,384.
+         */
+        public Builder maxGraphBinaryInitialCapacity(final int maxGraphBinaryInitialCapacity) {
+            this.maxGraphBinaryInitialCapacity = maxGraphBinaryInitialCapacity;
+            return this;
+        }
+
+        /**
+         * The maximum number of entries that a single bulked list in a GraphBinary response may expand to. A bulked
+         * list sends each distinct item once with a repeat count, so a small response can otherwise describe a very
+         * large list. A response containing a bulked list that would expand beyond this size fails. Each entry held
+         * in memory costs a reference of 4 or 8 bytes. This applies only to the
+         * {@link GraphBinaryMessageSerializerV4}. Defaults to 16,777,216.
+         */
+        public Builder maxGraphBinaryBulkedListLength(final int maxGraphBinaryBulkedListLength) {
+            this.maxGraphBinaryBulkedListLength = maxGraphBinaryBulkedListLength;
+            return this;
+        }
+
         List<InetSocketAddress> getContactPoints() {
             return addresses.stream().map(addy -> new InetSocketAddress(addy, port)).collect(Collectors.toList());
         }
@@ -1143,7 +1183,12 @@ public final class Cluster {
 
             this.factory = new Factory(builder.nioPoolSize);
             this.serializer = builder.responseSerializer;
-            
+            if (serializer instanceof GraphBinaryMessageSerializerV4) {
+                ((GraphBinaryMessageSerializerV4) serializer).setReadLimits(GraphBinaryReadLimits.of(
+                        builder.maxGraphBinaryValueLength, builder.maxGraphBinaryInitialCapacity,
+                        builder.maxGraphBinaryBulkedListLength));
+            }
+
             this.executor = new ScheduledThreadPoolExecutor(builder.workerPoolSize,
                     new BasicThreadFactory.Builder().namingPattern("gremlin-driver-worker-%d").build());
             this.executor.setRemoveOnCancelPolicy(true);
@@ -1200,6 +1245,15 @@ public final class Cluster {
 
             if (builder.keepAliveTime < 0)
                 throw new IllegalArgumentException("keepAliveTime must be greater than or equal to zero");
+
+            if (builder.maxGraphBinaryValueLength < 1)
+                throw new IllegalArgumentException("maxGraphBinaryValueLength must be greater than zero");
+
+            if (builder.maxGraphBinaryInitialCapacity < 1)
+                throw new IllegalArgumentException("maxGraphBinaryInitialCapacity must be greater than zero");
+
+            if (builder.maxGraphBinaryBulkedListLength < 1)
+                throw new IllegalArgumentException("maxGraphBinaryBulkedListLength must be greater than zero");
 
             // zero value will disable idle connection detection
             // non-zero will be converted to seconds so any value between 1 and 999 is invalid as it will be less than 1 second

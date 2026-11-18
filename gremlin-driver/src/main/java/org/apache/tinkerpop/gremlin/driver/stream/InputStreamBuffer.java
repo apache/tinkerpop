@@ -175,6 +175,11 @@ public class InputStreamBuffer implements Buffer {
     }
 
     @Override
+    public boolean hasKnownRemainingLength() {
+        return false;
+    }
+
+    @Override
     public Buffer readerIndex(final int readerIndex) {
         throw new UnsupportedOperationException();
     }

@@ -24,6 +24,7 @@ import org.apache.tinkerpop.gremlin.structure.io.pdt.CompositePDT;
 import org.apache.tinkerpop.gremlin.structure.io.pdt.PDTRegistry;
 
 import java.io.IOException;
+import java.util.Objects;
 
 /**
  * Reads a value from a buffer using the {@link TypeSerializer} instances configured in the
@@ -52,6 +53,7 @@ import java.io.IOException;
 public class GraphBinaryReader {
     private final TypeSerializerRegistry registry;
     private final PDTRegistry pdtRegistry;
+    private final GraphBinaryReadLimits limits;
 
     public GraphBinaryReader() {
         this(TypeSerializerRegistry.INSTANCE);
@@ -62,8 +64,29 @@ public class GraphBinaryReader {
     }
 
     public GraphBinaryReader(final TypeSerializerRegistry registry, final PDTRegistry pdtRegistry) {
+        this(registry, pdtRegistry, GraphBinaryReadLimits.DEFAULT);
+    }
+
+    public GraphBinaryReader(final TypeSerializerRegistry registry, final PDTRegistry pdtRegistry,
+                             final GraphBinaryReadLimits limits) {
         this.registry = registry;
         this.pdtRegistry = pdtRegistry;
+        this.limits = Objects.requireNonNull(limits, "limits cannot be null.");
+    }
+
+    /**
+     * Gets the {@link GraphBinaryReadLimits} that the {@link TypeSerializer} instances use to validate the length
+     * and count prefixes they read.
+     */
+    public GraphBinaryReadLimits getLimits() {
+        return limits;
+    }
+
+    /**
+     * Creates a reader that uses the same serializers as this one but applies the specified limits.
+     */
+    public GraphBinaryReader withLimits(final GraphBinaryReadLimits limits) {
+        return new GraphBinaryReader(registry, pdtRegistry, limits);
     }
 
     /**
