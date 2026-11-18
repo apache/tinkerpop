@@ -24,11 +24,12 @@ image::gremlins-wildest-dreams.png[width=185]
 
 *Gremlin's Wildest Dreams*
 
-== TinkerPop 4.0.0
+[llms-summary="Upgrade notes for the TinkerPop 4.0.0-beta.4 release: the TinkerGraph split into in-memory and disk-backed implementations, the Gremlin Console move to Groovy 6, Gremlin naming in JavaScript, variable-length paths in TinkerGQL, plus provider guidance."]
+== TinkerPop 4.0.0-beta.4
 
 *Release Date: NOT OFFICIALLY RELEASED YET*
 
-Please see the link:https://github.com/apache/tinkerpop/blob/4.0.0/CHANGELOG.asciidoc#release-4-0-0[changelog] for a
+Please see the link:https://github.com/apache/tinkerpop/blob/4.0.0-beta.4/CHANGELOG.asciidoc#release-4-0-0-beta-4[changelog] for a
 complete list of all the modifications that are part of this release.
 
 === Upgrading for Users
@@ -147,7 +148,7 @@ code that referenced them no longer compiles.
 * The Gremlin Console sample `conf/tinkergraph-gryo.properties`, replaced by `conf/tinkergraph-storage.properties`,
 which opens a `TinkerStorageGraph` with disk storage.
 
-See: link:https://tinkerpop.apache.org/docs/4.0.0/reference/#tinkergraph-gremlin-persistence[TinkerGraph Persistence]
+See: link:https://tinkerpop.apache.org/docs/4.0.0-beta.4/reference/#tinkergraph-gremlin-persistence[TinkerGraph Persistence]
 
 ==== TinkerGraph Close Ends Use of the Graph
 
@@ -249,12 +250,12 @@ replacements, which apply equally under the `gremlin.process` namespace:
 `GType`, `IO` and the individual strategy classes, such as `SubgraphStrategy` and `PartitionStrategy`, were previously
 not exported from the package and are now available.
 
-See: link:https://tinkerpop.apache.org/docs/4.0.0/reference/#gremlin-javascript-imports[Common Imports],
+See: link:https://tinkerpop.apache.org/docs/4.0.0-beta.4/reference/#gremlin-javascript-imports[Common Imports],
 link:https://issues.apache.org/jira/browse/TINKERPOP-2492[TINKERPOP-2492]
 
 ==== Gremlin Console on Groovy 6
 
-TinkerPop 4.0.0 upgrades Groovy from 4.0.32 to 6.0.0, and the Gremlin Console now runs on the Groovy 6 shell,
+TinkerPop 4.0.0-beta.4 upgrades Groovy from 4.0.32 to 6.0.0, and the Gremlin Console now runs on the Groovy 6 shell,
 groovysh, which is built on JLine 4. The Gremlin commands, plugins, preferences and the `==>` display of results carry
 over. The new shell brings better line editing, history and `<TAB>` completion, including the arguments of `:plugin`
 and `:set`, and `ctrl+c` now stops results that are printing as well as a running statement.
@@ -301,7 +302,7 @@ the line, for example with `toList()`, shows the full failure details.
 
 [source,text]
 ----
-// 3.8.x
+// 3.8.x and 4.0.0-beta.3
 gremlin> x = 5
 ==>5
 gremlin> def add(a, b) { a + b }
@@ -309,7 +310,7 @@ gremlin> def add(a, b) { a + b }
 gremlin> :set max-iteration 50
 gremlin>
 
-// 4.0.0
+// 4.0.0-beta.4
 gremlin> x = 5
 ==>null
 gremlin> x
@@ -329,8 +330,9 @@ extension methods from `DefaultGroovyMethods` to `ArrayGroovyMethods`. An allowl
 `+org\.codehaus\.groovy\.runtime\.DefaultGroovyMethods.*+` needs a matching entry for
 `+org\.codehaus\.groovy\.runtime\.ArrayGroovyMethods.*+` so that array operations in scripts are still accepted.
 
-See: link:https://tinkerpop.apache.org/docs/4.0.0/reference/#gremlin-console[Reference Documentation - Gremlin Console],
+See: link:https://tinkerpop.apache.org/docs/4.0.0-beta.4/reference/#gremlin-console[Reference Documentation - Gremlin Console],
 link:https://docs.groovy-lang.org/docs/groovy-6.0.0/html/documentation/groovysh.html[groovysh Documentation]
+
 ==== Variable-Length Paths in TinkerGQL
 
 TinkerGQL now supports ISO GQL quantified relationships, so a single `MATCH` pattern can follow an edge a variable
@@ -349,14 +351,14 @@ g.match("MATCH (a:person {name: 'marko'})-[:created]-{2}(b:person)").
 ----
 
 Zero-length quantifiers, reuse of a quantified edge variable, and bounds above `2147483646` are rejected, as
-listed under link:https://tinkerpop.apache.org/docs/4.0.0/reference/#tinkergql-unsupported-features[Unsupported Features].
+listed under link:https://tinkerpop.apache.org/docs/4.0.0-beta.4/reference/#tinkergql-unsupported-features[Unsupported Features].
 
 An undirected relationship, quantified or not, now matches a self-loop edge once, as GQL specifies. In
 4.0.0-beta.3 a named undirected relationship, as in `MATCH (a)-[r]-(b)`, returned two identical rows for each
 self-loop, and it now returns one.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-3256[TINKERPOP-3256],
-link:https://tinkerpop.apache.org/docs/4.0.0/reference/#tinkergql[TinkerGQL]
+link:https://tinkerpop.apache.org/docs/4.0.0-beta.4/reference/#tinkergql[TinkerGQL]
 
 ==== Gremlin Console Plugin List
 
@@ -376,7 +378,7 @@ gremlin> :plugin list
 ----
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-3286[TINKERPOP-3286],
-link:https://tinkerpop.apache.org/docs/4.0.0/reference/#gremlin-console[Reference Documentation - Gremlin Console]
+link:https://tinkerpop.apache.org/docs/4.0.0-beta.4/reference/#gremlin-console[Reference Documentation - Gremlin Console]
 
 ==== GraphBinary Length Limits
 
@@ -413,6 +415,8 @@ Cluster cluster = Cluster.build("localhost")
         .maxGraphBinaryValueLength(268435456)
         .create();
 ----
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-3281[TINKERPOP-3281]
 
 === Upgrading for Providers
 
@@ -472,7 +476,7 @@ And the traversal of
   """
 ----
 
-See: link:https://tinkerpop.apache.org/docs/x.y.z/dev/developer/#gremlin-language-test-cases[Gremlin Language Test Cases]
+See: link:https://tinkerpop.apache.org/docs/4.0.0-beta.4/dev/developer/#gremlin-language-test-cases[Gremlin Language Test Cases]
 
 ===== Gremlin Console Extensions
 
@@ -488,6 +492,7 @@ The console classes tied to groovysh 4 changed with it: `GremlinGroovysh` is rem
 `PluggedIn` is constructed with the console's Groovy engine instead of a `Groovysh` and `IO`, and `Mediator` no longer
 has the `evaluating` flag, the `IMPORT_*` constants or the `showShellEvaluationOutput()` and `close()` methods. These
 classes are internal to the console.
+
 ===== GqlExecutor Returns GqlRow
 
 `GqlExecutor.execute()` now returns `Iterator<GqlRow>` instead of the `Iterator<Element[]>` it returned in
@@ -508,7 +513,7 @@ public Iterator<Element[]> execute(GqlMatchPlan plan, Map<String, Object> params
     return Collections.singletonList(scalars).iterator();
 }
 
-// 4.0.0
+// 4.0.0-beta.4
 public Iterator<GqlRow> execute(GqlMatchPlan plan, Map<String, Object> params) {
     for (ExtensionStep step : plan.getSteps())
         if (step.isQuantified())
@@ -525,7 +530,7 @@ list in pattern order, from left to right, as described in the provider document
 provider resources, the executor should return a `CloseableIterator`, which `GqlMatchStep` closes when the traversal
 is closed, including when it finishes early because of a downstream `limit()`.
 
-See: link:https://tinkerpop.apache.org/docs/4.0.0/dev/provider/#tinkerpop-providers-tinkergql[Supporting Declarative Pattern Matching (TinkerGQL)]
+See: link:https://tinkerpop.apache.org/docs/4.0.0-beta.4/dev/provider/#tinkerpop-providers-tinkergql[Supporting Declarative Pattern Matching (TinkerGQL)]
 
 ==== Graph Driver Providers
 
