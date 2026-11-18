@@ -3441,7 +3441,9 @@ The following table outlines recommended runtime versions by the release in whic
 |3.6.8 |3.9 |aiohttp
 |3.7.0 |3.8-3.13 |aiohttp
 |3.7.3 |3.9-3.13 |aiohttp
+|3.7.8 |3.9-3.15 |aiohttp
 |3.8.0 |3.10-3.13 |aiohttp
+|3.8.3 |3.10-3.15 |aiohttp
 |===
 
 [[gremlin-python-connecting]]
@@ -4067,9 +4069,9 @@ graph, and it cannot be passed to `traversal().with(...)`. To re-query subgraph 
 graph, extract their `id` and use `g.V(id)` / `g.E(id)` on the original `GraphTraversalSource`.
 * Use of the aiohttp library in the default transport requires the use of asyncio's event loop to run the async functions.
 This can be an issue in situations where the application calling Gremlin-Python is already using an event loop.
-Certain types of event loops can be patched using nest-asyncio which allows Gremlin-Python to proceed without an error like
+Certain types of event loops can be patched using nest-asyncio2 which allows Gremlin-Python to proceed without an error like
 "Cannot run the event loop while another loop is running". This is the preferred approach to avoiding the issue and can be
-enabled by passing `call_from_event_loop=True` to the `AiohttpTransport` class.
+enabled by passing `call_from_event_loop=True` to the `AiohttpHTTPTransport` class.
 
 +
 However, in situations where the loop cannot be patched (e.g. uvloop), then the current suggested workaround is to run

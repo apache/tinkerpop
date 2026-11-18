@@ -175,13 +175,13 @@ class AiohttpHTTPTransport:
                  max_connections=None, **kwargs):
         if call_from_event_loop is not None and call_from_event_loop and not AiohttpHTTPTransport.nest_asyncio_applied:
             """ 
-                The AiohttpTransport implementation uses the asyncio event loop. Because of this, it cannot be called 
-                within an event loop without nest_asyncio. If the code is ever refactored so that it can be called 
-                within an event loop this import and call can be removed. Without this, applications which use the 
+                The AiohttpTransport implementation uses the asyncio event loop. Because of this, it cannot be called
+                within an event loop without nest_asyncio2. If the code is ever refactored so that it can be called
+                within an event loop this import and call can be removed. Without this, applications which use the
                 event loop to call gremlin-python (such as Jupyter) will not work.
             """
-            import nest_asyncio
-            nest_asyncio.apply()
+            import nest_asyncio2
+            nest_asyncio2.apply()
             AiohttpHTTPTransport.nest_asyncio_applied = True
 
         # Start event loop and initialize client session and response to None

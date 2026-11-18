@@ -91,7 +91,7 @@ echo "Optional (GLV development):"
 # --- Python ---
 if command -v python3 &>/dev/null; then
     py_version=$(python3 --version 2>&1 | grep -oE '[0-9]+\.[0-9]+')
-    ok "Python $py_version (3.10+ recommended for gremlin-python local dev)"
+    ok "Python $py_version (3.10-3.15 supported for gremlin-python local dev)"
 else
     skip "Python 3 not found — Docker handles test execution, but local dev needs it"
 fi
