@@ -210,7 +210,15 @@ public class AnonymizedTranslatorVisitor extends TranslateVisitor {
 
     @Override
     public Void visitGeometryLiteral(final GremlinParser.GeometryLiteralContext ctx) {
-        return anonymize(ctx, Geometry.class);
+        // the concrete kind (for example point or polygon) names the value, and a literal that cannot be
+        // parsed still anonymizes under the general geometry name
+        Class<?> clazz;
+        try {
+            clazz = ((Geometry) literalVisitor.visitGeometryLiteral(ctx)).getClass();
+        } catch (Exception ex) {
+            clazz = Geometry.class;
+        }
+        return anonymize(ctx, clazz);
     }
 
     @Override

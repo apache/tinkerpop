@@ -59,12 +59,6 @@ public class GenericLiteralVisitor extends DefaultGremlinBaseVisitor<Object> {
      */
     public static final int TOTAL_INTEGER_RANGE_RESULT_COUNT_LIMIT = 1_000_000;
 
-    /**
-     * Serves {@link #parseGeometry(GremlinParser.GeometryLiteralContext)}, which visits only the
-     * string and integer literals of a geometry literal and so needs no {@link Traversal}.
-     */
-    private static final GenericLiteralVisitor LITERAL_ONLY_VISITOR = new GenericLiteralVisitor(null);
-
     protected final GremlinAntlrToJava antlr;
 
     public GenericLiteralVisitor(final GremlinAntlrToJava antlr) {
@@ -598,14 +592,6 @@ public class GenericLiteralVisitor extends DefaultGremlinBaseVisitor<Object> {
             throw new GremlinParserException(
                     String.format("Invalid Binary literal: '%s' is not valid base64", base64));
         }
-    }
-
-    /**
-     * Parses a geometry literal into its value, for callers that hold a context but no
-     * {@link Traversal}, such as the language translators.
-     */
-    public static Geometry parseGeometry(final GremlinParser.GeometryLiteralContext ctx) {
-        return (Geometry) LITERAL_ONLY_VISITOR.visitGeometryLiteral(ctx);
     }
 
     /**

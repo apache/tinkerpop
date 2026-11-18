@@ -21,9 +21,9 @@ package org.apache.tinkerpop.gremlin.language.translator;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.apache.tinkerpop.gremlin.language.antlr.GremlinParser;
-import org.apache.tinkerpop.gremlin.language.grammar.GenericLiteralVisitor;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.OptionsStrategy;
 import org.apache.tinkerpop.gremlin.structure.Direction;
+import org.apache.tinkerpop.gremlin.structure.geo.Geometry;
 import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceVertex;
 import org.apache.tinkerpop.gremlin.util.DatetimeHelper;
 
@@ -299,7 +299,7 @@ public class JavaTranslateVisitor extends AbstractTranslateVisitor {
 
     @Override
     public Void visitGeometryLiteral(final GremlinParser.GeometryLiteralContext ctx) {
-        appendGeometryFromWkt(GenericLiteralVisitor.parseGeometry(ctx));
+        appendGeometryFromWkt((Geometry) literalVisitor.visitGeometryLiteral(ctx));
         return null;
     }
 

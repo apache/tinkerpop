@@ -812,6 +812,15 @@ describe('AnonymizedTranslateVisitor', function () {
       ['g.inject(Duration(9000,0))', 'g.inject(duration0)'],
       // binary → bytebuffer
       ['g.inject(Binary("AQID"))', 'g.inject(bytebuffer0)'],
+      // geometry -> the kind its WKT names, with a counter per kind
+      ['g.inject(Geometry("POINT(1 2)"))', 'g.inject(point0)'],
+      ['g.inject(Geometry("SRID=4326;POINT(1 2)"))', 'g.inject(point0)'],
+      ['g.inject(Geometry(" linestring EMPTY", GEOGRAPHIC))', 'g.inject(linestring0)'],
+      ['g.inject(Geometry("\\u0050OLYGON EMPTY", 32618))', 'g.inject(polygon0)'],
+      ['g.inject(Geometry("POINT(1 2)"), Geometry("MULTIPOINT((1 2))"), Geometry("POINT(3 4)"), Geometry("POINT(1 2)"))',
+        'g.inject(point0, multipoint0, point1, point0)'],
+      ['g.inject(Geometry("MULTILINESTRING EMPTY"), Geometry("MULTIPOLYGON EMPTY"), Geometry("GEOMETRYCOLLECTION EMPTY"))',
+        'g.inject(multilinestring0, multipolygon0, geometrycollection0)'],
       // map → map
       ['g.addV("person").property(T.id, [(T.label): "person"])', 'g.addV(string0).property(T.id, map0)'],
       // enums/traversal steps pass through unchanged

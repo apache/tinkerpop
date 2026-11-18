@@ -23,6 +23,8 @@ import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.apache.tinkerpop.gremlin.language.antlr.GremlinBaseVisitor;
 import org.apache.tinkerpop.gremlin.language.antlr.GremlinParser;
+import org.apache.tinkerpop.gremlin.language.grammar.GenericLiteralVisitor;
+import org.apache.tinkerpop.gremlin.language.grammar.GremlinAntlrToJava;
 import org.apache.tinkerpop.gremlin.process.traversal.DT;
 import org.apache.tinkerpop.gremlin.process.traversal.GeoP;
 import org.apache.tinkerpop.gremlin.process.traversal.GType;
@@ -76,6 +78,12 @@ public class TranslateVisitor extends GremlinBaseVisitor<Void> {
     protected final StringBuilder sb = new StringBuilder();
 
     protected final Set<String> parameters = new HashSet<>();
+
+    /**
+     * Parses literals into their values, for translators that render from a value rather than from the
+     * literal's text.
+     */
+    protected final GenericLiteralVisitor literalVisitor = new GenericLiteralVisitor(new GremlinAntlrToJava());
 
     public TranslateVisitor() {
         this("g");

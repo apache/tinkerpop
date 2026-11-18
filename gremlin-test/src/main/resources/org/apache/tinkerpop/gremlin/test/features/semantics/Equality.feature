@@ -178,18 +178,18 @@ Feature: Equality
       | d[1].m |
       | d[1].b |
 
-  @GraphComputerVerificationInjectionNotSupported @DataGeometry
-  Scenario: Geometry_eqXpointX
-    Given the empty graph
-    And using the parameter xx1 defined as "geo[POINT(1 2)]"
+  @AllowGeometryPropertyValues @DataGeometry
+  Scenario: Geometry_eqXstoredPointX
+    Given the delivery graph
+    And using the parameter xx1 defined as "geo[SRID=4326;POINT(0 51.48)]"
     And the traversal of
       """
-      g.inject([Geometry("POINT(1 2)"),Geometry("POINT(1 3)"),Geometry("POINT(1 2)", GEOGRAPHIC)]).unfold().where(__.is(xx1))
+      g.V().values("loc").where(__.is(xx1))
       """
     When iterated to list
     Then the result should be unordered
       | result |
-      | geo[POINT(1 2)] |
+      | geo[SRID=4326;POINT(0 51.48)] |
 
   @GraphComputerVerificationInjectionNotSupported @DataGeometry
   Scenario: Geometry_eqXnegativeZeroX

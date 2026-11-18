@@ -49,17 +49,17 @@ Feature: Data - Geometry
       | geo[POINT(1 2)] |
       | geo[POINT(1 2)] |
 
-  @GraphComputerVerificationInjectionNotSupported
-  Scenario: g_injectXGeometryXPOINTX13_4_52_5X_GEOGRAPHICXX
-    Given the empty graph
+  @AllowGeometryPropertyValues
+  Scenario: g_V_hasXname_GreenwichX_valuesXlocX
+    Given the delivery graph
     And the traversal of
       """
-      g.inject(Geometry("POINT(13.4 52.5)", GEOGRAPHIC))
+      g.V().has("name", "Greenwich").values("loc")
       """
     When iterated to list
     Then the result should be unordered
       | result |
-      | geo[SRID=4326;POINT(13.4 52.5)] |
+      | geo[SRID=4326;POINT(0 51.48)] |
 
   @GraphComputerVerificationInjectionNotSupported
   Scenario: g_injectXGeometryXPOINTX1_2X_32618XX
@@ -87,17 +87,17 @@ Feature: Data - Geometry
       | geo[POLYGON EMPTY] |
       | geo[GEOMETRYCOLLECTION EMPTY] |
 
-  @GraphComputerVerificationInjectionNotSupported
-  Scenario: g_injectXGeometryXPOINT_ZX1_2_3XXX
-    Given the empty graph
+  @AllowGeometryPropertyValues
+  Scenario: g_V_hasXname_AnaX_valuesXlocX
+    Given the delivery graph
     And the traversal of
       """
-      g.inject(Geometry("POINT Z (1 2 3)"))
+      g.V().has("name", "Ana").values("loc")
       """
     When iterated to list
     Then the result should be unordered
       | result |
-      | geo[POINT Z (1 2 3)] |
+      | geo[SRID=4326;POINT Z (-73.9857 40.7484 86)] |
 
   @GraphComputerVerificationInjectionNotSupported
   Scenario: g_injectXGeometryXPOINT_Z_EMPTYXX
@@ -111,37 +111,33 @@ Feature: Data - Geometry
       | result |
       | geo[POINT Z EMPTY] |
 
-  @GraphComputerVerificationInjectionNotSupported
-  Scenario: g_injectXlistOfGeometryX
-    Given the empty graph
+  @AllowGeometryPropertyValues
+  Scenario: g_V_hasLabelXroomX_order_byXnameX_valuesXlocX_fold
+    Given the delivery graph
     And the traversal of
       """
-      g.inject([Geometry("POINT(1 2)"), Geometry("POINT(3 4)")])
+      g.V().hasLabel("room").order().by("name").values("loc").fold()
       """
     When iterated to list
     Then the result should be unordered
       | result |
-      | l[geo[POINT(1 2)],geo[POINT(3 4)]] |
+      | l[geo[POLYGON((8 0, 20 0, 20 10, 8 10, 8 0), (13 4, 15 4, 15 6, 13 6, 13 4))],geo[POLYGON((0 0, 8 0, 8 10, 0 10, 0 0))]] |
 
-  @GraphComputerVerificationInjectionNotSupported
-  Scenario: g_injectXmapOfGeometryX
-    Given the empty graph
+  @AllowGeometryPropertyValues
+  Scenario: g_V_hasXpicker_name_PatX_projectXname_locX_byXnameX_byXlocX
+    Given the delivery graph
     And the traversal of
       """
-      g.inject([loc:Geometry("POINT(1 2)")])
+      g.V().has("picker", "name", "Pat").project("name", "loc").by("name").by("loc")
       """
     When iterated to list
     Then the result should be unordered
       | result |
-      | m[{"loc":"geo[POINT(1 2)]"}] |
+      | m[{"name":"Pat","loc":"geo[POINT(3 4)]"}] |
 
   @AllowGeometryPropertyValues
   Scenario: g_V_valuesXlocX
-    Given the empty graph
-    And the graph initializer of
-      """
-      g.addV("store").property("loc", Geometry("POINT(13.4 52.5)", GEOGRAPHIC))
-      """
+    Given the delivery graph
     And the traversal of
       """
       g.V().values("loc")
@@ -149,32 +145,44 @@ Feature: Data - Geometry
     When iterated to list
     Then the result should be unordered
       | result |
-      | geo[SRID=4326;POINT(13.4 52.5)] |
+      | geo[SRID=4326;POINT(-73.9925 40.7614)] |
+      | geo[SRID=4326;POINT(-73.9571 40.7146)] |
+      | geo[SRID=4326;POINT(-118.2437 34.0522)] |
+      | geo[SRID=4326;POINT(0 51.48)] |
+      | geo[SRID=4326;POINT(174.7633 -36.8485)] |
+      | geo[SRID=4326;POLYGON((-74.02 40.74, -73.93 40.74, -73.93 40.81, -74.02 40.81, -74.02 40.74), (-73.9819 40.7681, -73.973 40.7644, -73.9498 40.7968, -73.958 40.8006, -73.9819 40.7681))] |
+      | geo[SRID=4326;POLYGON((-73.97 40.69, -73.88 40.69, -73.88 40.8, -73.93 40.8, -73.93 40.735, -73.97 40.735, -73.97 40.69))] |
+      | geo[SRID=4326;POLYGON((-0.03 51.46, 0.03 51.46, 0.03 51.5, -0.03 51.5, -0.03 51.46))] |
+      | geo[SRID=4326;MULTIPOLYGON(((174.74 -36.87, 174.79 -36.87, 174.79 -36.84, 174.74 -36.84, 174.74 -36.87)), ((174.98 -36.82, 175.06 -36.82, 175.06 -36.77, 174.98 -36.77, 174.98 -36.82)))] |
+      | geo[SRID=4326;MULTILINESTRING((-73.975 40.695, -73.965 40.72, -73.958 40.745, -73.951 40.77), (-73.958 40.745, -73.946 40.755, -73.945 40.77))] |
+      | geo[SRID=4326;GEOMETRYCOLLECTION(MULTIPOINT((-73.952 40.715), (-73.951 40.716)), POLYGON((-73.955 40.713, -73.949 40.713, -73.949 40.717, -73.955 40.717, -73.955 40.713)))] |
+      | geo[SRID=4326;POINT Z (-73.9857 40.7484 86)] |
+      | geo[SRID=4326;POINT(-73.9654 40.7829)] |
+      | geo[SRID=4326;POINT(-73.93 40.77)] |
+      | geo[SRID=4326;POINT Z (-74.05 40.72 12)] |
+      | geo[SRID=4326;POINT Z (0.012 51.481 0)] |
+      | geo[POLYGON((0 0, 8 0, 8 10, 0 10, 0 0))] |
+      | geo[POLYGON((8 0, 20 0, 20 10, 8 10, 8 0), (13 4, 15 4, 15 6, 13 6, 13 4))] |
+      | geo[POINT(3 4)] |
+      | geo[SRID=4326;POLYGON((-74.02 40.7, -73.975 40.7, -73.975 40.7644, -74.02 40.7644, -74.02 40.7))] |
+      | geo[SRID=4326;POLYGON((-73.96 40.7, -73.94 40.72, -73.96 40.72, -73.94 40.7, -73.96 40.7))] |
 
   @AllowGeometryPropertyValues
-  Scenario: g_V_hasXloc_GeometryXPOLYGONXX_valuesXnameX
-    Given the empty graph
-    And the graph initializer of
-      """
-      g.addV("zone").property("name", "midtown").property("loc", Geometry("POLYGON((0 0, 4 0, 4 4, 0 4, 0 0))"))
-      """
+  Scenario: g_V_hasXloc_midtownPolygonX_valuesXnameX
+    Given the delivery graph
     And the traversal of
       """
-      g.V().has("loc", Geometry("POLYGON((0 0, 4 0, 4 4, 0 4, 0 0))")).values("name")
+      g.V().has("loc", Geometry("POLYGON((-74.02 40.74, -73.93 40.74, -73.93 40.81, -74.02 40.81, -74.02 40.74), (-73.9819 40.7681, -73.973 40.7644, -73.9498 40.7968, -73.958 40.8006, -73.9819 40.7681))", GEOGRAPHIC)).values("name")
       """
     When iterated to list
     Then the result should be unordered
       | result |
-      | midtown |
+      | Midtown |
 
   @AllowGeometryPropertyValues
   Scenario: g_V_hasXloc_xx1X_valuesXnameX
-    Given the empty graph
-    And using the parameter xx1 defined as "geo[SRID=4326;POINT(13.4 52.5)]"
-    And the graph initializer of
-      """
-      g.addV("store").property("name", "midtown").property("loc", Geometry("POINT(13.4 52.5)", GEOGRAPHIC))
-      """
+    Given the delivery graph
+    And using the parameter xx1 defined as "geo[SRID=4326;POINT(0 51.48)]"
     And the traversal of
       """
       g.V().has("loc", xx1).values("name")
@@ -182,7 +190,7 @@ Feature: Data - Geometry
     When iterated to list
     Then the result should be unordered
       | result |
-      | midtown |
+      | Greenwich |
 
   @AllowGeometryPropertyValues
   Scenario: g_V_hasLabelXhubX_valuesXlocX

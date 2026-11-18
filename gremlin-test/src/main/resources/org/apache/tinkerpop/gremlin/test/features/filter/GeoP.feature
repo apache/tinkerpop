@@ -18,76 +18,30 @@
 @StepClassFilter @StepIs @DataGeometry
 Feature: Predicate - GeoP
 
-  @GraphComputerVerificationInjectionNotSupported
-  Scenario: g_injectXpointsX_isXgeoWithinXpolygonXX
-    Given the empty graph
+  @AllowGeometryPropertyValues
+  Scenario: g_V_hasLabelXhub_customerX_hasXloc_geoWithinXnorthBrooklynAndQueensXX_valuesXnameX
+    Given the delivery graph
     And the traversal of
       """
-      g.inject(Geometry("POINT(2 2)"), Geometry("POINT(0 2)"), Geometry("POINT(5 5)")).is(GeoP.geoWithin(Geometry("POLYGON((0 0, 4 0, 4 4, 0 4, 0 0))")))
+      g.V().hasLabel("hub", "customer").has("loc", GeoP.geoWithin(Geometry("POLYGON((-73.97 40.69, -73.88 40.69, -73.88 40.8, -73.93 40.8, -73.93 40.735, -73.97 40.735, -73.97 40.69))", GEOGRAPHIC))).values("name")
       """
     When iterated to list
     Then the result should be unordered
       | result |
-      | geo[POINT(2 2)] |
+      | Williamsburg |
 
-  @GraphComputerVerificationInjectionNotSupported
-  Scenario: g_injectXpointsX_isXgeoWithinXpolygonWithHoleXX
-    Given the empty graph
+  @AllowGeometryPropertyValues
+  Scenario: g_V_unionXhasLabelXzone_waterwayX_valuesXlocX_outEXdeliveredX_valuesXpathXX_isXgeoWithinXdeliveryBoxXX
+    Given the delivery graph
     And the traversal of
       """
-      g.inject(Geometry("POINT(1.5 1.5)"), Geometry("POINT(3 3)")).is(GeoP.geoWithin(Geometry("POLYGON((0 0, 4 0, 4 4, 0 4, 0 0), (1 1, 1 2, 2 2, 2 1, 1 1))")))
+      g.V().union(__.hasLabel("zone", "waterway").values("loc"), __.outE("delivered").values("path")).is(GeoP.geoWithin(Geometry("POLYGON((-74.03 40.69, -73.95 40.69, -73.95 40.766, -74.03 40.766, -74.03 40.69))", GEOGRAPHIC)))
       """
     When iterated to list
     Then the result should be unordered
       | result |
-      | geo[POINT(3 3)] |
-
-  @GraphComputerVerificationInjectionNotSupported
-  Scenario: g_injectXlinesAndPolygonX_isXgeoWithinXpolygonXX
-    Given the empty graph
-    And the traversal of
-      """
-      g.inject(Geometry("LINESTRING(1 1, 3 3)"), Geometry("LINESTRING(1 1, 5 5)"), Geometry("POLYGON((1 1, 3 1, 3 3, 1 3, 1 1))")).is(GeoP.geoWithin(Geometry("POLYGON((0 0, 4 0, 4 4, 0 4, 0 0))")))
-      """
-    When iterated to list
-    Then the result should be unordered
-      | result |
-      | geo[LINESTRING(1 1, 3 3)] |
-      | geo[POLYGON((1 1, 3 1, 3 3, 1 3, 1 1))] |
-
-  @GraphComputerVerificationInjectionNotSupported
-  Scenario: g_injectXpolygonX_isXgeoContainsXinteriorPointXX
-    Given the empty graph
-    And the traversal of
-      """
-      g.inject(Geometry("POLYGON((0 0, 4 0, 4 4, 0 4, 0 0))")).is(GeoP.geoContains(Geometry("POINT(2 2)")))
-      """
-    When iterated to list
-    Then the result should be unordered
-      | result |
-      | geo[POLYGON((0 0, 4 0, 4 4, 0 4, 0 0))] |
-
-  @GraphComputerVerificationInjectionNotSupported
-  Scenario: g_injectXpolygonX_isXgeoContainsXboundaryPointXX
-    Given the empty graph
-    And the traversal of
-      """
-      g.inject(Geometry("POLYGON((0 0, 4 0, 4 4, 0 4, 0 0))")).is(GeoP.geoContains(Geometry("POINT(0 2)")))
-      """
-    When iterated to list
-    Then the result should be empty
-
-  @GraphComputerVerificationInjectionNotSupported
-  Scenario: g_injectXpolygonX_isXgeoContainsXcollectionXX
-    Given the empty graph
-    And the traversal of
-      """
-      g.inject(Geometry("POLYGON((0 0, 4 0, 4 4, 0 4, 0 0))")).is(GeoP.geoContains(Geometry("GEOMETRYCOLLECTION(POINT(1 1), LINESTRING(2 2, 3 3))")))
-      """
-    When iterated to list
-    Then the result should be unordered
-      | result |
-      | geo[POLYGON((0 0, 4 0, 4 4, 0 4, 0 0))] |
+      | geo[SRID=4326;LINESTRING(-73.9571 40.7146, -73.9857 40.7484)] |
+      | geo[SRID=4326;POLYGON((-74.02 40.7, -73.975 40.7, -73.975 40.7644, -74.02 40.7644, -74.02 40.7))] |
 
   @GraphComputerVerificationInjectionNotSupported
   Scenario: g_injectXemptyAndGeographicAndZPointsX_isXgeoWithinXpolygonXX
@@ -112,37 +66,30 @@ Feature: Predicate - GeoP
     Then the result should be empty
 
   @AllowGeometryPropertyValues
-  Scenario: g_V_hasXloc_geoWithinXconstantXpolygonXXX_valuesXnameX
-    Given the empty graph
-    And the graph initializer of
-      """
-      g.addV("store").property("name", "midtown").property("loc", Geometry("POINT(2 2)")).addV("store").property("name", "uptown").property("loc", Geometry("POINT(9 9)"))
-      """
+  Scenario: g_V_hasLabelXhub_customerX_hasXloc_geoWithinXconstantXgreenwichTownXXX_valuesXnameX
+    Given the delivery graph
     And the traversal of
       """
-      g.V().has("loc", GeoP.geoWithin(__.constant(Geometry("POLYGON((0 0, 4 0, 4 4, 0 4, 0 0))")))).values("name")
+      g.V().hasLabel("hub", "customer").has("loc", GeoP.geoWithin(__.constant(Geometry("POLYGON((-0.03 51.46, 0.03 51.46, 0.03 51.5, -0.03 51.5, -0.03 51.46))", GEOGRAPHIC)))).values("name")
       """
     When iterated to list
     Then the result should be unordered
       | result |
-      | midtown |
+      | Greenwich |
+      | Hana |
 
   @AllowGeometryPropertyValues
-  Scenario: g_V_asXvX_valuesXlocX_isXgeoWithinXselectXvX_valuesXzoneXXX
-    Given the empty graph
-    And the graph initializer of
-      """
-      g.addV("store").property("loc", Geometry("POINT(2 2)")).property("zone", Geometry("POLYGON((0 0, 4 0, 4 4, 0 4, 0 0))")).addV("store").property("loc", Geometry("POINT(10 10)")).property("zone", Geometry("POLYGON((8 8, 12 8, 12 12, 8 12, 8 8))"))
-      """
+  Scenario: g_V_hasLabelXcustomerX_asXcX_outXorderedFromX_outXservesX_valuesXlocX_asXzX_selectXcX_valuesXlocX_isXgeoWithinXselectXzXXX
+    Given the delivery graph
     And the traversal of
       """
-      g.V().as("v").values("loc").is(GeoP.geoWithin(__.select("v").values("zone")))
+      g.V().hasLabel("customer").as("c").out("orderedFrom").out("serves").values("loc").as("z").select("c").values("loc").is(GeoP.geoWithin(__.select("z")))
       """
     When iterated to list
     Then the result should be unordered
       | result |
-      | geo[POINT(2 2)] |
-      | geo[POINT(10 10)] |
+      | geo[SRID=4326;POINT Z (-73.9857 40.7484 86)] |
+      | geo[SRID=4326;POINT Z (0.012 51.481 0)] |
 
   @AllowGeometryPropertyValues @GraphComputerVerificationMidVNotSupported
   Scenario: g_V_hasXhub_name_HellsKitchenX_outXservesX_valuesXlocX_asXzX_V_hasLabelXcustomerX_whereXvaluesXlocX_isXgeoWithinXselectXzXXXX_valuesXnameX

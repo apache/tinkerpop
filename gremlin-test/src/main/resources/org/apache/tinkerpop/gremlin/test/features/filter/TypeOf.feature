@@ -304,83 +304,93 @@ Feature: Predicate - typeOf() General
       | bob |
       | dave |
 
-  @GraphComputerVerificationInjectionNotSupported @DataGeometry
-  Scenario: g_injectXgeometriesX_isXtypeOfXGType_GEOMETRYXX
-    Given the empty graph
+  @AllowGeometryPropertyValues @DataGeometry
+  Scenario: g_V_hasLabelXcustomerX_values_isXtypeOfXGType_GEOMETRYXX
+    Given the delivery graph
     And the traversal of
       """
-      g.inject(Geometry("POINT(1 2)"), Geometry("LINESTRING(0 0, 1 1)"), Geometry("POLYGON((0 0, 4 0, 4 4, 0 4, 0 0))"), Geometry("POINT(13.4 52.5)", GEOGRAPHIC)).is(P.typeOf(GType.GEOMETRY))
+      g.V().hasLabel("customer").values().is(P.typeOf(GType.GEOMETRY))
       """
     When iterated to list
     Then the result should be unordered
       | result |
-      | geo[POINT(1 2)] |
-      | geo[LINESTRING(0 0, 1 1)] |
-      | geo[POLYGON((0 0, 4 0, 4 4, 0 4, 0 0))] |
-      | geo[SRID=4326;POINT(13.4 52.5)] |
+      | geo[SRID=4326;POINT Z (-73.9857 40.7484 86)] |
+      | geo[SRID=4326;POINT(-73.9654 40.7829)] |
+      | geo[SRID=4326;POINT(-73.93 40.77)] |
+      | geo[SRID=4326;POINT Z (-74.05 40.72 12)] |
+      | geo[SRID=4326;POINT Z (0.012 51.481 0)] |
 
-  @GraphComputerVerificationInjectionNotSupported @DataGeometry
-  Scenario: g_injectXgeometriesX_isXtypeOfXGType_POINTXX
-    Given the empty graph
+  @AllowGeometryPropertyValues @DataGeometry
+  Scenario: g_V_hasXloc_typeOfXGType_POINTXX_valuesXnameX
+    Given the delivery graph
     And the traversal of
       """
-      g.inject(Geometry("POINT(1 2)"), Geometry("LINESTRING(0 0, 1 1)"), Geometry("POLYGON((0 0, 4 0, 4 4, 0 4, 0 0))"), Geometry("POINT(13.4 52.5)", GEOGRAPHIC)).is(P.typeOf(GType.POINT))
+      g.V().has("loc", P.typeOf(GType.POINT)).values("name")
       """
     When iterated to list
     Then the result should be unordered
       | result |
-      | geo[POINT(1 2)] |
-      | geo[SRID=4326;POINT(13.4 52.5)] |
+      | Hell's Kitchen |
+      | Williamsburg |
+      | Los Angeles |
+      | Greenwich |
+      | Auckland |
+      | Ana |
+      | Ben |
+      | Dee |
+      | Eli |
+      | Hana |
+      | Pat |
 
-  @GraphComputerVerificationInjectionNotSupported @DataGeometry
-  Scenario: g_injectXgeometriesX_isXtypeOfXGType_LINESTRINGXX
-    Given the empty graph
+  @AllowGeometryPropertyValues @DataGeometry
+  Scenario: g_E_valuesXpathX_isXtypeOfXGType_LINESTRINGXX
+    Given the delivery graph
     And the traversal of
       """
-      g.inject(Geometry("POINT(1 2)"), Geometry("LINESTRING(0 0, 1 1)"), Geometry("POLYGON((0 0, 4 0, 4 4, 0 4, 0 0))"), Geometry("POINT(13.4 52.5)", GEOGRAPHIC)).is(P.typeOf(GType.LINESTRING))
+      g.E().values("path").is(P.typeOf(GType.LINESTRING))
       """
     When iterated to list
     Then the result should be unordered
       | result |
-      | geo[LINESTRING(0 0, 1 1)] |
+      | geo[SRID=4326;LINESTRING(-73.9571 40.7146, -73.9857 40.7484)] |
+      | geo[SRID=4326;LINESTRING(-73.9925 40.7614, 0 51.48)] |
+      | geo[SRID=4326;LINESTRING(-73.9925 40.7614, -118.2437 34.0522)] |
+      | geo[SRID=4326;LINESTRING(0 51.48, 174.7633 -36.8485)] |
 
-  @GraphComputerVerificationInjectionNotSupported @DataGeometry
-  Scenario: g_injectXgeometriesX_isXtypeOfXGType_POLYGONXX
-    Given the empty graph
+  @AllowGeometryPropertyValues @DataGeometry
+  Scenario: g_V_hasXloc_typeOfXGType_CARTESIANXX_valuesXnameX
+    Given the delivery graph
     And the traversal of
       """
-      g.inject(Geometry("POINT(1 2)"), Geometry("LINESTRING(0 0, 1 1)"), Geometry("POLYGON((0 0, 4 0, 4 4, 0 4, 0 0))"), Geometry("POINT(13.4 52.5)", GEOGRAPHIC)).is(P.typeOf(GType.POLYGON))
+      g.V().has("loc", P.typeOf(GType.CARTESIAN)).values("name")
       """
     When iterated to list
     Then the result should be unordered
       | result |
-      | geo[POLYGON((0 0, 4 0, 4 4, 0 4, 0 0))] |
+      | Chilled |
+      | Ambient |
+      | Pat |
 
-  @GraphComputerVerificationInjectionNotSupported @DataGeometry
-  Scenario: g_injectXgeometriesX_isXtypeOfXGType_CARTESIANXX
-    Given the empty graph
+  @AllowGeometryPropertyValues @DataGeometry
+  Scenario: g_V_hasXloc_typeOfXGType_GEOGRAPHICX_andXtypeOfXGType_POINTXXX_valuesXnameX
+    Given the delivery graph
     And the traversal of
       """
-      g.inject(Geometry("POINT(1 2)"), Geometry("LINESTRING(0 0, 1 1)"), Geometry("POLYGON((0 0, 4 0, 4 4, 0 4, 0 0))"), Geometry("POINT(13.4 52.5)", GEOGRAPHIC)).is(P.typeOf(GType.CARTESIAN))
+      g.V().has("loc", P.typeOf(GType.GEOGRAPHIC).and(P.typeOf(GType.POINT))).values("name")
       """
     When iterated to list
     Then the result should be unordered
       | result |
-      | geo[POINT(1 2)] |
-      | geo[LINESTRING(0 0, 1 1)] |
-      | geo[POLYGON((0 0, 4 0, 4 4, 0 4, 0 0))] |
-
-  @GraphComputerVerificationInjectionNotSupported @DataGeometry
-  Scenario: g_injectXgeometriesX_isXtypeOfXGType_GEOGRAPHICX_andXtypeOfXGType_POINTXXX
-    Given the empty graph
-    And the traversal of
-      """
-      g.inject(Geometry("POINT(1 2)"), Geometry("LINESTRING(13.4 52.5, 13.5 52.6)", GEOGRAPHIC), Geometry("POINT(13.4 52.5)", GEOGRAPHIC)).is(P.typeOf(GType.GEOGRAPHIC).and(P.typeOf(GType.POINT)))
-      """
-    When iterated to list
-    Then the result should be unordered
-      | result |
-      | geo[SRID=4326;POINT(13.4 52.5)] |
+      | Hell's Kitchen |
+      | Williamsburg |
+      | Los Angeles |
+      | Greenwich |
+      | Auckland |
+      | Ana |
+      | Ben |
+      | Dee |
+      | Eli |
+      | Hana |
 
   @GraphComputerVerificationInjectionNotSupported @DataGeometry
   Scenario: g_injectXmultiGeometriesX_isXtypeOfXGType_MULTIPOINTXX
@@ -394,44 +404,43 @@ Feature: Predicate - typeOf() General
       | result |
       | geo[MULTIPOINT((1 1), (2 2))] |
 
-  @GraphComputerVerificationInjectionNotSupported @DataGeometry
-  Scenario: g_injectXmultiGeometriesX_isXtypeOfXGType_MULTILINESTRINGXX
-    Given the empty graph
+  @AllowGeometryPropertyValues @DataGeometry
+  Scenario: g_V_hasXloc_typeOfXGType_MULTILINESTRINGXX_valuesXnameX
+    Given the delivery graph
     And the traversal of
       """
-      g.inject(Geometry("MULTIPOINT((1 1), (2 2))"), Geometry("MULTILINESTRING((0 0, 1 1), (2 2, 3 3))"), Geometry("MULTIPOLYGON(((0 0, 1 0, 1 1, 0 0)))"), Geometry("GEOMETRYCOLLECTION(POINT(1 1))")).is(P.typeOf(GType.MULTILINESTRING))
+      g.V().has("loc", P.typeOf(GType.MULTILINESTRING)).values("name")
       """
     When iterated to list
     Then the result should be unordered
       | result |
-      | geo[MULTILINESTRING((0 0, 1 1), (2 2, 3 3))] |
+      | East River |
 
-  @GraphComputerVerificationInjectionNotSupported @DataGeometry
-  Scenario: g_injectXmultiGeometriesX_isXtypeOfXGType_MULTIPOLYGONXX
-    Given the empty graph
+  @AllowGeometryPropertyValues @DataGeometry
+  Scenario: g_V_hasXloc_typeOfXGType_MULTIPOLYGONXX_valuesXnameX
+    Given the delivery graph
     And the traversal of
       """
-      g.inject(Geometry("MULTIPOINT((1 1), (2 2))"), Geometry("MULTILINESTRING((0 0, 1 1), (2 2, 3 3))"), Geometry("MULTIPOLYGON(((0 0, 1 0, 1 1, 0 0)))"), Geometry("GEOMETRYCOLLECTION(POINT(1 1))")).is(P.typeOf(GType.MULTIPOLYGON))
+      g.V().has("loc", P.typeOf(GType.MULTIPOLYGON)).values("name")
       """
     When iterated to list
     Then the result should be unordered
       | result |
-      | geo[MULTIPOLYGON(((0 0, 1 0, 1 1, 0 0)))] |
+      | Auckland and Waiheke |
 
-  @GraphComputerVerificationInjectionNotSupported @DataGeometry
-  Scenario: g_injectXmultiGeometriesX_isXtypeOfXGType_GEOMETRYCOLLECTIONXX
-    Given the empty graph
+  @AllowGeometryPropertyValues @DataGeometry
+  Scenario: g_V_hasXloc_typeOfXGType_GEOMETRYCOLLECTIONXX_valuesXnameX
+    Given the delivery graph
     And the traversal of
       """
-      g.inject(Geometry("MULTIPOINT((1 1), (2 2))"), Geometry("MULTILINESTRING((0 0, 1 1), (2 2, 3 3))"), Geometry("MULTIPOLYGON(((0 0, 1 0, 1 1, 0 0)))"), Geometry("GEOMETRYCOLLECTION(POINT(1 1))")).is(P.typeOf(GType.GEOMETRYCOLLECTION))
+      g.V().has("loc", P.typeOf(GType.GEOMETRYCOLLECTION)).values("name")
       """
     When iterated to list
     Then the result should be unordered
       | result |
-      | geo[MULTIPOINT((1 1), (2 2))] |
-      | geo[MULTILINESTRING((0 0, 1 1), (2 2, 3 3))] |
-      | geo[MULTIPOLYGON(((0 0, 1 0, 1 1, 0 0)))] |
-      | geo[GEOMETRYCOLLECTION(POINT(1 1))] |
+      | Auckland and Waiheke |
+      | East River |
+      | Night Market |
 
   @AllowGeometryPropertyValues @DataGeometry
   Scenario: g_V_hasXloc_typeOfXGType_POLYGONXX_valuesXnameX

@@ -909,23 +909,20 @@ time zone offset of UTC(+00:00):
 
 The `datetime()` function returns a `java.time.OffsetDateTime`.
 
-The `geometry()` function is available to `gremlin-groovy` scripts, including those run in the Gremlin Console and those
-sent to Gremlin Server, and it returns a `Geometry`. Since a geometry cannot yet be serialized, a server script can use
-geometries within a traversal but cannot return one to a client. Its first argument is a Well-Known Text or Extended
-Well-Known Text string. The optional second argument is the coordinate model, written as a bare `CARTESIAN` or
-`GEOGRAPHIC` or as `Model.CARTESIAN` or `Model.GEOGRAPHIC`, or an SRID as an integer. Without it the SRID is `0`, which
-is the `CARTESIAN` model.
+In `gremlin-groovy` scripts, including those run in the Gremlin Console and those sent to Gremlin Server, a geometry is
+built with the Java API, either from Well-Known Text or Extended Well-Known Text with `Geometry.fromWkt()` or from
+coordinates with the factories of the geometry classes such as `Point.of()`. The coordinate model is written there as
+`Model.CARTESIAN` or `Model.GEOGRAPHIC`, since a bare `CARTESIAN` or `GEOGRAPHIC` names the `GType` entry. A geometry
+cannot yet be serialized, so a server script can use geometries within a traversal but cannot return one to a client.
 
 [source,groovy]
 ----
-geometry("POINT(1 2)")
-geometry("POINT(-73.98 40.75)", GEOGRAPHIC)
-geometry("SRID=4326;POINT(-73.98 40.75)")
-geometry("POINT(583960 4507523)", 32618)
+Geometry.fromWkt("POINT(1 2)")
+Geometry.fromWkt("POINT(-73.98 40.75)", Model.GEOGRAPHIC)
+Geometry.fromWkt("SRID=4326;POINT(-73.98 40.75)")
+Geometry.fromWkt("POINT(583960 4507523)", 32618)
+Point.of(-73.98, 40.75, Model.GEOGRAPHIC)
 ----
-
-The same spelling is a literal in the `gremlin-lang` grammar, where it may also be written `Geometry()`. See
-<<canonical-gremlin-literal-types,Canonical Gremlin Literal Types>> for its canonical form.
 
 anchor:connecting-via-remotegraph[]
 anchor:connecting-via-java[]

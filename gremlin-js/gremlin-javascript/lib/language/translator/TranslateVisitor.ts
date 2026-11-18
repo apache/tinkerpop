@@ -603,7 +603,7 @@ const STRING_ESCAPES: Record<string, string> = {
  * and the quotes are stripped and the escapes are read, including the octal and unicode forms. A backslash that
  * names no escape is dropped, which is what the JVM unescaper does with it.
  */
-function decodeStringLiteral(text: string): string {
+export function decodeStringLiteral(text: string): string {
     // the 's' suffix marks a string explicitly, as in "a"s, and is not part of the value
     const quoted = /['"]s$/.test(text) ? text.slice(0, -1) : text;
     const inner = quoted.length > 0 ? quoted.substring(1, quoted.length - 1) : '';

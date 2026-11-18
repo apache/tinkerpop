@@ -93,8 +93,8 @@ The graph has no data file, so it cannot be loaded with `g.io(...)` as the other
 
 === Examples
 
-The examples below write the predicates without the `GeoP` prefix and create geometries with the
-`geometry()` function. The loading block above runs at build time. These examples are static
+The examples below write the predicates without the `GeoP` prefix and create geometries with
+`Geometry.fromWkt()`. The loading block above runs at build time. These examples are static
 listings, so their results are in callouts.
 
 Midtown is the zone Hell's Kitchen serves, and it is passed to `geoWithin` as a traversal.
@@ -124,7 +124,7 @@ An edge's `path` is filtered like any other geometry, here the route of the only
 
 [source,groovy]
 ----
-box = geometry("POLYGON((-74 40.7, -73.95 40.7, -73.95 40.76, -74 40.76, -74 40.7))", GEOGRAPHIC)
+box = Geometry.fromWkt("POLYGON((-74 40.7, -73.95 40.7, -73.95 40.76, -74 40.76, -74 40.7))", Model.GEOGRAPHIC)
 g.E().hasLabel("delivered").
       has("path", geoWithin(box)).
       inV().values("name") <1>

@@ -4561,7 +4561,7 @@
                 "original": "g.inject(Geometry(\"POINT(1 2)\"), Geometry(\"LINESTRING(0 0, 1 1)\"), Geometry(\"POLYGON((0 0, 4 0, 4 4, 0 4, 0 0), (1 1, 1 2, 2 2, 2 1, 1 1))\"), Geometry(\"MULTIPOINT((1 1), (2 2))\"), Geometry(\"MULTILINESTRING((0 0, 1 1), (2 2, 3 3))\"), Geometry(\"MULTIPOLYGON(((0 0, 1 0, 1 1, 0 0)))\"), Geometry(\"GEOMETRYCOLLECTION(POINT(1 1), LINESTRING(2 2, 3 3))\"))",
                 "language": "g.inject(Geometry(\"POINT(1 2)\"), Geometry(\"LINESTRING(0 0, 1 1)\"), Geometry(\"POLYGON((0 0, 4 0, 4 4, 0 4, 0 0), (1 1, 1 2, 2 2, 2 1, 1 1))\"), Geometry(\"MULTIPOINT((1 1), (2 2))\"), Geometry(\"MULTILINESTRING((0 0, 1 1), (2 2, 3 3))\"), Geometry(\"MULTIPOLYGON(((0 0, 1 0, 1 1, 0 0)))\"), Geometry(\"GEOMETRYCOLLECTION(POINT(1 1), LINESTRING(2 2, 3 3))\"))",
                 "canonical": "g.inject(Geometry(\"POINT(1 2)\"), Geometry(\"LINESTRING(0 0, 1 1)\"), Geometry(\"POLYGON((0 0, 4 0, 4 4, 0 4, 0 0), (1 1, 1 2, 2 2, 2 1, 1 1))\"), Geometry(\"MULTIPOINT((1 1), (2 2))\"), Geometry(\"MULTILINESTRING((0 0, 1 1), (2 2, 3 3))\"), Geometry(\"MULTIPOLYGON(((0 0, 1 0, 1 1, 0 0)))\"), Geometry(\"GEOMETRYCOLLECTION(POINT(1 1), LINESTRING(2 2, 3 3))\"))",
-                "anonymized": "g.inject(geometry0, geometry1, geometry2, geometry3, geometry4, geometry5, geometry6)",
+                "anonymized": "g.inject(point0, linestring0, polygon0, multipoint0, multilinestring0, multipolygon0, geometrycollection0)",
                 "groovy": "g.inject(Geometry.fromWkt(\"POINT(1 2)\"), Geometry.fromWkt(\"LINESTRING(0 0, 1 1)\"), Geometry.fromWkt(\"POLYGON((0 0, 4 0, 4 4, 0 4, 0 0), (1 1, 1 2, 2 2, 2 1, 1 1))\"), Geometry.fromWkt(\"MULTIPOINT((1 1), (2 2))\"), Geometry.fromWkt(\"MULTILINESTRING((0 0, 1 1), (2 2, 3 3))\"), Geometry.fromWkt(\"MULTIPOLYGON(((0 0, 1 0, 1 1, 0 0)))\"), Geometry.fromWkt(\"GEOMETRYCOLLECTION(POINT(1 1), LINESTRING(2 2, 3 3))\"))",
                 "java": "g.inject(Geometry.fromWkt(\"POINT(1 2)\"), Geometry.fromWkt(\"LINESTRING(0 0, 1 1)\"), Geometry.fromWkt(\"POLYGON((0 0, 4 0, 4 4, 0 4, 0 0), (1 1, 1 2, 2 2, 2 1, 1 1))\"), Geometry.fromWkt(\"MULTIPOINT((1 1), (2 2))\"), Geometry.fromWkt(\"MULTILINESTRING((0 0, 1 1), (2 2, 3 3))\"), Geometry.fromWkt(\"MULTIPOLYGON(((0 0, 1 0, 1 1, 0 0)))\"), Geometry.fromWkt(\"GEOMETRYCOLLECTION(POINT(1 1), LINESTRING(2 2, 3 3))\"))"
             }
@@ -4574,22 +4574,26 @@
                 "original": "g.inject(geometry(\"POINT(1 2)\"), Geometry(\"POINT(1 2)\"))",
                 "language": "g.inject(geometry(\"POINT(1 2)\"), Geometry(\"POINT(1 2)\"))",
                 "canonical": "g.inject(geometry(\"POINT(1 2)\"), Geometry(\"POINT(1 2)\"))",
-                "anonymized": "g.inject(geometry0, geometry1)",
+                "anonymized": "g.inject(point0, point1)",
                 "groovy": "g.inject(Geometry.fromWkt(\"POINT(1 2)\"), Geometry.fromWkt(\"POINT(1 2)\"))",
                 "java": "g.inject(Geometry.fromWkt(\"POINT(1 2)\"), Geometry.fromWkt(\"POINT(1 2)\"))"
             }
         ]
     },
     {
-        "scenario": "g_injectXGeometryXPOINTX13_4_52_5X_GEOGRAPHICXX",
+        "scenario": "g_V_hasXname_GreenwichX_valuesXlocX",
         "traversals": [
             {
-                "original": "g.inject(Geometry(\"POINT(13.4 52.5)\", GEOGRAPHIC))",
-                "language": "g.inject(Geometry(\"POINT(13.4 52.5)\", GEOGRAPHIC))",
-                "canonical": "g.inject(Geometry(\"POINT(13.4 52.5)\", GEOGRAPHIC))",
-                "anonymized": "g.inject(geometry0)",
-                "groovy": "g.inject(Geometry.fromWkt(\"POINT(13.4 52.5)\", Model.GEOGRAPHIC))",
-                "java": "g.inject(Geometry.fromWkt(\"POINT(13.4 52.5)\", Model.GEOGRAPHIC))"
+                "original": "g.V().has(\"name\", \"Greenwich\").values(\"loc\")",
+                "language": "g.V().has(\"name\", \"Greenwich\").values(\"loc\")",
+                "canonical": "g.V().has(\"name\", \"Greenwich\").values(\"loc\")",
+                "anonymized": "g.V().has(string0, string1).values(string2)",
+                "dotnet": "g.V().Has(\"name\", \"Greenwich\").Values<object>(\"loc\")",
+                "go": "g.V().Has(\"name\", \"Greenwich\").Values(\"loc\")",
+                "groovy": "g.V().has(\"name\", \"Greenwich\").values(\"loc\")",
+                "java": "g.V().has(\"name\", \"Greenwich\").values(\"loc\")",
+                "javascript": "g.V().has(\"name\", \"Greenwich\").values(\"loc\")",
+                "python": "g.V().has('name', 'Greenwich').values('loc')"
             }
         ]
     },
@@ -4600,7 +4604,7 @@
                 "original": "g.inject(Geometry(\"POINT(1 2)\", 32618))",
                 "language": "g.inject(Geometry(\"POINT(1 2)\", 32618))",
                 "canonical": "g.inject(Geometry(\"POINT(1 2)\", 32618))",
-                "anonymized": "g.inject(geometry0)",
+                "anonymized": "g.inject(point0)",
                 "groovy": "g.inject(Geometry.fromWkt(\"POINT(1 2)\", 32618))",
                 "java": "g.inject(Geometry.fromWkt(\"POINT(1 2)\", 32618))"
             }
@@ -4613,22 +4617,26 @@
                 "original": "g.inject(Geometry(\"POINT EMPTY\"), Geometry(\"POLYGON EMPTY\"), Geometry(\"GEOMETRYCOLLECTION EMPTY\"))",
                 "language": "g.inject(Geometry(\"POINT EMPTY\"), Geometry(\"POLYGON EMPTY\"), Geometry(\"GEOMETRYCOLLECTION EMPTY\"))",
                 "canonical": "g.inject(Geometry(\"POINT EMPTY\"), Geometry(\"POLYGON EMPTY\"), Geometry(\"GEOMETRYCOLLECTION EMPTY\"))",
-                "anonymized": "g.inject(geometry0, geometry1, geometry2)",
+                "anonymized": "g.inject(point0, polygon0, geometrycollection0)",
                 "groovy": "g.inject(Geometry.fromWkt(\"POINT EMPTY\"), Geometry.fromWkt(\"POLYGON EMPTY\"), Geometry.fromWkt(\"GEOMETRYCOLLECTION EMPTY\"))",
                 "java": "g.inject(Geometry.fromWkt(\"POINT EMPTY\"), Geometry.fromWkt(\"POLYGON EMPTY\"), Geometry.fromWkt(\"GEOMETRYCOLLECTION EMPTY\"))"
             }
         ]
     },
     {
-        "scenario": "g_injectXGeometryXPOINT_ZX1_2_3XXX",
+        "scenario": "g_V_hasXname_AnaX_valuesXlocX",
         "traversals": [
             {
-                "original": "g.inject(Geometry(\"POINT Z (1 2 3)\"))",
-                "language": "g.inject(Geometry(\"POINT Z (1 2 3)\"))",
-                "canonical": "g.inject(Geometry(\"POINT Z (1 2 3)\"))",
-                "anonymized": "g.inject(geometry0)",
-                "groovy": "g.inject(Geometry.fromWkt(\"POINT Z (1 2 3)\"))",
-                "java": "g.inject(Geometry.fromWkt(\"POINT Z (1 2 3)\"))"
+                "original": "g.V().has(\"name\", \"Ana\").values(\"loc\")",
+                "language": "g.V().has(\"name\", \"Ana\").values(\"loc\")",
+                "canonical": "g.V().has(\"name\", \"Ana\").values(\"loc\")",
+                "anonymized": "g.V().has(string0, string1).values(string2)",
+                "dotnet": "g.V().Has(\"name\", \"Ana\").Values<object>(\"loc\")",
+                "go": "g.V().Has(\"name\", \"Ana\").Values(\"loc\")",
+                "groovy": "g.V().has(\"name\", \"Ana\").values(\"loc\")",
+                "java": "g.V().has(\"name\", \"Ana\").values(\"loc\")",
+                "javascript": "g.V().has(\"name\", \"Ana\").values(\"loc\")",
+                "python": "g.V().has('name', 'Ana').values('loc')"
             }
         ]
     },
@@ -4639,49 +4647,49 @@
                 "original": "g.inject(Geometry(\"POINT Z EMPTY\"))",
                 "language": "g.inject(Geometry(\"POINT Z EMPTY\"))",
                 "canonical": "g.inject(Geometry(\"POINT Z EMPTY\"))",
-                "anonymized": "g.inject(geometry0)",
+                "anonymized": "g.inject(point0)",
                 "groovy": "g.inject(Geometry.fromWkt(\"POINT Z EMPTY\"))",
                 "java": "g.inject(Geometry.fromWkt(\"POINT Z EMPTY\"))"
             }
         ]
     },
     {
-        "scenario": "g_injectXlistOfGeometryX",
+        "scenario": "g_V_hasLabelXroomX_order_byXnameX_valuesXlocX_fold",
         "traversals": [
             {
-                "original": "g.inject([Geometry(\"POINT(1 2)\"), Geometry(\"POINT(3 4)\")])",
-                "language": "g.inject([Geometry(\"POINT(1 2)\"), Geometry(\"POINT(3 4)\")])",
-                "canonical": "g.inject([Geometry(\"POINT(1 2)\"), Geometry(\"POINT(3 4)\")])",
-                "anonymized": "g.inject(list0)",
-                "groovy": "g.inject([Geometry.fromWkt(\"POINT(1 2)\"), Geometry.fromWkt(\"POINT(3 4)\")])",
-                "java": "g.inject(new ArrayList<Object>() {{ add(Geometry.fromWkt(\"POINT(1 2)\")); add(Geometry.fromWkt(\"POINT(3 4)\")); }})"
+                "original": "g.V().hasLabel(\"room\").order().by(\"name\").values(\"loc\").fold()",
+                "language": "g.V().hasLabel(\"room\").order().by(\"name\").values(\"loc\").fold()",
+                "canonical": "g.V().hasLabel(\"room\").order().by(\"name\").values(\"loc\").fold()",
+                "anonymized": "g.V().hasLabel(string0).order().by(string1).values(string2).fold()",
+                "dotnet": "g.V().HasLabel(\"room\").Order().By(\"name\").Values<object>(\"loc\").Fold()",
+                "go": "g.V().HasLabel(\"room\").Order().By(\"name\").Values(\"loc\").Fold()",
+                "groovy": "g.V().hasLabel(\"room\").order().by(\"name\").values(\"loc\").fold()",
+                "java": "g.V().hasLabel(\"room\").order().by(\"name\").values(\"loc\").fold()",
+                "javascript": "g.V().hasLabel(\"room\").order().by(\"name\").values(\"loc\").fold()",
+                "python": "g.V().has_label('room').order().by('name').values('loc').fold()"
             }
         ]
     },
     {
-        "scenario": "g_injectXmapOfGeometryX",
+        "scenario": "g_V_hasXpicker_name_PatX_projectXname_locX_byXnameX_byXlocX",
         "traversals": [
             {
-                "original": "g.inject([loc:Geometry(\"POINT(1 2)\")])",
-                "language": "g.inject([loc:Geometry(\"POINT(1 2)\")])",
-                "canonical": "g.inject([loc:Geometry(\"POINT(1 2)\")])",
-                "anonymized": "g.inject(map0)",
-                "groovy": "g.inject([loc:Geometry.fromWkt(\"POINT(1 2)\")])",
-                "java": "g.inject(new LinkedHashMap<Object, Object>() {{ put(\"loc\", Geometry.fromWkt(\"POINT(1 2)\")); }})"
+                "original": "g.V().has(\"picker\", \"name\", \"Pat\").project(\"name\", \"loc\").by(\"name\").by(\"loc\")",
+                "language": "g.V().has(\"picker\", \"name\", \"Pat\").project(\"name\", \"loc\").by(\"name\").by(\"loc\")",
+                "canonical": "g.V().has(\"picker\", \"name\", \"Pat\").project(\"name\", \"loc\").by(\"name\").by(\"loc\")",
+                "anonymized": "g.V().has(string0, string1, string2).project(string1, string3).by(string1).by(string3)",
+                "dotnet": "g.V().Has(\"picker\", \"name\", \"Pat\").Project<object>(\"name\", \"loc\").By(\"name\").By(\"loc\")",
+                "go": "g.V().Has(\"picker\", \"name\", \"Pat\").Project(\"name\", \"loc\").By(\"name\").By(\"loc\")",
+                "groovy": "g.V().has(\"picker\", \"name\", \"Pat\").project(\"name\", \"loc\").by(\"name\").by(\"loc\")",
+                "java": "g.V().has(\"picker\", \"name\", \"Pat\").project(\"name\", \"loc\").by(\"name\").by(\"loc\")",
+                "javascript": "g.V().has(\"picker\", \"name\", \"Pat\").project(\"name\", \"loc\").by(\"name\").by(\"loc\")",
+                "python": "g.V().has('picker', 'name', 'Pat').project('name', 'loc').by('name').by('loc')"
             }
         ]
     },
     {
         "scenario": "g_V_valuesXlocX",
         "traversals": [
-            {
-                "original": "g.addV(\"store\").property(\"loc\", Geometry(\"POINT(13.4 52.5)\", GEOGRAPHIC))",
-                "language": "g.addV(\"store\").property(\"loc\", Geometry(\"POINT(13.4 52.5)\", GEOGRAPHIC))",
-                "canonical": "g.addV(\"store\").property(\"loc\", Geometry(\"POINT(13.4 52.5)\", GEOGRAPHIC))",
-                "anonymized": "g.addV(string0).property(string1, geometry0)",
-                "groovy": "g.addV(\"store\").property(\"loc\", Geometry.fromWkt(\"POINT(13.4 52.5)\", Model.GEOGRAPHIC))",
-                "java": "g.addV(\"store\").property(\"loc\", Geometry.fromWkt(\"POINT(13.4 52.5)\", Model.GEOGRAPHIC))"
-            },
             {
                 "original": "g.V().values(\"loc\")",
                 "language": "g.V().values(\"loc\")",
@@ -4697,37 +4705,21 @@
         ]
     },
     {
-        "scenario": "g_V_hasXloc_GeometryXPOLYGONXX_valuesXnameX",
+        "scenario": "g_V_hasXloc_midtownPolygonX_valuesXnameX",
         "traversals": [
             {
-                "original": "g.addV(\"zone\").property(\"name\", \"midtown\").property(\"loc\", Geometry(\"POLYGON((0 0, 4 0, 4 4, 0 4, 0 0))\"))",
-                "language": "g.addV(\"zone\").property(\"name\", \"midtown\").property(\"loc\", Geometry(\"POLYGON((0 0, 4 0, 4 4, 0 4, 0 0))\"))",
-                "canonical": "g.addV(\"zone\").property(\"name\", \"midtown\").property(\"loc\", Geometry(\"POLYGON((0 0, 4 0, 4 4, 0 4, 0 0))\"))",
-                "anonymized": "g.addV(string0).property(string1, string2).property(string3, geometry0)",
-                "groovy": "g.addV(\"zone\").property(\"name\", \"midtown\").property(\"loc\", Geometry.fromWkt(\"POLYGON((0 0, 4 0, 4 4, 0 4, 0 0))\"))",
-                "java": "g.addV(\"zone\").property(\"name\", \"midtown\").property(\"loc\", Geometry.fromWkt(\"POLYGON((0 0, 4 0, 4 4, 0 4, 0 0))\"))"
-            },
-            {
-                "original": "g.V().has(\"loc\", Geometry(\"POLYGON((0 0, 4 0, 4 4, 0 4, 0 0))\")).values(\"name\")",
-                "language": "g.V().has(\"loc\", Geometry(\"POLYGON((0 0, 4 0, 4 4, 0 4, 0 0))\")).values(\"name\")",
-                "canonical": "g.V().has(\"loc\", Geometry(\"POLYGON((0 0, 4 0, 4 4, 0 4, 0 0))\")).values(\"name\")",
-                "anonymized": "g.V().has(string0, geometry0).values(string1)",
-                "groovy": "g.V().has(\"loc\", Geometry.fromWkt(\"POLYGON((0 0, 4 0, 4 4, 0 4, 0 0))\")).values(\"name\")",
-                "java": "g.V().has(\"loc\", Geometry.fromWkt(\"POLYGON((0 0, 4 0, 4 4, 0 4, 0 0))\")).values(\"name\")"
+                "original": "g.V().has(\"loc\", Geometry(\"POLYGON((-74.02 40.74, -73.93 40.74, -73.93 40.81, -74.02 40.81, -74.02 40.74), (-73.9819 40.7681, -73.973 40.7644, -73.9498 40.7968, -73.958 40.8006, -73.9819 40.7681))\", GEOGRAPHIC)).values(\"name\")",
+                "language": "g.V().has(\"loc\", Geometry(\"POLYGON((-74.02 40.74, -73.93 40.74, -73.93 40.81, -74.02 40.81, -74.02 40.74), (-73.9819 40.7681, -73.973 40.7644, -73.9498 40.7968, -73.958 40.8006, -73.9819 40.7681))\", GEOGRAPHIC)).values(\"name\")",
+                "canonical": "g.V().has(\"loc\", Geometry(\"POLYGON((-74.02 40.74, -73.93 40.74, -73.93 40.81, -74.02 40.81, -74.02 40.74), (-73.9819 40.7681, -73.973 40.7644, -73.9498 40.7968, -73.958 40.8006, -73.9819 40.7681))\", GEOGRAPHIC)).values(\"name\")",
+                "anonymized": "g.V().has(string0, polygon0).values(string1)",
+                "groovy": "g.V().has(\"loc\", Geometry.fromWkt(\"POLYGON((-74.02 40.74, -73.93 40.74, -73.93 40.81, -74.02 40.81, -74.02 40.74), (-73.9819 40.7681, -73.973 40.7644, -73.9498 40.7968, -73.958 40.8006, -73.9819 40.7681))\", Model.GEOGRAPHIC)).values(\"name\")",
+                "java": "g.V().has(\"loc\", Geometry.fromWkt(\"POLYGON((-74.02 40.74, -73.93 40.74, -73.93 40.81, -74.02 40.81, -74.02 40.74), (-73.9819 40.7681, -73.973 40.7644, -73.9498 40.7968, -73.958 40.8006, -73.9819 40.7681))\", Model.GEOGRAPHIC)).values(\"name\")"
             }
         ]
     },
     {
         "scenario": "g_V_hasXloc_xx1X_valuesXnameX",
         "traversals": [
-            {
-                "original": "g.addV(\"store\").property(\"name\", \"midtown\").property(\"loc\", Geometry(\"POINT(13.4 52.5)\", GEOGRAPHIC))",
-                "language": "g.addV(\"store\").property(\"name\", \"midtown\").property(\"loc\", Geometry(\"POINT(13.4 52.5)\", GEOGRAPHIC))",
-                "canonical": "g.addV(\"store\").property(\"name\", \"midtown\").property(\"loc\", Geometry(\"POINT(13.4 52.5)\", GEOGRAPHIC))",
-                "anonymized": "g.addV(string0).property(string1, string2).property(string3, geometry0)",
-                "groovy": "g.addV(\"store\").property(\"name\", \"midtown\").property(\"loc\", Geometry.fromWkt(\"POINT(13.4 52.5)\", Model.GEOGRAPHIC))",
-                "java": "g.addV(\"store\").property(\"name\", \"midtown\").property(\"loc\", Geometry.fromWkt(\"POINT(13.4 52.5)\", Model.GEOGRAPHIC))"
-            },
             {
                 "original": "g.V().has(\"loc\", xx1).values(\"name\")",
                 "language": "g.V().has(\"loc\", xx1).values(\"name\")",
@@ -8263,80 +8255,28 @@
         ]
     },
     {
-        "scenario": "g_injectXpointsX_isXgeoWithinXpolygonXX",
+        "scenario": "g_V_hasLabelXhub_customerX_hasXloc_geoWithinXnorthBrooklynAndQueensXX_valuesXnameX",
         "traversals": [
             {
-                "original": "g.inject(Geometry(\"POINT(2 2)\"), Geometry(\"POINT(0 2)\"), Geometry(\"POINT(5 5)\")).is(GeoP.geoWithin(Geometry(\"POLYGON((0 0, 4 0, 4 4, 0 4, 0 0))\")))",
-                "language": "g.inject(Geometry(\"POINT(2 2)\"), Geometry(\"POINT(0 2)\"), Geometry(\"POINT(5 5)\")).is(GeoP.geoWithin(Geometry(\"POLYGON((0 0, 4 0, 4 4, 0 4, 0 0))\")))",
-                "canonical": "g.inject(Geometry(\"POINT(2 2)\"), Geometry(\"POINT(0 2)\"), Geometry(\"POINT(5 5)\")).is(GeoP.geoWithin(Geometry(\"POLYGON((0 0, 4 0, 4 4, 0 4, 0 0))\")))",
-                "anonymized": "g.inject(geometry0, geometry1, geometry2).is(GeoP.geoWithin(geometry3))",
-                "groovy": "g.inject(Geometry.fromWkt(\"POINT(2 2)\"), Geometry.fromWkt(\"POINT(0 2)\"), Geometry.fromWkt(\"POINT(5 5)\")).is(GeoP.geoWithin(Geometry.fromWkt(\"POLYGON((0 0, 4 0, 4 4, 0 4, 0 0))\")))",
-                "java": "g.inject(Geometry.fromWkt(\"POINT(2 2)\"), Geometry.fromWkt(\"POINT(0 2)\"), Geometry.fromWkt(\"POINT(5 5)\")).is(GeoP.geoWithin(Geometry.fromWkt(\"POLYGON((0 0, 4 0, 4 4, 0 4, 0 0))\")))"
+                "original": "g.V().hasLabel(\"hub\", \"customer\").has(\"loc\", GeoP.geoWithin(Geometry(\"POLYGON((-73.97 40.69, -73.88 40.69, -73.88 40.8, -73.93 40.8, -73.93 40.735, -73.97 40.735, -73.97 40.69))\", GEOGRAPHIC))).values(\"name\")",
+                "language": "g.V().hasLabel(\"hub\", \"customer\").has(\"loc\", GeoP.geoWithin(Geometry(\"POLYGON((-73.97 40.69, -73.88 40.69, -73.88 40.8, -73.93 40.8, -73.93 40.735, -73.97 40.735, -73.97 40.69))\", GEOGRAPHIC))).values(\"name\")",
+                "canonical": "g.V().hasLabel(\"hub\", \"customer\").has(\"loc\", GeoP.geoWithin(Geometry(\"POLYGON((-73.97 40.69, -73.88 40.69, -73.88 40.8, -73.93 40.8, -73.93 40.735, -73.97 40.735, -73.97 40.69))\", GEOGRAPHIC))).values(\"name\")",
+                "anonymized": "g.V().hasLabel(string0, string1).has(string2, GeoP.geoWithin(polygon0)).values(string3)",
+                "groovy": "g.V().hasLabel(\"hub\", \"customer\").has(\"loc\", GeoP.geoWithin(Geometry.fromWkt(\"POLYGON((-73.97 40.69, -73.88 40.69, -73.88 40.8, -73.93 40.8, -73.93 40.735, -73.97 40.735, -73.97 40.69))\", Model.GEOGRAPHIC))).values(\"name\")",
+                "java": "g.V().hasLabel(\"hub\", \"customer\").has(\"loc\", GeoP.geoWithin(Geometry.fromWkt(\"POLYGON((-73.97 40.69, -73.88 40.69, -73.88 40.8, -73.93 40.8, -73.93 40.735, -73.97 40.735, -73.97 40.69))\", Model.GEOGRAPHIC))).values(\"name\")"
             }
         ]
     },
     {
-        "scenario": "g_injectXpointsX_isXgeoWithinXpolygonWithHoleXX",
+        "scenario": "g_V_unionXhasLabelXzone_waterwayX_valuesXlocX_outEXdeliveredX_valuesXpathXX_isXgeoWithinXdeliveryBoxXX",
         "traversals": [
             {
-                "original": "g.inject(Geometry(\"POINT(1.5 1.5)\"), Geometry(\"POINT(3 3)\")).is(GeoP.geoWithin(Geometry(\"POLYGON((0 0, 4 0, 4 4, 0 4, 0 0), (1 1, 1 2, 2 2, 2 1, 1 1))\")))",
-                "language": "g.inject(Geometry(\"POINT(1.5 1.5)\"), Geometry(\"POINT(3 3)\")).is(GeoP.geoWithin(Geometry(\"POLYGON((0 0, 4 0, 4 4, 0 4, 0 0), (1 1, 1 2, 2 2, 2 1, 1 1))\")))",
-                "canonical": "g.inject(Geometry(\"POINT(1.5 1.5)\"), Geometry(\"POINT(3 3)\")).is(GeoP.geoWithin(Geometry(\"POLYGON((0 0, 4 0, 4 4, 0 4, 0 0), (1 1, 1 2, 2 2, 2 1, 1 1))\")))",
-                "anonymized": "g.inject(geometry0, geometry1).is(GeoP.geoWithin(geometry2))",
-                "groovy": "g.inject(Geometry.fromWkt(\"POINT(1.5 1.5)\"), Geometry.fromWkt(\"POINT(3 3)\")).is(GeoP.geoWithin(Geometry.fromWkt(\"POLYGON((0 0, 4 0, 4 4, 0 4, 0 0), (1 1, 1 2, 2 2, 2 1, 1 1))\")))",
-                "java": "g.inject(Geometry.fromWkt(\"POINT(1.5 1.5)\"), Geometry.fromWkt(\"POINT(3 3)\")).is(GeoP.geoWithin(Geometry.fromWkt(\"POLYGON((0 0, 4 0, 4 4, 0 4, 0 0), (1 1, 1 2, 2 2, 2 1, 1 1))\")))"
-            }
-        ]
-    },
-    {
-        "scenario": "g_injectXlinesAndPolygonX_isXgeoWithinXpolygonXX",
-        "traversals": [
-            {
-                "original": "g.inject(Geometry(\"LINESTRING(1 1, 3 3)\"), Geometry(\"LINESTRING(1 1, 5 5)\"), Geometry(\"POLYGON((1 1, 3 1, 3 3, 1 3, 1 1))\")).is(GeoP.geoWithin(Geometry(\"POLYGON((0 0, 4 0, 4 4, 0 4, 0 0))\")))",
-                "language": "g.inject(Geometry(\"LINESTRING(1 1, 3 3)\"), Geometry(\"LINESTRING(1 1, 5 5)\"), Geometry(\"POLYGON((1 1, 3 1, 3 3, 1 3, 1 1))\")).is(GeoP.geoWithin(Geometry(\"POLYGON((0 0, 4 0, 4 4, 0 4, 0 0))\")))",
-                "canonical": "g.inject(Geometry(\"LINESTRING(1 1, 3 3)\"), Geometry(\"LINESTRING(1 1, 5 5)\"), Geometry(\"POLYGON((1 1, 3 1, 3 3, 1 3, 1 1))\")).is(GeoP.geoWithin(Geometry(\"POLYGON((0 0, 4 0, 4 4, 0 4, 0 0))\")))",
-                "anonymized": "g.inject(geometry0, geometry1, geometry2).is(GeoP.geoWithin(geometry3))",
-                "groovy": "g.inject(Geometry.fromWkt(\"LINESTRING(1 1, 3 3)\"), Geometry.fromWkt(\"LINESTRING(1 1, 5 5)\"), Geometry.fromWkt(\"POLYGON((1 1, 3 1, 3 3, 1 3, 1 1))\")).is(GeoP.geoWithin(Geometry.fromWkt(\"POLYGON((0 0, 4 0, 4 4, 0 4, 0 0))\")))",
-                "java": "g.inject(Geometry.fromWkt(\"LINESTRING(1 1, 3 3)\"), Geometry.fromWkt(\"LINESTRING(1 1, 5 5)\"), Geometry.fromWkt(\"POLYGON((1 1, 3 1, 3 3, 1 3, 1 1))\")).is(GeoP.geoWithin(Geometry.fromWkt(\"POLYGON((0 0, 4 0, 4 4, 0 4, 0 0))\")))"
-            }
-        ]
-    },
-    {
-        "scenario": "g_injectXpolygonX_isXgeoContainsXinteriorPointXX",
-        "traversals": [
-            {
-                "original": "g.inject(Geometry(\"POLYGON((0 0, 4 0, 4 4, 0 4, 0 0))\")).is(GeoP.geoContains(Geometry(\"POINT(2 2)\")))",
-                "language": "g.inject(Geometry(\"POLYGON((0 0, 4 0, 4 4, 0 4, 0 0))\")).is(GeoP.geoContains(Geometry(\"POINT(2 2)\")))",
-                "canonical": "g.inject(Geometry(\"POLYGON((0 0, 4 0, 4 4, 0 4, 0 0))\")).is(GeoP.geoContains(Geometry(\"POINT(2 2)\")))",
-                "anonymized": "g.inject(geometry0).is(GeoP.geoContains(geometry1))",
-                "groovy": "g.inject(Geometry.fromWkt(\"POLYGON((0 0, 4 0, 4 4, 0 4, 0 0))\")).is(GeoP.geoContains(Geometry.fromWkt(\"POINT(2 2)\")))",
-                "java": "g.inject(Geometry.fromWkt(\"POLYGON((0 0, 4 0, 4 4, 0 4, 0 0))\")).is(GeoP.geoContains(Geometry.fromWkt(\"POINT(2 2)\")))"
-            }
-        ]
-    },
-    {
-        "scenario": "g_injectXpolygonX_isXgeoContainsXboundaryPointXX",
-        "traversals": [
-            {
-                "original": "g.inject(Geometry(\"POLYGON((0 0, 4 0, 4 4, 0 4, 0 0))\")).is(GeoP.geoContains(Geometry(\"POINT(0 2)\")))",
-                "language": "g.inject(Geometry(\"POLYGON((0 0, 4 0, 4 4, 0 4, 0 0))\")).is(GeoP.geoContains(Geometry(\"POINT(0 2)\")))",
-                "canonical": "g.inject(Geometry(\"POLYGON((0 0, 4 0, 4 4, 0 4, 0 0))\")).is(GeoP.geoContains(Geometry(\"POINT(0 2)\")))",
-                "anonymized": "g.inject(geometry0).is(GeoP.geoContains(geometry1))",
-                "groovy": "g.inject(Geometry.fromWkt(\"POLYGON((0 0, 4 0, 4 4, 0 4, 0 0))\")).is(GeoP.geoContains(Geometry.fromWkt(\"POINT(0 2)\")))",
-                "java": "g.inject(Geometry.fromWkt(\"POLYGON((0 0, 4 0, 4 4, 0 4, 0 0))\")).is(GeoP.geoContains(Geometry.fromWkt(\"POINT(0 2)\")))"
-            }
-        ]
-    },
-    {
-        "scenario": "g_injectXpolygonX_isXgeoContainsXcollectionXX",
-        "traversals": [
-            {
-                "original": "g.inject(Geometry(\"POLYGON((0 0, 4 0, 4 4, 0 4, 0 0))\")).is(GeoP.geoContains(Geometry(\"GEOMETRYCOLLECTION(POINT(1 1), LINESTRING(2 2, 3 3))\")))",
-                "language": "g.inject(Geometry(\"POLYGON((0 0, 4 0, 4 4, 0 4, 0 0))\")).is(GeoP.geoContains(Geometry(\"GEOMETRYCOLLECTION(POINT(1 1), LINESTRING(2 2, 3 3))\")))",
-                "canonical": "g.inject(Geometry(\"POLYGON((0 0, 4 0, 4 4, 0 4, 0 0))\")).is(GeoP.geoContains(Geometry(\"GEOMETRYCOLLECTION(POINT(1 1), LINESTRING(2 2, 3 3))\")))",
-                "anonymized": "g.inject(geometry0).is(GeoP.geoContains(geometry1))",
-                "groovy": "g.inject(Geometry.fromWkt(\"POLYGON((0 0, 4 0, 4 4, 0 4, 0 0))\")).is(GeoP.geoContains(Geometry.fromWkt(\"GEOMETRYCOLLECTION(POINT(1 1), LINESTRING(2 2, 3 3))\")))",
-                "java": "g.inject(Geometry.fromWkt(\"POLYGON((0 0, 4 0, 4 4, 0 4, 0 0))\")).is(GeoP.geoContains(Geometry.fromWkt(\"GEOMETRYCOLLECTION(POINT(1 1), LINESTRING(2 2, 3 3))\")))"
+                "original": "g.V().union(__.hasLabel(\"zone\", \"waterway\").values(\"loc\"), __.outE(\"delivered\").values(\"path\")).is(GeoP.geoWithin(Geometry(\"POLYGON((-74.03 40.69, -73.95 40.69, -73.95 40.766, -74.03 40.766, -74.03 40.69))\", GEOGRAPHIC)))",
+                "language": "g.V().union(__.hasLabel(\"zone\", \"waterway\").values(\"loc\"), __.outE(\"delivered\").values(\"path\")).is(GeoP.geoWithin(Geometry(\"POLYGON((-74.03 40.69, -73.95 40.69, -73.95 40.766, -74.03 40.766, -74.03 40.69))\", GEOGRAPHIC)))",
+                "canonical": "g.V().union(__.hasLabel(\"zone\", \"waterway\").values(\"loc\"), __.outE(\"delivered\").values(\"path\")).is(GeoP.geoWithin(Geometry(\"POLYGON((-74.03 40.69, -73.95 40.69, -73.95 40.766, -74.03 40.766, -74.03 40.69))\", GEOGRAPHIC)))",
+                "anonymized": "g.V().union(__.hasLabel(string0, string1).values(string2), __.outE(string3).values(string4)).is(GeoP.geoWithin(polygon0))",
+                "groovy": "g.V().union(__.hasLabel(\"zone\", \"waterway\").values(\"loc\"), __.outE(\"delivered\").values(\"path\")).is(GeoP.geoWithin(Geometry.fromWkt(\"POLYGON((-74.03 40.69, -73.95 40.69, -73.95 40.766, -74.03 40.766, -74.03 40.69))\", Model.GEOGRAPHIC)))",
+                "java": "g.V().union(__.hasLabel(\"zone\", \"waterway\").values(\"loc\"), __.outE(\"delivered\").values(\"path\")).is(GeoP.geoWithin(Geometry.fromWkt(\"POLYGON((-74.03 40.69, -73.95 40.69, -73.95 40.766, -74.03 40.766, -74.03 40.69))\", Model.GEOGRAPHIC)))"
             }
         ]
     },
@@ -8347,7 +8287,7 @@
                 "original": "g.inject(Geometry(\"POINT EMPTY\"), Geometry(\"POINT(2 2)\", GEOGRAPHIC), Geometry(\"POINT Z (2 2 9)\")).is(GeoP.geoWithin(Geometry(\"POLYGON((0 0, 4 0, 4 4, 0 4, 0 0))\")))",
                 "language": "g.inject(Geometry(\"POINT EMPTY\"), Geometry(\"POINT(2 2)\", GEOGRAPHIC), Geometry(\"POINT Z (2 2 9)\")).is(GeoP.geoWithin(Geometry(\"POLYGON((0 0, 4 0, 4 4, 0 4, 0 0))\")))",
                 "canonical": "g.inject(Geometry(\"POINT EMPTY\"), Geometry(\"POINT(2 2)\", GEOGRAPHIC), Geometry(\"POINT Z (2 2 9)\")).is(GeoP.geoWithin(Geometry(\"POLYGON((0 0, 4 0, 4 4, 0 4, 0 0))\")))",
-                "anonymized": "g.inject(geometry0, geometry1, geometry2).is(GeoP.geoWithin(geometry3))",
+                "anonymized": "g.inject(point0, point1, point2).is(GeoP.geoWithin(polygon0))",
                 "groovy": "g.inject(Geometry.fromWkt(\"POINT EMPTY\"), Geometry.fromWkt(\"POINT(2 2)\", Model.GEOGRAPHIC), Geometry.fromWkt(\"POINT Z (2 2 9)\")).is(GeoP.geoWithin(Geometry.fromWkt(\"POLYGON((0 0, 4 0, 4 4, 0 4, 0 0))\")))",
                 "java": "g.inject(Geometry.fromWkt(\"POINT EMPTY\"), Geometry.fromWkt(\"POINT(2 2)\", Model.GEOGRAPHIC), Geometry.fromWkt(\"POINT Z (2 2 9)\")).is(GeoP.geoWithin(Geometry.fromWkt(\"POLYGON((0 0, 4 0, 4 4, 0 4, 0 0))\")))"
             }
@@ -8360,51 +8300,35 @@
                 "original": "g.inject(Geometry(\"POINT(2 2)\")).is(GeoP.geoWithin(Geometry(\"POLYGON EMPTY\")))",
                 "language": "g.inject(Geometry(\"POINT(2 2)\")).is(GeoP.geoWithin(Geometry(\"POLYGON EMPTY\")))",
                 "canonical": "g.inject(Geometry(\"POINT(2 2)\")).is(GeoP.geoWithin(Geometry(\"POLYGON EMPTY\")))",
-                "anonymized": "g.inject(geometry0).is(GeoP.geoWithin(geometry1))",
+                "anonymized": "g.inject(point0).is(GeoP.geoWithin(polygon0))",
                 "groovy": "g.inject(Geometry.fromWkt(\"POINT(2 2)\")).is(GeoP.geoWithin(Geometry.fromWkt(\"POLYGON EMPTY\")))",
                 "java": "g.inject(Geometry.fromWkt(\"POINT(2 2)\")).is(GeoP.geoWithin(Geometry.fromWkt(\"POLYGON EMPTY\")))"
             }
         ]
     },
     {
-        "scenario": "g_V_hasXloc_geoWithinXconstantXpolygonXXX_valuesXnameX",
+        "scenario": "g_V_hasLabelXhub_customerX_hasXloc_geoWithinXconstantXgreenwichTownXXX_valuesXnameX",
         "traversals": [
             {
-                "original": "g.addV(\"store\").property(\"name\", \"midtown\").property(\"loc\", Geometry(\"POINT(2 2)\")).addV(\"store\").property(\"name\", \"uptown\").property(\"loc\", Geometry(\"POINT(9 9)\"))",
-                "language": "g.addV(\"store\").property(\"name\", \"midtown\").property(\"loc\", Geometry(\"POINT(2 2)\")).addV(\"store\").property(\"name\", \"uptown\").property(\"loc\", Geometry(\"POINT(9 9)\"))",
-                "canonical": "g.addV(\"store\").property(\"name\", \"midtown\").property(\"loc\", Geometry(\"POINT(2 2)\")).addV(\"store\").property(\"name\", \"uptown\").property(\"loc\", Geometry(\"POINT(9 9)\"))",
-                "anonymized": "g.addV(string0).property(string1, string2).property(string3, geometry0).addV(string0).property(string1, string4).property(string3, geometry1)",
-                "groovy": "g.addV(\"store\").property(\"name\", \"midtown\").property(\"loc\", Geometry.fromWkt(\"POINT(2 2)\")).addV(\"store\").property(\"name\", \"uptown\").property(\"loc\", Geometry.fromWkt(\"POINT(9 9)\"))",
-                "java": "g.addV(\"store\").property(\"name\", \"midtown\").property(\"loc\", Geometry.fromWkt(\"POINT(2 2)\")).addV(\"store\").property(\"name\", \"uptown\").property(\"loc\", Geometry.fromWkt(\"POINT(9 9)\"))"
-            },
-            {
-                "original": "g.V().has(\"loc\", GeoP.geoWithin(__.constant(Geometry(\"POLYGON((0 0, 4 0, 4 4, 0 4, 0 0))\")))).values(\"name\")",
-                "language": "g.V().has(\"loc\", GeoP.geoWithin(__.constant(Geometry(\"POLYGON((0 0, 4 0, 4 4, 0 4, 0 0))\")))).values(\"name\")",
-                "canonical": "g.V().has(\"loc\", GeoP.geoWithin(__.constant(Geometry(\"POLYGON((0 0, 4 0, 4 4, 0 4, 0 0))\")))).values(\"name\")",
-                "anonymized": "g.V().has(string0, GeoP.geoWithin(__.constant(geometry0))).values(string1)",
-                "groovy": "g.V().has(\"loc\", GeoP.geoWithin(__.constant(Geometry.fromWkt(\"POLYGON((0 0, 4 0, 4 4, 0 4, 0 0))\")))).values(\"name\")",
-                "java": "g.V().has(\"loc\", GeoP.geoWithin(__.constant(Geometry.fromWkt(\"POLYGON((0 0, 4 0, 4 4, 0 4, 0 0))\")))).values(\"name\")"
+                "original": "g.V().hasLabel(\"hub\", \"customer\").has(\"loc\", GeoP.geoWithin(__.constant(Geometry(\"POLYGON((-0.03 51.46, 0.03 51.46, 0.03 51.5, -0.03 51.5, -0.03 51.46))\", GEOGRAPHIC)))).values(\"name\")",
+                "language": "g.V().hasLabel(\"hub\", \"customer\").has(\"loc\", GeoP.geoWithin(__.constant(Geometry(\"POLYGON((-0.03 51.46, 0.03 51.46, 0.03 51.5, -0.03 51.5, -0.03 51.46))\", GEOGRAPHIC)))).values(\"name\")",
+                "canonical": "g.V().hasLabel(\"hub\", \"customer\").has(\"loc\", GeoP.geoWithin(__.constant(Geometry(\"POLYGON((-0.03 51.46, 0.03 51.46, 0.03 51.5, -0.03 51.5, -0.03 51.46))\", GEOGRAPHIC)))).values(\"name\")",
+                "anonymized": "g.V().hasLabel(string0, string1).has(string2, GeoP.geoWithin(__.constant(polygon0))).values(string3)",
+                "groovy": "g.V().hasLabel(\"hub\", \"customer\").has(\"loc\", GeoP.geoWithin(__.constant(Geometry.fromWkt(\"POLYGON((-0.03 51.46, 0.03 51.46, 0.03 51.5, -0.03 51.5, -0.03 51.46))\", Model.GEOGRAPHIC)))).values(\"name\")",
+                "java": "g.V().hasLabel(\"hub\", \"customer\").has(\"loc\", GeoP.geoWithin(__.constant(Geometry.fromWkt(\"POLYGON((-0.03 51.46, 0.03 51.46, 0.03 51.5, -0.03 51.5, -0.03 51.46))\", Model.GEOGRAPHIC)))).values(\"name\")"
             }
         ]
     },
     {
-        "scenario": "g_V_asXvX_valuesXlocX_isXgeoWithinXselectXvX_valuesXzoneXXX",
+        "scenario": "g_V_hasLabelXcustomerX_asXcX_outXorderedFromX_outXservesX_valuesXlocX_asXzX_selectXcX_valuesXlocX_isXgeoWithinXselectXzXXX",
         "traversals": [
             {
-                "original": "g.addV(\"store\").property(\"loc\", Geometry(\"POINT(2 2)\")).property(\"zone\", Geometry(\"POLYGON((0 0, 4 0, 4 4, 0 4, 0 0))\")).addV(\"store\").property(\"loc\", Geometry(\"POINT(10 10)\")).property(\"zone\", Geometry(\"POLYGON((8 8, 12 8, 12 12, 8 12, 8 8))\"))",
-                "language": "g.addV(\"store\").property(\"loc\", Geometry(\"POINT(2 2)\")).property(\"zone\", Geometry(\"POLYGON((0 0, 4 0, 4 4, 0 4, 0 0))\")).addV(\"store\").property(\"loc\", Geometry(\"POINT(10 10)\")).property(\"zone\", Geometry(\"POLYGON((8 8, 12 8, 12 12, 8 12, 8 8))\"))",
-                "canonical": "g.addV(\"store\").property(\"loc\", Geometry(\"POINT(2 2)\")).property(\"zone\", Geometry(\"POLYGON((0 0, 4 0, 4 4, 0 4, 0 0))\")).addV(\"store\").property(\"loc\", Geometry(\"POINT(10 10)\")).property(\"zone\", Geometry(\"POLYGON((8 8, 12 8, 12 12, 8 12, 8 8))\"))",
-                "anonymized": "g.addV(string0).property(string1, geometry0).property(string2, geometry1).addV(string0).property(string1, geometry2).property(string2, geometry3)",
-                "groovy": "g.addV(\"store\").property(\"loc\", Geometry.fromWkt(\"POINT(2 2)\")).property(\"zone\", Geometry.fromWkt(\"POLYGON((0 0, 4 0, 4 4, 0 4, 0 0))\")).addV(\"store\").property(\"loc\", Geometry.fromWkt(\"POINT(10 10)\")).property(\"zone\", Geometry.fromWkt(\"POLYGON((8 8, 12 8, 12 12, 8 12, 8 8))\"))",
-                "java": "g.addV(\"store\").property(\"loc\", Geometry.fromWkt(\"POINT(2 2)\")).property(\"zone\", Geometry.fromWkt(\"POLYGON((0 0, 4 0, 4 4, 0 4, 0 0))\")).addV(\"store\").property(\"loc\", Geometry.fromWkt(\"POINT(10 10)\")).property(\"zone\", Geometry.fromWkt(\"POLYGON((8 8, 12 8, 12 12, 8 12, 8 8))\"))"
-            },
-            {
-                "original": "g.V().as(\"v\").values(\"loc\").is(GeoP.geoWithin(__.select(\"v\").values(\"zone\")))",
-                "language": "g.V().as(\"v\").values(\"loc\").is(GeoP.geoWithin(__.select(\"v\").values(\"zone\")))",
-                "canonical": "g.V().as(\"v\").values(\"loc\").is(GeoP.geoWithin(__.select(\"v\").values(\"zone\")))",
-                "anonymized": "g.V().as(string0).values(string1).is(GeoP.geoWithin(__.select(string0).values(string2)))",
-                "groovy": "g.V().as(\"v\").values(\"loc\").is(GeoP.geoWithin(__.select(\"v\").values(\"zone\")))",
-                "java": "g.V().as(\"v\").values(\"loc\").is(GeoP.geoWithin(__.select(\"v\").values(\"zone\")))"
+                "original": "g.V().hasLabel(\"customer\").as(\"c\").out(\"orderedFrom\").out(\"serves\").values(\"loc\").as(\"z\").select(\"c\").values(\"loc\").is(GeoP.geoWithin(__.select(\"z\")))",
+                "language": "g.V().hasLabel(\"customer\").as(\"c\").out(\"orderedFrom\").out(\"serves\").values(\"loc\").as(\"z\").select(\"c\").values(\"loc\").is(GeoP.geoWithin(__.select(\"z\")))",
+                "canonical": "g.V().hasLabel(\"customer\").as(\"c\").out(\"orderedFrom\").out(\"serves\").values(\"loc\").as(\"z\").select(\"c\").values(\"loc\").is(GeoP.geoWithin(__.select(\"z\")))",
+                "anonymized": "g.V().hasLabel(string0).as(string1).out(string2).out(string3).values(string4).as(string5).select(string1).values(string4).is(GeoP.geoWithin(__.select(string5)))",
+                "groovy": "g.V().hasLabel(\"customer\").as(\"c\").out(\"orderedFrom\").out(\"serves\").values(\"loc\").as(\"z\").select(\"c\").values(\"loc\").is(GeoP.geoWithin(__.select(\"z\")))",
+                "java": "g.V().hasLabel(\"customer\").as(\"c\").out(\"orderedFrom\").out(\"serves\").values(\"loc\").as(\"z\").select(\"c\").values(\"loc\").is(GeoP.geoWithin(__.select(\"z\")))"
             }
         ]
     },
@@ -8441,7 +8365,7 @@
                 "original": "g.V().hasLabel(\"customer\").has(\"loc\", GeoP.geoWithin(Geometry(\"POLYGON((-74.02 40.74, -73.93 40.74, -73.93 40.81, -74.02 40.81, -74.02 40.74), (-73.9819 40.7681, -73.973 40.7644, -73.9498 40.7968, -73.958 40.8006, -73.9819 40.7681))\", GEOGRAPHIC))).values(\"name\")",
                 "language": "g.V().hasLabel(\"customer\").has(\"loc\", GeoP.geoWithin(Geometry(\"POLYGON((-74.02 40.74, -73.93 40.74, -73.93 40.81, -74.02 40.81, -74.02 40.74), (-73.9819 40.7681, -73.973 40.7644, -73.9498 40.7968, -73.958 40.8006, -73.9819 40.7681))\", GEOGRAPHIC))).values(\"name\")",
                 "canonical": "g.V().hasLabel(\"customer\").has(\"loc\", GeoP.geoWithin(Geometry(\"POLYGON((-74.02 40.74, -73.93 40.74, -73.93 40.81, -74.02 40.81, -74.02 40.74), (-73.9819 40.7681, -73.973 40.7644, -73.9498 40.7968, -73.958 40.8006, -73.9819 40.7681))\", GEOGRAPHIC))).values(\"name\")",
-                "anonymized": "g.V().hasLabel(string0).has(string1, GeoP.geoWithin(geometry0)).values(string2)",
+                "anonymized": "g.V().hasLabel(string0).has(string1, GeoP.geoWithin(polygon0)).values(string2)",
                 "groovy": "g.V().hasLabel(\"customer\").has(\"loc\", GeoP.geoWithin(Geometry.fromWkt(\"POLYGON((-74.02 40.74, -73.93 40.74, -73.93 40.81, -74.02 40.81, -74.02 40.74), (-73.9819 40.7681, -73.973 40.7644, -73.9498 40.7968, -73.958 40.8006, -73.9819 40.7681))\", Model.GEOGRAPHIC))).values(\"name\")",
                 "java": "g.V().hasLabel(\"customer\").has(\"loc\", GeoP.geoWithin(Geometry.fromWkt(\"POLYGON((-74.02 40.74, -73.93 40.74, -73.93 40.81, -74.02 40.81, -74.02 40.74), (-73.9819 40.7681, -73.973 40.7644, -73.9498 40.7968, -73.958 40.8006, -73.9819 40.7681))\", Model.GEOGRAPHIC))).values(\"name\")"
             }
@@ -8454,7 +8378,7 @@
                 "original": "g.V().hasLabel(\"zone\").has(\"loc\", GeoP.geoContains(Geometry(\"POINT(-73.93 40.77)\", GEOGRAPHIC))).values(\"name\")",
                 "language": "g.V().hasLabel(\"zone\").has(\"loc\", GeoP.geoContains(Geometry(\"POINT(-73.93 40.77)\", GEOGRAPHIC))).values(\"name\")",
                 "canonical": "g.V().hasLabel(\"zone\").has(\"loc\", GeoP.geoContains(Geometry(\"POINT(-73.93 40.77)\", GEOGRAPHIC))).values(\"name\")",
-                "anonymized": "g.V().hasLabel(string0).has(string1, GeoP.geoContains(geometry0)).values(string2)",
+                "anonymized": "g.V().hasLabel(string0).has(string1, GeoP.geoContains(point0)).values(string2)",
                 "groovy": "g.V().hasLabel(\"zone\").has(\"loc\", GeoP.geoContains(Geometry.fromWkt(\"POINT(-73.93 40.77)\", Model.GEOGRAPHIC))).values(\"name\")",
                 "java": "g.V().hasLabel(\"zone\").has(\"loc\", GeoP.geoContains(Geometry.fromWkt(\"POINT(-73.93 40.77)\", Model.GEOGRAPHIC))).values(\"name\")"
             }
@@ -8467,7 +8391,7 @@
                 "original": "g.V().hasLabel(\"zone\").has(\"loc\", GeoP.geoContains(Geometry(\"POINT(-73.9925 40.7614)\", GEOGRAPHIC))).values(\"name\")",
                 "language": "g.V().hasLabel(\"zone\").has(\"loc\", GeoP.geoContains(Geometry(\"POINT(-73.9925 40.7614)\", GEOGRAPHIC))).values(\"name\")",
                 "canonical": "g.V().hasLabel(\"zone\").has(\"loc\", GeoP.geoContains(Geometry(\"POINT(-73.9925 40.7614)\", GEOGRAPHIC))).values(\"name\")",
-                "anonymized": "g.V().hasLabel(string0).has(string1, GeoP.geoContains(geometry0)).values(string2)",
+                "anonymized": "g.V().hasLabel(string0).has(string1, GeoP.geoContains(point0)).values(string2)",
                 "groovy": "g.V().hasLabel(\"zone\").has(\"loc\", GeoP.geoContains(Geometry.fromWkt(\"POINT(-73.9925 40.7614)\", Model.GEOGRAPHIC))).values(\"name\")",
                 "java": "g.V().hasLabel(\"zone\").has(\"loc\", GeoP.geoContains(Geometry.fromWkt(\"POINT(-73.9925 40.7614)\", Model.GEOGRAPHIC))).values(\"name\")"
             }
@@ -8480,7 +8404,7 @@
                 "original": "g.V().hasLabel(\"zone\").has(\"loc\", GeoP.geoContains(Geometry(\"GEOMETRYCOLLECTION(MULTIPOINT((-73.952 40.715), (-73.951 40.716)), POLYGON((-73.955 40.713, -73.949 40.713, -73.949 40.717, -73.955 40.717, -73.955 40.713)))\", GEOGRAPHIC))).values(\"name\")",
                 "language": "g.V().hasLabel(\"zone\").has(\"loc\", GeoP.geoContains(Geometry(\"GEOMETRYCOLLECTION(MULTIPOINT((-73.952 40.715), (-73.951 40.716)), POLYGON((-73.955 40.713, -73.949 40.713, -73.949 40.717, -73.955 40.717, -73.955 40.713)))\", GEOGRAPHIC))).values(\"name\")",
                 "canonical": "g.V().hasLabel(\"zone\").has(\"loc\", GeoP.geoContains(Geometry(\"GEOMETRYCOLLECTION(MULTIPOINT((-73.952 40.715), (-73.951 40.716)), POLYGON((-73.955 40.713, -73.949 40.713, -73.949 40.717, -73.955 40.717, -73.955 40.713)))\", GEOGRAPHIC))).values(\"name\")",
-                "anonymized": "g.V().hasLabel(string0).has(string1, GeoP.geoContains(geometry0)).values(string2)",
+                "anonymized": "g.V().hasLabel(string0).has(string1, GeoP.geoContains(geometrycollection0)).values(string2)",
                 "groovy": "g.V().hasLabel(\"zone\").has(\"loc\", GeoP.geoContains(Geometry.fromWkt(\"GEOMETRYCOLLECTION(MULTIPOINT((-73.952 40.715), (-73.951 40.716)), POLYGON((-73.955 40.713, -73.949 40.713, -73.949 40.717, -73.955 40.717, -73.955 40.713)))\", Model.GEOGRAPHIC))).values(\"name\")",
                 "java": "g.V().hasLabel(\"zone\").has(\"loc\", GeoP.geoContains(Geometry.fromWkt(\"GEOMETRYCOLLECTION(MULTIPOINT((-73.952 40.715), (-73.951 40.716)), POLYGON((-73.955 40.713, -73.949 40.713, -73.949 40.717, -73.955 40.717, -73.955 40.713)))\", Model.GEOGRAPHIC))).values(\"name\")"
             }
@@ -8493,7 +8417,7 @@
                 "original": "g.V().has(\"loc\", GeoP.geoWithin(Geometry(\"MULTIPOLYGON(((174.74 -36.87, 174.79 -36.87, 174.79 -36.84, 174.74 -36.84, 174.74 -36.87)), ((174.98 -36.82, 175.06 -36.82, 175.06 -36.77, 174.98 -36.77, 174.98 -36.82)))\", GEOGRAPHIC))).values(\"name\")",
                 "language": "g.V().has(\"loc\", GeoP.geoWithin(Geometry(\"MULTIPOLYGON(((174.74 -36.87, 174.79 -36.87, 174.79 -36.84, 174.74 -36.84, 174.74 -36.87)), ((174.98 -36.82, 175.06 -36.82, 175.06 -36.77, 174.98 -36.77, 174.98 -36.82)))\", GEOGRAPHIC))).values(\"name\")",
                 "canonical": "g.V().has(\"loc\", GeoP.geoWithin(Geometry(\"MULTIPOLYGON(((174.74 -36.87, 174.79 -36.87, 174.79 -36.84, 174.74 -36.84, 174.74 -36.87)), ((174.98 -36.82, 175.06 -36.82, 175.06 -36.77, 174.98 -36.77, 174.98 -36.82)))\", GEOGRAPHIC))).values(\"name\")",
-                "anonymized": "g.V().has(string0, GeoP.geoWithin(geometry0)).values(string1)",
+                "anonymized": "g.V().has(string0, GeoP.geoWithin(multipolygon0)).values(string1)",
                 "groovy": "g.V().has(\"loc\", GeoP.geoWithin(Geometry.fromWkt(\"MULTIPOLYGON(((174.74 -36.87, 174.79 -36.87, 174.79 -36.84, 174.74 -36.84, 174.74 -36.87)), ((174.98 -36.82, 175.06 -36.82, 175.06 -36.77, 174.98 -36.77, 174.98 -36.82)))\", Model.GEOGRAPHIC))).values(\"name\")",
                 "java": "g.V().has(\"loc\", GeoP.geoWithin(Geometry.fromWkt(\"MULTIPOLYGON(((174.74 -36.87, 174.79 -36.87, 174.79 -36.84, 174.74 -36.84, 174.74 -36.87)), ((174.98 -36.82, 175.06 -36.82, 175.06 -36.77, 174.98 -36.77, 174.98 -36.82)))\", Model.GEOGRAPHIC))).values(\"name\")"
             }
@@ -8506,7 +8430,7 @@
                 "original": "g.V().hasLabel(\"customer\").has(\"loc\", GeoP.geoWithin(Geometry(\"POLYGON((-74.02 40.7, -73.975 40.7, -73.975 40.7644, -74.02 40.7644, -74.02 40.7))\", GEOGRAPHIC))).values(\"name\")",
                 "language": "g.V().hasLabel(\"customer\").has(\"loc\", GeoP.geoWithin(Geometry(\"POLYGON((-74.02 40.7, -73.975 40.7, -73.975 40.7644, -74.02 40.7644, -74.02 40.7))\", GEOGRAPHIC))).values(\"name\")",
                 "canonical": "g.V().hasLabel(\"customer\").has(\"loc\", GeoP.geoWithin(Geometry(\"POLYGON((-74.02 40.7, -73.975 40.7, -73.975 40.7644, -74.02 40.7644, -74.02 40.7))\", GEOGRAPHIC))).values(\"name\")",
-                "anonymized": "g.V().hasLabel(string0).has(string1, GeoP.geoWithin(geometry0)).values(string2)",
+                "anonymized": "g.V().hasLabel(string0).has(string1, GeoP.geoWithin(polygon0)).values(string2)",
                 "groovy": "g.V().hasLabel(\"customer\").has(\"loc\", GeoP.geoWithin(Geometry.fromWkt(\"POLYGON((-74.02 40.7, -73.975 40.7, -73.975 40.7644, -74.02 40.7644, -74.02 40.7))\", Model.GEOGRAPHIC))).values(\"name\")",
                 "java": "g.V().hasLabel(\"customer\").has(\"loc\", GeoP.geoWithin(Geometry.fromWkt(\"POLYGON((-74.02 40.7, -73.975 40.7, -73.975 40.7644, -74.02 40.7644, -74.02 40.7))\", Model.GEOGRAPHIC))).values(\"name\")"
             }
@@ -8519,7 +8443,7 @@
                 "original": "g.V().has(\"loc\", GeoP.geoWithin(Geometry(\"POLYGON((0 0, 8 0, 8 10, 0 10, 0 0))\"))).values(\"name\")",
                 "language": "g.V().has(\"loc\", GeoP.geoWithin(Geometry(\"POLYGON((0 0, 8 0, 8 10, 0 10, 0 0))\"))).values(\"name\")",
                 "canonical": "g.V().has(\"loc\", GeoP.geoWithin(Geometry(\"POLYGON((0 0, 8 0, 8 10, 0 10, 0 0))\"))).values(\"name\")",
-                "anonymized": "g.V().has(string0, GeoP.geoWithin(geometry0)).values(string1)",
+                "anonymized": "g.V().has(string0, GeoP.geoWithin(polygon0)).values(string1)",
                 "groovy": "g.V().has(\"loc\", GeoP.geoWithin(Geometry.fromWkt(\"POLYGON((0 0, 8 0, 8 10, 0 10, 0 0))\"))).values(\"name\")",
                 "java": "g.V().has(\"loc\", GeoP.geoWithin(Geometry.fromWkt(\"POLYGON((0 0, 8 0, 8 10, 0 10, 0 0))\"))).values(\"name\")"
             }
@@ -8532,7 +8456,7 @@
                 "original": "g.V().has(\"loc\", GeoP.geoWithin(Geometry(\"POLYGON((-1 51, 1 51, 1 52, -1 52, -1 51))\"))).values(\"name\")",
                 "language": "g.V().has(\"loc\", GeoP.geoWithin(Geometry(\"POLYGON((-1 51, 1 51, 1 52, -1 52, -1 51))\"))).values(\"name\")",
                 "canonical": "g.V().has(\"loc\", GeoP.geoWithin(Geometry(\"POLYGON((-1 51, 1 51, 1 52, -1 52, -1 51))\"))).values(\"name\")",
-                "anonymized": "g.V().has(string0, GeoP.geoWithin(geometry0)).values(string1)",
+                "anonymized": "g.V().has(string0, GeoP.geoWithin(polygon0)).values(string1)",
                 "groovy": "g.V().has(\"loc\", GeoP.geoWithin(Geometry.fromWkt(\"POLYGON((-1 51, 1 51, 1 52, -1 52, -1 51))\"))).values(\"name\")",
                 "java": "g.V().has(\"loc\", GeoP.geoWithin(Geometry.fromWkt(\"POLYGON((-1 51, 1 51, 1 52, -1 52, -1 51))\"))).values(\"name\")"
             }
@@ -8545,7 +8469,7 @@
                 "original": "g.E().hasLabel(\"delivered\").has(\"path\", GeoP.geoWithin(Geometry(\"POLYGON((-74 40.7, -73.95 40.7, -73.95 40.76, -74 40.76, -74 40.7))\", GEOGRAPHIC))).inV().values(\"name\")",
                 "language": "g.E().hasLabel(\"delivered\").has(\"path\", GeoP.geoWithin(Geometry(\"POLYGON((-74 40.7, -73.95 40.7, -73.95 40.76, -74 40.76, -74 40.7))\", GEOGRAPHIC))).inV().values(\"name\")",
                 "canonical": "g.E().hasLabel(\"delivered\").has(\"path\", GeoP.geoWithin(Geometry(\"POLYGON((-74 40.7, -73.95 40.7, -73.95 40.76, -74 40.76, -74 40.7))\", GEOGRAPHIC))).inV().values(\"name\")",
-                "anonymized": "g.E().hasLabel(string0).has(string1, GeoP.geoWithin(geometry0)).inV().values(string2)",
+                "anonymized": "g.E().hasLabel(string0).has(string1, GeoP.geoWithin(polygon0)).inV().values(string2)",
                 "groovy": "g.E().hasLabel(\"delivered\").has(\"path\", GeoP.geoWithin(Geometry.fromWkt(\"POLYGON((-74 40.7, -73.95 40.7, -73.95 40.76, -74 40.76, -74 40.7))\", Model.GEOGRAPHIC))).inV().values(\"name\")",
                 "java": "g.E().hasLabel(\"delivered\").has(\"path\", GeoP.geoWithin(Geometry.fromWkt(\"POLYGON((-74 40.7, -73.95 40.7, -73.95 40.76, -74 40.76, -74 40.7))\", Model.GEOGRAPHIC))).inV().values(\"name\")"
             }
@@ -8558,7 +8482,7 @@
                 "original": "g.E().hasLabel(\"delivered\").has(\"path\", GeoP.geoWithin(Geometry(\"POLYGON((-74.1 40.7, -74.05 40.7, -74.05 40.76, -74.1 40.76, -74.1 40.7))\", GEOGRAPHIC))).inV().values(\"name\")",
                 "language": "g.E().hasLabel(\"delivered\").has(\"path\", GeoP.geoWithin(Geometry(\"POLYGON((-74.1 40.7, -74.05 40.7, -74.05 40.76, -74.1 40.76, -74.1 40.7))\", GEOGRAPHIC))).inV().values(\"name\")",
                 "canonical": "g.E().hasLabel(\"delivered\").has(\"path\", GeoP.geoWithin(Geometry(\"POLYGON((-74.1 40.7, -74.05 40.7, -74.05 40.76, -74.1 40.76, -74.1 40.7))\", GEOGRAPHIC))).inV().values(\"name\")",
-                "anonymized": "g.E().hasLabel(string0).has(string1, GeoP.geoWithin(geometry0)).inV().values(string2)",
+                "anonymized": "g.E().hasLabel(string0).has(string1, GeoP.geoWithin(polygon0)).inV().values(string2)",
                 "groovy": "g.E().hasLabel(\"delivered\").has(\"path\", GeoP.geoWithin(Geometry.fromWkt(\"POLYGON((-74.1 40.7, -74.05 40.7, -74.05 40.76, -74.1 40.76, -74.1 40.7))\", Model.GEOGRAPHIC))).inV().values(\"name\")",
                 "java": "g.E().hasLabel(\"delivered\").has(\"path\", GeoP.geoWithin(Geometry.fromWkt(\"POLYGON((-74.1 40.7, -74.05 40.7, -74.05 40.76, -74.1 40.76, -74.1 40.7))\", Model.GEOGRAPHIC))).inV().values(\"name\")"
             }
@@ -13924,80 +13848,67 @@
         ]
     },
     {
-        "scenario": "g_injectXgeometriesX_isXtypeOfXGType_GEOMETRYXX",
+        "scenario": "g_V_hasLabelXcustomerX_values_isXtypeOfXGType_GEOMETRYXX",
         "traversals": [
             {
-                "original": "g.inject(Geometry(\"POINT(1 2)\"), Geometry(\"LINESTRING(0 0, 1 1)\"), Geometry(\"POLYGON((0 0, 4 0, 4 4, 0 4, 0 0))\"), Geometry(\"POINT(13.4 52.5)\", GEOGRAPHIC)).is(P.typeOf(GType.GEOMETRY))",
-                "language": "g.inject(Geometry(\"POINT(1 2)\"), Geometry(\"LINESTRING(0 0, 1 1)\"), Geometry(\"POLYGON((0 0, 4 0, 4 4, 0 4, 0 0))\"), Geometry(\"POINT(13.4 52.5)\", GEOGRAPHIC)).is(P.typeOf(GType.GEOMETRY))",
-                "canonical": "g.inject(Geometry(\"POINT(1 2)\"), Geometry(\"LINESTRING(0 0, 1 1)\"), Geometry(\"POLYGON((0 0, 4 0, 4 4, 0 4, 0 0))\"), Geometry(\"POINT(13.4 52.5)\", GEOGRAPHIC)).is(P.typeOf(GType.GEOMETRY))",
-                "anonymized": "g.inject(geometry0, geometry1, geometry2, geometry3).is(P.typeOf(GType.GEOMETRY))",
-                "groovy": "g.inject(Geometry.fromWkt(\"POINT(1 2)\"), Geometry.fromWkt(\"LINESTRING(0 0, 1 1)\"), Geometry.fromWkt(\"POLYGON((0 0, 4 0, 4 4, 0 4, 0 0))\"), Geometry.fromWkt(\"POINT(13.4 52.5)\", Model.GEOGRAPHIC)).is(P.typeOf(GType.GEOMETRY))",
-                "java": "g.inject(Geometry.fromWkt(\"POINT(1 2)\"), Geometry.fromWkt(\"LINESTRING(0 0, 1 1)\"), Geometry.fromWkt(\"POLYGON((0 0, 4 0, 4 4, 0 4, 0 0))\"), Geometry.fromWkt(\"POINT(13.4 52.5)\", Model.GEOGRAPHIC)).is(P.typeOf(GType.GEOMETRY))"
+                "original": "g.V().hasLabel(\"customer\").values().is(P.typeOf(GType.GEOMETRY))",
+                "language": "g.V().hasLabel(\"customer\").values().is(P.typeOf(GType.GEOMETRY))",
+                "canonical": "g.V().hasLabel(\"customer\").values().is(P.typeOf(GType.GEOMETRY))",
+                "anonymized": "g.V().hasLabel(string0).values().is(P.typeOf(GType.GEOMETRY))",
+                "groovy": "g.V().hasLabel(\"customer\").values().is(P.typeOf(GType.GEOMETRY))",
+                "java": "g.V().hasLabel(\"customer\").values().is(P.typeOf(GType.GEOMETRY))"
             }
         ]
     },
     {
-        "scenario": "g_injectXgeometriesX_isXtypeOfXGType_POINTXX",
+        "scenario": "g_V_hasXloc_typeOfXGType_POINTXX_valuesXnameX",
         "traversals": [
             {
-                "original": "g.inject(Geometry(\"POINT(1 2)\"), Geometry(\"LINESTRING(0 0, 1 1)\"), Geometry(\"POLYGON((0 0, 4 0, 4 4, 0 4, 0 0))\"), Geometry(\"POINT(13.4 52.5)\", GEOGRAPHIC)).is(P.typeOf(GType.POINT))",
-                "language": "g.inject(Geometry(\"POINT(1 2)\"), Geometry(\"LINESTRING(0 0, 1 1)\"), Geometry(\"POLYGON((0 0, 4 0, 4 4, 0 4, 0 0))\"), Geometry(\"POINT(13.4 52.5)\", GEOGRAPHIC)).is(P.typeOf(GType.POINT))",
-                "canonical": "g.inject(Geometry(\"POINT(1 2)\"), Geometry(\"LINESTRING(0 0, 1 1)\"), Geometry(\"POLYGON((0 0, 4 0, 4 4, 0 4, 0 0))\"), Geometry(\"POINT(13.4 52.5)\", GEOGRAPHIC)).is(P.typeOf(GType.POINT))",
-                "anonymized": "g.inject(geometry0, geometry1, geometry2, geometry3).is(P.typeOf(GType.POINT))",
-                "groovy": "g.inject(Geometry.fromWkt(\"POINT(1 2)\"), Geometry.fromWkt(\"LINESTRING(0 0, 1 1)\"), Geometry.fromWkt(\"POLYGON((0 0, 4 0, 4 4, 0 4, 0 0))\"), Geometry.fromWkt(\"POINT(13.4 52.5)\", Model.GEOGRAPHIC)).is(P.typeOf(GType.POINT))",
-                "java": "g.inject(Geometry.fromWkt(\"POINT(1 2)\"), Geometry.fromWkt(\"LINESTRING(0 0, 1 1)\"), Geometry.fromWkt(\"POLYGON((0 0, 4 0, 4 4, 0 4, 0 0))\"), Geometry.fromWkt(\"POINT(13.4 52.5)\", Model.GEOGRAPHIC)).is(P.typeOf(GType.POINT))"
+                "original": "g.V().has(\"loc\", P.typeOf(GType.POINT)).values(\"name\")",
+                "language": "g.V().has(\"loc\", P.typeOf(GType.POINT)).values(\"name\")",
+                "canonical": "g.V().has(\"loc\", P.typeOf(GType.POINT)).values(\"name\")",
+                "anonymized": "g.V().has(string0, P.typeOf(GType.POINT)).values(string1)",
+                "groovy": "g.V().has(\"loc\", P.typeOf(GType.POINT)).values(\"name\")",
+                "java": "g.V().has(\"loc\", P.typeOf(GType.POINT)).values(\"name\")"
             }
         ]
     },
     {
-        "scenario": "g_injectXgeometriesX_isXtypeOfXGType_LINESTRINGXX",
+        "scenario": "g_E_valuesXpathX_isXtypeOfXGType_LINESTRINGXX",
         "traversals": [
             {
-                "original": "g.inject(Geometry(\"POINT(1 2)\"), Geometry(\"LINESTRING(0 0, 1 1)\"), Geometry(\"POLYGON((0 0, 4 0, 4 4, 0 4, 0 0))\"), Geometry(\"POINT(13.4 52.5)\", GEOGRAPHIC)).is(P.typeOf(GType.LINESTRING))",
-                "language": "g.inject(Geometry(\"POINT(1 2)\"), Geometry(\"LINESTRING(0 0, 1 1)\"), Geometry(\"POLYGON((0 0, 4 0, 4 4, 0 4, 0 0))\"), Geometry(\"POINT(13.4 52.5)\", GEOGRAPHIC)).is(P.typeOf(GType.LINESTRING))",
-                "canonical": "g.inject(Geometry(\"POINT(1 2)\"), Geometry(\"LINESTRING(0 0, 1 1)\"), Geometry(\"POLYGON((0 0, 4 0, 4 4, 0 4, 0 0))\"), Geometry(\"POINT(13.4 52.5)\", GEOGRAPHIC)).is(P.typeOf(GType.LINESTRING))",
-                "anonymized": "g.inject(geometry0, geometry1, geometry2, geometry3).is(P.typeOf(GType.LINESTRING))",
-                "groovy": "g.inject(Geometry.fromWkt(\"POINT(1 2)\"), Geometry.fromWkt(\"LINESTRING(0 0, 1 1)\"), Geometry.fromWkt(\"POLYGON((0 0, 4 0, 4 4, 0 4, 0 0))\"), Geometry.fromWkt(\"POINT(13.4 52.5)\", Model.GEOGRAPHIC)).is(P.typeOf(GType.LINESTRING))",
-                "java": "g.inject(Geometry.fromWkt(\"POINT(1 2)\"), Geometry.fromWkt(\"LINESTRING(0 0, 1 1)\"), Geometry.fromWkt(\"POLYGON((0 0, 4 0, 4 4, 0 4, 0 0))\"), Geometry.fromWkt(\"POINT(13.4 52.5)\", Model.GEOGRAPHIC)).is(P.typeOf(GType.LINESTRING))"
+                "original": "g.E().values(\"path\").is(P.typeOf(GType.LINESTRING))",
+                "language": "g.E().values(\"path\").is(P.typeOf(GType.LINESTRING))",
+                "canonical": "g.E().values(\"path\").is(P.typeOf(GType.LINESTRING))",
+                "anonymized": "g.E().values(string0).is(P.typeOf(GType.LINESTRING))",
+                "groovy": "g.E().values(\"path\").is(P.typeOf(GType.LINESTRING))",
+                "java": "g.E().values(\"path\").is(P.typeOf(GType.LINESTRING))"
             }
         ]
     },
     {
-        "scenario": "g_injectXgeometriesX_isXtypeOfXGType_POLYGONXX",
+        "scenario": "g_V_hasXloc_typeOfXGType_CARTESIANXX_valuesXnameX",
         "traversals": [
             {
-                "original": "g.inject(Geometry(\"POINT(1 2)\"), Geometry(\"LINESTRING(0 0, 1 1)\"), Geometry(\"POLYGON((0 0, 4 0, 4 4, 0 4, 0 0))\"), Geometry(\"POINT(13.4 52.5)\", GEOGRAPHIC)).is(P.typeOf(GType.POLYGON))",
-                "language": "g.inject(Geometry(\"POINT(1 2)\"), Geometry(\"LINESTRING(0 0, 1 1)\"), Geometry(\"POLYGON((0 0, 4 0, 4 4, 0 4, 0 0))\"), Geometry(\"POINT(13.4 52.5)\", GEOGRAPHIC)).is(P.typeOf(GType.POLYGON))",
-                "canonical": "g.inject(Geometry(\"POINT(1 2)\"), Geometry(\"LINESTRING(0 0, 1 1)\"), Geometry(\"POLYGON((0 0, 4 0, 4 4, 0 4, 0 0))\"), Geometry(\"POINT(13.4 52.5)\", GEOGRAPHIC)).is(P.typeOf(GType.POLYGON))",
-                "anonymized": "g.inject(geometry0, geometry1, geometry2, geometry3).is(P.typeOf(GType.POLYGON))",
-                "groovy": "g.inject(Geometry.fromWkt(\"POINT(1 2)\"), Geometry.fromWkt(\"LINESTRING(0 0, 1 1)\"), Geometry.fromWkt(\"POLYGON((0 0, 4 0, 4 4, 0 4, 0 0))\"), Geometry.fromWkt(\"POINT(13.4 52.5)\", Model.GEOGRAPHIC)).is(P.typeOf(GType.POLYGON))",
-                "java": "g.inject(Geometry.fromWkt(\"POINT(1 2)\"), Geometry.fromWkt(\"LINESTRING(0 0, 1 1)\"), Geometry.fromWkt(\"POLYGON((0 0, 4 0, 4 4, 0 4, 0 0))\"), Geometry.fromWkt(\"POINT(13.4 52.5)\", Model.GEOGRAPHIC)).is(P.typeOf(GType.POLYGON))"
+                "original": "g.V().has(\"loc\", P.typeOf(GType.CARTESIAN)).values(\"name\")",
+                "language": "g.V().has(\"loc\", P.typeOf(GType.CARTESIAN)).values(\"name\")",
+                "canonical": "g.V().has(\"loc\", P.typeOf(GType.CARTESIAN)).values(\"name\")",
+                "anonymized": "g.V().has(string0, P.typeOf(GType.CARTESIAN)).values(string1)",
+                "groovy": "g.V().has(\"loc\", P.typeOf(GType.CARTESIAN)).values(\"name\")",
+                "java": "g.V().has(\"loc\", P.typeOf(GType.CARTESIAN)).values(\"name\")"
             }
         ]
     },
     {
-        "scenario": "g_injectXgeometriesX_isXtypeOfXGType_CARTESIANXX",
+        "scenario": "g_V_hasXloc_typeOfXGType_GEOGRAPHICX_andXtypeOfXGType_POINTXXX_valuesXnameX",
         "traversals": [
             {
-                "original": "g.inject(Geometry(\"POINT(1 2)\"), Geometry(\"LINESTRING(0 0, 1 1)\"), Geometry(\"POLYGON((0 0, 4 0, 4 4, 0 4, 0 0))\"), Geometry(\"POINT(13.4 52.5)\", GEOGRAPHIC)).is(P.typeOf(GType.CARTESIAN))",
-                "language": "g.inject(Geometry(\"POINT(1 2)\"), Geometry(\"LINESTRING(0 0, 1 1)\"), Geometry(\"POLYGON((0 0, 4 0, 4 4, 0 4, 0 0))\"), Geometry(\"POINT(13.4 52.5)\", GEOGRAPHIC)).is(P.typeOf(GType.CARTESIAN))",
-                "canonical": "g.inject(Geometry(\"POINT(1 2)\"), Geometry(\"LINESTRING(0 0, 1 1)\"), Geometry(\"POLYGON((0 0, 4 0, 4 4, 0 4, 0 0))\"), Geometry(\"POINT(13.4 52.5)\", GEOGRAPHIC)).is(P.typeOf(GType.CARTESIAN))",
-                "anonymized": "g.inject(geometry0, geometry1, geometry2, geometry3).is(P.typeOf(GType.CARTESIAN))",
-                "groovy": "g.inject(Geometry.fromWkt(\"POINT(1 2)\"), Geometry.fromWkt(\"LINESTRING(0 0, 1 1)\"), Geometry.fromWkt(\"POLYGON((0 0, 4 0, 4 4, 0 4, 0 0))\"), Geometry.fromWkt(\"POINT(13.4 52.5)\", Model.GEOGRAPHIC)).is(P.typeOf(GType.CARTESIAN))",
-                "java": "g.inject(Geometry.fromWkt(\"POINT(1 2)\"), Geometry.fromWkt(\"LINESTRING(0 0, 1 1)\"), Geometry.fromWkt(\"POLYGON((0 0, 4 0, 4 4, 0 4, 0 0))\"), Geometry.fromWkt(\"POINT(13.4 52.5)\", Model.GEOGRAPHIC)).is(P.typeOf(GType.CARTESIAN))"
-            }
-        ]
-    },
-    {
-        "scenario": "g_injectXgeometriesX_isXtypeOfXGType_GEOGRAPHICX_andXtypeOfXGType_POINTXXX",
-        "traversals": [
-            {
-                "original": "g.inject(Geometry(\"POINT(1 2)\"), Geometry(\"LINESTRING(13.4 52.5, 13.5 52.6)\", GEOGRAPHIC), Geometry(\"POINT(13.4 52.5)\", GEOGRAPHIC)).is(P.typeOf(GType.GEOGRAPHIC).and(P.typeOf(GType.POINT)))",
-                "language": "g.inject(Geometry(\"POINT(1 2)\"), Geometry(\"LINESTRING(13.4 52.5, 13.5 52.6)\", GEOGRAPHIC), Geometry(\"POINT(13.4 52.5)\", GEOGRAPHIC)).is(P.typeOf(GType.GEOGRAPHIC).and(P.typeOf(GType.POINT)))",
-                "canonical": "g.inject(Geometry(\"POINT(1 2)\"), Geometry(\"LINESTRING(13.4 52.5, 13.5 52.6)\", GEOGRAPHIC), Geometry(\"POINT(13.4 52.5)\", GEOGRAPHIC)).is(P.typeOf(GType.GEOGRAPHIC).and(P.typeOf(GType.POINT)))",
-                "anonymized": "g.inject(geometry0, geometry1, geometry2).is(P.typeOf(GType.GEOGRAPHIC).and(P.typeOf(GType.POINT)))",
-                "groovy": "g.inject(Geometry.fromWkt(\"POINT(1 2)\"), Geometry.fromWkt(\"LINESTRING(13.4 52.5, 13.5 52.6)\", Model.GEOGRAPHIC), Geometry.fromWkt(\"POINT(13.4 52.5)\", Model.GEOGRAPHIC)).is(P.typeOf(GType.GEOGRAPHIC).and(P.typeOf(GType.POINT)))",
-                "java": "g.inject(Geometry.fromWkt(\"POINT(1 2)\"), Geometry.fromWkt(\"LINESTRING(13.4 52.5, 13.5 52.6)\", Model.GEOGRAPHIC), Geometry.fromWkt(\"POINT(13.4 52.5)\", Model.GEOGRAPHIC)).is(P.typeOf(GType.GEOGRAPHIC).and(P.typeOf(GType.POINT)))"
+                "original": "g.V().has(\"loc\", P.typeOf(GType.GEOGRAPHIC).and(P.typeOf(GType.POINT))).values(\"name\")",
+                "language": "g.V().has(\"loc\", P.typeOf(GType.GEOGRAPHIC).and(P.typeOf(GType.POINT))).values(\"name\")",
+                "canonical": "g.V().has(\"loc\", P.typeOf(GType.GEOGRAPHIC).and(P.typeOf(GType.POINT))).values(\"name\")",
+                "anonymized": "g.V().has(string0, P.typeOf(GType.GEOGRAPHIC).and(P.typeOf(GType.POINT))).values(string1)",
+                "groovy": "g.V().has(\"loc\", P.typeOf(GType.GEOGRAPHIC).and(P.typeOf(GType.POINT))).values(\"name\")",
+                "java": "g.V().has(\"loc\", P.typeOf(GType.GEOGRAPHIC).and(P.typeOf(GType.POINT))).values(\"name\")"
             }
         ]
     },
@@ -14008,48 +13919,48 @@
                 "original": "g.inject(Geometry(\"MULTIPOINT((1 1), (2 2))\"), Geometry(\"MULTILINESTRING((0 0, 1 1), (2 2, 3 3))\"), Geometry(\"MULTIPOLYGON(((0 0, 1 0, 1 1, 0 0)))\"), Geometry(\"GEOMETRYCOLLECTION(POINT(1 1))\")).is(P.typeOf(GType.MULTIPOINT))",
                 "language": "g.inject(Geometry(\"MULTIPOINT((1 1), (2 2))\"), Geometry(\"MULTILINESTRING((0 0, 1 1), (2 2, 3 3))\"), Geometry(\"MULTIPOLYGON(((0 0, 1 0, 1 1, 0 0)))\"), Geometry(\"GEOMETRYCOLLECTION(POINT(1 1))\")).is(P.typeOf(GType.MULTIPOINT))",
                 "canonical": "g.inject(Geometry(\"MULTIPOINT((1 1), (2 2))\"), Geometry(\"MULTILINESTRING((0 0, 1 1), (2 2, 3 3))\"), Geometry(\"MULTIPOLYGON(((0 0, 1 0, 1 1, 0 0)))\"), Geometry(\"GEOMETRYCOLLECTION(POINT(1 1))\")).is(P.typeOf(GType.MULTIPOINT))",
-                "anonymized": "g.inject(geometry0, geometry1, geometry2, geometry3).is(P.typeOf(GType.MULTIPOINT))",
+                "anonymized": "g.inject(multipoint0, multilinestring0, multipolygon0, geometrycollection0).is(P.typeOf(GType.MULTIPOINT))",
                 "groovy": "g.inject(Geometry.fromWkt(\"MULTIPOINT((1 1), (2 2))\"), Geometry.fromWkt(\"MULTILINESTRING((0 0, 1 1), (2 2, 3 3))\"), Geometry.fromWkt(\"MULTIPOLYGON(((0 0, 1 0, 1 1, 0 0)))\"), Geometry.fromWkt(\"GEOMETRYCOLLECTION(POINT(1 1))\")).is(P.typeOf(GType.MULTIPOINT))",
                 "java": "g.inject(Geometry.fromWkt(\"MULTIPOINT((1 1), (2 2))\"), Geometry.fromWkt(\"MULTILINESTRING((0 0, 1 1), (2 2, 3 3))\"), Geometry.fromWkt(\"MULTIPOLYGON(((0 0, 1 0, 1 1, 0 0)))\"), Geometry.fromWkt(\"GEOMETRYCOLLECTION(POINT(1 1))\")).is(P.typeOf(GType.MULTIPOINT))"
             }
         ]
     },
     {
-        "scenario": "g_injectXmultiGeometriesX_isXtypeOfXGType_MULTILINESTRINGXX",
+        "scenario": "g_V_hasXloc_typeOfXGType_MULTILINESTRINGXX_valuesXnameX",
         "traversals": [
             {
-                "original": "g.inject(Geometry(\"MULTIPOINT((1 1), (2 2))\"), Geometry(\"MULTILINESTRING((0 0, 1 1), (2 2, 3 3))\"), Geometry(\"MULTIPOLYGON(((0 0, 1 0, 1 1, 0 0)))\"), Geometry(\"GEOMETRYCOLLECTION(POINT(1 1))\")).is(P.typeOf(GType.MULTILINESTRING))",
-                "language": "g.inject(Geometry(\"MULTIPOINT((1 1), (2 2))\"), Geometry(\"MULTILINESTRING((0 0, 1 1), (2 2, 3 3))\"), Geometry(\"MULTIPOLYGON(((0 0, 1 0, 1 1, 0 0)))\"), Geometry(\"GEOMETRYCOLLECTION(POINT(1 1))\")).is(P.typeOf(GType.MULTILINESTRING))",
-                "canonical": "g.inject(Geometry(\"MULTIPOINT((1 1), (2 2))\"), Geometry(\"MULTILINESTRING((0 0, 1 1), (2 2, 3 3))\"), Geometry(\"MULTIPOLYGON(((0 0, 1 0, 1 1, 0 0)))\"), Geometry(\"GEOMETRYCOLLECTION(POINT(1 1))\")).is(P.typeOf(GType.MULTILINESTRING))",
-                "anonymized": "g.inject(geometry0, geometry1, geometry2, geometry3).is(P.typeOf(GType.MULTILINESTRING))",
-                "groovy": "g.inject(Geometry.fromWkt(\"MULTIPOINT((1 1), (2 2))\"), Geometry.fromWkt(\"MULTILINESTRING((0 0, 1 1), (2 2, 3 3))\"), Geometry.fromWkt(\"MULTIPOLYGON(((0 0, 1 0, 1 1, 0 0)))\"), Geometry.fromWkt(\"GEOMETRYCOLLECTION(POINT(1 1))\")).is(P.typeOf(GType.MULTILINESTRING))",
-                "java": "g.inject(Geometry.fromWkt(\"MULTIPOINT((1 1), (2 2))\"), Geometry.fromWkt(\"MULTILINESTRING((0 0, 1 1), (2 2, 3 3))\"), Geometry.fromWkt(\"MULTIPOLYGON(((0 0, 1 0, 1 1, 0 0)))\"), Geometry.fromWkt(\"GEOMETRYCOLLECTION(POINT(1 1))\")).is(P.typeOf(GType.MULTILINESTRING))"
+                "original": "g.V().has(\"loc\", P.typeOf(GType.MULTILINESTRING)).values(\"name\")",
+                "language": "g.V().has(\"loc\", P.typeOf(GType.MULTILINESTRING)).values(\"name\")",
+                "canonical": "g.V().has(\"loc\", P.typeOf(GType.MULTILINESTRING)).values(\"name\")",
+                "anonymized": "g.V().has(string0, P.typeOf(GType.MULTILINESTRING)).values(string1)",
+                "groovy": "g.V().has(\"loc\", P.typeOf(GType.MULTILINESTRING)).values(\"name\")",
+                "java": "g.V().has(\"loc\", P.typeOf(GType.MULTILINESTRING)).values(\"name\")"
             }
         ]
     },
     {
-        "scenario": "g_injectXmultiGeometriesX_isXtypeOfXGType_MULTIPOLYGONXX",
+        "scenario": "g_V_hasXloc_typeOfXGType_MULTIPOLYGONXX_valuesXnameX",
         "traversals": [
             {
-                "original": "g.inject(Geometry(\"MULTIPOINT((1 1), (2 2))\"), Geometry(\"MULTILINESTRING((0 0, 1 1), (2 2, 3 3))\"), Geometry(\"MULTIPOLYGON(((0 0, 1 0, 1 1, 0 0)))\"), Geometry(\"GEOMETRYCOLLECTION(POINT(1 1))\")).is(P.typeOf(GType.MULTIPOLYGON))",
-                "language": "g.inject(Geometry(\"MULTIPOINT((1 1), (2 2))\"), Geometry(\"MULTILINESTRING((0 0, 1 1), (2 2, 3 3))\"), Geometry(\"MULTIPOLYGON(((0 0, 1 0, 1 1, 0 0)))\"), Geometry(\"GEOMETRYCOLLECTION(POINT(1 1))\")).is(P.typeOf(GType.MULTIPOLYGON))",
-                "canonical": "g.inject(Geometry(\"MULTIPOINT((1 1), (2 2))\"), Geometry(\"MULTILINESTRING((0 0, 1 1), (2 2, 3 3))\"), Geometry(\"MULTIPOLYGON(((0 0, 1 0, 1 1, 0 0)))\"), Geometry(\"GEOMETRYCOLLECTION(POINT(1 1))\")).is(P.typeOf(GType.MULTIPOLYGON))",
-                "anonymized": "g.inject(geometry0, geometry1, geometry2, geometry3).is(P.typeOf(GType.MULTIPOLYGON))",
-                "groovy": "g.inject(Geometry.fromWkt(\"MULTIPOINT((1 1), (2 2))\"), Geometry.fromWkt(\"MULTILINESTRING((0 0, 1 1), (2 2, 3 3))\"), Geometry.fromWkt(\"MULTIPOLYGON(((0 0, 1 0, 1 1, 0 0)))\"), Geometry.fromWkt(\"GEOMETRYCOLLECTION(POINT(1 1))\")).is(P.typeOf(GType.MULTIPOLYGON))",
-                "java": "g.inject(Geometry.fromWkt(\"MULTIPOINT((1 1), (2 2))\"), Geometry.fromWkt(\"MULTILINESTRING((0 0, 1 1), (2 2, 3 3))\"), Geometry.fromWkt(\"MULTIPOLYGON(((0 0, 1 0, 1 1, 0 0)))\"), Geometry.fromWkt(\"GEOMETRYCOLLECTION(POINT(1 1))\")).is(P.typeOf(GType.MULTIPOLYGON))"
+                "original": "g.V().has(\"loc\", P.typeOf(GType.MULTIPOLYGON)).values(\"name\")",
+                "language": "g.V().has(\"loc\", P.typeOf(GType.MULTIPOLYGON)).values(\"name\")",
+                "canonical": "g.V().has(\"loc\", P.typeOf(GType.MULTIPOLYGON)).values(\"name\")",
+                "anonymized": "g.V().has(string0, P.typeOf(GType.MULTIPOLYGON)).values(string1)",
+                "groovy": "g.V().has(\"loc\", P.typeOf(GType.MULTIPOLYGON)).values(\"name\")",
+                "java": "g.V().has(\"loc\", P.typeOf(GType.MULTIPOLYGON)).values(\"name\")"
             }
         ]
     },
     {
-        "scenario": "g_injectXmultiGeometriesX_isXtypeOfXGType_GEOMETRYCOLLECTIONXX",
+        "scenario": "g_V_hasXloc_typeOfXGType_GEOMETRYCOLLECTIONXX_valuesXnameX",
         "traversals": [
             {
-                "original": "g.inject(Geometry(\"MULTIPOINT((1 1), (2 2))\"), Geometry(\"MULTILINESTRING((0 0, 1 1), (2 2, 3 3))\"), Geometry(\"MULTIPOLYGON(((0 0, 1 0, 1 1, 0 0)))\"), Geometry(\"GEOMETRYCOLLECTION(POINT(1 1))\")).is(P.typeOf(GType.GEOMETRYCOLLECTION))",
-                "language": "g.inject(Geometry(\"MULTIPOINT((1 1), (2 2))\"), Geometry(\"MULTILINESTRING((0 0, 1 1), (2 2, 3 3))\"), Geometry(\"MULTIPOLYGON(((0 0, 1 0, 1 1, 0 0)))\"), Geometry(\"GEOMETRYCOLLECTION(POINT(1 1))\")).is(P.typeOf(GType.GEOMETRYCOLLECTION))",
-                "canonical": "g.inject(Geometry(\"MULTIPOINT((1 1), (2 2))\"), Geometry(\"MULTILINESTRING((0 0, 1 1), (2 2, 3 3))\"), Geometry(\"MULTIPOLYGON(((0 0, 1 0, 1 1, 0 0)))\"), Geometry(\"GEOMETRYCOLLECTION(POINT(1 1))\")).is(P.typeOf(GType.GEOMETRYCOLLECTION))",
-                "anonymized": "g.inject(geometry0, geometry1, geometry2, geometry3).is(P.typeOf(GType.GEOMETRYCOLLECTION))",
-                "groovy": "g.inject(Geometry.fromWkt(\"MULTIPOINT((1 1), (2 2))\"), Geometry.fromWkt(\"MULTILINESTRING((0 0, 1 1), (2 2, 3 3))\"), Geometry.fromWkt(\"MULTIPOLYGON(((0 0, 1 0, 1 1, 0 0)))\"), Geometry.fromWkt(\"GEOMETRYCOLLECTION(POINT(1 1))\")).is(P.typeOf(GType.GEOMETRYCOLLECTION))",
-                "java": "g.inject(Geometry.fromWkt(\"MULTIPOINT((1 1), (2 2))\"), Geometry.fromWkt(\"MULTILINESTRING((0 0, 1 1), (2 2, 3 3))\"), Geometry.fromWkt(\"MULTIPOLYGON(((0 0, 1 0, 1 1, 0 0)))\"), Geometry.fromWkt(\"GEOMETRYCOLLECTION(POINT(1 1))\")).is(P.typeOf(GType.GEOMETRYCOLLECTION))"
+                "original": "g.V().has(\"loc\", P.typeOf(GType.GEOMETRYCOLLECTION)).values(\"name\")",
+                "language": "g.V().has(\"loc\", P.typeOf(GType.GEOMETRYCOLLECTION)).values(\"name\")",
+                "canonical": "g.V().has(\"loc\", P.typeOf(GType.GEOMETRYCOLLECTION)).values(\"name\")",
+                "anonymized": "g.V().has(string0, P.typeOf(GType.GEOMETRYCOLLECTION)).values(string1)",
+                "groovy": "g.V().has(\"loc\", P.typeOf(GType.GEOMETRYCOLLECTION)).values(\"name\")",
+                "java": "g.V().has(\"loc\", P.typeOf(GType.GEOMETRYCOLLECTION)).values(\"name\")"
             }
         ]
     },
@@ -45637,80 +45548,104 @@
         ]
     },
     {
-        "scenario": "InjectXpointX_eqX1dX",
+        "scenario": "g_V_hasXname_PatX_valuesXlocX_isXeqX1dXX",
         "traversals": [
             {
-                "original": "g.inject(Geometry(\"POINT(1 2)\")).is(P.eq(1.0d))",
-                "language": "g.inject(Geometry(\"POINT(1 2)\")).is(P.eq(1.0d))",
-                "canonical": "g.inject(Geometry(\"POINT(1 2)\")).is(P.eq(1.0d))",
-                "anonymized": "g.inject(geometry0).is(P.eq(double0))",
-                "groovy": "g.inject(Geometry.fromWkt(\"POINT(1 2)\")).is(P.eq(1.0d))",
-                "java": "g.inject(Geometry.fromWkt(\"POINT(1 2)\")).is(P.eq(1.0d))"
+                "original": "g.V().has(\"name\", \"Pat\").values(\"loc\").is(P.eq(1.0d))",
+                "language": "g.V().has(\"name\", \"Pat\").values(\"loc\").is(P.eq(1.0d))",
+                "canonical": "g.V().has(\"name\", \"Pat\").values(\"loc\").is(P.eq(1.0d))",
+                "anonymized": "g.V().has(string0, string1).values(string2).is(P.eq(double0))",
+                "dotnet": "g.V().Has(\"name\", \"Pat\").Values<object>(\"loc\").Is(P.Eq(1.0d))",
+                "go": "g.V().Has(\"name\", \"Pat\").Values(\"loc\").Is(gremlingo.P.Eq(1.0))",
+                "groovy": "g.V().has(\"name\", \"Pat\").values(\"loc\").is(P.eq(1.0d))",
+                "java": "g.V().has(\"name\", \"Pat\").values(\"loc\").is(P.eq(1.0d))",
+                "javascript": "g.V().has(\"name\", \"Pat\").values(\"loc\").is(P.eq(1.0))",
+                "python": "g.V().has('name', 'Pat').values('loc').is_(P.eq(1.0))"
             }
         ]
     },
     {
-        "scenario": "InjectXpointX_neqX1dX",
+        "scenario": "g_V_hasXname_PatX_valuesXlocX_isXneqX1dXX",
         "traversals": [
             {
-                "original": "g.inject(Geometry(\"POINT(1 2)\")).is(P.neq(1.0d))",
-                "language": "g.inject(Geometry(\"POINT(1 2)\")).is(P.neq(1.0d))",
-                "canonical": "g.inject(Geometry(\"POINT(1 2)\")).is(P.neq(1.0d))",
-                "anonymized": "g.inject(geometry0).is(P.neq(double0))",
-                "groovy": "g.inject(Geometry.fromWkt(\"POINT(1 2)\")).is(P.neq(1.0d))",
-                "java": "g.inject(Geometry.fromWkt(\"POINT(1 2)\")).is(P.neq(1.0d))"
+                "original": "g.V().has(\"name\", \"Pat\").values(\"loc\").is(P.neq(1.0d))",
+                "language": "g.V().has(\"name\", \"Pat\").values(\"loc\").is(P.neq(1.0d))",
+                "canonical": "g.V().has(\"name\", \"Pat\").values(\"loc\").is(P.neq(1.0d))",
+                "anonymized": "g.V().has(string0, string1).values(string2).is(P.neq(double0))",
+                "dotnet": "g.V().Has(\"name\", \"Pat\").Values<object>(\"loc\").Is(P.Neq(1.0d))",
+                "go": "g.V().Has(\"name\", \"Pat\").Values(\"loc\").Is(gremlingo.P.Neq(1.0))",
+                "groovy": "g.V().has(\"name\", \"Pat\").values(\"loc\").is(P.neq(1.0d))",
+                "java": "g.V().has(\"name\", \"Pat\").values(\"loc\").is(P.neq(1.0d))",
+                "javascript": "g.V().has(\"name\", \"Pat\").values(\"loc\").is(P.neq(1.0))",
+                "python": "g.V().has('name', 'Pat').values('loc').is_(P.neq(1.0))"
             }
         ]
     },
     {
-        "scenario": "InjectXpointX_ltX1dX",
+        "scenario": "g_V_hasXname_PatX_valuesXlocX_isXltX1dXX",
         "traversals": [
             {
-                "original": "g.inject(Geometry(\"POINT(1 2)\")).is(P.lt(1.0d))",
-                "language": "g.inject(Geometry(\"POINT(1 2)\")).is(P.lt(1.0d))",
-                "canonical": "g.inject(Geometry(\"POINT(1 2)\")).is(P.lt(1.0d))",
-                "anonymized": "g.inject(geometry0).is(P.lt(double0))",
-                "groovy": "g.inject(Geometry.fromWkt(\"POINT(1 2)\")).is(P.lt(1.0d))",
-                "java": "g.inject(Geometry.fromWkt(\"POINT(1 2)\")).is(P.lt(1.0d))"
+                "original": "g.V().has(\"name\", \"Pat\").values(\"loc\").is(P.lt(1.0d))",
+                "language": "g.V().has(\"name\", \"Pat\").values(\"loc\").is(P.lt(1.0d))",
+                "canonical": "g.V().has(\"name\", \"Pat\").values(\"loc\").is(P.lt(1.0d))",
+                "anonymized": "g.V().has(string0, string1).values(string2).is(P.lt(double0))",
+                "dotnet": "g.V().Has(\"name\", \"Pat\").Values<object>(\"loc\").Is(P.Lt(1.0d))",
+                "go": "g.V().Has(\"name\", \"Pat\").Values(\"loc\").Is(gremlingo.P.Lt(1.0))",
+                "groovy": "g.V().has(\"name\", \"Pat\").values(\"loc\").is(P.lt(1.0d))",
+                "java": "g.V().has(\"name\", \"Pat\").values(\"loc\").is(P.lt(1.0d))",
+                "javascript": "g.V().has(\"name\", \"Pat\").values(\"loc\").is(P.lt(1.0))",
+                "python": "g.V().has('name', 'Pat').values('loc').is_(P.lt(1.0))"
             }
         ]
     },
     {
-        "scenario": "InjectXpointX_lteX1dX",
+        "scenario": "g_V_hasXname_PatX_valuesXlocX_isXlteX1dXX",
         "traversals": [
             {
-                "original": "g.inject(Geometry(\"POINT(1 2)\")).is(P.lte(1.0d))",
-                "language": "g.inject(Geometry(\"POINT(1 2)\")).is(P.lte(1.0d))",
-                "canonical": "g.inject(Geometry(\"POINT(1 2)\")).is(P.lte(1.0d))",
-                "anonymized": "g.inject(geometry0).is(P.lte(double0))",
-                "groovy": "g.inject(Geometry.fromWkt(\"POINT(1 2)\")).is(P.lte(1.0d))",
-                "java": "g.inject(Geometry.fromWkt(\"POINT(1 2)\")).is(P.lte(1.0d))"
+                "original": "g.V().has(\"name\", \"Pat\").values(\"loc\").is(P.lte(1.0d))",
+                "language": "g.V().has(\"name\", \"Pat\").values(\"loc\").is(P.lte(1.0d))",
+                "canonical": "g.V().has(\"name\", \"Pat\").values(\"loc\").is(P.lte(1.0d))",
+                "anonymized": "g.V().has(string0, string1).values(string2).is(P.lte(double0))",
+                "dotnet": "g.V().Has(\"name\", \"Pat\").Values<object>(\"loc\").Is(P.Lte(1.0d))",
+                "go": "g.V().Has(\"name\", \"Pat\").Values(\"loc\").Is(gremlingo.P.Lte(1.0))",
+                "groovy": "g.V().has(\"name\", \"Pat\").values(\"loc\").is(P.lte(1.0d))",
+                "java": "g.V().has(\"name\", \"Pat\").values(\"loc\").is(P.lte(1.0d))",
+                "javascript": "g.V().has(\"name\", \"Pat\").values(\"loc\").is(P.lte(1.0))",
+                "python": "g.V().has('name', 'Pat').values('loc').is_(P.lte(1.0))"
             }
         ]
     },
     {
-        "scenario": "InjectXpointX_gtX1dX",
+        "scenario": "g_V_hasXname_PatX_valuesXlocX_isXgtX1dXX",
         "traversals": [
             {
-                "original": "g.inject(Geometry(\"POINT(1 2)\")).is(P.gt(1.0d))",
-                "language": "g.inject(Geometry(\"POINT(1 2)\")).is(P.gt(1.0d))",
-                "canonical": "g.inject(Geometry(\"POINT(1 2)\")).is(P.gt(1.0d))",
-                "anonymized": "g.inject(geometry0).is(P.gt(double0))",
-                "groovy": "g.inject(Geometry.fromWkt(\"POINT(1 2)\")).is(P.gt(1.0d))",
-                "java": "g.inject(Geometry.fromWkt(\"POINT(1 2)\")).is(P.gt(1.0d))"
+                "original": "g.V().has(\"name\", \"Pat\").values(\"loc\").is(P.gt(1.0d))",
+                "language": "g.V().has(\"name\", \"Pat\").values(\"loc\").is(P.gt(1.0d))",
+                "canonical": "g.V().has(\"name\", \"Pat\").values(\"loc\").is(P.gt(1.0d))",
+                "anonymized": "g.V().has(string0, string1).values(string2).is(P.gt(double0))",
+                "dotnet": "g.V().Has(\"name\", \"Pat\").Values<object>(\"loc\").Is(P.Gt(1.0d))",
+                "go": "g.V().Has(\"name\", \"Pat\").Values(\"loc\").Is(gremlingo.P.Gt(1.0))",
+                "groovy": "g.V().has(\"name\", \"Pat\").values(\"loc\").is(P.gt(1.0d))",
+                "java": "g.V().has(\"name\", \"Pat\").values(\"loc\").is(P.gt(1.0d))",
+                "javascript": "g.V().has(\"name\", \"Pat\").values(\"loc\").is(P.gt(1.0))",
+                "python": "g.V().has('name', 'Pat').values('loc').is_(P.gt(1.0))"
             }
         ]
     },
     {
-        "scenario": "InjectXpointX_gteX1dX",
+        "scenario": "g_V_hasXname_PatX_valuesXlocX_isXgteX1dXX",
         "traversals": [
             {
-                "original": "g.inject(Geometry(\"POINT(1 2)\")).is(P.gte(1.0d))",
-                "language": "g.inject(Geometry(\"POINT(1 2)\")).is(P.gte(1.0d))",
-                "canonical": "g.inject(Geometry(\"POINT(1 2)\")).is(P.gte(1.0d))",
-                "anonymized": "g.inject(geometry0).is(P.gte(double0))",
-                "groovy": "g.inject(Geometry.fromWkt(\"POINT(1 2)\")).is(P.gte(1.0d))",
-                "java": "g.inject(Geometry.fromWkt(\"POINT(1 2)\")).is(P.gte(1.0d))"
+                "original": "g.V().has(\"name\", \"Pat\").values(\"loc\").is(P.gte(1.0d))",
+                "language": "g.V().has(\"name\", \"Pat\").values(\"loc\").is(P.gte(1.0d))",
+                "canonical": "g.V().has(\"name\", \"Pat\").values(\"loc\").is(P.gte(1.0d))",
+                "anonymized": "g.V().has(string0, string1).values(string2).is(P.gte(double0))",
+                "dotnet": "g.V().Has(\"name\", \"Pat\").Values<object>(\"loc\").Is(P.Gte(1.0d))",
+                "go": "g.V().Has(\"name\", \"Pat\").Values(\"loc\").Is(gremlingo.P.Gte(1.0))",
+                "groovy": "g.V().has(\"name\", \"Pat\").values(\"loc\").is(P.gte(1.0d))",
+                "java": "g.V().has(\"name\", \"Pat\").values(\"loc\").is(P.gte(1.0d))",
+                "javascript": "g.V().has(\"name\", \"Pat\").values(\"loc\").is(P.gte(1.0))",
+                "python": "g.V().has('name', 'Pat').values('loc').is_(P.gte(1.0))"
             }
         ]
     },
@@ -45721,7 +45656,7 @@
                 "original": "g.inject(Geometry(\"POINT EMPTY\")).is(P.lt(Geometry(\"POINT(1 2)\")))",
                 "language": "g.inject(Geometry(\"POINT EMPTY\")).is(P.lt(Geometry(\"POINT(1 2)\")))",
                 "canonical": "g.inject(Geometry(\"POINT EMPTY\")).is(P.lt(Geometry(\"POINT(1 2)\")))",
-                "anonymized": "g.inject(geometry0).is(P.lt(geometry1))",
+                "anonymized": "g.inject(point0).is(P.lt(point1))",
                 "groovy": "g.inject(Geometry.fromWkt(\"POINT EMPTY\")).is(P.lt(Geometry.fromWkt(\"POINT(1 2)\")))",
                 "java": "g.inject(Geometry.fromWkt(\"POINT EMPTY\")).is(P.lt(Geometry.fromWkt(\"POINT(1 2)\")))"
             }
@@ -45734,22 +45669,22 @@
                 "original": "g.inject(Geometry(\"POINT(1 2)\")).is(P.gt(Geometry(\"POINT EMPTY\")))",
                 "language": "g.inject(Geometry(\"POINT(1 2)\")).is(P.gt(Geometry(\"POINT EMPTY\")))",
                 "canonical": "g.inject(Geometry(\"POINT(1 2)\")).is(P.gt(Geometry(\"POINT EMPTY\")))",
-                "anonymized": "g.inject(geometry0).is(P.gt(geometry1))",
+                "anonymized": "g.inject(point0).is(P.gt(point1))",
                 "groovy": "g.inject(Geometry.fromWkt(\"POINT(1 2)\")).is(P.gt(Geometry.fromWkt(\"POINT EMPTY\")))",
                 "java": "g.inject(Geometry.fromWkt(\"POINT(1 2)\")).is(P.gt(Geometry.fromWkt(\"POINT EMPTY\")))"
             }
         ]
     },
     {
-        "scenario": "InjectXcartesianPointX_ltXgeographicPointX",
+        "scenario": "g_V_hasXname_PatX_valuesXlocX_isXltXgeographicPointXX",
         "traversals": [
             {
-                "original": "g.inject(Geometry(\"POINT(1 2)\")).is(P.lt(Geometry(\"POINT(1 2)\", GEOGRAPHIC)))",
-                "language": "g.inject(Geometry(\"POINT(1 2)\")).is(P.lt(Geometry(\"POINT(1 2)\", GEOGRAPHIC)))",
-                "canonical": "g.inject(Geometry(\"POINT(1 2)\")).is(P.lt(Geometry(\"POINT(1 2)\", GEOGRAPHIC)))",
-                "anonymized": "g.inject(geometry0).is(P.lt(geometry1))",
-                "groovy": "g.inject(Geometry.fromWkt(\"POINT(1 2)\")).is(P.lt(Geometry.fromWkt(\"POINT(1 2)\", Model.GEOGRAPHIC)))",
-                "java": "g.inject(Geometry.fromWkt(\"POINT(1 2)\")).is(P.lt(Geometry.fromWkt(\"POINT(1 2)\", Model.GEOGRAPHIC)))"
+                "original": "g.V().has(\"name\", \"Pat\").values(\"loc\").is(P.lt(Geometry(\"POINT(3 4)\", GEOGRAPHIC)))",
+                "language": "g.V().has(\"name\", \"Pat\").values(\"loc\").is(P.lt(Geometry(\"POINT(3 4)\", GEOGRAPHIC)))",
+                "canonical": "g.V().has(\"name\", \"Pat\").values(\"loc\").is(P.lt(Geometry(\"POINT(3 4)\", GEOGRAPHIC)))",
+                "anonymized": "g.V().has(string0, string1).values(string2).is(P.lt(point0))",
+                "groovy": "g.V().has(\"name\", \"Pat\").values(\"loc\").is(P.lt(Geometry.fromWkt(\"POINT(3 4)\", Model.GEOGRAPHIC)))",
+                "java": "g.V().has(\"name\", \"Pat\").values(\"loc\").is(P.lt(Geometry.fromWkt(\"POINT(3 4)\", Model.GEOGRAPHIC)))"
             }
         ]
     },
@@ -45890,15 +45825,19 @@
         ]
     },
     {
-        "scenario": "Geometry_eqXpointX",
+        "scenario": "Geometry_eqXstoredPointX",
         "traversals": [
             {
-                "original": "g.inject([Geometry(\"POINT(1 2)\"),Geometry(\"POINT(1 3)\"),Geometry(\"POINT(1 2)\", GEOGRAPHIC)]).unfold().where(__.is(xx1))",
-                "language": "g.inject([Geometry(\"POINT(1 2)\"), Geometry(\"POINT(1 3)\"), Geometry(\"POINT(1 2)\", GEOGRAPHIC)]).unfold().where(__.is(xx1))",
-                "canonical": "g.inject([Geometry(\"POINT(1 2)\"), Geometry(\"POINT(1 3)\"), Geometry(\"POINT(1 2)\", GEOGRAPHIC)]).unfold().where(__.is(xx1))",
-                "anonymized": "g.inject(list0).unfold().where(__.is(xx1))",
-                "groovy": "g.inject([Geometry.fromWkt(\"POINT(1 2)\"), Geometry.fromWkt(\"POINT(1 3)\"), Geometry.fromWkt(\"POINT(1 2)\", Model.GEOGRAPHIC)]).unfold().where(__.is(xx1))",
-                "java": "g.inject(new ArrayList<Object>() {{ add(Geometry.fromWkt(\"POINT(1 2)\")); add(Geometry.fromWkt(\"POINT(1 3)\")); add(Geometry.fromWkt(\"POINT(1 2)\", Model.GEOGRAPHIC)); }}).unfold().where(__.is(xx1))"
+                "original": "g.V().values(\"loc\").where(__.is(xx1))",
+                "language": "g.V().values(\"loc\").where(__.is(xx1))",
+                "canonical": "g.V().values(\"loc\").where(__.is(xx1))",
+                "anonymized": "g.V().values(string0).where(__.is(xx1))",
+                "dotnet": "g.V().Values<object>(\"loc\").Where(__.Is(xx1))",
+                "go": "g.V().Values(\"loc\").Where(gremlingo.T__.Is(xx1))",
+                "groovy": "g.V().values(\"loc\").where(__.is(xx1))",
+                "java": "g.V().values(\"loc\").where(__.is(xx1))",
+                "javascript": "g.V().values(\"loc\").where(__.is(xx1))",
+                "python": "g.V().values('loc').where(__.is_(xx1))"
             }
         ]
     },
@@ -46340,7 +46279,7 @@
                 "original": "g.inject(Geometry(\"POINT(1 2)\", GEOGRAPHIC),\"foo\",Geometry(\"POINT EMPTY\"),1,Geometry(\"POINT(1 2)\"),null).order()",
                 "language": "g.inject(Geometry(\"POINT(1 2)\", GEOGRAPHIC), \"foo\", Geometry(\"POINT EMPTY\"), 1, Geometry(\"POINT(1 2)\"), null).order()",
                 "canonical": "g.inject(Geometry(\"POINT(1 2)\", GEOGRAPHIC), \"foo\", Geometry(\"POINT EMPTY\"), 1, Geometry(\"POINT(1 2)\"), null).order()",
-                "anonymized": "g.inject(geometry0, string0, geometry1, number0, geometry2, object0).order()",
+                "anonymized": "g.inject(point0, string0, point1, number0, point2, object0).order()",
                 "groovy": "g.inject(Geometry.fromWkt(\"POINT(1 2)\", Model.GEOGRAPHIC), \"foo\", Geometry.fromWkt(\"POINT EMPTY\"), 1, Geometry.fromWkt(\"POINT(1 2)\"), null).order()",
                 "java": "g.inject(Geometry.fromWkt(\"POINT(1 2)\", Model.GEOGRAPHIC), \"foo\", Geometry.fromWkt(\"POINT EMPTY\"), 1, Geometry.fromWkt(\"POINT(1 2)\"), null).order()"
             }
@@ -46353,7 +46292,7 @@
                 "original": "g.inject(Geometry(\"POINT(1 2)\", GEOGRAPHIC),\"foo\",Geometry(\"POINT EMPTY\"),1,Geometry(\"POINT(1 2)\"),null).order().by(desc)",
                 "language": "g.inject(Geometry(\"POINT(1 2)\", GEOGRAPHIC), \"foo\", Geometry(\"POINT EMPTY\"), 1, Geometry(\"POINT(1 2)\"), null).order().by(Order.desc)",
                 "canonical": "g.inject(Geometry(\"POINT(1 2)\", GEOGRAPHIC), \"foo\", Geometry(\"POINT EMPTY\"), 1, Geometry(\"POINT(1 2)\"), null).order().by(Order.desc)",
-                "anonymized": "g.inject(geometry0, string0, geometry1, number0, geometry2, object0).order().by(Order.desc)",
+                "anonymized": "g.inject(point0, string0, point1, number0, point2, object0).order().by(Order.desc)",
                 "groovy": "g.inject(Geometry.fromWkt(\"POINT(1 2)\", Model.GEOGRAPHIC), \"foo\", Geometry.fromWkt(\"POINT EMPTY\"), 1, Geometry.fromWkt(\"POINT(1 2)\"), null).order().by(Order.desc)",
                 "java": "g.inject(Geometry.fromWkt(\"POINT(1 2)\", Model.GEOGRAPHIC), \"foo\", Geometry.fromWkt(\"POINT EMPTY\"), 1, Geometry.fromWkt(\"POINT(1 2)\"), null).order().by(Order.desc)"
             }

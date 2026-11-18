@@ -613,44 +613,17 @@ public class GremlinGroovyScriptEngineTest {
     }
 
     @Test
-    public void shouldEvalGeometryFunction() throws Exception {
+    public void shouldNotResolveGeometryFunction() throws Exception {
         final GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine();
 
-        // a bare GEOGRAPHIC as the second argument names the coordinate model
-        final Geometry square = (Geometry) engine.eval("geometry(\"POLYGON((0 0, 4 0, 4 4, 0 4, 0 0))\", GEOGRAPHIC)");
-        assertThat(square, instanceOf(Polygon.class));
-        assertEquals(Model.GEOGRAPHIC, square.model());
-        assertEquals(4326, square.srid());
-
-        assertEquals(Geometry.fromWkt("POINT(1 2)", Model.GEOGRAPHIC),
-                engine.eval("geometry(\"POINT(1 2)\", Model.GEOGRAPHIC)"));
-
-        final Geometry cartesian = (Geometry) engine.eval("geometry(\"POINT(1 2)\")");
-        assertEquals(Geometry.fromWkt("POINT(1 2)"), cartesian);
-        assertEquals(Model.CARTESIAN, cartesian.model());
-
-        assertEquals(Geometry.fromWkt("POINT(1 2)", 32618), engine.eval("geometry(\"POINT(1 2)\", 32618)"));
-
-        // the class import resolves alongside the function
-        assertEquals(Geometry.fromWkt("POINT(1 2)", Model.GEOGRAPHIC),
-                engine.eval("Geometry.fromWkt(\"POINT(1 2)\", Model.GEOGRAPHIC)"));
-
-        // a bare CARTESIAN as the second argument names the coordinate model
-        final Geometry cartesianByGType = (Geometry) engine.eval("geometry(\"POINT(1 2)\", CARTESIAN)");
-        assertEquals(Model.CARTESIAN, cartesianByGType.model());
-
-        // a GType that does not name a coordinate model is rejected
+        // geometry(...) is a gremlin-lang literal only, so gremlin-groovy scripts use Geometry.fromWkt(...)
         try {
-            engine.eval("geometry(\"POINT(1 2)\", POINT)");
-            fail("Should have tanked since POINT does not name a coordinate model");
+            engine.eval("geometry(\"POINT(1 2)\")");
+            fail("Should have tanked since geometry() is not a gremlin-groovy function");
         } catch (Exception ex) {
-            assertTrue("Should name the accepted models, was: " + ExceptionUtils.getStackTrace(ex),
-                    ExceptionUtils.getThrowableList(ex).stream().anyMatch(t -> t.getMessage() != null &&
-                            t.getMessage().contains("GType.CARTESIAN or GType.GEOGRAPHIC")));
+            final Throwable root = ExceptionUtils.getRootCause(ex);
+            assertThat(root, instanceOf(MissingMethodException.class));
         }
-
-        // a bare GEOGRAPHIC on its own names the GType
-        assertEquals(GType.GEOGRAPHIC, engine.eval("GEOGRAPHIC"));
     }
 
     @Test
@@ -660,22 +633,22 @@ public class GremlinGroovyScriptEngineTest {
         bindings.put("g", traversal().with(TinkerGraph.open()));
 
         // cartesian points and a polygon, as a console session would add them
-        engine.eval("g.addV(\"store\").property(\"loc\", geometry(\"POINT(2 2)\")).iterate()", bindings);
-        engine.eval("g.addV(\"store\").property(\"loc\", geometry(\"POINT(5 5)\")).iterate()", bindings);
-        engine.eval("g.addV(\"zone\").property(\"loc\", geometry(\"POLYGON((10 10, 14 10, 14 14, 10 14, 10 10))\")).iterate()", bindings);
+        engine.eval("g.addV(\"store\").property(\"loc\", Point.of(2, 2)).iterate()", bindings);
+        engine.eval("g.addV(\"store\").property(\"loc\", Geometry.fromWkt(\"POINT(5 5)\")).iterate()", bindings);
+        engine.eval("g.addV(\"zone\").property(\"loc\", Geometry.fromWkt(\"POLYGON((10 10, 14 10, 14 14, 10 14, 10 10))\")).iterate()", bindings);
 
         // only the point inside the polygon is within it
         assertEquals(1L, engine.eval(
-                "g.V().has(\"loc\", geoWithin(geometry(\"POLYGON((0 0, 4 0, 4 4, 0 4, 0 0))\"))).count().next()", bindings));
+                "g.V().has(\"loc\", geoWithin(Geometry.fromWkt(\"POLYGON((0 0, 4 0, 4 4, 0 4, 0 0))\"))).count().next()", bindings));
         assertEquals(Geometry.fromWkt("POINT(2 2)"), engine.eval(
-                "g.V().has(\"loc\", geoWithin(geometry(\"POLYGON((0 0, 4 0, 4 4, 0 4, 0 0))\"))).values(\"loc\").next()", bindings));
+                "g.V().has(\"loc\", geoWithin(Geometry.fromWkt(\"POLYGON((0 0, 4 0, 4 4, 0 4, 0 0))\"))).values(\"loc\").next()", bindings));
 
         // only the polygon property contains the point
         assertEquals(1L, engine.eval(
-                "g.V().has(\"loc\", geoContains(geometry(\"POINT(12 12)\"))).count().next()", bindings));
+                "g.V().has(\"loc\", geoContains(Point.of(12, 12))).count().next()", bindings));
         assertEquals("zone", engine.eval(
-                "g.V().has(\"loc\", geoContains(geometry(\"POINT(12 12)\"))).label().next()", bindings));
+                "g.V().has(\"loc\", geoContains(Point.of(12, 12))).label().next()", bindings));
         assertEquals(0L, engine.eval(
-                "g.V().has(\"loc\", geoContains(geometry(\"POINT(20 20)\"))).count().next()", bindings));
+                "g.V().has(\"loc\", geoContains(Geometry.fromWkt(\"POINT(20 20)\"))).count().next()", bindings));
     }
 }

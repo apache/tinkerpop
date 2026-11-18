@@ -504,40 +504,21 @@ provider defined type and each graph settled on a representation of its own, whi
 between them. TinkerPop 4.0.0 adds `Geometry` as a Gremlin value type with the kinds `Point`, `LineString`, `Polygon`,
 `MultiPoint`, `MultiLineString`, `MultiPolygon` and `GeometryCollection`.
 
-A geometry is written in a traversal with the `Geometry(...)` literal, which is also spelled `geometry(...)`. Its first
-argument is Well-Known Text and its optional second argument is the coordinate model, `CARTESIAN` for planar
-coordinates or `GEOGRAPHIC` for WGS84 longitude and latitude, or an SRID as an integer. The Gremlin Console and
-Gremlin Server `gremlin-groovy` scripts offer a `geometry()` function that takes the same arguments. In Java a
-geometry is also created from Well-Known Text with `Geometry.fromWkt()`, or from coordinates with factories such as
-`Point.of()`.
-
-Two predicates filter by spatial relationship. `geoWithin` keeps a geometry that lies entirely inside its argument and
-`geoContains` is its converse. In Java they are static methods of `GeoP`:
-
-[source,java]
-----
-g.addV("store").property("name", "Midtown").property("loc", Geometry.fromWkt("POINT(-73.98 40.75)", Model.GEOGRAPHIC)).iterate();
-g.V().has("store", "loc", GeoP.geoWithin(Geometry.fromWkt("POLYGON((-74 40.7, -73.9 40.7, -73.9 40.8, -74 40.8, -74 40.7))", Model.GEOGRAPHIC))).values("name").toList();
-----
-
-The `GeoP` prefix may also be left off:
+The `geoWithin` and `geoContains` predicates filter geometries by their spatial relationship to another geometry. The
+following Gremlin Console session, with `g` bound to an empty TinkerGraph, finds a store whose location lies inside a
+neighborhood:
 
 [source,groovy]
 ----
-gremlin> g.addV('store').property('name','Midtown').property('loc',geometry("POINT(-73.98 40.75)", GEOGRAPHIC)).iterate()
-gremlin> g.V().has('store','loc',geoWithin(geometry("POLYGON((-74 40.7, -73.9 40.7, -73.9 40.8, -74 40.8, -74 40.7))", GEOGRAPHIC))).values('name')
+gremlin> g.addV('store').property('name','Midtown').property('loc',Geometry.fromWkt("POINT(-73.98 40.75)", Model.GEOGRAPHIC)).iterate()
+gremlin> g.V().has('store','loc',geoWithin(Geometry.fromWkt("POLYGON((-74 40.7, -73.9 40.7, -73.9 40.8, -74 40.8, -74 40.7))", Model.GEOGRAPHIC))).values('name')
 ==>Midtown
 ----
 
-The boundary is excluded from `geoWithin` and `geoContains`, so a point lying only on a polygon's edge is not within
-it. A value the predicate cannot compare, such as a geometry in a different spatial reference system or an empty
-geometry, does not match rather than raising an error. The geometry
-kinds also join the `GType` enum, so `typeOf(GType.POINT)` and `typeOf(GType.GEOGRAPHIC)` filter values by kind and by
-coordinate model.
-
-In this release geometries, the `Geometry(...)` literal and the geo predicates parse in the `gremlin-lang` grammar and
-run in embedded Java and in the Gremlin Console against a local graph such as TinkerGraph. GraphBinary, GraphSON and
-Gryo serialization, the language variants, and remote use through a driver or Gremlin Server are not yet supported.
+A Gremlin query string parsed by the `gremlin-lang` grammar writes a geometry as a literal such as
+`Geometry("POINT(1 2)")`. In this release geometries, that literal and the geo predicates run in embedded Java and in
+the Gremlin Console against a local graph such as TinkerGraph. GraphBinary, GraphSON and Gryo serialization, the
+language variants, and remote use through a driver or Gremlin Server are not yet supported.
 The Java and Groovy translators render geometries, while the Python, .NET, Go and JavaScript translators reject them.
 
 To try the predicates on realistic data, `TinkerFactory.createTheDelivery()` builds the
@@ -549,6 +530,9 @@ predicate names, keywords of the Gremlin grammar, so they can no longer be used 
 such a variable must be renamed. Quoted strings, property keys and naked map keys such as `[point:1]` are unaffected.
 
 See: link:https://tinkerpop.apache.org/docs/x.y.z/reference/#a-note-on-predicates[A Note on Predicates],
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#canonical-gremlin-literal-types[Canonical Gremlin Literal Types],
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#gremlin-groovy-differences[Gremlin-Groovy Differences],
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#gtype-enum[GType Enums],
 link:https://tinkerpop.apache.org/docs/x.y.z/dev/provider/#gremlin-semantics-geometry[Geometry Semantics]
 
 === Upgrading for Providers
