@@ -23,11 +23,10 @@ import io.netty.channel.ChannelOption;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
-import org.apache.tinkerpop.gremlin.driver.Channelizer;
 import org.apache.tinkerpop.gremlin.driver.handler.HttpContentDecompressionHandler;
 import org.apache.tinkerpop.gremlin.driver.handler.HttpGremlinResponseStreamDecoder;
 import org.apache.tinkerpop.gremlin.driver.handler.HttpGremlinRequestEncoder;
-import org.apache.tinkerpop.gremlin.util.MessageSerializer;
+import org.apache.tinkerpop.gremlin.driver.handler.HttpResponseMarkers;
 import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
@@ -39,6 +38,7 @@ import io.netty.handler.codec.http.HttpClientCodec;
 import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.util.ser.GraphBinaryMessageSerializerV4;
 import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryMapper;
+import org.apache.tinkerpop.gremlin.util.ser.MessageSerializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -131,7 +131,7 @@ public class SimpleHttpClient extends AbstractClient {
             results.add(response);
 
             // check if the current message is terminating - if it is then we can mark complete
-            if (Channelizer.HttpChannelizer.LAST_CONTENT_READ_RESPONSE == response) {
+            if (HttpResponseMarkers.LAST_CONTENT_READ_RESPONSE == response) {
                 f.complete(results);
             }
         };

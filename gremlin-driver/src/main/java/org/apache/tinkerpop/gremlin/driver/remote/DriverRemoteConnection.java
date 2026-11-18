@@ -57,7 +57,8 @@ public class DriverRemoteConnection implements RemoteConnection {
     private final boolean attachElements;
 
     // Default to SPI-discovered adapters so PDT dehydration works with zero configuration.
-    // This performs a lightweight ServiceLoader scan; the serializer path does its own independent scan.
+    // PDTRegistry.create() (in gremlin-core) runs a lightweight ServiceLoader scan for ProviderDefinedTypeAdapter
+    // implementations; the serializer path does its own independent scan.
     private PDTRegistry pdtRegistry = PDTRegistry.create();
 
     public DriverRemoteConnection(final Configuration conf) {

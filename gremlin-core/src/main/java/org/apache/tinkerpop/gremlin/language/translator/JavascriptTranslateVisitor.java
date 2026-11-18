@@ -20,7 +20,7 @@
 package org.apache.tinkerpop.gremlin.language.translator;
 
 import org.antlr.v4.runtime.tree.ParseTree;
-import org.apache.tinkerpop.gremlin.language.grammar.GremlinParser;
+import org.apache.tinkerpop.gremlin.language.antlr.GremlinParser;
 import org.apache.tinkerpop.gremlin.util.DatetimeHelper;
 
 import java.time.OffsetDateTime;

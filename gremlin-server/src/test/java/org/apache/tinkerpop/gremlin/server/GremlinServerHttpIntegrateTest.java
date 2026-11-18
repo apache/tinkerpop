@@ -75,10 +75,10 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import static org.apache.tinkerpop.gremlin.server.handler.HttpRequestIdHandler.REQUEST_ID_HEADER_NAME;
-import static org.apache.tinkerpop.gremlin.util.Tokens.ARGS_MATERIALIZE_PROPERTIES;
-import static org.apache.tinkerpop.gremlin.util.Tokens.MATERIALIZE_PROPERTIES_ALL;
-import static org.apache.tinkerpop.gremlin.util.Tokens.MATERIALIZE_PROPERTIES_TOKENS;
-import static org.apache.tinkerpop.gremlin.util.Tokens.TIMEOUT_MILLIS;
+import static org.apache.tinkerpop.gremlin.util.message.Tokens.ARGS_MATERIALIZE_PROPERTIES;
+import static org.apache.tinkerpop.gremlin.util.message.Tokens.MATERIALIZE_PROPERTIES_ALL;
+import static org.apache.tinkerpop.gremlin.util.message.Tokens.MATERIALIZE_PROPERTIES_TOKENS;
+import static org.apache.tinkerpop.gremlin.util.message.Tokens.TIMEOUT_MILLIS;
 import static org.apache.tinkerpop.gremlin.util.ser.SerTokens.TOKEN_DATA;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;

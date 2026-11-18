@@ -26,8 +26,8 @@ import org.apache.tinkerpop.gremlin.server.GremlinServer;
 import org.apache.tinkerpop.gremlin.server.auth.AuthenticatedUser;
 import org.apache.tinkerpop.gremlin.server.authz.AuthorizationException;
 import org.apache.tinkerpop.gremlin.server.authz.Authorizer;
-import org.apache.tinkerpop.gremlin.util.Tokens;
 import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
+import org.apache.tinkerpop.gremlin.util.message.Tokens;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

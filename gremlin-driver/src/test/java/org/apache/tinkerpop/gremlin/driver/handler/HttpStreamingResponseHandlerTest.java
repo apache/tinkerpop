@@ -48,7 +48,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
-import static org.apache.tinkerpop.gremlin.driver.Channelizer.HttpChannelizer.LAST_CONTENT_READ_RESPONSE;
+import static org.apache.tinkerpop.gremlin.driver.handler.HttpResponseMarkers.LAST_CONTENT_READ_RESPONSE;
 import static org.junit.Assert.*;
 
 public class HttpStreamingResponseHandlerTest {

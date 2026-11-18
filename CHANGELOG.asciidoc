@@ -26,6 +26,10 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 === TinkerPop 4.0.0-beta.4 (Release Date: NOT OFFICIALLY RELEASED YET)
 
 * Added a `Geometry` value type for GeoSpatial data, which adds a dependency on the JTS Topology Suite to `gremlin-core`.
+* Added an `activate` mode to `gremlin-server.sh` that returns after the server is ready.
+* Added JPMS support to eight Java artifacts, with API visibility corrections to `Channelizer`, `chooseConnection()` and `TinkerMessenger`, package moves for the Gremlin parser, `MessageSerializer` and `Tokens`, and replacement of `netty-all`.
+* Fixed the `gremlin-driver` `-shaded` and `gremlin-shaded` jars by stripping incompatible signature and module metadata and correctly relocating JDK 21 multi-release classes.
+* Changed default `Graph` resolution to use the new `DefaultGraphProvider` SPI.
 * Added a `Char` type to `gremlin-go` to represent the Gremlin `Character` type in `GremlinLang`.
 * Restricted GraphSON and Gryo `Class` deserialization to classes registered with `ClassRegistry.register()`, `registerStrategy()` or `registerStrategies()`.
 * Added browser smoke tests for `gremlin-javascript`.

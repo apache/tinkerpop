@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.language.grammar;
 
 import org.antlr.v4.runtime.tree.ParseTree;
+import org.apache.tinkerpop.gremlin.language.antlr.GremlinParser;
 import org.apache.tinkerpop.gremlin.process.traversal.GremlinLang;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;

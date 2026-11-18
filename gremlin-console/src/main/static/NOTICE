@@ -42,18 +42,6 @@ library. Which has been distributed under the BSD style license
 included in licenses/ganymed-ssh
 
 ------------------------------------------------------------------------
-HPPC 0.7.1
-------------------------------------------------------------------------
-HPPC borrowed code, ideas or both from:
-
- * Apache Lucene, http://lucene.apache.org/
-   (Apache license)
- * Fastutil, http://fastutil.di.unimi.it/
-   (Apache license)
- * Koloboke, https://github.com/OpenHFT/Koloboke
-   (Apache license)
-
-------------------------------------------------------------------------
 Jackson-Databind, Jackson-Annotation and Jackson-Core 2.22.4 (Included through gremlin-shaded)
 ------------------------------------------------------------------------
 It was originally written by Tatu Saloranta (tatu.saloranta@iki.fi), and has

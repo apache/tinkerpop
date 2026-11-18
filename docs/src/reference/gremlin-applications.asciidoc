@@ -921,6 +921,7 @@ from the `ext` directory.
 |=========================================================
 |Parameter|Description
 |start|Start the server in the background.
+|activate|Start the server in the background and wait until it is ready.
 |stop|Shutdown the server.
 |restart|Shutdown a running server then start it again.
 |status|Check if the server is running.
@@ -939,6 +940,7 @@ The `bin/gremlin-server.sh` script can be customized with environment variables 
 |GREMLIN_YAML| The default server YAML file (conf/gremlin-server.yaml)
 |LOG_DIR| Location of gremlin.log where stdout/stderr are captured (logs/)
 |PID_DIR| Location of gremlin.pid
+|STARTUP_TIMEOUT| Seconds that `activate` waits for the server to become ready (60)
 |RUNAS| User to run the server as
 |JAVA_HOME| Java install location. Will use $JAVA_HOME/bin/java
 |JAVA_OPTIONS| Options passed to the JVM

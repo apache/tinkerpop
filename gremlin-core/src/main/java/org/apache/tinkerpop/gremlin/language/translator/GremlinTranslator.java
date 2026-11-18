@@ -22,7 +22,10 @@ import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.atn.PredictionMode;
-import org.apache.tinkerpop.gremlin.language.grammar.*;
+import org.apache.tinkerpop.gremlin.language.antlr.GremlinLexer;
+import org.apache.tinkerpop.gremlin.language.antlr.GremlinParser;
+import org.apache.tinkerpop.gremlin.language.grammar.GremlinErrorListener;
+import org.apache.tinkerpop.gremlin.language.grammar.GremlinParserException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

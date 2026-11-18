@@ -89,6 +89,11 @@ limitations under the License.
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-failsafe-plugin</artifactId>
+                <configuration>
+                    <systemPropertyVariables>
+                        <gremlin.jpms.artifactJar>${project.build.directory}/${project.build.finalName}.jar</gremlin.jpms.artifactJar>
+                    </systemPropertyVariables>
+                </configuration>
             </plugin>
             <!-- -proc:none = disable annotation processing - testing of the GremlinDslProcessor is handled separately -->
             <plugin>
@@ -103,6 +108,18 @@ limitations under the License.
                         <arg>-proc:none</arg>
                     </compilerArgs>
                 </configuration>
+                <executions>
+                    <!-- report exported signatures that expose inaccessible types -->
+                    <execution>
+                        <id>default-compile</id>
+                        <configuration>
+                            <showWarnings>true</showWarnings>
+                            <compilerArgs combine.children="append">
+                                <arg>-Xlint:exports,module,opens,-requires-automatic,-requires-transitive-automatic</arg>
+                            </compilerArgs>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>

@@ -31,8 +31,8 @@ import io.netty.util.Attribute;
 import io.netty.util.AttributeKey;
 import io.netty.util.AttributeMap;
 import io.netty.util.CharsetUtil;
-import org.apache.tinkerpop.gremlin.util.MessageSerializer;
 import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
+import org.apache.tinkerpop.gremlin.util.ser.MessageSerializer;
 import org.apache.tinkerpop.gremlin.util.ser.SerTokens;
 import org.apache.tinkerpop.gremlin.util.ser.SerializationException;
 import org.apache.tinkerpop.shaded.jackson.databind.JsonNode;
@@ -40,7 +40,7 @@ import org.apache.tinkerpop.shaded.jackson.databind.ObjectMapper;
 
 import java.util.List;
 
-import static org.apache.tinkerpop.gremlin.driver.Channelizer.HttpChannelizer.LAST_CONTENT_READ_RESPONSE;
+import static org.apache.tinkerpop.gremlin.driver.handler.HttpResponseMarkers.LAST_CONTENT_READ_RESPONSE;
 
 public class HttpGremlinResponseStreamDecoder extends MessageToMessageDecoder<DefaultHttpObject> {
 

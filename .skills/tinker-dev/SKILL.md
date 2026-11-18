@@ -91,6 +91,13 @@ Use the broadest rule that matches:
 - **Judge pass/fail by the Maven exit code, not console text.** Do not `grep`/`tail` the build
   output — tests deliberately emit expected errors, so the log misleads. Exit `0` = pass. For
   Python, detailed per-suite results are in `gremlin-python/target/python3/python-reports/*.xml`.
+- **Inspect JPMS compilation warnings.** Whenever an `mvn` command compiles Java, scan its output
+  for javac warnings that an exported API references an inaccessible type, such as a type that
+  "is not exported" or a module that "does not read" the type's module. Investigate and report
+  these warnings even when Maven exits `0`; they can identify an invalid public module contract
+  that the build does not otherwise reject. Treat newly introduced automatic-module warnings as
+  dependency review items, not contract failures: TinkerPop intentionally exposes some automatic
+  modules, so `[requires-transitive-automatic]` alone does not indicate a defect.
 
 If you cannot run the validation (for example, Docker is unavailable), say so explicitly and
 report the change as **not validated** — do not present it as done.

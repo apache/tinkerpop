@@ -39,7 +39,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
-import static org.apache.tinkerpop.gremlin.driver.Channelizer.HttpChannelizer.LAST_CONTENT_READ_RESPONSE;
+import static org.apache.tinkerpop.gremlin.driver.handler.HttpResponseMarkers.LAST_CONTENT_READ_RESPONSE;
 
 /**
  * Writes responses to the {@link ResultSet} of a request as the {@link ResponseMessage} objects are deserialized.

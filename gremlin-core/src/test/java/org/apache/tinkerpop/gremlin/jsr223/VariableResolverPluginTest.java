@@ -18,7 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.jsr223;
 
-import org.apache.tinkerpop.gremlin.language.grammar.GremlinParser;
+import org.apache.tinkerpop.gremlin.language.antlr.GremlinParser;
 import org.apache.tinkerpop.gremlin.language.grammar.VariableResolver;
 import org.junit.Test;
 import static org.hamcrest.MatcherAssert.assertThat;

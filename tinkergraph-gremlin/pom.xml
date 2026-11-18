@@ -66,6 +66,22 @@ limitations under the License.
         <directory>${basedir}/target</directory>
         <finalName>${project.artifactId}-${project.version}</finalName>
         <plugins>
+            <!-- report exported signatures that expose inaccessible types -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>default-compile</id>
+                        <configuration>
+                            <showWarnings>true</showWarnings>
+                            <compilerArgs combine.children="append">
+                                <arg>-Xlint:exports,module,opens,-requires-automatic,-requires-transitive-automatic</arg>
+                            </compilerArgs>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
@@ -73,6 +89,12 @@ limitations under the License.
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-failsafe-plugin</artifactId>
+                <configuration>
+                    <systemPropertyVariables>
+                        <gremlin.jpms.tinkergraphJar>${project.build.directory}/${project.build.finalName}.jar</gremlin.jpms.tinkergraphJar>
+                        <gremlin.jpms.tinkergraphMinJar>${project.build.directory}/${project.build.finalName}-min.jar</gremlin.jpms.tinkergraphMinJar>
+                    </systemPropertyVariables>
+                </configuration>
             </plugin>
             <!--
               Adds a minimal TinkerGraph jar with the "min" classifier stripping out sample data files which bloat

@@ -51,6 +51,11 @@ limitations under the License.
             <version>2.22.4</version>
             <optional>true</optional>
         </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
     <build>
         <directory>${basedir}/target</directory>
@@ -109,21 +114,28 @@ limitations under the License.
                                     <shadedPattern>META-INF/versions/17/org.apache.tinkerpop.shaded.jackson</shadedPattern>
                                 </relocation>
                                 <relocation>
-                                    <pattern>META-INF/versions/19/com.fasterxml.jackson</pattern>
-                                    <shadedPattern>META-INF/versions/19/org.apache.tinkerpop.shaded.jackson</shadedPattern>
-                                </relocation>
-                                <relocation>
                                     <pattern>META-INF/versions/21/com.fasterxml.jackson</pattern>
                                     <shadedPattern>META-INF/versions/21/org.apache.tinkerpop.shaded.jackson</shadedPattern>
                                 </relocation>
                             </relocations>
                             <filters>
-                                <!-- Exclude service descriptors because they still reference unshaded classes, this
-                                     causes an error if the JAR is used as an automatic module in a JPMS app. -->
+                                <!-- Exclude service descriptors because they still reference unshaded classes; the
+                                     module descriptor added below declares no provides either. -->
                                 <filter>
                                   <artifact>*</artifact>
                                   <excludes>
                                     <exclude>META-INF/services/**</exclude>
+                                  </excludes>
+                                </filter>
+                                <!-- Exclude every module descriptor carried by a bundled dependency: a leaked
+                                     descriptor (root or under a versioned directory) would misname this jar as the
+                                     third party's module and conflict with the org.apache.tinkerpop.gremlin.shaded
+                                     descriptor that moditect-maven-plugin adds below. -->
+                                <filter>
+                                  <artifact>*:*</artifact>
+                                  <excludes>
+                                    <exclude>module-info.class</exclude>
+                                    <exclude>META-INF/versions/*/module-info.class</exclude>
                                   </excludes>
                                 </filter>
                             </filters>
@@ -186,6 +198,43 @@ limitations under the License.
                         </configuration>
                     </execution>
                 </executions>
+            </plugin>
+            <!--
+            Adds the org.apache.tinkerpop.gremlin.shaded module descriptor to the jar produced by the shade execution
+            above. This module has no sources, so the descriptor can't come from maven-compiler-plugin; this execution
+            must stay declared after maven-shade-plugin so that both run in the package phase in that order. The
+            descriptor exports every relocated package and has to be updated when a bundled dependency adds,
+            removes or renames one.
+            -->
+            <plugin>
+                <groupId>org.moditect</groupId>
+                <artifactId>moditect-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>add-module-info</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>add-module-info</goal>
+                        </goals>
+                        <configuration>
+                            <!-- a root descriptor rather than one under META-INF/versions -->
+                            <jvmVersion>base</jvmVersion>
+                            <overwriteExistingFiles>true</overwriteExistingFiles>
+                            <module>
+                                <moduleInfoFile>${project.basedir}/src/main/moditect/module-info.java</moduleInfoFile>
+                            </module>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-failsafe-plugin</artifactId>
+                <configuration>
+                    <systemPropertyVariables>
+                        <gremlin.jpms.shadedJar>${project.build.directory}/${project.build.finalName}.jar</gremlin.jpms.shadedJar>
+                    </systemPropertyVariables>
+                </configuration>
             </plugin>
         </plugins>
     </build>

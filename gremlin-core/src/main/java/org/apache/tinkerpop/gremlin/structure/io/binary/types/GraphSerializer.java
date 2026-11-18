@@ -31,12 +31,12 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.io.Buffer;
 import org.apache.tinkerpop.gremlin.structure.util.Attachable;
+import org.apache.tinkerpop.gremlin.structure.util.DefaultGraphProvider;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertexProperty;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.io.IOException;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -49,8 +49,6 @@ import java.util.Map;
  */
 public class GraphSerializer extends SimpleTypeSerializer<Graph> {
 
-    private static final Method openMethod = detectGraphOpenMethod();
-
     public GraphSerializer() {
         super(DataType.GRAPH);
     }
@@ -58,8 +56,8 @@ public class GraphSerializer extends SimpleTypeSerializer<Graph> {
     @Override
     protected Graph readValue(final Buffer buffer, final GraphBinaryReader context) throws IOException {
 
-        if (null == openMethod)
-            throw new IOException("TinkerGraph is an optional dependency to gremlin-driver - if deserializing Graph instances it must be explicitly added as a dependency");
+        final DefaultGraphProvider provider = DefaultGraphProvider.find()
+                .orElseThrow(() -> new IOException(DefaultGraphProvider.NO_PROVIDER_MESSAGE));
 
         final Configuration conf = new BaseConfiguration();
         conf.setProperty("gremlin.tinkergraph.defaultVertexPropertyCardinality", "list");
@@ -104,7 +102,7 @@ public class GraphSerializer extends SimpleTypeSerializer<Graph> {
             if (requiresMultiLabelCardinality)
                 conf.setProperty("gremlin.tinkergraph.vertexLabelCardinality", "ZERO_OR_MORE");
 
-            final Graph graph = (Graph) openMethod.invoke(null, conf);
+            final Graph graph = provider.open(conf);
 
             for (final DetachedVertex parsedVertex : parsedVertices) {
                 parsedVertex.attach(Attachable.Method.getOrCreate(graph));
@@ -213,29 +211,5 @@ public class GraphSerializer extends SimpleTypeSerializer<Graph> {
             index.get(vp.key()).add(vp);
         });
         return index;
-    }
-
-    private static Method detectGraphOpenMethod() {
-        final Class<?> graphClazz = detectTinkerGraph();
-
-        // if no class then no method to lookup
-        if (null == graphClazz) return null;
-
-        try {
-             return graphClazz.getMethod("open", Configuration.class);
-        } catch (NoSuchMethodException nsme) {
-            // famous last words - can't happen
-            throw new IllegalStateException(nsme);
-        }
-    }
-
-    private static Class<?> detectTinkerGraph() {
-        // the java driver defaults to using TinkerGraph to deserialize Graph instances. if TinkerGraph isn't present
-        // on the path, that's cool, users just won't be able to deserialize that
-        try {
-            return Class.forName("org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph");
-        } catch (ClassNotFoundException cnfe) {
-            return null;
-        }
     }
 }

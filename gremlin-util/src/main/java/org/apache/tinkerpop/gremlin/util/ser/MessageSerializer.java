@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.util;
+package org.apache.tinkerpop.gremlin.util.ser;
 
 import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
@@ -30,16 +30,17 @@ import org.slf4j.LoggerFactory;
 import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.ServiceLoader;
 
 /**
  * Serializes data to and from Gremlin Server.  Typically, the object being serialized or deserialized will be an item
  * from an {@link Iterator} as returned from the {@code ScriptEngine} or an incoming {@link RequestMessage}.
- * {@link MessageSerializer} instances are instantiated to a cache via {@link ServiceLoader} and indexed based on
- * the mime types they support.  If a mime type is supported more than once, the first {@link MessageSerializer}
- * instance loaded for that mime type is assigned. If a mime type is not found the server default is chosen. The
- * default may change from version to version so it is best to not rely on it when developing applications and to
- * always be explicit in specifying the type you wish to bind to.
+ * {@link MessageSerializer} implementations are not discovered automatically (there is no {@code ServiceLoader}
+ * lookup). Gremlin Server and the driver each instantiate the implementation named by its fully qualified class
+ * name in their configuration, using reflection and its public no-argument constructor. Gremlin Server indexes the
+ * configured instances based on the mime types they support.  If a mime type is supported more than once, the
+ * first configured {@link MessageSerializer} for that mime type is assigned. If a mime type is not found the server
+ * default is chosen. The default may change from version to version so it is best to not rely on it when developing
+ * applications and to always be explicit in specifying the type you wish to bind to.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */

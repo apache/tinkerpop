@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.language.grammar;
 
+import org.apache.tinkerpop.gremlin.language.antlr.GremlinParser;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.PageRank;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.PeerPressure;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.ShortestPath;

@@ -1400,6 +1400,30 @@ link:https://github.com/apache/tinkerpop/blob/master/LICENSE[LICENSE] / link:htt
 ** Gremlin Server link:https://github.com/apache/tinkerpop/blob/master/gremlin-server/src/main/static/LICENSE[LICENSE]
 / link:https://github.com/apache/tinkerpop/blob/master/gremlin-server/src/main/static/NOTICE[NOTICE]
 
+[[module-descriptors]]
+=== Java Module Descriptors
+
+`gremlin-language`, `gremlin-core`, `gremlin-util`, `gql-gremlin`, `tinkergraph-gremlin`, `gremlin-driver` and
+`gremlin-annotations` each have a `module-info.java` in `src/main/java`. Adding a dependency, using a new
+`ServiceLoader` service, adding a package or exposing a third-party type in a public signature usually needs a
+matching change to the descriptor (`requires`, `uses`/`provides` or `exports`). These modules compile with
+`-Xlint:exports` to report exported signatures that reference inaccessible types.
+
+`gremlin-shaded` has no sources, so its descriptor lives in `gremlin-shaded/src/main/moditect/module-info.java` and
+is added to the jar after shading. It enumerates every relocated Jackson and Kryo package, and one Jackson package
+name embeds the Jackson version (for example
+`org.apache.tinkerpop.shaded.jackson.core.internal.shaded.fdp.v2_18_9`). It must be updated whenever the shaded
+Jackson or Kryo versions change.
+
+The descriptors are validated by executable JPMS example projects and artifact verification tests. The standalone
+`embedded`, `remote`, `remote-graph`, `dsl`, `extensions` and `sigv4` projects under `example-projects/java/jpms`
+build small modular applications and collect their runtime dependencies. Continuous integration starts the packaged
+Gremlin Server and launches each application with `java -p ... -m`, so a missing `requires`, `exports` or `uses`
+makes an application fail. The `ModuleDescriptorVerificationTest` and `*ArtifactVerificationTest` classes run in
+the modules that own the jars. They pin each module descriptor (name, exports, opens and services) and check the
+shaded jars. These tests run with the integration tests, so they are skipped unless `-DskipIntegrationTests=false`
+is set.
+
 === Source LICENSE and NOTICE
 
 As dependencies are not typically added to the source distribution (i.e. the source zip distribution), there is

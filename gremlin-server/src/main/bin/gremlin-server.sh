@@ -71,6 +71,10 @@ if [[ -z "$GREMLIN_YAML" ]]; then
   GREMLIN_YAML=$GREMLIN_HOME/conf/gremlin-server.yaml
 fi
 
+if [[ -z "$STARTUP_TIMEOUT" ]]; then
+  STARTUP_TIMEOUT=60
+fi
+
 if [[ ! -r "$GREMLIN_YAML" ]]; then
   # try relative to home
   GREMLIN_YAML="$GREMLIN_HOME/$GREMLIN_YAML"
@@ -211,12 +215,45 @@ start() {
   RUNNING=$?
   if [[ $RUNNING -eq 0 ]]; then
     echo Server started $(cat "$PID_FILE").
-    exit 0
+    return 0
   else
     echo Server failed
     exit 1
   fi
 
+}
+
+activate() {
+  if ! [[ "$STARTUP_TIMEOUT" =~ ^[1-9][0-9]*$ ]]; then
+    echo ERROR: STARTUP_TIMEOUT must be a positive integer.
+    exit 1
+  fi
+
+  LOG_POSITION=1
+  if [[ -f "$LOG_FILE" ]]; then
+    LOG_POSITION=$(( $(wc -c < "$LOG_FILE") + 1 ))
+  fi
+
+  start
+
+  for i in $(seq 1 "$STARTUP_TIMEOUT"); do
+    if tail -c "+$LOG_POSITION" "$LOG_FILE" 2>/dev/null | grep -Fq "Channel started at port "; then
+      echo Server ready with PID $(cat "$PID_FILE").
+      return 0
+    fi
+
+    if ! isRunning; then
+      echo Server exited before becoming ready. See $LOG_FILE for details.
+      stop
+      return 1
+    fi
+
+    sleep 1
+  done
+
+  echo Server did not become ready within $STARTUP_TIMEOUT seconds. See $LOG_FILE for details.
+  stop
+  return 1
 }
 
 startForeground() {
@@ -268,6 +305,9 @@ case "$1" in
   start)
     start
     ;;
+  activate)
+    activate
+    ;;
   stop)
     stop
     ;;
@@ -289,10 +329,11 @@ case "$1" in
       fi
       echo Configuration file not found.
     fi
-    echo "Usage: $0 {start|stop|restart|status|console|install <group> <artifact> <version>|<conf file>}"
+    echo "Usage: $0 {start|activate|stop|restart|status|console|install <group> <artifact> <version>|<conf file>}"
     echo
     echo "    start        Start the server in the background using conf/gremlin-server.yaml as the"
     echo "                 default configuration file"
+    echo "    activate     Start the server in the background and wait until it is ready"
     echo "    stop         Stop the server"
     echo "    restart      Stop and start the server"
     echo "    status       Check if the server is running"

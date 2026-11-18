@@ -50,4 +50,36 @@ public final class StringUtil {
         }
         return Arrays.asList(StringUtils.splitByWholeSeparator(toSplit, separator));
     }
+
+    /**
+     * Determines whether the given string is a syntactically valid Java identifier, to the same effect as
+     * {@code javax.lang.model.SourceVersion#isIdentifier(CharSequence)} without requiring the {@code java.compiler}
+     * module. A string is a valid identifier if it is non-empty, its first code point satisfies
+     * {@link Character#isJavaIdentifierStart(int)}, and every other code point satisfies
+     * {@link Character#isJavaIdentifierPart(int)}. Unlike {@code SourceVersion.isName()}, reserved keywords are not
+     * rejected.
+     *
+     * @param s the string to test
+     * @return {@code true} if {@code s} is a valid Java identifier
+     */
+    public static boolean isIdentifier(final String s) {
+        if (s == null || s.isEmpty()) {
+            return false;
+        }
+
+        final int first = s.codePointAt(0);
+        if (!Character.isJavaIdentifierStart(first)) {
+            return false;
+        }
+
+        for (int i = Character.charCount(first); i < s.length(); ) {
+            final int codePoint = s.codePointAt(i);
+            if (!Character.isJavaIdentifierPart(codePoint)) {
+                return false;
+            }
+            i += Character.charCount(codePoint);
+        }
+
+        return true;
+    }
 }

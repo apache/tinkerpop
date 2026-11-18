@@ -69,12 +69,28 @@ limitations under the License.
                         <configuration>
                             <arguments>
                                 <argument>-package</argument>
-                                <argument>org.apache.tinkerpop.gremlin.language.grammar</argument>
+                                <argument>org.apache.tinkerpop.gremlin.language.antlr</argument>
                                 <argument>-encoding</argument>
                                 <argument>utf-8</argument>
                             </arguments>
                             <visitor>true</visitor>
-                            <outputDirectory>${project.build.directory}/generated-sources/antlr4/org/apache/tinkerpop/gremlin/language/grammar/</outputDirectory>
+                            <outputDirectory>${project.build.directory}/generated-sources/antlr4/org/apache/tinkerpop/gremlin/language/antlr/</outputDirectory>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <!-- report exported signatures that expose inaccessible types -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>default-compile</id>
+                        <configuration>
+                            <showWarnings>true</showWarnings>
+                            <compilerArgs combine.children="append">
+                                <arg>-Xlint:exports,module,opens,-requires-automatic,-requires-transitive-automatic</arg>
+                            </compilerArgs>
                         </configuration>
                     </execution>
                 </executions>
@@ -82,6 +98,15 @@ limitations under the License.
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-failsafe-plugin</artifactId>
+                <configuration>
+                    <systemPropertyVariables>
+                        <gremlin.jpms.artifactJar>${project.build.directory}/${project.build.finalName}.jar</gremlin.jpms.artifactJar>
+                    </systemPropertyVariables>
+                </configuration>
             </plugin>
         </plugins>
     </build>

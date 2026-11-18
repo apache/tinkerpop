@@ -21,6 +21,8 @@ package org.apache.tinkerpop.gremlin.language.grammar;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.tree.ParseTree;
+import org.apache.tinkerpop.gremlin.language.antlr.GremlinLexer;
+import org.apache.tinkerpop.gremlin.language.antlr.GremlinParser;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;

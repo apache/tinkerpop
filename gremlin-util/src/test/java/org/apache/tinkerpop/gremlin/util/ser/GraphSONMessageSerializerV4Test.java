@@ -29,7 +29,6 @@ import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONMapper;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONVersion;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONXModuleV4;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.TinkerPopJacksonModule;
-import org.apache.tinkerpop.gremlin.util.MessageSerializer;
 import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.util.message.ResponseResult;
 import org.apache.tinkerpop.shaded.jackson.core.JsonGenerator;

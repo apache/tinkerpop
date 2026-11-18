@@ -20,6 +20,8 @@ package org.apache.tinkerpop.gremlin.language.grammar;
 
 import org.antlr.v4.runtime.tree.AbstractParseTreeVisitor;
 import org.antlr.v4.runtime.tree.ParseTree;
+import org.apache.tinkerpop.gremlin.language.antlr.GremlinParser;
+import org.apache.tinkerpop.gremlin.language.antlr.GremlinVisitor;
 
 /**
  * This class provides implementation of {@link GremlinVisitor}, where each method will throw

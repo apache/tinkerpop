@@ -222,6 +222,9 @@ public final class MathStep<S> extends MapStep<S, Double> implements ByModulatin
             this.equation = equation;
         }
 
+        // exp4j is an internal dependency (it has no stable module name) that is only exposed here for providers
+        // that build on this step
+        @SuppressWarnings("exports")
         public Expression getExpression() {
             if (null == expression) {
                 this.expression = new ExpressionBuilder(this.equation)

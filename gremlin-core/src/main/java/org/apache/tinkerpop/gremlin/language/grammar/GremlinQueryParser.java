@@ -21,13 +21,16 @@ package org.apache.tinkerpop.gremlin.language.grammar;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.atn.PredictionMode;
+import org.apache.tinkerpop.gremlin.language.antlr.GremlinLexer;
+import org.apache.tinkerpop.gremlin.language.antlr.GremlinParser;
+import org.apache.tinkerpop.gremlin.language.antlr.GremlinVisitor;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.util.StringUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Collection;
 import java.util.Map;
-import javax.lang.model.SourceVersion;
 
 /**
  * Parses Gremlin strings to an {@code Object}, typically to a {@link Traversal}.
@@ -121,7 +124,7 @@ public class GremlinQueryParser {
                                 entry.getKey() == null ? "null" : entry.getKey().getClass().getSimpleName()));
             }
             final String key = (String) entry.getKey();
-            if (!SourceVersion.isIdentifier(key)) {
+            if (!StringUtil.isIdentifier(key)) {
                 throw new GremlinParserException(
                         String.format("Parameter map key must be a valid identifier: %s", key));
             }

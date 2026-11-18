@@ -37,8 +37,8 @@ import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertexProper
 import org.apache.tinkerpop.gremlin.structure.util.reference.ReferencePath;
 import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceProperty;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
-import org.apache.tinkerpop.gremlin.util.MessageSerializer;
 import org.apache.tinkerpop.gremlin.util.ser.GraphBinaryMessageSerializerV4;
+import org.apache.tinkerpop.gremlin.util.ser.MessageSerializer;
 import org.apache.tinkerpop.gremlin.util.ser.Serializers;
 import org.junit.After;
 import org.junit.Before;

@@ -856,6 +856,68 @@ can follow the same pattern:
 `ProviderOptimizationStrategy` to claim all `DeclarativeMatchStep` instances in a traversal wins; providers do not
 need to interact with `gql-gremlin` at all if they supply their own end-to-end implementation.
 
+[[provider-jpms]]
+==== Java Module System Support
+
+The module names, application configuration, transitive dependencies and classpath-only limitations for TinkerPop
+artifacts are described in the
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#gremlin-java-jpms[Java Platform Module System] section of
+the reference documentation. This section defines the module access required from graph systems and other extensions.
+A graph system that ships its own module descriptor typically requires `org.apache.tinkerpop.gremlin.core`. That
+module requires transitively the modules whose types appear in its API, so a provider does not need to name them.
+
+TinkerPop discovers several provider extensions by class name or reflects into them, and on the module path it can
+only do so when the provider's module exports, or for deep reflection opens, the relevant package to the TinkerPop
+module doing the work:
+
+[cols="2,1,2",options="header"]
+|===
+|Extension point |Found by |Extension module must
+|`Graph` implementation created by `GraphFactory` |class name |export its package to
+`org.apache.tinkerpop.gremlin.core`
+|DSL `TraversalSource` |reflection |export its package to `org.apache.tinkerpop.gremlin.core` and
+`org.apache.tinkerpop.gremlin.driver` for remote transactions
+|Custom `RemoteConnection` |class name |export its package to `org.apache.tinkerpop.gremlin.core`
+|Globally registered `TraversalStrategy` |reflection (`instance()`, `create(Configuration)`) |export its package to
+`org.apache.tinkerpop.gremlin.core`
+|`IoRegistry` named in configuration |class name |export its package to `org.apache.tinkerpop.gremlin.core` and
+`org.apache.tinkerpop.gremlin.util`
+|Custom `TypeSerializerRegistry.Builder` |class name |export its package to
+`org.apache.tinkerpop.gremlin.util`
+|Custom `MessageSerializer` named in driver settings |class name |export its package to
+`org.apache.tinkerpop.gremlin.driver`
+|TinkerGraph `IdManager`, `TinkerStorage` or `TinkerServiceFactory` |class name |export its package to
+`org.apache.tinkerpop.gremlin.tinkergraph`
+|`@ProviderDefined` class |deep reflection |open its package to `org.apache.tinkerpop.gremlin.core`
+|`VertexProgram` or `MapReduce` |deep reflection |open its package to `org.apache.tinkerpop.gremlin.core`
+|`ProviderDefinedTypeAdapter` |`ServiceLoader` |declare the service with `provides`
+|`DefaultGraphProvider` |`ServiceLoader` |declare the service with `provides`
+|===
+
+For example, an annotated provider-defined type is opened to `gremlin-core`, while its adapter is registered as a
+service and needs neither `exports` nor `opens`:
+
+[source,java]
+----
+module com.example.graph {
+    requires org.apache.tinkerpop.gremlin.core;
+
+    opens com.example.graph.types to org.apache.tinkerpop.gremlin.core;
+
+    provides org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefinedTypeAdapter
+        with com.example.graph.uint.Uint32Adapter;
+}
+----
+
+Extensions marked "class name" in the table above must be available on the application's class path or module path
+and must export their packages as indicated. Service implementations such as `ProviderDefinedTypeAdapter` and
+`DefaultGraphProvider` are instead registered with a `provides` clause, or with `META-INF/services` when using the
+class path. Their implementation packages need neither `exports` nor `opens`.
+
+`gremlin-core` uses `DefaultGraphProvider` (in `org.apache.tinkerpop.gremlin.structure.util`) to create an empty graph
+for a GraphBinary `Graph` result or a `subgraph()` side effect. `tinkergraph-gremlin` registers `TinkerGraph` for this
+purpose. An application may use another implementation instead, but only one distinct implementation may be present.
+
 [[validating-with-gremlin-test]]
 [llms-summary="Using the gremlin-test suite to validate a graph implementation: the structure and process test standards and how to opt in or out of feature-gated tests."]
 === Validating with Gremlin-Test
@@ -882,6 +944,13 @@ TinkerPop provides `gremlin-test`, a technology test kit, that helps validate pr
 Gherkin-based test suite and a JVM-based test suite. The Gherkin suite is meant to test Gremlin operations and semantics
 while the JVM-based suite is meant for lower-level `Graph` implementation validation and for Gremlin use cases that
 apply to embedded operations (i.e. running Gremlin in the same JVM as the `Graph` implementation).
+
+NOTE: `subgraph()` builds its default side-effect graph, and GraphBinary deserializes `Graph` results, through the
+`org.apache.tinkerpop.gremlin.structure.util.DefaultGraphProvider` service, which `tinkergraph-gremlin` registers for
+`TinkerGraph`. That is why `tinkergraph-gremlin` must be present for those tests.
+
+NOTE: `gremlin-test` has no module descriptor and shares packages with `gremlin-core`, so it is supported only on the
+classpath. Providers run the test suite on the classpath even when their own artifacts are named modules.
 
 ==== JVM Test Suite
 
@@ -1807,13 +1876,10 @@ for example:
 com.example.graph.ColorAdapter
 ----
 
-NOTE: Annotation-based hydration reflectively constructs and populates the annotated class
-(`Constructor.setAccessible(true)` and `Field.set()` in `AnnotatedTypeAdapter`). Under JPMS, the provider's module
-must therefore `opens` its PDT package to `org.apache.tinkerpop.gremlin.core` (e.g.
-`opens com.example.graph.types to org.apache.tinkerpop.gremlin.core;` in `module-info.java`, or the equivalent
-`--add-opens` JVM flag). Otherwise the JVM throws `InaccessibleObjectException` at hydration time. A provider using a
-`CompositePDTAdapter` or `PrimitivePDTAdapter` with explicit `fromFields`/`fromValue` logic does not rely on
-reflection and is unaffected.
+NOTE: Annotation-based hydration reflectively constructs and populates the annotated class. Follow the package access
+requirements in <<provider-jpms,Java Module System Support>> when the class belongs to a named module. A provider
+using a `CompositePDTAdapter` or `PrimitivePDTAdapter` with explicit `fromFields` or `fromValue` logic does not rely
+on reflection and does not need to open the package.
 
 ===== Python
 
