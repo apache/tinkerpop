@@ -91,6 +91,14 @@ public class AddPropertyStep<S extends Element> extends SideEffectStep<S>
 
     @Override
     protected void sideEffect(final Traverser.Admin<S> traverser) {
+        // write once for each traverser that a bulked traverser represents
+        final long bulk = Math.max(1L, traverser.bulk());
+        for (long i = 0; i < bulk; i++) {
+            addProperty(traverser);
+        }
+    }
+
+    private void addProperty(final Traverser.Admin<S> traverser) {
         final Object k = this.parameters.get(traverser, T.key, () -> {
             throw new IllegalStateException("The AddPropertyStep does not have a provided key: " + this);
         }).get(0);

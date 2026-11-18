@@ -53,6 +53,7 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.CloseableIterator;
 import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
+import org.apache.tinkerpop.gremlin.util.iterator.EmptyIterator;
 
 /**
  * Abstract base class for the {@code mergeV/E()} implementations.
@@ -71,6 +72,11 @@ public abstract class MergeStep<S, E, C> extends FlatMapStep<S, E>
     private Parameters parameters = new Parameters();
 
     protected boolean usesPartitionStrategy;
+
+    private Traverser.Admin<S> bulkedStart = null;
+    private long remainingBulk = 0L;
+    private Traverser.Admin<S> mergeHead = null;
+    private Iterator<E> mergeIterator = EmptyIterator.instance();
 
     public MergeStep(final Traversal.Admin traversal, final boolean isStart) {
         this(traversal, isStart, new IdentityTraversal<>());
@@ -199,7 +205,36 @@ public abstract class MergeStep<S, E, C> extends FlatMapStep<S, E>
             first = false;
             generateTraverser(false);
         }
-        return super.processNextStart();
+
+        // merge once for each traverser that a bulked traverser represents so that onMatch fires for duplicates
+        while (true) {
+            if (this.mergeIterator.hasNext()) {
+                return this.mergeHead.split(this.mergeIterator.next(), this);
+            } else {
+                closeIterator();
+                this.mergeHead = nextUnbulkedStart();
+                this.mergeIterator = this.flatMap(this.mergeHead);
+            }
+        }
+    }
+
+    private Traverser.Admin<S> nextUnbulkedStart() {
+        if (null == this.bulkedStart) {
+            final Traverser.Admin<S> start = this.starts.next();
+            if (start.bulk() <= 1L) return start;
+            this.bulkedStart = start;
+            this.remainingBulk = start.bulk();
+        }
+        final Traverser.Admin<S> unit = this.bulkedStart.split();
+        unit.setBulk(1L);
+        if (--this.remainingBulk == 0L) this.bulkedStart = null;
+        return unit;
+    }
+
+    @Override
+    protected void closeIterator() {
+        super.closeIterator();
+        CloseableIterator.closeIterator(this.mergeIterator);
     }
 
     private void generateTraverser(final Object o) {
@@ -232,6 +267,10 @@ public abstract class MergeStep<S, E, C> extends FlatMapStep<S, E>
     @Override
     public void reset() {
         super.reset();
+        this.mergeIterator = EmptyIterator.instance();
+        this.mergeHead = null;
+        this.bulkedStart = null;
+        this.remainingBulk = 0L;
         first = true;
         mergeTraversal.reset();
         if (onCreateTraversal != null) onCreateTraversal.reset();
