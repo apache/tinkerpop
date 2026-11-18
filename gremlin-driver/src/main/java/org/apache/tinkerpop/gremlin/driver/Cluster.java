@@ -195,6 +195,7 @@ public final class Cluster {
                 .sslCipherSuites(settings.connectionPool.sslCipherSuites)
                 .sslEnabledProtocols(settings.connectionPool.sslEnabledProtocols)
                 .sslSkipCertValidation(settings.connectionPool.sslSkipCertValidation)
+                .sslHostnameVerification(settings.connectionPool.sslHostnameVerification)
                 .nioPoolSize(settings.nioPoolSize)
                 .workerPoolSize(settings.workerPoolSize)
                 .reconnectInterval(settings.connectionPool.reconnectInterval)
@@ -573,6 +574,12 @@ public final class Cluster {
             builder.trustManager(InsecureTrustManagerFactory.INSTANCE);
         }
 
+        if (connectionPoolSettings.sslHostnameVerification) {
+            // Verify the server certificate's hostname against the host being connected to. Netty's JDK provider
+            // applies this to the SSLEngine via SSLParameters, so the handshake fails on a hostname mismatch.
+            builder.endpointIdentificationAlgorithm("HTTPS");
+        }
+
         builder.sslProvider(provider);
 
         return builder.build();
@@ -624,6 +631,7 @@ public final class Cluster {
         private List<String> sslEnabledProtocols = new ArrayList<>();
         private List<String> sslCipherSuites = new ArrayList<>();
         private boolean sslSkipCertValidation = false;
+        private boolean sslHostnameVerification = false;
         private SslContext sslContext = null;
         private LoadBalancingStrategy loadBalancingStrategy = new LoadBalancingStrategy.RoundRobin();
         private UnaryOperator<FullHttpRequest> interceptor = HandshakeInterceptor.NO_OP;
@@ -797,6 +805,16 @@ public final class Cluster {
          */
         public Builder sslSkipCertValidation(final boolean sslSkipCertValidation) {
             this.sslSkipCertValidation = sslSkipCertValidation;
+            return this;
+        }
+
+        /**
+         * If true, verify that the server certificate's hostname matches the host being connected to and fail the
+         * TLS handshake on a mismatch. Disabled by default. Has no effect when
+         * {@link #sslSkipCertValidation(boolean)} is enabled or when an {@link #sslContext(SslContext)} is supplied.
+         */
+        public Builder sslHostnameVerification(final boolean sslHostnameVerification) {
+            this.sslHostnameVerification = sslHostnameVerification;
             return this;
         }
 
@@ -1173,12 +1191,18 @@ public final class Cluster {
             connectionPoolSettings.sslCipherSuites = builder.sslCipherSuites;
             connectionPoolSettings.sslEnabledProtocols = builder.sslEnabledProtocols;
             connectionPoolSettings.sslSkipCertValidation = builder.sslSkipCertValidation;
+            connectionPoolSettings.sslHostnameVerification = builder.sslHostnameVerification;
             connectionPoolSettings.keepAliveInterval = builder.keepAliveInterval;
             connectionPoolSettings.channelizer = builder.channelizer;
             connectionPoolSettings.validationRequest = builder.validationRequest;
             connectionPoolSettings.connectionSetupTimeoutMillis = builder.connectionSetupTimeoutMillis;
 
             sslContextOptional = Optional.ofNullable(builder.sslContext);
+
+            // logged once here rather than in createSSLContext(), which runs for every new connection
+            if (connectionPoolSettings.sslHostnameVerification && connectionPoolSettings.sslSkipCertValidation
+                    && !sslContextOptional.isPresent())
+                logger.warn("sslHostnameVerification has no effect because sslSkipCertValidation is enabled");
 
             nioPoolSize = builder.nioPoolSize;
             workerPoolSize = builder.workerPoolSize;

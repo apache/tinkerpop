@@ -72,6 +72,30 @@ themselves may see a warning on Python 3.12+ that asyncio is already patched, wh
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-3297[TINKERPOP-3297]
 
+==== Java Driver Hostname Check
+
+The Java driver can now verify that the hostname in the server's TLS certificate matches the host it connects to,
+failing the TLS handshake on a mismatch. The check is disabled by default, so existing configurations behave as
+before, and is enabled with the `sslHostnameVerification` connection pool setting or the matching `Cluster.Builder`
+method:
+
+[source,java]
+----
+Cluster cluster = Cluster.build("gremlin.example.com").enableSsl(true).sslHostnameVerification(true).create();
+----
+
+[source,yaml]
+----
+connectionPool: {
+  enableSsl: true,
+  sslHostnameVerification: true}
+----
+
+The setting has no effect when `sslSkipCertValidation` is enabled or when an `SslContext` is supplied to the
+`Cluster.Builder`.
+
+See: link:https://tinkerpop.apache.org/docs/3.7.8/reference/#gremlin-java-configuration[Reference Documentation - Gremlin-Java Configuration]
+
 == TinkerPop 3.7.7
 
 *Release Date: September 1, 2026*

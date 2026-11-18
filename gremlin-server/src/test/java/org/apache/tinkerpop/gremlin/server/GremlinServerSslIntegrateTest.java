@@ -35,6 +35,9 @@ import org.apache.tinkerpop.gremlin.util.message.ResponseStatusCode;
 import org.junit.Test;
 
 import javax.net.ssl.SSLException;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.security.KeyStore;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -51,6 +54,10 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
 public class GremlinServerSslIntegrateTest extends AbstractGremlinServerIntegrationTest {
+
+    // Holds the server's self-signed certificate (CN=example.com) for the hostname-verification test so the client
+    // can trust it while still connecting to "localhost" (a deliberate hostname mismatch).
+    private SelfSignedCertificate hostnameMismatchCert;
 
     /**
      * Configure specific Gremlin Server settings for specific tests.
@@ -72,6 +79,16 @@ public class GremlinServerSslIntegrateTest extends AbstractGremlinServerIntegrat
                 settings.ssl = new Settings.SslSettings();
                 settings.ssl.enabled = true;
                 settings.ssl.overrideSslContext(createServerSslContext());
+                break;
+            case "shouldFailHandshakeOnHostnameMismatchOnlyWhenVerificationEnabled":
+                try {
+                    hostnameMismatchCert = new SelfSignedCertificate("example.com");
+                } catch (Exception ex) {
+                    throw new RuntimeException("Couldn't set up self-signed certificate for test", ex);
+                }
+                settings.ssl = new Settings.SslSettings();
+                settings.ssl.enabled = true;
+                settings.ssl.overrideSslContext(sslContextForCert(hostnameMismatchCert));
                 break;
             case "shouldEnableSslAndClientCertificateAuthWithPkcs12":
                 settings.ssl = new Settings.SslSettings();
@@ -148,6 +165,28 @@ public class GremlinServerSslIntegrateTest extends AbstractGremlinServerIntegrat
         }
     }
 
+    private static SslContext sslContextForCert(final SelfSignedCertificate ssc) {
+        try {
+            return SslContextBuilder.forServer(ssc.certificate(), ssc.privateKey()).sslProvider(SslProvider.JDK).build();
+        } catch (Exception ce) {
+            throw new RuntimeException("Couldn't build server SSL context for test", ce);
+        }
+    }
+
+    // Writes the given certificate into a temporary JKS truststore and returns its path, so a client can trust the
+    // cert (chain validation passes) while a hostname mismatch remains the only possible verification failure.
+    private static String writeTrustStore(final SelfSignedCertificate ssc) throws Exception {
+        final KeyStore ts = KeyStore.getInstance("JKS");
+        ts.load(null, null);
+        ts.setCertificateEntry("server", ssc.cert());
+        final File file = File.createTempFile("gremlin-hostname-test-trust", ".jks");
+        file.deleteOnExit();
+        try (final FileOutputStream out = new FileOutputStream(file)) {
+            ts.store(out, KEY_PASS.toCharArray());
+        }
+        return file.getAbsolutePath();
+    }
+
 
     @Test
     public void shouldEnableSsl() {
@@ -159,6 +198,42 @@ public class GremlinServerSslIntegrateTest extends AbstractGremlinServerIntegrat
             assertEquals("test", client.submit("'test'").one().getString());
         } finally {
             cluster.close();
+        }
+    }
+
+    @Test
+    public void shouldFailHandshakeOnHostnameMismatchOnlyWhenVerificationEnabled() throws Exception {
+        // The server presents a certificate for CN=example.com; the client connects to "localhost" and trusts that
+        // cert via a truststore, so chain validation passes and the hostname is the only variable. Running both
+        // modes against the identical server/cert/host proves the handshake fails solely because of hostname
+        // verification - not some unrelated certificate problem.
+        final String trustStorePath = writeTrustStore(hostnameMismatchCert);
+
+        // verification OFF: a trusted but mismatched certificate is accepted, so the request succeeds
+        final Cluster permissive = TestClientFactory.build("localhost").enableSsl(true)
+                .trustStore(trustStorePath).trustStorePassword(KEY_PASS).trustStoreType(TRUSTSTORE_TYPE_JKS)
+                .sslHostnameVerification(false).create();
+        try {
+            assertEquals("test", permissive.connect().submit("'test'").one().getString());
+        } finally {
+            permissive.close();
+        }
+
+        // verification ON: the same certificate and host now fail the handshake on the hostname mismatch
+        final Cluster verifying = TestClientFactory.build("localhost").enableSsl(true)
+                .trustStore(trustStorePath).trustStorePassword(KEY_PASS).trustStoreType(TRUSTSTORE_TYPE_JKS)
+                .sslHostnameVerification(true).create();
+        try {
+            verifying.connect().submit("'test'").one();
+            fail("Should fail because the certificate hostname (example.com) does not match localhost");
+        } catch (Exception x) {
+            // The permissive run above connected successfully with the identical server, certificate and host, so
+            // enabling hostname verification is the only changed variable - this failure is therefore caused by the
+            // hostname mismatch. (The driver collapses the TLS error into a NoHostAvailableException without
+            // attaching the SSL cause, so the differential above is the proof rather than the exception type.)
+            assertThat(x, instanceOf(NoHostAvailableException.class));
+        } finally {
+            verifying.close();
         }
     }
 

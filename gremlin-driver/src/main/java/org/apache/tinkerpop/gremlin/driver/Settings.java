@@ -230,6 +230,9 @@ final class Settings {
             if (connectionPoolConf.containsKey("sslSkipCertValidation"))
                 cpSettings.sslSkipCertValidation = connectionPoolConf.getBoolean("sslSkipCertValidation");
 
+            if (connectionPoolConf.containsKey("sslHostnameVerification"))
+                cpSettings.sslHostnameVerification = connectionPoolConf.getBoolean("sslHostnameVerification");
+
             if (connectionPoolConf.containsKey("minSize"))
                 cpSettings.minSize = connectionPoolConf.getInt("minSize");
 
@@ -338,6 +341,13 @@ final class Settings {
          * If true, trust all certificates and do not perform any validation.
          */
         public boolean sslSkipCertValidation = false;
+
+        /**
+         * If true, verify that the server certificate's hostname matches the host being connected to and fail the
+         * TLS handshake on a mismatch. Disabled by default. Has no effect when {@link #sslSkipCertValidation} is
+         * enabled or when an {@code SslContext} is supplied to {@link Cluster.Builder#sslContext}.
+         */
+        public boolean sslHostnameVerification = false;
 
         /**
          * The minimum size of a connection pool for a {@link Host}. By default this is set to 2.

@@ -872,6 +872,7 @@ The following table describes the various configuration options for the Gremlin 
 |connectionPool.resultIterationBatchSize |The override value for the size of the result batches to be returned from the server. |64
 |connectionPool.sslCipherSuites |The list of JSSE ciphers to support for SSL connections. If specified, only the ciphers that are listed and supported will be enabled. If not specified, the JVM default is used.  |_none_
 |connectionPool.sslEnabledProtocols |The list of SSL protocols to support for SSL connections. If specified, only the protocols that are listed and supported will be enabled. If not specified, the JVM default is used.  |_none_
+|connectionPool.sslHostnameVerification |If enabled, verifies that the server certificate's hostname matches the host being connected to and fails the TLS handshake on a mismatch. Has no effect when `sslSkipCertValidation` is enabled or when an `SslContext` is supplied to the `Cluster.Builder`.|false
 |connectionPool.sslSkipCertValidation |Configures the `TrustManager` to trust all certs without any validation. Should not be used in production.|false
 |connectionPool.trustStore |File location for a SSL Certificate Chain to use when SSL is enabled. If this value is not provided and SSL is enabled, the default `TrustManager` will be used. |_none_
 |connectionPool.trustStorePassword |The password of the `trustStore` if it is password-protected |_none_
