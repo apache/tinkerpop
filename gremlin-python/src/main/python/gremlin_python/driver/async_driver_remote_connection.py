@@ -46,8 +46,10 @@ class AsyncDriverRemoteConnection:
 
     Features:
 
-    * Per-connection WebSocket keepalive pings (see *ping_interval*).
-    * *query_timeout* sets a default evaluationTimeout on every request.
+    * WebSocket keepalive is supported via the default transport's
+      ``heartbeat`` option (passed through ``**transport_kwargs``).
+    * *query_timeout* sets a default evaluationTimeout (in milliseconds) on
+      every request.
 
     Parameters
     ----------
@@ -68,7 +70,8 @@ class AsyncDriverRemoteConnection:
     kerberized_service:
         Kerberos service principal.
     headers:
-        Extra HTTP headers for every WebSocket handshake.
+        Mutable mapping (e.g. ``dict[str, str]``) of extra HTTP headers for
+        every WebSocket handshake.  List-of-pair headers are not supported.
     session:
         Session UUID string to enable server-side sessions.
     enable_user_agent_on_connect:
@@ -78,13 +81,12 @@ class AsyncDriverRemoteConnection:
     graphson_reader, graphson_writer:
         Optional custom GraphSON reader and writer used when
         *message_serializer* is not explicitly provided.
-    ping_interval:
-        Seconds between keepalive pings (default 60, 0 to disable).
     query_timeout:
-        Default query timeout in seconds applied to every request as
+        Default query timeout in milliseconds applied to every request as
         evaluationTimeout.  Per-request options override this.
     **transport_kwargs:
-        Extra keyword arguments forwarded to the default transport.
+        Extra keyword arguments forwarded to the default transport
+        (e.g. ``heartbeat=60`` for WebSocket keepalive).
     """
 
     def __init__(
@@ -104,7 +106,6 @@ class AsyncDriverRemoteConnection:
         enable_compression=False,
         graphson_reader=None,
         graphson_writer=None,
-        ping_interval=60,
         query_timeout=None,
         **transport_kwargs,
     ):
@@ -123,7 +124,6 @@ class AsyncDriverRemoteConnection:
         self._enable_compression = enable_compression
         self._graphson_reader = graphson_reader
         self._graphson_writer = graphson_writer
-        self._ping_interval = ping_interval
         self._query_timeout = query_timeout
         self._transport_kwargs = dict(transport_kwargs)
         self.__spawned_sessions = []
@@ -140,7 +140,7 @@ class AsyncDriverRemoteConnection:
 
         default_request_options = {}
         if query_timeout is not None:
-            default_request_options["evaluationTimeout"] = int(query_timeout * 1000)
+            default_request_options["evaluationTimeout"] = int(query_timeout)
 
         self._async_client = AsyncClient(
             url,
@@ -156,7 +156,6 @@ class AsyncDriverRemoteConnection:
             session=session,
             enable_user_agent_on_connect=enable_user_agent_on_connect,
             enable_compression=enable_compression,
-            ping_interval=ping_interval,
             default_request_options=default_request_options or None,
             **transport_kwargs,
         )
@@ -307,7 +306,6 @@ class AsyncDriverRemoteConnection:
             enable_compression=self._enable_compression,
             graphson_reader=self._graphson_reader,
             graphson_writer=self._graphson_writer,
-            ping_interval=self._ping_interval,
             query_timeout=self._query_timeout,
             **self._transport_kwargs,
         )

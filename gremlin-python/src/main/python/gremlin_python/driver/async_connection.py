@@ -33,13 +33,7 @@ log = logging.getLogger("gremlinpython")
 class AsyncConnection:
     """Experimental API. This API may have breaking changes or be removed in a subsequent minor release.
 
-    Native-async WebSocket connection with keepalive.
-
-    Features:
-
-    * Ping keepalive: a background asyncio.Task sends a WebSocket
-      ping every *ping_interval* seconds to prevent the server or intermediate
-      proxies from closing idle connections.
+    Native-async WebSocket connection managed by AsyncClient.
 
     Parameters
     ----------
@@ -50,20 +44,20 @@ class AsyncConnection:
     protocol:
         An AsyncGremlinServerWSProtocol instance.
     transport_factory:
-        Zero-argument callable returning an AsyncAiohttpWSTransport.
+        Zero-argument callable returning an async transport implementing
+        AbstractBaseTransport (such as AsyncAiohttpWSTransport).
     pool:
         The asyncio.Queue that owns this connection.
     headers:
-        Extra HTTP headers sent during the WebSocket handshake.
+        Mutable mapping (e.g. ``dict[str, str]``) of extra HTTP headers sent
+        during the WebSocket handshake.  List-of-pair headers are not
+        supported.
     enable_user_agent_on_connect:
         Whether to send the driver user-agent header.
-    ping_interval:
-        Seconds between WebSocket ping frames (default 60, 0 to disable).
     """
 
     def __init__(self, url, traversal_source, protocol, transport_factory,
-                 pool, headers=None, enable_user_agent_on_connect=True,
-                 ping_interval=60):
+                 pool, headers=None, enable_user_agent_on_connect=True):
         self._url = url
         self._headers = headers
         self._traversal_source = traversal_source
@@ -75,8 +69,6 @@ class AsyncConnection:
         self._inited = False
         if enable_user_agent_on_connect:
             self._add_header(useragent.userAgentHeader, useragent.userAgent)
-        self._ping_interval = ping_interval
-        self._ping_task = None
         self._receive_task = None
 
     def _add_header(self, key, value):
@@ -94,17 +86,12 @@ class AsyncConnection:
 
         Open (or re-open) the WebSocket connection.
         """
-        if self._ping_task is not None:
-            self._ping_task.cancel()
-            self._ping_task = None
         if self._transport is not None:
             await self._transport.close()
         self._transport = self._transport_factory()
         await self._transport.connect(self._url, self._headers)
         self._protocol.connection_made(self._transport)
         self._inited = True
-        if self._ping_interval > 0:
-            self._ping_task = asyncio.create_task(self._ping_forever())
 
     async def close(self):
         """Experimental API. This API may have breaking changes or be removed in a subsequent minor release.
@@ -114,9 +101,6 @@ class AsyncConnection:
         await asyncio.shield(self._close())
 
     async def _close(self):
-        if self._ping_task is not None:
-            self._ping_task.cancel()
-            self._ping_task = None
         if self._receive_task is not None:
             self._receive_task.cancel()
             await asyncio.gather(self._receive_task, return_exceptions=True)
@@ -126,24 +110,6 @@ class AsyncConnection:
         finally:
             self._inited = False
             self._results.clear()
-
-    # ------------------------------------------------------------------
-    # Keepalive
-    # ------------------------------------------------------------------
-
-    async def _ping_forever(self):
-        """Send periodic WebSocket ping frames until cancelled or the transport dies."""
-        while True:
-            try:
-                await asyncio.sleep(self._ping_interval)
-                await self._transport.ping()
-            except asyncio.CancelledError:
-                break
-            except Exception:
-                # Transport is dead; mark the connection as needing reconnect.
-                log.debug("Ping failed on %s — marking connection as uninitialised", self._url)
-                self._inited = False
-                break
 
     # ------------------------------------------------------------------
     # I/O

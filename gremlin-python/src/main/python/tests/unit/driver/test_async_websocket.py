@@ -33,7 +33,8 @@ from gremlin_python.driver.async_protocol import AsyncGremlinServerWSProtocol
 from gremlin_python.driver.async_resultset import AsyncResultSet, _EXHAUSTED
 from gremlin_python.driver.async_connection import AsyncConnection
 from gremlin_python.driver.async_client import AsyncClient
-from gremlin_python.driver.protocol import GremlinServerError
+from gremlin_python.driver.protocol import ConfigurationError, GremlinServerError
+from gremlin_python.driver.transport import AbstractBaseTransport
 
 
 class _AsyncioTestCase(unittest.IsolatedAsyncioTestCase):
@@ -203,13 +204,27 @@ class TestAsyncAiohttpWSTransport(_AsyncioTestCase):
             await transport.read()
         self.assertIn("boom", str(ctx.exception))
 
-    # ---- ping --------------------------------------------------------------
+    # ---- heartbeat ---------------------------------------------------------
 
-    async def test_ping_calls_websocket_ping(self):
+    async def test_heartbeat_forwarded_to_ws_connect(self):
+        transport = await self._make_transport(heartbeat=30)
+        mock_ws = AsyncMock()
+        mock_session = MagicMock()
+        mock_session.ws_connect = AsyncMock(return_value=mock_ws)
+        mock_session.closed = False
+
+        with patch("aiohttp.ClientSession", return_value=mock_session):
+            await transport.connect("ws://localhost:8182/gremlin")
+
+        mock_session.ws_connect.assert_awaited_once_with(
+            "ws://localhost:8182/gremlin",
+            headers=None,
+            heartbeat=30,
+        )
+
+    async def test_has_no_custom_ping_method(self):
         transport = await self._make_transport()
-        transport._websocket = AsyncMock()
-        await transport.ping()
-        transport._websocket.ping.assert_awaited_once()
+        self.assertFalse(hasattr(transport, "ping"))
 
     # ---- close -------------------------------------------------------------
 
@@ -340,6 +355,134 @@ class TestAsyncGremlinServerWSProtocol(_AsyncioTestCase):
         proto, _ = self._make_protocol()
         with self.assertRaises(GremlinServerError):
             await proto.data_received(None, {})
+
+    async def test_data_received_mismatched_request_id_raises_for_200_204_206_407(self):
+        for status_code in (200, 204, 206, 407):
+            with self.subTest(status_code=status_code):
+                proto, ser = self._make_protocol()
+                pending_rs = self._make_result_set()
+                results_dict = {"req-1": pending_rs}
+                ser.deserialize_message = MagicMock(
+                    return_value={
+                        "requestId": "unknown-req",
+                        "status": {"code": status_code, "attributes": {}},
+                        "result": {"data": [1], "meta": {}},
+                    }
+                )
+
+                with self.assertRaisesRegex(RuntimeError, "unknown-req"):
+                    await proto.data_received(b"raw", results_dict)
+
+                self.assertTrue(pending_rs.stream.empty())
+
+    async def test_data_received_407_basic_auth_handshake(self):
+        ser = MagicMock()
+        ser.serialize_message = MagicMock(return_value=b"auth-frame")
+        proto = AsyncGremlinServerWSProtocol(
+            ser, username="stephen", password="password"
+        )
+        proto._transport = AsyncMock()
+        proto._transport.read = AsyncMock(return_value=b"final-200")
+        rs = self._make_result_set()
+        results_dict = {"req-1": rs}
+        ser.deserialize_message = MagicMock(
+            side_effect=[
+                {
+                    "requestId": "req-1",
+                    "status": {"code": 407, "attributes": {}},
+                    "result": {"data": None, "meta": {}},
+                },
+                {
+                    "requestId": "req-1",
+                    "status": {"code": 200, "attributes": {}},
+                    "result": {"data": [42], "meta": {}},
+                },
+            ]
+        )
+
+        status = await proto.data_received(b"challenge-407", results_dict)
+
+        self.assertEqual(status, 200)
+        self.assertEqual(rs.stream.get_nowait(), [42])
+        proto._transport.write.assert_awaited_once_with(b"auth-frame")
+        sent_req_id, sent_msg = ser.serialize_message.call_args[0]
+        self.assertEqual(sent_req_id, "req-1")
+        self.assertEqual(sent_msg.op, "authentication")
+
+    async def test_data_received_407_kerberos_multi_step_and_reconnect_reset(self):
+        from gremlin_python.driver import request as gremlin_request
+
+        ser = MagicMock()
+        ser.serialize_message = MagicMock(return_value=b"krb-frame")
+        proto = AsyncGremlinServerWSProtocol(
+            ser, kerberized_service="test-service@host"
+        )
+        proto._transport = AsyncMock()
+        proto._transport.read = AsyncMock(
+            side_effect=[b"challenge-2", b"challenge-3", b"final-200"]
+        )
+        rs = self._make_result_set()
+        results_dict = {"req-1": rs}
+        ser.deserialize_message = MagicMock(
+            side_effect=[
+                {
+                    "requestId": "req-1",
+                    "status": {"code": 407, "attributes": {}},
+                    "result": {"data": None, "meta": {}},
+                },
+                {
+                    "requestId": "req-1",
+                    "status": {"code": 407, "attributes": {"sasl": "step2"}},
+                    "result": {"data": None, "meta": {}},
+                },
+                {
+                    "requestId": "req-1",
+                    "status": {"code": 407, "attributes": {"sasl": "step3"}},
+                    "result": {"data": None, "meta": {}},
+                },
+                {
+                    "requestId": "req-1",
+                    "status": {"code": 200, "attributes": {}},
+                    "result": {"data": [6], "meta": {}},
+                },
+            ]
+        )
+
+        step_calls = []
+
+        def fake_kerberos_received(msg):
+            step_calls.append(msg["status"]["attributes"].get("sasl"))
+            proto._kerberos_context = "ctx"
+            if len(step_calls) == 2:
+                proto._username = "stephen"
+            return gremlin_request.RequestMessage("", "authentication", {"sasl": "tok"})
+
+        proto._kerberos_received = fake_kerberos_received
+        status = await proto.data_received(b"challenge-1", results_dict)
+
+        self.assertEqual(status, 200)
+        self.assertEqual(len(step_calls), 3)
+        self.assertEqual(rs.stream.get_nowait(), [6])
+
+        # Reconnect resets Kerberos negotiation state cleanly.
+        proto.connection_made(AsyncMock())
+        self.assertIsNone(proto._kerberos_context)
+        self.assertEqual(proto._username, "")
+
+    async def test_data_received_407_missing_credentials_raises_configuration_error(self):
+        proto, ser = self._make_protocol()
+        rs = self._make_result_set()
+        results_dict = {"req-1": rs}
+        ser.deserialize_message = MagicMock(
+            return_value={
+                "requestId": "req-1",
+                "status": {"code": 407, "attributes": {}},
+                "result": {"data": None, "meta": {}},
+            }
+        )
+
+        with self.assertRaises(ConfigurationError):
+            await proto.data_received(b"challenge", results_dict)
 
 
 # ---------------------------------------------------------------------------
@@ -795,6 +938,124 @@ class TestAsyncConnection(_AsyncioTestCase):
         self.assertIs(pool.get_nowait(), conn)
         self.assertTrue(pool.empty())
 
+    async def test_mismatched_request_id_invalidates_connection_for_200_204_206(self):
+        for status_code in (200, 204, 206):
+            with self.subTest(status_code=status_code):
+                pool = asyncio.Queue()
+                mock_transport = AsyncMock()
+                mock_transport.closed = False
+                mock_transport.read = AsyncMock(return_value=b"raw")
+                ser = MagicMock()
+                ser.serialize_message = MagicMock(return_value=b"req")
+                ser.deserialize_message = MagicMock(
+                    return_value={
+                        "requestId": "unexpected-request-id",
+                        "status": {"code": status_code, "attributes": {}},
+                        "result": {"data": ["stale"], "meta": {}},
+                    }
+                )
+                proto = AsyncGremlinServerWSProtocol(ser)
+                proto.connection_made(mock_transport)
+                conn = AsyncConnection(
+                    url="ws://localhost:8182/gremlin",
+                    traversal_source="g",
+                    protocol=proto,
+                    transport_factory=lambda: mock_transport,
+                    pool=pool,
+                )
+                conn._transport = mock_transport
+                conn._inited = True
+
+                with self.assertRaisesRegex(RuntimeError, "unexpected-request-id"):
+                    await conn.write(MagicMock(args={}))
+
+                self.assertFalse(conn._inited)
+                self.assertEqual(conn._results, {})
+                self.assertIs(pool.get_nowait(), conn)
+                self.assertTrue(pool.empty())
+
+    async def test_mismatched_request_id_mid_stream_invalidates_connection(self):
+        for status_code in (200, 204, 206):
+            with self.subTest(status_code=status_code):
+                pool = asyncio.Queue()
+                mock_transport = AsyncMock()
+                mock_transport.closed = False
+                mock_transport.read = AsyncMock(side_effect=[b"frame1", b"frame2"])
+                req_id = "11111111-1111-1111-1111-111111111111"
+                ser = MagicMock()
+                ser.serialize_message = MagicMock(return_value=b"req")
+                ser.deserialize_message = MagicMock(
+                    side_effect=[
+                        {
+                            "requestId": req_id,
+                            "status": {"code": 206, "attributes": {}},
+                            "result": {"data": ["first"], "meta": {}},
+                        },
+                        {
+                            "requestId": "wrong-second-frame-id",
+                            "status": {"code": status_code, "attributes": {}},
+                            "result": {"data": ["second"], "meta": {}},
+                        },
+                    ]
+                )
+                proto = AsyncGremlinServerWSProtocol(ser)
+                proto.connection_made(mock_transport)
+                conn = AsyncConnection(
+                    url="ws://localhost:8182/gremlin",
+                    traversal_source="g",
+                    protocol=proto,
+                    transport_factory=lambda: mock_transport,
+                    pool=pool,
+                )
+                conn._transport = mock_transport
+                conn._inited = True
+
+                rs = await conn.write(MagicMock(args={"requestId": req_id}))
+                with self.assertRaisesRegex(RuntimeError, "wrong-second-frame-id"):
+                    await rs.all()
+
+                self.assertFalse(conn._inited)
+                self.assertEqual(conn._results, {})
+                self.assertIs(pool.get_nowait(), conn)
+                self.assertTrue(pool.empty())
+
+    async def test_custom_transport_without_ping_satisfies_contract(self):
+        class MinimalTransport(AbstractBaseTransport):
+            def __init__(self):
+                self._closed = True
+
+            async def connect(self, url, headers=None):
+                self._closed = False
+
+            async def write(self, message):
+                pass
+
+            async def read(self):
+                return b"data"
+
+            async def close(self):
+                self._closed = True
+
+            @property
+            def closed(self):
+                return self._closed
+
+        pool = asyncio.Queue()
+        protocol = AsyncMock()
+        protocol.connection_made = MagicMock()
+        protocol.data_received = AsyncMock(return_value=200)
+        conn = AsyncConnection(
+            url="ws://localhost:8182/gremlin",
+            traversal_source="g",
+            protocol=protocol,
+            transport_factory=MinimalTransport,
+            pool=pool,
+        )
+        self.assertFalse(hasattr(MinimalTransport, "ping"))
+        await conn.write(MagicMock(args={}))
+        self.assertTrue(conn._inited)
+        await conn.close()
+
 
 # ---------------------------------------------------------------------------
 # AsyncClient
@@ -932,8 +1193,16 @@ class TestAsyncClient(_AsyncioTestCase):
             mc.close.assert_awaited_once()
         self.assertTrue(client._pool.empty())
 
+    async def test_heartbeat_kwarg_forwarded_to_default_transport(self):
+        client = AsyncClient("ws://localhost:8182/gremlin", "g", heartbeat=30)
+        try:
+            transport = client._transport_factory()
+            self.assertEqual(transport._aiohttp_kwargs.get("heartbeat"), 30)
+        finally:
+            await client.close()
+
     async def test_invalid_request_id_does_not_block_next_submission(self):
-        client, _ = self._make_client(pool_size=1, ping_interval=0)
+        client, _ = self._make_client(pool_size=1)
         with self.assertRaises(ValueError):
             await client.submit("g.V()", request_options={"requestId": "invalid"})
 
@@ -955,7 +1224,7 @@ class TestAsyncClient(_AsyncioTestCase):
         await client.close()
 
     async def test_close_stops_checked_out_stream(self):
-        client, transport = self._make_client(pool_size=1, ping_interval=0)
+        client, transport = self._make_client(pool_size=1)
         conn = client._pool.get_nowait()
         conn._inited = True
         conn._transport = transport

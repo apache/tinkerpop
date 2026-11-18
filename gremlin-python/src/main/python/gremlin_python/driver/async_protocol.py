@@ -39,10 +39,37 @@ class AsyncGremlinServerWSProtocol(GremlinServerWSProtocol):
     Async version of GremlinServerWSProtocol.
 
     Both write() and data_received() are coroutines that must be awaited.
-    The transport assigned via connection_made() must be an
-    AsyncAiohttpWSTransport (i.e. its write and read methods must be
-    coroutines).
+    The transport assigned via connection_made() must implement
+    AbstractBaseTransport with coroutine write() and read() methods.
     """
+
+    def __init__(
+        self,
+        message_serializer,
+        username="",
+        password="",
+        kerberized_service="",
+        max_content_length=10 * 1024 * 1024,
+    ):
+        super().__init__(
+            message_serializer,
+            username=username,
+            password=password,
+            kerberized_service=kerberized_service,
+            max_content_length=max_content_length,
+        )
+        self._initial_username = username
+
+    def connection_made(self, transport):
+        """Experimental API. This API may have breaking changes or be removed in a subsequent minor release.
+
+        Bind *transport* to this protocol instance and reset per-connection
+        authentication state when reconnecting.
+        """
+        if self._kerberized_service:
+            self._kerberos_context = None
+            self._username = self._initial_username
+        super().connection_made(transport)
 
     async def write(self, request_id, request_message):
         """Experimental API. This API may have breaking changes or be removed in a subsequent minor release.
@@ -63,7 +90,9 @@ class AsyncGremlinServerWSProtocol(GremlinServerWSProtocol):
         loop is not blocked by CPU-bound work.
 
         Returns the Gremlin Server response status code (200, 204, or 206).
-        Raises GremlinServerError for error status codes.
+        Raises GremlinServerError for error status codes and RuntimeError if
+        the response requestId does not match any pending entry in
+        *results_dict*.
         """
         if message is None:
             log.error("Received empty message from server.")
@@ -86,8 +115,27 @@ class AsyncGremlinServerWSProtocol(GremlinServerWSProtocol):
         aggregate_to = message["result"]["meta"].get("aggregateTo", "list")
         data = message["result"]["data"]
 
-        if result_set is not None:
-            result_set.aggregate_to = aggregate_to
+        if status_code not in (200, 204, 206, 407):
+            log.error(
+                "\r\nReceived error message '%s'\r\n\r\nWith results dictionary '%s'",
+                str(message),
+                str(results_dict),
+            )
+            if request_id in results_dict:
+                del results_dict[request_id]
+            raise GremlinServerError(message["status"])
+
+        if result_set is None:
+            log.error(
+                "Received response with unexpected requestId '%s' (status %s).",
+                request_id,
+                status_code,
+            )
+            raise RuntimeError(
+                f"Received response for unexpected requestId: {request_id}"
+            )
+
+        result_set.aggregate_to = aggregate_to
 
         if status_code == 407:
             if self._username and self._password:
@@ -119,24 +167,12 @@ class AsyncGremlinServerWSProtocol(GremlinServerWSProtocol):
             return await self.data_received(raw, results_dict)
 
         if status_code == 204:
-            if result_set is not None:
-                result_set.stream.put_nowait([])
-                del results_dict[request_id]
-            return status_code
-
-        if status_code in (200, 206):
-            if result_set is not None:
-                result_set.stream.put_nowait(data)
-                if status_code == 200:
-                    result_set.status_attributes = message["status"]["attributes"]
-                    del results_dict[request_id]
-            return status_code
-
-        log.error(
-            "\r\nReceived error message '%s'\r\n\r\nWith results dictionary '%s'",
-            str(message),
-            str(results_dict),
-        )
-        if request_id in results_dict:
+            result_set.stream.put_nowait([])
             del results_dict[request_id]
-        raise GremlinServerError(message["status"])
+            return status_code
+
+        result_set.stream.put_nowait(data)
+        if status_code == 200:
+            result_set.status_attributes = message["status"]["attributes"]
+            del results_dict[request_id]
+        return status_code

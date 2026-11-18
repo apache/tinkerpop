@@ -42,8 +42,8 @@ class AsyncClient:
 
     Features:
 
-    * Each connection runs a background WebSocket ping to prevent idle
-      disconnects (configurable via ping_interval).
+    * WebSocket keepalive is supported via the default transport's
+      ``heartbeat`` option (passed through ``**transport_kwargs``).
     * default_request_options are merged into every request so options
       like evaluationTimeout can be set once per client.
 
@@ -62,7 +62,8 @@ class AsyncClient:
     protocol_factory:
         Zero-argument callable returning an AsyncGremlinServerWSProtocol.
     transport_factory:
-        Zero-argument callable returning an AsyncAiohttpWSTransport.
+        Zero-argument callable returning an async transport implementing
+        AbstractBaseTransport (default AsyncAiohttpWSTransport).
     pool_size:
         Number of concurrent WebSocket connections (default 8; forced to 1
         in session mode).
@@ -73,22 +74,23 @@ class AsyncClient:
     kerberized_service:
         Kerberos service principal for Kerberos authentication.
     headers:
-        Extra HTTP headers included in every WebSocket handshake.
+        Mutable mapping (e.g. ``dict[str, str]``) of extra HTTP headers
+        included in every WebSocket handshake.  List-of-pair headers are not
+        supported.
     session:
         Session UUID string to enable server-side sessions.
     enable_user_agent_on_connect:
         Send the driver user-agent header (default True).
     enable_compression:
         Enable WebSocket per-message deflate compression (default False).
-    ping_interval:
-        Seconds between WebSocket keepalive pings (default 60, 0 to disable).
     default_request_options:
         Dict of request options merged into every request
         (e.g. {"evaluationTimeout": 30000}).  Per-request options take
         precedence over defaults.
     **transport_kwargs:
         Extra keyword arguments forwarded to the default
-        AsyncAiohttpWSTransport.
+        AsyncAiohttpWSTransport (e.g. ``heartbeat=60`` for WebSocket
+        keepalive).
     """
 
     def __init__(
@@ -106,7 +108,6 @@ class AsyncClient:
         session=None,
         enable_user_agent_on_connect=True,
         enable_compression=False,
-        ping_interval=60,
         default_request_options=None,
         **transport_kwargs,
     ):
@@ -119,7 +120,6 @@ class AsyncClient:
         self._enable_user_agent_on_connect = enable_user_agent_on_connect
         self._enable_compression = enable_compression
         self._traversal_source = traversal_source
-        self._ping_interval = ping_interval
         self._default_request_options = default_request_options or {}
 
         if "max_content_length" not in transport_kwargs:
@@ -200,7 +200,6 @@ class AsyncClient:
             self._pool,
             headers=self._headers,
             enable_user_agent_on_connect=self._enable_user_agent_on_connect,
-            ping_interval=self._ping_interval,
         )
         self._connections.append(conn)
         return conn

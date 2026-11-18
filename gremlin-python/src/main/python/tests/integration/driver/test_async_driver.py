@@ -28,18 +28,33 @@ Graphs used:
 import asyncio
 import os
 import socket
+import ssl
 import unittest
 import urllib.parse
 
+from gremlin_python.driver.aiohttp.async_transport import AsyncAiohttpWSTransport
 from gremlin_python.driver.async_client import AsyncClient
 from gremlin_python.driver.async_driver_remote_connection import AsyncDriverRemoteConnection
 from gremlin_python.driver.async_graph_traversal import async_traversal
 from gremlin_python.driver.async_resultset import AsyncResultSet
+from gremlin_python.driver.protocol import ConfigurationError, GremlinServerError
+from gremlin_python.driver.serializer import (
+    GraphBinarySerializersV1,
+    GraphSONSerializersV2d0,
+    GraphSONSerializersV3d0,
+)
 from gremlin_python.process.traversal import Bytecode
 from gremlin_python.structure.graph import Vertex
 
 gremlin_server_url = os.environ.get("GREMLIN_SERVER_URL", "ws://localhost:{}/gremlin")
+gremlin_basic_auth_url = os.environ.get(
+    "GREMLIN_SERVER_BASIC_AUTH_URL", "wss://localhost:{}/gremlin"
+)
+kerberos_hostname = os.environ.get("KRB_HOSTNAME", socket.gethostname())
 anonymous_url = gremlin_server_url.format(45940)
+basic_url = gremlin_basic_auth_url.format(45941)
+kerberos_url = gremlin_server_url.format(45942)
+kerberized_service = f"test-service@{kerberos_hostname}"
 
 
 def _server_reachable(url):
@@ -52,9 +67,25 @@ def _server_reachable(url):
         return False
 
 
+def _make_insecure_ssl_context():
+    # Turn off certificate verification for self-signed test certs only.
+    ssl_opts = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
+    ssl_opts.check_hostname = False
+    ssl_opts.verify_mode = ssl.CERT_NONE
+    return ssl_opts
+
+
 _skip_if_no_server = unittest.skipUnless(
     _server_reachable(anonymous_url),
     "Gremlin Server is not running",
+)
+_skip_if_no_basic_server = unittest.skipUnless(
+    _server_reachable(basic_url),
+    "Basic auth Gremlin Server is not running",
+)
+_skip_if_no_kerberos_server = unittest.skipUnless(
+    _server_reachable(kerberos_url),
+    "Kerberos Gremlin Server is not running",
 )
 
 
@@ -349,6 +380,209 @@ class TestAsyncTransaction(_AsyncioTestCase):
             pass
         count = await self.g.V().has("name", name).count().next()
         self.assertEqual(count, 0)
+
+
+# ---------------------------------------------------------------------------
+# Authentication — Basic over TLS (port 45941) & Kerberos (port 45942)
+# ---------------------------------------------------------------------------
+
+@_skip_if_no_basic_server
+class TestAsyncBasicAuthIntegration(_AsyncioTestCase):
+
+    async def test_async_client_basic_auth_and_multi_batch(self):
+        client = AsyncClient(
+            basic_url,
+            "gmodern",
+            username="stephen",
+            password="password",
+            pool_size=2,
+            transport_factory=lambda: AsyncAiohttpWSTransport(
+                ssl_options=_make_insecure_ssl_context()
+            ),
+        )
+        try:
+            rs = await client.submit("g.V().count()")
+            self.assertEqual(await rs.all(), [6])
+
+            # Multi-batch 206 response (>64 items) after SASL authentication.
+            bc = Bytecode()
+            bc.add_step("inject", list(range(150)))
+            bc.add_step("unfold")
+            multi_rs = await client.submit(bc)
+            self.assertEqual(len(await multi_rs.all()), 150)
+
+            # Exercise authentication across multiple pooled connections.
+            rs1, rs2 = await asyncio.gather(
+                client.submit("g.V().count()"),
+                client.submit("g.E().count()"),
+            )
+            self.assertEqual(await rs1.all(), [6])
+            self.assertEqual(await rs2.all(), [6])
+        finally:
+            await client.close()
+        self.assertTrue(client.is_closed())
+
+    async def test_async_client_basic_auth_ssl_options_kwarg(self):
+        client = AsyncClient(
+            basic_url,
+            "gmodern",
+            username="stephen",
+            password="password",
+            ssl_options=_make_insecure_ssl_context(),
+        )
+        try:
+            rs = await client.submit("g.V().count()")
+            self.assertEqual(await rs.all(), [6])
+        finally:
+            await client.close()
+        self.assertTrue(client.is_closed())
+
+    async def test_async_client_basic_auth_invalid_password_raises(self):
+        client = AsyncClient(
+            basic_url,
+            "gmodern",
+            username="stephen",
+            password="wrong-password",
+            ssl_options=_make_insecure_ssl_context(),
+        )
+        try:
+            with self.assertRaises(GremlinServerError):
+                rs = await client.submit("g.V().count()")
+                await rs.all()
+        finally:
+            await client.close()
+        self.assertTrue(client.is_closed())
+
+    async def test_async_client_basic_auth_missing_credentials_raises(self):
+        client = AsyncClient(
+            basic_url,
+            "gmodern",
+            ssl_options=_make_insecure_ssl_context(),
+        )
+        try:
+            with self.assertRaises(ConfigurationError):
+                rs = await client.submit("g.V().count()")
+                await rs.all()
+        finally:
+            await client.close()
+        self.assertTrue(client.is_closed())
+
+    async def test_async_remote_connection_basic_auth_serializers(self):
+        for ser in (
+            GraphBinarySerializersV1(),
+            GraphSONSerializersV2d0(),
+            GraphSONSerializersV3d0(),
+        ):
+            with self.subTest(serializer=type(ser).__name__):
+                rc = AsyncDriverRemoteConnection(
+                    basic_url,
+                    "gmodern",
+                    username="stephen",
+                    password="password",
+                    message_serializer=ser,
+                    ssl_options=_make_insecure_ssl_context(),
+                )
+                try:
+                    g = async_traversal().with_remote(rc)
+                    self.assertEqual(await g.V().count().to_list(), [6])
+                    names = await g.V().has_label("person").values("name").to_set()
+                    self.assertEqual(names, {"marko", "vadas", "josh", "peter"})
+                finally:
+                    await rc.close()
+                self.assertTrue(rc.is_closed())
+
+    async def test_async_transaction_basic_auth_session(self):
+        rc = AsyncDriverRemoteConnection(
+            basic_url,
+            "gtx",
+            username="stephen",
+            password="password",
+            ssl_options=_make_insecure_ssl_context(),
+        )
+        try:
+            g = async_traversal().with_remote(rc)
+            name = "async_basic_auth_tx_test"
+            async with await g.tx() as gtx:
+                await gtx.add_v("person").property("name", name).iterate()
+            self.assertGreaterEqual(
+                await g.V().has("name", name).count().next(), 1
+            )
+            await g.V().has("name", name).drop().iterate()
+        finally:
+            await rc.close()
+        self.assertTrue(rc.is_closed())
+
+
+@_skip_if_no_kerberos_server
+class TestAsyncKerberosAuthIntegration(_AsyncioTestCase):
+
+    async def test_async_client_kerberos_auth_and_multi_batch(self):
+        client = AsyncClient(
+            kerberos_url,
+            "gmodern",
+            kerberized_service=kerberized_service,
+            pool_size=2,
+        )
+        try:
+            rs = await client.submit("g.V().count()")
+            self.assertEqual(await rs.all(), [6])
+
+            bc = Bytecode()
+            bc.add_step("inject", list(range(150)))
+            bc.add_step("unfold")
+            multi_rs = await client.submit(bc)
+            self.assertEqual(len(await multi_rs.all()), 150)
+
+            rs1, rs2 = await asyncio.gather(
+                client.submit("g.V().count()"),
+                client.submit("g.E().count()"),
+            )
+            self.assertEqual(await rs1.all(), [6])
+            self.assertEqual(await rs2.all(), [6])
+        finally:
+            await client.close()
+        self.assertTrue(client.is_closed())
+
+    async def test_async_remote_connection_kerberos_auth_serializers(self):
+        for ser in (
+            GraphBinarySerializersV1(),
+            GraphSONSerializersV2d0(),
+            GraphSONSerializersV3d0(),
+        ):
+            with self.subTest(serializer=type(ser).__name__):
+                rc = AsyncDriverRemoteConnection(
+                    kerberos_url,
+                    "gmodern",
+                    kerberized_service=kerberized_service,
+                    message_serializer=ser,
+                )
+                try:
+                    g = async_traversal().with_remote(rc)
+                    self.assertEqual(await g.V().count().to_list(), [6])
+                    names = await g.V().has_label("person").values("name").to_set()
+                    self.assertEqual(names, {"marko", "vadas", "josh", "peter"})
+                finally:
+                    await rc.close()
+                self.assertTrue(rc.is_closed())
+
+    async def test_async_transaction_kerberos_auth_session(self):
+        rc = AsyncDriverRemoteConnection(
+            kerberos_url,
+            "gtx",
+            kerberized_service=kerberized_service,
+        )
+        try:
+            g = async_traversal().with_remote(rc)
+            name = "async_krb5_auth_tx_test"
+            async with await g.tx() as gtx:
+                await gtx.add_v("person").property("name", name).iterate()
+            self.assertGreaterEqual(
+                await g.V().has("name", name).count().next(), 1
+            )
+            await g.V().has("name", name).drop().iterate()
+        finally:
+            await rc.close()
+        self.assertTrue(rc.is_closed())
 
 
 if __name__ == "__main__":

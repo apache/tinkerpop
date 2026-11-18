@@ -111,14 +111,14 @@ class TestInit(unittest.TestCase):
         self.assertTrue(rc.is_session_bound())
 
     def test_query_timeout_sets_default_request_options(self):
-        rc = AsyncDriverRemoteConnection(URL, query_timeout=30)
+        rc = AsyncDriverRemoteConnection(URL, query_timeout=30000)
         self.assertEqual(
             rc._async_client._default_request_options.get("evaluationTimeout"),
             30000,
         )
 
-    def test_query_timeout_fractional_seconds(self):
-        rc = AsyncDriverRemoteConnection(URL, query_timeout=1.5)
+    def test_query_timeout_coerces_to_int_milliseconds(self):
+        rc = AsyncDriverRemoteConnection(URL, query_timeout=1500.0)
         self.assertEqual(
             rc._async_client._default_request_options.get("evaluationTimeout"),
             1500,
@@ -499,8 +499,8 @@ class TestSessionManagement(_AsyncioTestCase):
             headers={"X-Custom": "val"},
             enable_user_agent_on_connect=False,
             enable_compression=True,
-            ping_interval=15,
-            query_timeout=10,
+            query_timeout=10000,
+            heartbeat=15,
         )
         session_rc = rc.create_session()
         self.assertEqual(session_rc._username, "stephen")
@@ -508,8 +508,13 @@ class TestSessionManagement(_AsyncioTestCase):
         self.assertEqual(session_rc._headers, {"X-Custom": "val"})
         self.assertFalse(session_rc._enable_user_agent_on_connect)
         self.assertTrue(session_rc._enable_compression)
-        self.assertEqual(session_rc._ping_interval, 15)
-        self.assertEqual(session_rc._query_timeout, 10)
+        self.assertEqual(session_rc._query_timeout, 10000)
+        self.assertEqual(
+            session_rc._async_client._default_request_options.get("evaluationTimeout"),
+            10000,
+        )
+        transport = session_rc._async_client._transport_factory()
+        self.assertEqual(transport._aiohttp_kwargs.get("heartbeat"), 15)
         self.assertEqual(session_rc._async_client._pool_size, 1)
 
     async def test_remove_session_untracks_connection(self):

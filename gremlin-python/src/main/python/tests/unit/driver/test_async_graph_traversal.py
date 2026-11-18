@@ -365,18 +365,99 @@ class TestIterate(_AsyncioTestCase):
         await g.add_v("planet").property("name", "saturn").iterate()
         rc.submit.assert_awaited_once()
 
-    async def test_iterate_retry_after_failure_does_not_duplicate_discard(self):
+    async def test_iterate_retains_failed_state_and_does_not_resubmit(self):
         rc = _make_rc(values=[])
-        healthy_traversal = rc.submit.return_value
-        rc.submit.side_effect = [ConnectionError("transient"), healthy_traversal]
+        err = ConnectionError("transient")
+        rc.submit.side_effect = [err, rc.submit.return_value]
         g = _make_g(rc)
         t = g.add_v("person")
-        with self.assertRaises(ConnectionError):
+        with self.assertRaises(ConnectionError) as first_ctx:
             await t.iterate()
+        self.assertIs(first_ctx.exception, err)
         self.assertIsNone(t.traversers)
-        await t.iterate()
-        discard_steps = [s[0] for s in t.bytecode.step_instructions if s[0] == "discard"]
-        self.assertEqual(len(discard_steps), 1)
+        self.assertIsNone(t.remote_results)
+        self.assertIsNone(t.last_traverser)
+
+        with self.assertRaises(ConnectionError) as second_ctx:
+            await t.iterate()
+        self.assertIs(second_ctx.exception, err)
+        self.assertEqual(rc.submit.await_count, 1)
+
+        # Explicit retry requires a fresh traversal.
+        await g.add_v("person").iterate()
+        self.assertEqual(rc.submit.await_count, 2)
+
+
+# ---------------------------------------------------------------------------
+# Failed traversal state retention
+# ---------------------------------------------------------------------------
+
+class TestFailedTraversalState(_AsyncioTestCase):
+    async def test_submit_failure_is_retained_across_terminal_methods(self):
+        for first_call in ("to_list", "has_next", "next_traverser", "next"):
+            with self.subTest(first_call=first_call):
+                rc = _make_rc(values=["marko"])
+                err = ConnectionError(f"boom-{first_call}")
+                rc.submit.side_effect = err
+                g = _make_g(rc)
+                t = g.V().values("name")
+
+                with self.assertRaises(ConnectionError) as ctx1:
+                    await getattr(t, first_call)()
+                self.assertIs(ctx1.exception, err)
+                self.assertIsNone(t.traversers)
+                self.assertIsNone(t.remote_results)
+                self.assertIsNone(t.last_traverser)
+
+                for followup in ("has_next", "next", "next_traverser", "to_list", "iterate"):
+                    with self.assertRaises(ConnectionError) as ctx2:
+                        await getattr(t, followup)()
+                    self.assertIs(ctx2.exception, err)
+
+                self.assertEqual(rc.submit.await_count, 1)
+
+    async def test_mid_stream_failure_clears_buffers_and_reraises_without_resubmit(self):
+        q = asyncio.Queue()
+        q.put_nowait([Traverser("marko", bulk=1)])
+        rs = AsyncResultSet(q, "stream-err")
+        err = RuntimeError("mid-stream disconnect")
+
+        async def failing_stream():
+            await asyncio.sleep(0)
+            raise err
+
+        rs.future = asyncio.create_task(failing_stream())
+        rc = AsyncDriverRemoteConnection(URL, "g")
+        rc.submit = AsyncMock(return_value=AsyncRemoteTraversal(rs))
+        g = _make_g(rc)
+        t = g.V().values("name")
+
+        self.assertEqual(await t.next(), "marko")
+        with self.assertRaises(RuntimeError) as ctx1:
+            await t.next()
+        self.assertIs(ctx1.exception, err)
+        self.assertIsNone(t.traversers)
+        self.assertIsNone(t.remote_results)
+        self.assertIsNone(t.last_traverser)
+
+        for followup in ("next", "has_next", "next_traverser", "to_list"):
+            with self.assertRaises(RuntimeError) as ctx2:
+                await getattr(t, followup)()
+            self.assertIs(ctx2.exception, err)
+
+        self.assertEqual(rc.submit.await_count, 1)
+
+    async def test_pre_execution_clone_succeeds_independently_after_original_fails(self):
+        rc = _make_rc(values=["marko"])
+        healthy = rc.submit.return_value
+        rc.submit.side_effect = [ConnectionError("first attempt failed"), healthy]
+        g = _make_g(rc)
+        t = g.V().values("name")
+        retry_clone = t.clone()
+
+        with self.assertRaises(ConnectionError):
+            await t.to_list()
+        self.assertEqual(await retry_clone.to_list(), ["marko"])
         self.assertEqual(rc.submit.await_count, 2)
 
 
@@ -602,6 +683,128 @@ class TestAsyncTransaction(_AsyncioTestCase):
         self.assertTrue(tx.is_open)
         parent_rc._async_client._closed = True
         self.assertFalse(tx.is_open)
+
+    async def test_commit_error_closes_and_untracks_session_and_preserves_exception(self):
+        parent_rc, session_rc = self._make_session_rc()
+        commit_err = RuntimeError("commit failed")
+        session_rc.commit.side_effect = commit_err
+        g = _make_g(parent_rc)
+        tx = await g.tx()
+        await tx.begin()
+        self.assertIn(session_rc, parent_rc._AsyncDriverRemoteConnection__spawned_sessions)
+
+        with self.assertRaises(RuntimeError) as ctx:
+            await tx.commit()
+
+        self.assertIs(ctx.exception, commit_err)
+        session_rc._async_client.close.assert_awaited_once()
+        self.assertNotIn(session_rc, parent_rc._AsyncDriverRemoteConnection__spawned_sessions)
+        self.assertFalse(tx.is_open)
+
+    async def test_rollback_error_closes_and_untracks_session_and_preserves_exception(self):
+        parent_rc, session_rc = self._make_session_rc()
+        rollback_err = RuntimeError("rollback failed")
+        session_rc.rollback.side_effect = rollback_err
+        g = _make_g(parent_rc)
+        tx = await g.tx()
+        await tx.begin()
+        self.assertIn(session_rc, parent_rc._AsyncDriverRemoteConnection__spawned_sessions)
+
+        with self.assertRaises(RuntimeError) as ctx:
+            await tx.rollback()
+
+        self.assertIs(ctx.exception, rollback_err)
+        session_rc._async_client.close.assert_awaited_once()
+        self.assertNotIn(session_rc, parent_rc._AsyncDriverRemoteConnection__spawned_sessions)
+        self.assertFalse(tx.is_open)
+
+    async def test_terminal_error_preserved_when_session_close_also_fails(self):
+        for op_name in ("commit", "rollback"):
+            with self.subTest(op_name=op_name):
+                parent_rc, session_rc = self._make_session_rc()
+                terminal_err = RuntimeError(f"{op_name} failed")
+                getattr(session_rc, op_name).side_effect = terminal_err
+                session_rc._async_client.close.side_effect = OSError("close failed")
+                g = _make_g(parent_rc)
+                tx = await g.tx()
+                await tx.begin()
+
+                with self.assertRaises(RuntimeError) as ctx:
+                    await getattr(tx, op_name)()
+
+                self.assertIs(ctx.exception, terminal_err)
+                session_rc._async_client.close.assert_awaited_once()
+                self.assertNotIn(
+                    session_rc,
+                    parent_rc._AsyncDriverRemoteConnection__spawned_sessions,
+                )
+                self.assertFalse(tx.is_open)
+
+    async def test_cancelled_commit_and_rollback_run_shielded_session_cleanup(self):
+        for op_name in ("commit", "rollback"):
+            with self.subTest(op_name=op_name):
+                parent_rc, session_rc = self._make_session_rc()
+                in_terminal_op = asyncio.Event()
+
+                async def blocking_op():
+                    in_terminal_op.set()
+                    await asyncio.Event().wait()
+
+                async def async_close():
+                    await asyncio.sleep(0)
+
+                getattr(session_rc, op_name).side_effect = blocking_op
+                session_rc._async_client.close.side_effect = async_close
+
+                g = _make_g(parent_rc)
+                tx = await g.tx()
+                await tx.begin()
+
+                task = asyncio.create_task(getattr(tx, op_name)())
+                await asyncio.wait_for(in_terminal_op.wait(), 1)
+                task.cancel()
+
+                with self.assertRaises(asyncio.CancelledError):
+                    await task
+
+                session_rc._async_client.close.assert_awaited_once()
+                self.assertNotIn(
+                    session_rc,
+                    parent_rc._AsyncDriverRemoteConnection__spawned_sessions,
+                )
+                self.assertFalse(tx.is_open)
+
+    async def test_cancelling_caller_during_session_cleanup_completes_in_background(self):
+        for op_name in ("commit", "rollback"):
+            with self.subTest(op_name=op_name):
+                parent_rc, session_rc = self._make_session_rc()
+                in_close = asyncio.Event()
+                allow_close = asyncio.Event()
+
+                async def pending_close():
+                    in_close.set()
+                    await allow_close.wait()
+
+                session_rc._async_client.close.side_effect = pending_close
+                g = _make_g(parent_rc)
+                tx = await g.tx()
+                await tx.begin()
+
+                task = asyncio.create_task(getattr(tx, op_name)())
+                await asyncio.wait_for(in_close.wait(), 1)
+                task.cancel()
+
+                with self.assertRaises(asyncio.CancelledError):
+                    await task
+
+                self.assertFalse(tx.is_open)
+                allow_close.set()
+                await asyncio.wait_for(tx.close(), 1)
+                session_rc._async_client.close.assert_awaited_once()
+                self.assertNotIn(
+                    session_rc,
+                    parent_rc._AsyncDriverRemoteConnection__spawned_sessions,
+                )
 
 
 if __name__ == "__main__":

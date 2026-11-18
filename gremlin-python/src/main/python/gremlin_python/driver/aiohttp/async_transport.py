@@ -54,9 +54,9 @@ class AsyncAiohttpWSTransport(AbstractBaseTransport):
         Enable WebSocket per-message deflate compression (compress=15).
     **kwargs:
         Additional keyword arguments forwarded verbatim to
-        aiohttp.ClientSession.ws_connect.  max_content_length is
-        transparently remapped to max_msg_size; ssl_options is
-        remapped to ssl.
+        aiohttp.ClientSession.ws_connect (e.g. ``heartbeat`` in seconds for
+        WebSocket keepalive pings).  max_content_length is transparently
+        remapped to max_msg_size; ssl_options is remapped to ssl.
     """
 
     def __init__(
@@ -138,13 +138,6 @@ class AsyncAiohttpWSTransport(AbstractBaseTransport):
         if msg.type == aiohttp.WSMsgType.TEXT:
             return msg.data.strip().encode("utf-8")
         return msg.data
-
-    async def ping(self):
-        """Experimental API. This API may have breaking changes or be removed in a subsequent minor release.
-
-        Send a WebSocket ping frame to keep the connection alive.
-        """
-        await self._websocket.ping()
 
     async def close(self):
         """Experimental API. This API may have breaking changes or be removed in a subsequent minor release.

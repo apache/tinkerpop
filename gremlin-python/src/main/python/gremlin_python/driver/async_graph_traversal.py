@@ -110,6 +110,8 @@ class AsyncRemoteStrategy(TraversalStrategy):
 
     async def apply(self, traversal):
         """Experimental API. This API may have breaking changes or be removed in a subsequent minor release."""
+        if getattr(traversal, "_failure", None) is not None:
+            raise traversal._failure
         if traversal.traversers is None:
             remote_traversal = await self.remote_connection.submit(traversal.bytecode)
             traversal.remote_results = remote_traversal
@@ -129,6 +131,16 @@ class AsyncTraversal(Traversal):
     apply_strategies() can be awaited inside __anext__().
     """
 
+    def __init__(self, graph, traversal_strategies, bytecode):
+        super().__init__(graph, traversal_strategies, bytecode)
+        self._failure = None
+
+    def _record_failure(self, exc):
+        self._failure = exc
+        self.traversers = None
+        self.remote_results = None
+        self.last_traverser = None
+
     # Prevent accidental sync iteration.
     def __next__(self):
         raise NotImplementedError(
@@ -144,6 +156,8 @@ class AsyncTraversal(Traversal):
         return self
 
     async def __anext__(self):
+        if self._failure is not None:
+            raise self._failure
         try:
             if self.traversers is None:
                 await self.traversal_strategies.apply_strategies(self)
@@ -157,9 +171,8 @@ class AsyncTraversal(Traversal):
             return obj
         except StopAsyncIteration:
             raise
-        except BaseException:
-            self.traversers = None
-            self.last_traverser = None
+        except BaseException as exc:
+            self._record_failure(exc)
             raise
 
     # ------------------------------------------------------------------
@@ -209,6 +222,8 @@ class AsyncTraversal(Traversal):
         Use for write operations (add_v, add_e, property, ...) where no return
         value is needed.
         """
+        if self._failure is not None:
+            raise self._failure
         if (
             not self.bytecode.step_instructions
             or self.bytecode.step_instructions[-1][0] != "discard"
@@ -225,6 +240,8 @@ class AsyncTraversal(Traversal):
 
         Return True if the traversal produces at least one result.
         """
+        if self._failure is not None:
+            raise self._failure
         try:
             if self.traversers is None:
                 await self.traversal_strategies.apply_strategies(self)
@@ -234,9 +251,8 @@ class AsyncTraversal(Traversal):
                 except StopAsyncIteration:
                     return False
             return self.last_traverser is not None and self.last_traverser.bulk > 0
-        except BaseException:
-            self.traversers = None
-            self.last_traverser = None
+        except BaseException as exc:
+            self._record_failure(exc)
             raise
 
     async def next_traverser(self):
@@ -244,6 +260,8 @@ class AsyncTraversal(Traversal):
 
         Return the next raw Traverser.
         """
+        if self._failure is not None:
+            raise self._failure
         try:
             if self.traversers is None:
                 await self.traversal_strategies.apply_strategies(self)
@@ -254,9 +272,8 @@ class AsyncTraversal(Traversal):
             return temp
         except StopAsyncIteration:
             raise
-        except BaseException:
-            self.traversers = None
-            self.last_traverser = None
+        except BaseException as exc:
+            self._record_failure(exc)
             raise
 
 
@@ -401,6 +418,7 @@ class AsyncTransaction:
         self._session_connection = None
         self._gtx = None
         self._is_open = False
+        self._cleanup_task = None
         self._mutex = asyncio.Lock()
 
     @property
@@ -428,6 +446,7 @@ class AsyncTransaction:
         async with self._mutex:
             if self.is_open:
                 raise Exception("Transaction is already open")
+            self._cleanup_task = None
             self._session_connection = self._remote_connection.create_session()
             strategies = AsyncTraversalStrategies()
             strategies.add_strategies([AsyncRemoteStrategy(self._session_connection)])
@@ -447,8 +466,7 @@ class AsyncTransaction:
         async with self._mutex:
             if not self.is_open:
                 raise Exception("Transaction is not open")
-            await self._session_connection.commit()
-            await self._close_session()
+            await self._finish_transaction(self._session_connection.commit)
 
     async def rollback(self):
         """Experimental API. This API may have breaking changes or be removed in a subsequent minor release.
@@ -458,8 +476,7 @@ class AsyncTransaction:
         async with self._mutex:
             if not self.is_open:
                 raise Exception("Transaction is not open")
-            await self._session_connection.rollback()
-            await self._close_session()
+            await self._finish_transaction(self._session_connection.rollback)
 
     async def close(self):
         """Experimental API. This API may have breaking changes or be removed in a subsequent minor release.
@@ -469,12 +486,40 @@ class AsyncTransaction:
         async with self._mutex:
             if self.is_open:
                 await self._close_session()
+            elif self._cleanup_task is not None:
+                await asyncio.shield(self._cleanup_task)
+
+    async def _finish_transaction(self, terminal_op):
+        terminal_error = None
+        try:
+            await terminal_op()
+        except BaseException as exc:
+            terminal_error = exc
+            raise
+        finally:
+            try:
+                await self._close_session()
+            except BaseException:
+                if terminal_error is None:
+                    raise
+                log.debug(
+                    "Suppressing session cleanup failure to preserve transaction error",
+                    exc_info=True,
+                )
 
     async def _close_session(self):
+        session_connection = self._session_connection
         self._is_open = False
-        await self._remote_connection.remove_session(self._session_connection)
         self._session_connection = None
         self._gtx = None
+        if session_connection is not None:
+            self._cleanup_task = asyncio.create_task(
+                self._remote_connection.remove_session(session_connection)
+            )
+            self._cleanup_task.add_done_callback(
+                lambda t: t.exception() if not t.cancelled() else None
+            )
+            await asyncio.shield(self._cleanup_task)
 
     # Context-manager support: `async with await g.tx() as gtx`
     async def __aenter__(self):
