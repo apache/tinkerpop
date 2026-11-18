@@ -22,6 +22,7 @@ import org.apache.kerby.kerberos.kerb.KrbException;
 import org.apache.kerby.kerberos.kerb.client.KrbClient;
 import org.apache.kerby.kerberos.kerb.client.KrbConfig;
 import org.apache.kerby.kerberos.kerb.client.KrbConfigKey;
+import org.apache.kerby.kerberos.kerb.server.KdcConfigKey;
 import org.apache.kerby.kerberos.kerb.server.SimpleKdcServer;
 import org.apache.kerby.kerberos.kerb.type.ticket.TgtTicket;
 import org.slf4j.Logger;
@@ -113,6 +114,10 @@ public class KdcFixture {
             setAllowUdp(true);
             setKdcTcpPort(KDC_PORT);
             setKdcUdpPort(KDC_PORT);
+
+            // Kerby's KDC does not offer PA-ENC-TIMESTAMP when it asks for pre-authentication, so MIT kinit,
+            // which gremlin-python's tests use, cannot pre-authenticate against it. Do not require it.
+            getKdcConfig().setBoolean(KdcConfigKey.PREAUTH_REQUIRED, false);
 
             final KrbClient krbClnt = getKrbClient();
             final KrbConfig krbConfig = krbClnt.getKrbConfig();
