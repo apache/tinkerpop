@@ -47,35 +47,6 @@ public class GremlinScriptChecker {
             "ARGS_MATERIALIZE_PROPERTIES"));
 
     /**
-     * Matches single line comments, multi-line comments and space characters.
-     * <pre>
-     * From https://regex101.com/
-     *
-     * 	OR: match either of the followings
-     * Sequence: match all of the followings in order
-     * / /
-     * Repeat
-     * AnyCharacterExcept\n
-     * zero or more times
-     * EndOfLine
-     * Sequence: match all of the followings in order
-     * /
-     * *
-     * Repeat
-     * CapturingGroup
-     * GroupNumber:1
-     * OR: match either of the followings
-     * AnyCharacterExcept\n
-     * AnyCharIn[ CarriageReturn NewLine]
-     * zero or more times (ungreedy)
-     * *
-     * /
-     * WhiteSpaceCharacter
-     * </pre>
-     */
-    private static final Pattern patternClean = Pattern.compile("//.*$|/\\*(.|[\\r\\n])*?\\*/|\\s", Pattern.MULTILINE);
-
-    /**
      * Regex fragment for the timeout tokens to look for. There are basically four:
      * <ul>
      *     <li>{@code evaluationTimeout} which is a string value and thus single or double quoted</li>
@@ -195,7 +166,7 @@ public class GremlinScriptChecker {
 
         // kill out comments/whitespace. for whitespace, ignoring the need to keep string literals together as that
         // isn't currently a requirement
-        final String cleanGremlin = patternClean.matcher(gremlin).replaceAll("");
+        final String cleanGremlin = stripCommentsAndWhitespace(gremlin);
 
         final Matcher m = patternWithOptions.matcher(cleanGremlin);
         if (!m.find()) return EMPTY_RESULT;
@@ -222,6 +193,36 @@ public class GremlinScriptChecker {
         } while (m.find());
 
         return new Result(timeout, requestId, materializeProperties);
+    }
+
+    /**
+     * Removes comments and whitespace so that {@code with()} options can be found regardless of how the script is
+     * laid out, and so that options inside comments are ignored. Scanning from the start of the script, it removes:
+     * <ul>
+     *     <li><code>//</code> through to the end of the line</li>
+     *     <li><code>/*</code> through to the next <code>*&#47;</code>, leaving a <code>/*</code> that is never closed
+     *     in place</li>
+     *     <li>whitespace</li>
+     * </ul>
+     */
+    static String stripCommentsAndWhitespace(final String gremlin) {
+        final int len = gremlin.length();
+        final StringBuilder sb = new StringBuilder(len);
+
+        // a "/*" only starts a comment if a "*/" follows it somewhere
+        final int lastCommentEnd = gremlin.lastIndexOf("*/");
+        int i = 0;
+        while (i < len) {
+            if (gremlin.startsWith("//", i)) {
+                while (i < len && gremlin.charAt(i) != '\n' && gremlin.charAt(i) != '\r') i++;
+            } else if (gremlin.startsWith("/*", i) && i + 2 <= lastCommentEnd) {
+                i = gremlin.indexOf("*/", i + 2) + 2;
+            } else {
+                final char c = gremlin.charAt(i++);
+                if (!Character.isWhitespace(c)) sb.append(c);
+            }
+        }
+        return sb.toString();
     }
 
     /**
