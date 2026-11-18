@@ -78,6 +78,25 @@ limitations under the License.
             <artifactId>guice</artifactId>
             <version>${guice.version}</version>
             <scope>provided</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.google.guava</groupId>
+                    <artifactId>guava</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <!-- guice 4.2.3 pulls an older guava with known vulnerabilities; use a patched one -->
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>${guava.version}</version>
+            <scope>provided</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.google.errorprone</groupId>
+                    <artifactId>error_prone_annotations</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>ch.qos.logback</groupId>
@@ -88,6 +107,23 @@ limitations under the License.
             <groupId>org.apache.kerby</groupId>
             <artifactId>kerb-simplekdc</artifactId>
             <version>${kerby.version}</version>
+            <exclusions>
+                <!-- only used by the kerberos admin shell, which the tests do not use; conflicts with hadoop's jline -->
+                <exclusion>
+                    <groupId>org.jline</groupId>
+                    <artifactId>jline</artifactId>
+                </exclusion>
+                <!-- jboss-threads and xnio-api disagree on wildfly-common; use the newer one declared below -->
+                <exclusion>
+                    <groupId>org.wildfly.common</groupId>
+                    <artifactId>wildfly-common</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.wildfly.common</groupId>
+            <artifactId>wildfly-common</artifactId>
+            <version>1.5.4.Final</version>
         </dependency>
     </dependencies>
     <build>
