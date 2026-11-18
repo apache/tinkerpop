@@ -110,14 +110,14 @@ class Console {
         GremlinLoader.load()
 
         // check for available plugins on the path and track them by plugin class name
-        def activePlugins = Mediator.readPluginState()
         ServiceLoader.load(GremlinPlugin, engine.getClassLoader()).each { plugin ->
             if (!mediator.availablePlugins.containsKey(plugin.class.name)) {
                 def pluggedIn = new PluggedIn((GremlinPlugin) plugin, engine, false)
                 mediator.availablePlugins.put(plugin.class.name, pluggedIn)
-                pluggedIn.activate()
             }
         }
+
+        def activePlugins = Mediator.readPluginState()
 
         // if there are active plugins then initialize them in the order that they are listed
         activePlugins.each { pluginName ->

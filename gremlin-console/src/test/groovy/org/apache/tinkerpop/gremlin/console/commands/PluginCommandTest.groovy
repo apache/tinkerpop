@@ -19,8 +19,11 @@
 package org.apache.tinkerpop.gremlin.console.commands
 
 import org.apache.groovy.groovysh.jline.GroovyEngine
+import org.apache.tinkerpop.gremlin.console.ConsoleFs
 import org.apache.tinkerpop.gremlin.console.Mediator
 import org.apache.tinkerpop.gremlin.console.PluggedIn
+import org.apache.tinkerpop.gremlin.jsr223.AbstractGremlinPlugin
+import org.apache.tinkerpop.gremlin.jsr223.DefaultScriptCustomizer
 import org.apache.tinkerpop.gremlin.jsr223.GremlinPlugin
 import org.jline.builtins.Options.HelpException
 import org.jline.shell.CommandSession
@@ -31,6 +34,7 @@ import static org.apache.tinkerpop.gremlin.console.commands.CommandCompletion.co
 import static org.junit.Assert.assertEquals
 import static org.junit.Assert.assertTrue
 import static org.junit.Assert.fail
+import static org.junit.Assume.assumeFalse
 
 class PluginCommandTest {
     private PluginCommand cmd
@@ -110,6 +114,116 @@ class PluginCommandTest {
             fail("should have thrown HelpException")
         } catch (HelpException e) {
             assertTrue(e.message, e.message.contains("Usage: plugin [use <plugin-name>|list|unuse <plugin-name>]"))
+        }
+    }
+
+    private static GremlinPlugin plugin(final String name, final boolean requireRestart = false) {
+        // a set of scripts, as a list would choose the constructor that takes script files
+        final Collection<List<String>> scripts = [["activations << '$name'".toString()]] as Set<List<String>>
+        return new AbstractGremlinPlugin(name, new DefaultScriptCustomizer(scripts)) {
+            @Override
+            boolean requireRestart() { requireRestart }
+        }
+    }
+
+    /**
+     * Runs the code with a writable plugins.txt, which writePluginState only writes to when it already exists.
+     */
+    private static void withPluginsFile(final Closure code) {
+        final File file = new File(ConsoleFs.PLUGIN_CONFIG_FILE)
+        final boolean createdDir = file.parentFile.mkdirs()
+        try {
+            file.text = ""
+            code.call(file)
+        } finally {
+            file.delete()
+            if (createdDir) file.parentFile.delete()
+        }
+    }
+
+    @Test
+    void shouldListWhetherEachPluginIsActiveNowAndAfterARestart() {
+        def engine = new GroovyEngine()
+        def mediator = new Mediator(null)
+        def unused = new PluggedIn(plugin("test.c"), engine, true)
+        unused.deactivate()
+        def pending = new PluggedIn(plugin("test.d", true), engine, false)
+        pending.restartRequired = true
+        pending.activate()
+        mediator.availablePlugins.put("a", new PluggedIn(plugin("test.a"), engine, true))
+        mediator.availablePlugins.put("b", new PluggedIn(plugin("test.b"), engine, false))
+        mediator.availablePlugins.put("c", unused)
+        mediator.availablePlugins.put("d", pending)
+        assertEquals(["test.a[active]",
+                      "test.b[inactive]",
+                      "test.c[active until restart]",
+                      "test.d[inactive until restart]"], new PluginCommand(mediator).execute(["list"]))
+    }
+
+    @Test
+    void shouldApplyAPluginOnlyOnce() {
+        def engine = new GroovyEngine()
+        engine.put("activations", [])
+        def pluggedIn = new PluggedIn(plugin("test.a"), engine, false)
+        pluggedIn.activate()
+        pluggedIn.deactivate()
+        pluggedIn.activate()
+        assertEquals(["test.a"], engine.get("activations"))
+        assertTrue(pluggedIn.loaded && pluggedIn.activated)
+    }
+
+    @Test
+    void shouldOnlyApplyAPluginThatNeedsARestartAfterTheRestart() {
+        def engine = new GroovyEngine()
+        engine.put("activations", [])
+        def mediator = new Mediator(null)
+        def pluggedIn = new PluggedIn(plugin("test.d", true), engine, false)
+        pluggedIn.restartRequired = true
+        mediator.availablePlugins.put("d", pluggedIn)
+        withPluginsFile { File file ->
+            assertEquals("test.d will be active after the console restarts",
+                    new PluginCommand(mediator).execute(["use", "test.d"]).toString())
+            assertEquals([], engine.get("activations"))
+            assertEquals(["d"], file.readLines())
+        }
+    }
+
+    @Test
+    void shouldOnlyMentionTheRestartWhenUnusingAPluginThatIsActiveNow() {
+        def engine = new GroovyEngine()
+        def mediator = new Mediator(null)
+        mediator.availablePlugins.put("a", new PluggedIn(plugin("test.a"), engine, true))
+        mediator.availablePlugins.put("b", new PluggedIn(plugin("test.b"), engine, false))
+        withPluginsFile {
+            assertEquals("test.a deactivated - restart your console for this to take effect",
+                    new PluginCommand(mediator).execute(["unuse", "test.a"]).toString())
+            assertEquals("test.b deactivated", new PluginCommand(mediator).execute(["unuse", "test.b"]).toString())
+        }
+    }
+
+    @Test
+    void shouldKeepTheStateAfterARestartWhenThePluginListIsReadOnly() {
+        def engine = new GroovyEngine()
+        engine.put("activations", [])
+        def mediator = new Mediator(null)
+        def pending = new PluggedIn(plugin("test.d", true), engine, false)
+        pending.restartRequired = true
+        mediator.availablePlugins.put("a", new PluggedIn(plugin("test.a"), engine, true))
+        mediator.availablePlugins.put("b", new PluggedIn(plugin("test.b"), engine, false))
+        mediator.availablePlugins.put("d", pending)
+        final PluginCommand cmd = new PluginCommand(mediator)
+        withPluginsFile { File file ->
+            file.setWritable(false)
+            // root can still write to it
+            assumeFalse(file.canWrite())
+            final String readonly = " but " + ConsoleFs.PLUGIN_CONFIG_FILE +
+                    " is readonly - the plugin list will remain unchanged on console restart"
+            assertEquals("test.a deactivated" + readonly, cmd.execute(["unuse", "test.a"]).toString())
+            assertEquals("test.b activated" + readonly, cmd.execute(["use", "test.b"]).toString())
+            assertEquals("test.d will not be active after the console restarts as " + ConsoleFs.PLUGIN_CONFIG_FILE +
+                    " is readonly", cmd.execute(["use", "test.d"]).toString())
+            assertEquals(["test.a[active]", "test.b[active until restart]", "test.d[inactive]"], cmd.execute(["list"]))
+            assertEquals(["test.b"], engine.get("activations"))
         }
     }
 

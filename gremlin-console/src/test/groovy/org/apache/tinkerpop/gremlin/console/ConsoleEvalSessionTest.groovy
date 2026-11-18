@@ -190,7 +190,7 @@ class ConsoleEvalSessionTest extends AbstractConsoleSessionTest {
         final ConsoleSession console = start([[script.absolutePath]])
         assertEquals(["==>ran"], console.results("afterCommand"))
         final List<String> listed = console.results(":plugin list")
-        assertTrue(listed.toString(), listed.contains("==>tinkerpop.utilities"))
+        assertTrue(listed.toString(), listed.contains("==>tinkerpop.utilities[active until restart]"))
     }
 
     @Test
@@ -217,7 +217,7 @@ class ConsoleEvalSessionTest extends AbstractConsoleSessionTest {
         final ConsoleSession console = start([[script.absolutePath]])
         assertEquals("c d> ", STORE.get(Preferences.PREF_RESULT_PROMPT, null))
         awaitPreference { Preferences.resultPrompt == "c d> " }
-        assertTrue(console.send(":plugin list").contains("c d> tinkerpop.utilities"))
+        assertTrue(console.send(":plugin list").contains("c d> tinkerpop.utilities[active until restart]"))
         assertEquals(["c d> 1", "c d> 2"], console.send("x"))
     }
 

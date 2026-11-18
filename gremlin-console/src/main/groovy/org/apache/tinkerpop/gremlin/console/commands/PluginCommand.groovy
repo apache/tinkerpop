@@ -72,11 +72,16 @@ class PluginCommand extends GremlinCommand {
         final PluggedIn pluggedIn = findPlugin(pluginName)
         if (pluggedIn == null) return "$pluginName could not be found - use ':plugin list' to see available plugins"
 
+        final boolean wasActivated = pluggedIn.activated
         pluggedIn.activate()
         if (mediator.writePluginState())
-            return "$pluginName activated"
-        else
-            return "$pluginName activated but " + ConsoleFs.PLUGIN_CONFIG_FILE + " is readonly - the plugin list will remain unchanged on console restart"
+            return pluggedIn.loaded ? "$pluginName activated" : "$pluginName will be active after the console restarts"
+
+        // the plugin list is unchanged, so neither is the state after a restart
+        if (!wasActivated) pluggedIn.deactivate()
+        if (!pluggedIn.loaded)
+            return "$pluginName will not be active after the console restarts as " + ConsoleFs.PLUGIN_CONFIG_FILE + " is readonly"
+        return "$pluginName activated but " + ConsoleFs.PLUGIN_CONFIG_FILE + " is readonly - the plugin list will remain unchanged on console restart"
     }
 
     private Object deactivate(final List<String> arguments) {
@@ -85,15 +90,26 @@ class PluginCommand extends GremlinCommand {
         final PluggedIn pluggedIn = findPlugin(pluginName)
         if (pluggedIn == null) return "$pluginName could not be found - use ':plugin list' to see available plugins"
 
+        final boolean wasActivated = pluggedIn.activated
         pluggedIn.deactivate()
         if (mediator.writePluginState())
-            return "$pluginName deactivated - restart your console for this to take effect"
-        else
-            return "$pluginName deactivated but " + ConsoleFs.PLUGIN_CONFIG_FILE + " is readonly - the plugin list will remain unchanged on console restart"
+            return pluggedIn.loaded ? "$pluginName deactivated - restart your console for this to take effect" : "$pluginName deactivated"
+
+        // an activated plugin is loaded or waits for a restart, so this only sets the flag back
+        if (wasActivated) pluggedIn.activate()
+        return "$pluginName deactivated but " + ConsoleFs.PLUGIN_CONFIG_FILE + " is readonly - the plugin list will remain unchanged on console restart"
     }
 
     private List<String> listPlugins() {
-        return mediator.availablePlugins.values().collect { it.plugin.name + (it.activated ? "[active]" : "") }
+        return mediator.availablePlugins.values().collect { it.plugin.name + "[" + state(it) + "]" }
+    }
+
+    /**
+     * Whether the plugin is active now, noting when that changes after a restart.
+     */
+    private static String state(final PluggedIn pluggedIn) {
+        final String now = pluggedIn.loaded ? "active" : "inactive"
+        return pluggedIn.loaded == pluggedIn.activated ? now : now + " until restart"
     }
 
     private PluggedIn findPlugin(final String pluginName) {
