@@ -215,10 +215,6 @@ export default class JavascriptTranslateVisitor extends TranslateVisitor {
     visitTraversalPredicate_geoContains(_ctx: any): void {
         throw new TranslatorException('Javascript does not support geo predicates');
     }
-
-    visitTraversalPredicate_geoWithinDistance(_ctx: any): void {
-        throw new TranslatorException('Javascript does not support geo predicates');
-    }
 }
 
 /**

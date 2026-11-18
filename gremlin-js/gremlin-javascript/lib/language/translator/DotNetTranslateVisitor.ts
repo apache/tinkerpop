@@ -188,10 +188,6 @@ export default class DotNetTranslateVisitor extends TranslateVisitor {
         throw new TranslatorException('.NET does not support geo predicates');
     }
 
-    visitTraversalPredicate_geoWithinDistance(_ctx: any): void {
-        throw new TranslatorException('.NET does not support geo predicates');
-    }
-
     visitGenericSetLiteral(ctx: any): void {
         this.sb.push('new HashSet<object> { ');
         const literals: any[] = ctx.genericLiteral();

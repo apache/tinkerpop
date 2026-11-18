@@ -48,7 +48,6 @@ import java.nio.ByteBuffer;
 import java.time.Duration;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -343,19 +342,11 @@ public class GremlinLang implements Cloneable, Serializable {
                 sb.append(argAsString(p.getValue()));
             }
         } else if (p instanceof GeoP) {
-            // geoWithinDistance holds [geometry, distance], so write each as its own argument
             sb.append("GeoP.").append(p.getPredicateName()).append("(");
-            final List<?> arguments;
             if (p.hasTraversal()) {
-                arguments = p.getChildTraversals();
-            } else if (p.getValue() instanceof List) {
-                arguments = (List<?>) p.getValue();
+                sb.append(argAsString(p.getChildTraversals().get(0)));
             } else {
-                arguments = Collections.singletonList(p.getValue());
-            }
-            for (int i = 0; i < arguments.size(); i++) {
-                if (i > 0) sb.append(",");
-                sb.append(argAsString(arguments.get(i)));
+                sb.append(argAsString(p.getValue()));
             }
         } else if (p instanceof ConnectiveP) {
             // ConnectiveP gets some special handling because it's reduced to and(P, P, P) and we want it

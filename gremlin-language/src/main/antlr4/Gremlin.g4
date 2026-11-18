@@ -1219,7 +1219,6 @@ traversalPredicate
     | traversalPredicate_notRegex
     | traversalPredicate_geoWithin
     | traversalPredicate_geoContains
-    | traversalPredicate_geoWithinDistance
     | traversalPredicate DOT K_AND LPAREN traversalPredicate RPAREN
     | traversalPredicate DOT K_OR LPAREN traversalPredicate RPAREN
     | traversalPredicate DOT K_NEGATE LPAREN RPAREN
@@ -1368,13 +1367,6 @@ traversalPredicate_geoWithin
 traversalPredicate_geoContains
     : (K_GEOP DOT K_GEOCONTAINS | K_GEOCONTAINS) LPAREN geometryArgument RPAREN
     | (K_GEOP DOT K_GEOCONTAINS | K_GEOCONTAINS) LPAREN nestedTraversal RPAREN
-    ;
-
-traversalPredicate_geoWithinDistance
-    : (K_GEOP DOT K_GEOWITHINDISTANCE | K_GEOWITHINDISTANCE) LPAREN geometryArgument COMMA numericArgument RPAREN
-    | (K_GEOP DOT K_GEOWITHINDISTANCE | K_GEOWITHINDISTANCE) LPAREN geometryArgument COMMA nestedTraversal RPAREN
-    | (K_GEOP DOT K_GEOWITHINDISTANCE | K_GEOWITHINDISTANCE) LPAREN nestedTraversal COMMA numericArgument RPAREN
-    | (K_GEOP DOT K_GEOWITHINDISTANCE | K_GEOWITHINDISTANCE) LPAREN nestedTraversal COMMA nestedTraversal RPAREN
     ;
 
 traversalTerminalMethod_explain
@@ -1618,11 +1610,6 @@ booleanArgument
 
 integerArgument
     : integerLiteral
-    | variable
-    ;
-
-numericArgument
-    : numericLiteral
     | variable
     ;
 
@@ -1996,7 +1983,6 @@ keyword
     | K_GEOMETRYU
     | K_GEOP
     | K_GEOWITHIN
-    | K_GEOWITHINDISTANCE
     | K_GLOBAL
     | K_GT
     | K_GTE
@@ -2338,7 +2324,6 @@ K_GEOMETRYCOLLECTION: 'geometryCollection';
 K_GEOMETRYCOLLECTIONU: 'GEOMETRYCOLLECTION';
 K_GEOP: 'GeoP';
 K_GEOWITHIN: 'geoWithin';
-K_GEOWITHINDISTANCE: 'geoWithinDistance';
 K_GLOBAL: 'global';
 K_GT: 'gt';
 K_GTE: 'gte';

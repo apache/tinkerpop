@@ -111,50 +111,6 @@ Feature: Predicate - GeoP
     When iterated to list
     Then the result should be empty
 
-  @GraphComputerVerificationInjectionNotSupported
-  Scenario: g_injectXemptyAndPointX_isXgeoWithinDistanceXpoint_5XX
-    Given the empty graph
-    And the traversal of
-      """
-      g.inject(Geometry("POINT EMPTY"), Geometry("POINT(2 2)")).is(GeoP.geoWithinDistance(Geometry("POINT(0 0)"), 5))
-      """
-    When iterated to list
-    Then the result should be unordered
-      | result |
-      | geo[POINT(2 2)] |
-
-  @AllowGeometryPropertyValues
-  Scenario: g_V_hasXloc_geoWithinDistanceXpoint_5XX_valuesXnameX
-    Given the empty graph
-    And the graph initializer of
-      """
-      g.addV("site").property("name", "near").property("loc", Geometry("POINT(3 4)")).addV("site").property("name", "far").property("loc", Geometry("POINT(3 4.1)"))
-      """
-    And the traversal of
-      """
-      g.V().has("loc", GeoP.geoWithinDistance(Geometry("POINT(0 0)"), 5)).values("name")
-      """
-    When iterated to list
-    Then the result should be unordered
-      | result |
-      | near |
-
-  @AllowGeometryPropertyValues
-  Scenario: g_V_hasXloc_geoWithinDistanceXgeographicPoint_10000XX_valuesXnameX
-    Given the empty graph
-    And the graph initializer of
-      """
-      g.addV("store").property("name", "midtown").property("loc", Geometry("POINT(13.4 52.545)", GEOGRAPHIC)).addV("store").property("name", "uptown").property("loc", Geometry("POINT(13.4 52.68)", GEOGRAPHIC))
-      """
-    And the traversal of
-      """
-      g.V().has("loc", GeoP.geoWithinDistance(Geometry("POINT(13.4 52.5)", GEOGRAPHIC), 10000)).values("name")
-      """
-    When iterated to list
-    Then the result should be unordered
-      | result |
-      | midtown |
-
   @AllowGeometryPropertyValues
   Scenario: g_V_hasXloc_geoWithinXconstantXpolygonXXX_valuesXnameX
     Given the empty graph
@@ -300,19 +256,6 @@ Feature: Predicate - GeoP
       | Pat |
 
   @AllowGeometryPropertyValues @AllowMixedGeometryModels
-  Scenario: g_V_hasXloc_geoWithinDistanceXcartesianOrigin_5XX_valuesXnameX
-    Given the delivery graph
-    And the traversal of
-      """
-      g.V().has("loc", GeoP.geoWithinDistance(Geometry("POINT(0 0)"), 5)).values("name")
-      """
-    When iterated to list
-    Then the result should be unordered
-      | result |
-      | Chilled |
-      | Pat |
-
-  @AllowGeometryPropertyValues @AllowMixedGeometryModels
   Scenario: g_V_hasXloc_geoWithinXcartesianGreenwichBoxXX_valuesXnameX
     Given the delivery graph
     And the traversal of
@@ -322,51 +265,12 @@ Feature: Predicate - GeoP
     When iterated to list
     Then the result should be empty
 
-  @AllowGeometryPropertyValues @AllowMixedGeometryModels @GraphComputerVerificationStarGraphExceeded
-  Scenario: g_V_hasLabelXhubX_hasXloc_geoWithinDistanceXtimesSquare_1000XX_outXhasRoomX_asXroomX_inXworksInX_whereXvaluesXlocX_isXgeoWithinXselectXroomX_valuesXlocXXXX_valuesXnameX
-    Given the delivery graph
-    And the traversal of
-      """
-      g.V().hasLabel("hub").has("loc", GeoP.geoWithinDistance(Geometry("POINT(-73.9855 40.758)", GEOGRAPHIC), 1000)).out("hasRoom").as("room").in("worksIn").where(__.values("loc").is(GeoP.geoWithin(__.select("room").values("loc")))).values("name")
-      """
-    When iterated to list
-    Then the result should be unordered
-      | result |
-      | Pat |
-
   @AllowGeometryPropertyValues
-  Scenario: g_V_hasLabelXhubX_hasXloc_geoWithinDistanceXhellsKitchenPoint_6000000XX_valuesXnameX
+  Scenario: g_E_hasLabelXdeliveredX_hasXpath_geoWithinXwilliamsburgToMidtownBoxXX_inV_valuesXnameX
     Given the delivery graph
     And the traversal of
       """
-      g.V().hasLabel("hub").has("loc", GeoP.geoWithinDistance(Geometry("POINT(-73.9925 40.7614)", GEOGRAPHIC), 6000000)).values("name")
-      """
-    When iterated to list
-    Then the result should be unordered
-      | result |
-      | Hell's Kitchen |
-      | Williamsburg |
-      | Los Angeles |
-      | Greenwich |
-
-  @AllowGeometryPropertyValues
-  Scenario: g_V_hasLabelXhubX_outEXshipsToX_hasXpath_geoWithinDistanceXfijiPoint_5000XX_inV_valuesXnameX
-    Given the delivery graph
-    And the traversal of
-      """
-      g.V().hasLabel("hub").outE("shipsTo").has("path", GeoP.geoWithinDistance(Geometry("POINT(178.4419 -18.1416)", GEOGRAPHIC), 5000)).inV().values("name")
-      """
-    When iterated to list
-    Then the result should be unordered
-      | result |
-      | Auckland |
-
-  @AllowGeometryPropertyValues
-  Scenario: g_E_hasLabelXdeliveredX_hasXpath_geoWithinDistanceXeastRiver_0XX_inV_valuesXnameX
-    Given the delivery graph
-    And the traversal of
-      """
-      g.E().hasLabel("delivered").has("path", GeoP.geoWithinDistance(Geometry("MULTILINESTRING((-73.975 40.695, -73.965 40.72, -73.958 40.745, -73.951 40.77), (-73.958 40.745, -73.946 40.755, -73.945 40.77))", GEOGRAPHIC), 0)).inV().values("name")
+      g.E().hasLabel("delivered").has("path", GeoP.geoWithin(Geometry("POLYGON((-74 40.7, -73.95 40.7, -73.95 40.76, -74 40.76, -74 40.7))", GEOGRAPHIC))).inV().values("name")
       """
     When iterated to list
     Then the result should be unordered
@@ -374,11 +278,11 @@ Feature: Predicate - GeoP
       | Ana |
 
   @AllowGeometryPropertyValues
-  Scenario: g_E_hasLabelXdeliveredX_hasXpath_geoWithinDistanceXshiftedEastRiver_0XX_inV_valuesXnameX
+  Scenario: g_E_hasLabelXdeliveredX_hasXpath_geoWithinXshiftedWilliamsburgToMidtownBoxXX_inV_valuesXnameX
     Given the delivery graph
     And the traversal of
       """
-      g.E().hasLabel("delivered").has("path", GeoP.geoWithinDistance(Geometry("MULTILINESTRING((-74.075 40.695, -74.065 40.72, -74.058 40.745, -74.051 40.77), (-74.058 40.745, -74.046 40.755, -74.045 40.77))", GEOGRAPHIC), 0)).inV().values("name")
+      g.E().hasLabel("delivered").has("path", GeoP.geoWithin(Geometry("POLYGON((-74.1 40.7, -74.05 40.7, -74.05 40.76, -74.1 40.76, -74.1 40.7))", GEOGRAPHIC))).inV().values("name")
       """
     When iterated to list
     Then the result should be empty

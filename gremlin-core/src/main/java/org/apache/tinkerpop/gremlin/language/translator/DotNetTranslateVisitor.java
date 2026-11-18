@@ -208,11 +208,6 @@ public class DotNetTranslateVisitor extends AbstractTranslateVisitor {
     }
 
     @Override
-    public Void visitTraversalPredicate_geoWithinDistance(final GremlinParser.TraversalPredicate_geoWithinDistanceContext ctx) {
-        throw new TranslatorException(".NET does not support geo predicates");
-    }
-
-    @Override
     public Void visitGenericMapLiteral(final GremlinParser.GenericMapLiteralContext ctx) {
         sb.append("new Dictionary<object, object> {");
         for (int i = 0; i < ctx.mapEntry().size(); i++) {

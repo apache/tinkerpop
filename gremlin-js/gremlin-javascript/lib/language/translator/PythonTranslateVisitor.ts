@@ -179,10 +179,6 @@ export default class PythonTranslateVisitor extends TranslateVisitor {
         throw new TranslatorException('Python does not support geo predicates');
     }
 
-    visitTraversalPredicate_geoWithinDistance(_ctx: any): void {
-        throw new TranslatorException('Python does not support geo predicates');
-    }
-
     visitGenericSetLiteral(ctx: any): void {
         const literals: any[] = ctx.genericLiteral();
         if (literals.length === 0) {

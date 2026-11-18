@@ -6665,7 +6665,6 @@ supports text predicates (`TextP`), which are specialized predicates that only w
 | `TextP.notRegex(string)` | Does the incoming `String` fail to match the regular expression in the provided `String`?
 | `GeoP.geoWithin(geometry)` | Does the incoming `Geometry` lie entirely inside the provided `Geometry`?
 | `GeoP.geoContains(geometry)` | Does the incoming `Geometry` entirely contain the provided `Geometry`?
-| `GeoP.geoWithinDistance(geometry,number)` | Is the distance between the incoming `Geometry` and the provided `Geometry` at most the provided number?
 |=========================================================
 
 NOTE: The TinkerPop reference implementation uses the Java `Pattern` and `Matcher` classes for it regular expression
@@ -6730,11 +6729,9 @@ g.V().has('person', 'name', regex('r$')).values('name')
 
 The geometry predicates match a value only against a `Geometry` in the same spatial reference system, and a value they
 cannot compare does not match rather than raising an error. `geoWithin` and `geoContains` exclude the boundary, so a
-point lying only on a polygon's edge is not within that polygon. `geoWithinDistance` is inclusive and measures in
-coordinate units for a `CARTESIAN` geometry and in meters for a `GEOGRAPHIC` one. All geometry math is two
-dimensional, so z is ignored. The
-link:https://tinkerpop.apache.org/docs/x.y.z/dev/provider/#gremlin-semantics-geometry[Geometry Section] of the Gremlin
-Semantics specification defines these rules in full.
+point lying only on a polygon's edge is not within that polygon. All geometry math is two dimensional, so z is ignored.
+The link:https://tinkerpop.apache.org/docs/x.y.z/dev/provider/#gremlin-semantics-geometry[Geometry Section] of the
+Gremlin Semantics specification defines these rules in full.
 
 The predicates may be written with or without the `GeoP` prefix, so `GeoP.geoWithin(g)` and `geoWithin(g)` are the
 same predicate. A geometry is written with the `Geometry()` literal, which takes Well-Known Text and an optional
@@ -6747,15 +6744,12 @@ gremlin> g = TinkerGraph.open().traversal()
 gremlin> g.addV('store').property('name','midtown').property('loc',geometry("POINT(2 2)")).addV('store').property('name','uptown').property('loc',geometry("POINT(9 9)")).iterate()
 gremlin> g.V().has('loc',geoWithin(geometry("POLYGON((0 0, 4 0, 4 4, 0 4, 0 0))"))).values('name')
 ==>midtown
-gremlin> g.V().has('loc',geoWithinDistance(geometry("POINT(0 0)"),3)).values('name')
-==>midtown
 ----
 
 NOTE: The reference implementation computes a `GEOGRAPHIC` relationship in longitude and latitude, treating an edge as
-straight in those coordinates rather than as a geodesic, and measures the distance between two points on a sphere of
-the WGS84 mean radius. For an edge shorter than about 100 km that crosses neither the antimeridian nor a pole, a
-measure stays within about 1% of its WGS84 value and a relationship is correct. A provider may compute geodetic
-results more precisely, so it's a good idea to check the documentation for the implementation in use.
+straight in those coordinates rather than as a geodesic. For an edge shorter than about 100 km that crosses neither the
+antimeridian nor a pole, a relationship is correct. A provider may compute geodetic results more precisely, so it's a
+good idea to check the documentation for the implementation in use.
 
 Finally, note that <<where-step,`where()`>>-step takes a `P<String>`. The provided string value refers to a variable
 binding, not to the explicit string value.

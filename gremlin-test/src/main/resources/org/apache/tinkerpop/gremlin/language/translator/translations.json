@@ -8367,61 +8367,6 @@
         ]
     },
     {
-        "scenario": "g_injectXemptyAndPointX_isXgeoWithinDistanceXpoint_5XX",
-        "traversals": [
-            {
-                "original": "g.inject(Geometry(\"POINT EMPTY\"), Geometry(\"POINT(2 2)\")).is(GeoP.geoWithinDistance(Geometry(\"POINT(0 0)\"), 5))",
-                "language": "g.inject(Geometry(\"POINT EMPTY\"), Geometry(\"POINT(2 2)\")).is(GeoP.geoWithinDistance(Geometry(\"POINT(0 0)\"), 5))",
-                "canonical": "g.inject(Geometry(\"POINT EMPTY\"), Geometry(\"POINT(2 2)\")).is(GeoP.geoWithinDistance(Geometry(\"POINT(0 0)\"), 5))",
-                "anonymized": "g.inject(geometry0, geometry1).is(GeoP.geoWithinDistance(geometry2, number0))",
-                "groovy": "g.inject(Geometry.fromWkt(\"POINT EMPTY\"), Geometry.fromWkt(\"POINT(2 2)\")).is(GeoP.geoWithinDistance(Geometry.fromWkt(\"POINT(0 0)\"), 5))",
-                "java": "g.inject(Geometry.fromWkt(\"POINT EMPTY\"), Geometry.fromWkt(\"POINT(2 2)\")).is(GeoP.geoWithinDistance(Geometry.fromWkt(\"POINT(0 0)\"), 5))"
-            }
-        ]
-    },
-    {
-        "scenario": "g_V_hasXloc_geoWithinDistanceXpoint_5XX_valuesXnameX",
-        "traversals": [
-            {
-                "original": "g.addV(\"site\").property(\"name\", \"near\").property(\"loc\", Geometry(\"POINT(3 4)\")).addV(\"site\").property(\"name\", \"far\").property(\"loc\", Geometry(\"POINT(3 4.1)\"))",
-                "language": "g.addV(\"site\").property(\"name\", \"near\").property(\"loc\", Geometry(\"POINT(3 4)\")).addV(\"site\").property(\"name\", \"far\").property(\"loc\", Geometry(\"POINT(3 4.1)\"))",
-                "canonical": "g.addV(\"site\").property(\"name\", \"near\").property(\"loc\", Geometry(\"POINT(3 4)\")).addV(\"site\").property(\"name\", \"far\").property(\"loc\", Geometry(\"POINT(3 4.1)\"))",
-                "anonymized": "g.addV(string0).property(string1, string2).property(string3, geometry0).addV(string0).property(string1, string4).property(string3, geometry1)",
-                "groovy": "g.addV(\"site\").property(\"name\", \"near\").property(\"loc\", Geometry.fromWkt(\"POINT(3 4)\")).addV(\"site\").property(\"name\", \"far\").property(\"loc\", Geometry.fromWkt(\"POINT(3 4.1)\"))",
-                "java": "g.addV(\"site\").property(\"name\", \"near\").property(\"loc\", Geometry.fromWkt(\"POINT(3 4)\")).addV(\"site\").property(\"name\", \"far\").property(\"loc\", Geometry.fromWkt(\"POINT(3 4.1)\"))"
-            },
-            {
-                "original": "g.V().has(\"loc\", GeoP.geoWithinDistance(Geometry(\"POINT(0 0)\"), 5)).values(\"name\")",
-                "language": "g.V().has(\"loc\", GeoP.geoWithinDistance(Geometry(\"POINT(0 0)\"), 5)).values(\"name\")",
-                "canonical": "g.V().has(\"loc\", GeoP.geoWithinDistance(Geometry(\"POINT(0 0)\"), 5)).values(\"name\")",
-                "anonymized": "g.V().has(string0, GeoP.geoWithinDistance(geometry0, number0)).values(string1)",
-                "groovy": "g.V().has(\"loc\", GeoP.geoWithinDistance(Geometry.fromWkt(\"POINT(0 0)\"), 5)).values(\"name\")",
-                "java": "g.V().has(\"loc\", GeoP.geoWithinDistance(Geometry.fromWkt(\"POINT(0 0)\"), 5)).values(\"name\")"
-            }
-        ]
-    },
-    {
-        "scenario": "g_V_hasXloc_geoWithinDistanceXgeographicPoint_10000XX_valuesXnameX",
-        "traversals": [
-            {
-                "original": "g.addV(\"store\").property(\"name\", \"midtown\").property(\"loc\", Geometry(\"POINT(13.4 52.545)\", GEOGRAPHIC)).addV(\"store\").property(\"name\", \"uptown\").property(\"loc\", Geometry(\"POINT(13.4 52.68)\", GEOGRAPHIC))",
-                "language": "g.addV(\"store\").property(\"name\", \"midtown\").property(\"loc\", Geometry(\"POINT(13.4 52.545)\", GEOGRAPHIC)).addV(\"store\").property(\"name\", \"uptown\").property(\"loc\", Geometry(\"POINT(13.4 52.68)\", GEOGRAPHIC))",
-                "canonical": "g.addV(\"store\").property(\"name\", \"midtown\").property(\"loc\", Geometry(\"POINT(13.4 52.545)\", GEOGRAPHIC)).addV(\"store\").property(\"name\", \"uptown\").property(\"loc\", Geometry(\"POINT(13.4 52.68)\", GEOGRAPHIC))",
-                "anonymized": "g.addV(string0).property(string1, string2).property(string3, geometry0).addV(string0).property(string1, string4).property(string3, geometry1)",
-                "groovy": "g.addV(\"store\").property(\"name\", \"midtown\").property(\"loc\", Geometry.fromWkt(\"POINT(13.4 52.545)\", Model.GEOGRAPHIC)).addV(\"store\").property(\"name\", \"uptown\").property(\"loc\", Geometry.fromWkt(\"POINT(13.4 52.68)\", Model.GEOGRAPHIC))",
-                "java": "g.addV(\"store\").property(\"name\", \"midtown\").property(\"loc\", Geometry.fromWkt(\"POINT(13.4 52.545)\", Model.GEOGRAPHIC)).addV(\"store\").property(\"name\", \"uptown\").property(\"loc\", Geometry.fromWkt(\"POINT(13.4 52.68)\", Model.GEOGRAPHIC))"
-            },
-            {
-                "original": "g.V().has(\"loc\", GeoP.geoWithinDistance(Geometry(\"POINT(13.4 52.5)\", GEOGRAPHIC), 10000)).values(\"name\")",
-                "language": "g.V().has(\"loc\", GeoP.geoWithinDistance(Geometry(\"POINT(13.4 52.5)\", GEOGRAPHIC), 10000)).values(\"name\")",
-                "canonical": "g.V().has(\"loc\", GeoP.geoWithinDistance(Geometry(\"POINT(13.4 52.5)\", GEOGRAPHIC), 10000)).values(\"name\")",
-                "anonymized": "g.V().has(string0, GeoP.geoWithinDistance(geometry0, number0)).values(string1)",
-                "groovy": "g.V().has(\"loc\", GeoP.geoWithinDistance(Geometry.fromWkt(\"POINT(13.4 52.5)\", Model.GEOGRAPHIC), 10000)).values(\"name\")",
-                "java": "g.V().has(\"loc\", GeoP.geoWithinDistance(Geometry.fromWkt(\"POINT(13.4 52.5)\", Model.GEOGRAPHIC), 10000)).values(\"name\")"
-            }
-        ]
-    },
-    {
         "scenario": "g_V_hasXloc_geoWithinXconstantXpolygonXXX_valuesXnameX",
         "traversals": [
             {
@@ -8581,19 +8526,6 @@
         ]
     },
     {
-        "scenario": "g_V_hasXloc_geoWithinDistanceXcartesianOrigin_5XX_valuesXnameX",
-        "traversals": [
-            {
-                "original": "g.V().has(\"loc\", GeoP.geoWithinDistance(Geometry(\"POINT(0 0)\"), 5)).values(\"name\")",
-                "language": "g.V().has(\"loc\", GeoP.geoWithinDistance(Geometry(\"POINT(0 0)\"), 5)).values(\"name\")",
-                "canonical": "g.V().has(\"loc\", GeoP.geoWithinDistance(Geometry(\"POINT(0 0)\"), 5)).values(\"name\")",
-                "anonymized": "g.V().has(string0, GeoP.geoWithinDistance(geometry0, number0)).values(string1)",
-                "groovy": "g.V().has(\"loc\", GeoP.geoWithinDistance(Geometry.fromWkt(\"POINT(0 0)\"), 5)).values(\"name\")",
-                "java": "g.V().has(\"loc\", GeoP.geoWithinDistance(Geometry.fromWkt(\"POINT(0 0)\"), 5)).values(\"name\")"
-            }
-        ]
-    },
-    {
         "scenario": "g_V_hasXloc_geoWithinXcartesianGreenwichBoxXX_valuesXnameX",
         "traversals": [
             {
@@ -8607,67 +8539,28 @@
         ]
     },
     {
-        "scenario": "g_V_hasLabelXhubX_hasXloc_geoWithinDistanceXtimesSquare_1000XX_outXhasRoomX_asXroomX_inXworksInX_whereXvaluesXlocX_isXgeoWithinXselectXroomX_valuesXlocXXXX_valuesXnameX",
+        "scenario": "g_E_hasLabelXdeliveredX_hasXpath_geoWithinXwilliamsburgToMidtownBoxXX_inV_valuesXnameX",
         "traversals": [
             {
-                "original": "g.V().hasLabel(\"hub\").has(\"loc\", GeoP.geoWithinDistance(Geometry(\"POINT(-73.9855 40.758)\", GEOGRAPHIC), 1000)).out(\"hasRoom\").as(\"room\").in(\"worksIn\").where(__.values(\"loc\").is(GeoP.geoWithin(__.select(\"room\").values(\"loc\")))).values(\"name\")",
-                "language": "g.V().hasLabel(\"hub\").has(\"loc\", GeoP.geoWithinDistance(Geometry(\"POINT(-73.9855 40.758)\", GEOGRAPHIC), 1000)).out(\"hasRoom\").as(\"room\").in(\"worksIn\").where(__.values(\"loc\").is(GeoP.geoWithin(__.select(\"room\").values(\"loc\")))).values(\"name\")",
-                "canonical": "g.V().hasLabel(\"hub\").has(\"loc\", GeoP.geoWithinDistance(Geometry(\"POINT(-73.9855 40.758)\", GEOGRAPHIC), 1000)).out(\"hasRoom\").as(\"room\").in(\"worksIn\").where(__.values(\"loc\").is(GeoP.geoWithin(__.select(\"room\").values(\"loc\")))).values(\"name\")",
-                "anonymized": "g.V().hasLabel(string0).has(string1, GeoP.geoWithinDistance(geometry0, number0)).out(string2).as(string3).in(string4).where(__.values(string1).is(GeoP.geoWithin(__.select(string3).values(string1)))).values(string5)",
-                "groovy": "g.V().hasLabel(\"hub\").has(\"loc\", GeoP.geoWithinDistance(Geometry.fromWkt(\"POINT(-73.9855 40.758)\", Model.GEOGRAPHIC), 1000)).out(\"hasRoom\").as(\"room\").in(\"worksIn\").where(__.values(\"loc\").is(GeoP.geoWithin(__.select(\"room\").values(\"loc\")))).values(\"name\")",
-                "java": "g.V().hasLabel(\"hub\").has(\"loc\", GeoP.geoWithinDistance(Geometry.fromWkt(\"POINT(-73.9855 40.758)\", Model.GEOGRAPHIC), 1000)).out(\"hasRoom\").as(\"room\").in(\"worksIn\").where(__.values(\"loc\").is(GeoP.geoWithin(__.select(\"room\").values(\"loc\")))).values(\"name\")"
+                "original": "g.E().hasLabel(\"delivered\").has(\"path\", GeoP.geoWithin(Geometry(\"POLYGON((-74 40.7, -73.95 40.7, -73.95 40.76, -74 40.76, -74 40.7))\", GEOGRAPHIC))).inV().values(\"name\")",
+                "language": "g.E().hasLabel(\"delivered\").has(\"path\", GeoP.geoWithin(Geometry(\"POLYGON((-74 40.7, -73.95 40.7, -73.95 40.76, -74 40.76, -74 40.7))\", GEOGRAPHIC))).inV().values(\"name\")",
+                "canonical": "g.E().hasLabel(\"delivered\").has(\"path\", GeoP.geoWithin(Geometry(\"POLYGON((-74 40.7, -73.95 40.7, -73.95 40.76, -74 40.76, -74 40.7))\", GEOGRAPHIC))).inV().values(\"name\")",
+                "anonymized": "g.E().hasLabel(string0).has(string1, GeoP.geoWithin(geometry0)).inV().values(string2)",
+                "groovy": "g.E().hasLabel(\"delivered\").has(\"path\", GeoP.geoWithin(Geometry.fromWkt(\"POLYGON((-74 40.7, -73.95 40.7, -73.95 40.76, -74 40.76, -74 40.7))\", Model.GEOGRAPHIC))).inV().values(\"name\")",
+                "java": "g.E().hasLabel(\"delivered\").has(\"path\", GeoP.geoWithin(Geometry.fromWkt(\"POLYGON((-74 40.7, -73.95 40.7, -73.95 40.76, -74 40.76, -74 40.7))\", Model.GEOGRAPHIC))).inV().values(\"name\")"
             }
         ]
     },
     {
-        "scenario": "g_V_hasLabelXhubX_hasXloc_geoWithinDistanceXhellsKitchenPoint_6000000XX_valuesXnameX",
+        "scenario": "g_E_hasLabelXdeliveredX_hasXpath_geoWithinXshiftedWilliamsburgToMidtownBoxXX_inV_valuesXnameX",
         "traversals": [
             {
-                "original": "g.V().hasLabel(\"hub\").has(\"loc\", GeoP.geoWithinDistance(Geometry(\"POINT(-73.9925 40.7614)\", GEOGRAPHIC), 6000000)).values(\"name\")",
-                "language": "g.V().hasLabel(\"hub\").has(\"loc\", GeoP.geoWithinDistance(Geometry(\"POINT(-73.9925 40.7614)\", GEOGRAPHIC), 6000000)).values(\"name\")",
-                "canonical": "g.V().hasLabel(\"hub\").has(\"loc\", GeoP.geoWithinDistance(Geometry(\"POINT(-73.9925 40.7614)\", GEOGRAPHIC), 6000000)).values(\"name\")",
-                "anonymized": "g.V().hasLabel(string0).has(string1, GeoP.geoWithinDistance(geometry0, number0)).values(string2)",
-                "groovy": "g.V().hasLabel(\"hub\").has(\"loc\", GeoP.geoWithinDistance(Geometry.fromWkt(\"POINT(-73.9925 40.7614)\", Model.GEOGRAPHIC), 6000000)).values(\"name\")",
-                "java": "g.V().hasLabel(\"hub\").has(\"loc\", GeoP.geoWithinDistance(Geometry.fromWkt(\"POINT(-73.9925 40.7614)\", Model.GEOGRAPHIC), 6000000)).values(\"name\")"
-            }
-        ]
-    },
-    {
-        "scenario": "g_V_hasLabelXhubX_outEXshipsToX_hasXpath_geoWithinDistanceXfijiPoint_5000XX_inV_valuesXnameX",
-        "traversals": [
-            {
-                "original": "g.V().hasLabel(\"hub\").outE(\"shipsTo\").has(\"path\", GeoP.geoWithinDistance(Geometry(\"POINT(178.4419 -18.1416)\", GEOGRAPHIC), 5000)).inV().values(\"name\")",
-                "language": "g.V().hasLabel(\"hub\").outE(\"shipsTo\").has(\"path\", GeoP.geoWithinDistance(Geometry(\"POINT(178.4419 -18.1416)\", GEOGRAPHIC), 5000)).inV().values(\"name\")",
-                "canonical": "g.V().hasLabel(\"hub\").outE(\"shipsTo\").has(\"path\", GeoP.geoWithinDistance(Geometry(\"POINT(178.4419 -18.1416)\", GEOGRAPHIC), 5000)).inV().values(\"name\")",
-                "anonymized": "g.V().hasLabel(string0).outE(string1).has(string2, GeoP.geoWithinDistance(geometry0, number0)).inV().values(string3)",
-                "groovy": "g.V().hasLabel(\"hub\").outE(\"shipsTo\").has(\"path\", GeoP.geoWithinDistance(Geometry.fromWkt(\"POINT(178.4419 -18.1416)\", Model.GEOGRAPHIC), 5000)).inV().values(\"name\")",
-                "java": "g.V().hasLabel(\"hub\").outE(\"shipsTo\").has(\"path\", GeoP.geoWithinDistance(Geometry.fromWkt(\"POINT(178.4419 -18.1416)\", Model.GEOGRAPHIC), 5000)).inV().values(\"name\")"
-            }
-        ]
-    },
-    {
-        "scenario": "g_E_hasLabelXdeliveredX_hasXpath_geoWithinDistanceXeastRiver_0XX_inV_valuesXnameX",
-        "traversals": [
-            {
-                "original": "g.E().hasLabel(\"delivered\").has(\"path\", GeoP.geoWithinDistance(Geometry(\"MULTILINESTRING((-73.975 40.695, -73.965 40.72, -73.958 40.745, -73.951 40.77), (-73.958 40.745, -73.946 40.755, -73.945 40.77))\", GEOGRAPHIC), 0)).inV().values(\"name\")",
-                "language": "g.E().hasLabel(\"delivered\").has(\"path\", GeoP.geoWithinDistance(Geometry(\"MULTILINESTRING((-73.975 40.695, -73.965 40.72, -73.958 40.745, -73.951 40.77), (-73.958 40.745, -73.946 40.755, -73.945 40.77))\", GEOGRAPHIC), 0)).inV().values(\"name\")",
-                "canonical": "g.E().hasLabel(\"delivered\").has(\"path\", GeoP.geoWithinDistance(Geometry(\"MULTILINESTRING((-73.975 40.695, -73.965 40.72, -73.958 40.745, -73.951 40.77), (-73.958 40.745, -73.946 40.755, -73.945 40.77))\", GEOGRAPHIC), 0)).inV().values(\"name\")",
-                "anonymized": "g.E().hasLabel(string0).has(string1, GeoP.geoWithinDistance(geometry0, number0)).inV().values(string2)",
-                "groovy": "g.E().hasLabel(\"delivered\").has(\"path\", GeoP.geoWithinDistance(Geometry.fromWkt(\"MULTILINESTRING((-73.975 40.695, -73.965 40.72, -73.958 40.745, -73.951 40.77), (-73.958 40.745, -73.946 40.755, -73.945 40.77))\", Model.GEOGRAPHIC), 0)).inV().values(\"name\")",
-                "java": "g.E().hasLabel(\"delivered\").has(\"path\", GeoP.geoWithinDistance(Geometry.fromWkt(\"MULTILINESTRING((-73.975 40.695, -73.965 40.72, -73.958 40.745, -73.951 40.77), (-73.958 40.745, -73.946 40.755, -73.945 40.77))\", Model.GEOGRAPHIC), 0)).inV().values(\"name\")"
-            }
-        ]
-    },
-    {
-        "scenario": "g_E_hasLabelXdeliveredX_hasXpath_geoWithinDistanceXshiftedEastRiver_0XX_inV_valuesXnameX",
-        "traversals": [
-            {
-                "original": "g.E().hasLabel(\"delivered\").has(\"path\", GeoP.geoWithinDistance(Geometry(\"MULTILINESTRING((-74.075 40.695, -74.065 40.72, -74.058 40.745, -74.051 40.77), (-74.058 40.745, -74.046 40.755, -74.045 40.77))\", GEOGRAPHIC), 0)).inV().values(\"name\")",
-                "language": "g.E().hasLabel(\"delivered\").has(\"path\", GeoP.geoWithinDistance(Geometry(\"MULTILINESTRING((-74.075 40.695, -74.065 40.72, -74.058 40.745, -74.051 40.77), (-74.058 40.745, -74.046 40.755, -74.045 40.77))\", GEOGRAPHIC), 0)).inV().values(\"name\")",
-                "canonical": "g.E().hasLabel(\"delivered\").has(\"path\", GeoP.geoWithinDistance(Geometry(\"MULTILINESTRING((-74.075 40.695, -74.065 40.72, -74.058 40.745, -74.051 40.77), (-74.058 40.745, -74.046 40.755, -74.045 40.77))\", GEOGRAPHIC), 0)).inV().values(\"name\")",
-                "anonymized": "g.E().hasLabel(string0).has(string1, GeoP.geoWithinDistance(geometry0, number0)).inV().values(string2)",
-                "groovy": "g.E().hasLabel(\"delivered\").has(\"path\", GeoP.geoWithinDistance(Geometry.fromWkt(\"MULTILINESTRING((-74.075 40.695, -74.065 40.72, -74.058 40.745, -74.051 40.77), (-74.058 40.745, -74.046 40.755, -74.045 40.77))\", Model.GEOGRAPHIC), 0)).inV().values(\"name\")",
-                "java": "g.E().hasLabel(\"delivered\").has(\"path\", GeoP.geoWithinDistance(Geometry.fromWkt(\"MULTILINESTRING((-74.075 40.695, -74.065 40.72, -74.058 40.745, -74.051 40.77), (-74.058 40.745, -74.046 40.755, -74.045 40.77))\", Model.GEOGRAPHIC), 0)).inV().values(\"name\")"
+                "original": "g.E().hasLabel(\"delivered\").has(\"path\", GeoP.geoWithin(Geometry(\"POLYGON((-74.1 40.7, -74.05 40.7, -74.05 40.76, -74.1 40.76, -74.1 40.7))\", GEOGRAPHIC))).inV().values(\"name\")",
+                "language": "g.E().hasLabel(\"delivered\").has(\"path\", GeoP.geoWithin(Geometry(\"POLYGON((-74.1 40.7, -74.05 40.7, -74.05 40.76, -74.1 40.76, -74.1 40.7))\", GEOGRAPHIC))).inV().values(\"name\")",
+                "canonical": "g.E().hasLabel(\"delivered\").has(\"path\", GeoP.geoWithin(Geometry(\"POLYGON((-74.1 40.7, -74.05 40.7, -74.05 40.76, -74.1 40.76, -74.1 40.7))\", GEOGRAPHIC))).inV().values(\"name\")",
+                "anonymized": "g.E().hasLabel(string0).has(string1, GeoP.geoWithin(geometry0)).inV().values(string2)",
+                "groovy": "g.E().hasLabel(\"delivered\").has(\"path\", GeoP.geoWithin(Geometry.fromWkt(\"POLYGON((-74.1 40.7, -74.05 40.7, -74.05 40.76, -74.1 40.76, -74.1 40.7))\", Model.GEOGRAPHIC))).inV().values(\"name\")",
+                "java": "g.E().hasLabel(\"delivered\").has(\"path\", GeoP.geoWithin(Geometry.fromWkt(\"POLYGON((-74.1 40.7, -74.05 40.7, -74.05 40.76, -74.1 40.76, -74.1 40.7))\", Model.GEOGRAPHIC))).inV().values(\"name\")"
             }
         ]
     },

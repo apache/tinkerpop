@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal;
 
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.HasContainer;
@@ -26,6 +27,7 @@ import org.apache.tinkerpop.gremlin.structure.geo.Geometry;
 import org.apache.tinkerpop.gremlin.structure.geo.Model;
 import org.apache.tinkerpop.gremlin.structure.geo.Point;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
+import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
@@ -35,7 +37,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CyclicBarrier;
@@ -56,11 +57,6 @@ public class GeoPTest {
 
     private static final String SQUARE = "POLYGON((0 0, 4 0, 4 4, 0 4, 0 0))";
     private static final String HOLED_SQUARE = "POLYGON((0 0, 4 0, 4 4, 0 4, 0 0), (1 1, 1 2, 2 2, 2 1, 1 1))";
-
-    /**
-     * One degree of latitude on the sphere the geographic model measures on, in meters.
-     */
-    private static final double ONE_DEGREE_OF_LATITUDE = 111195.08;
 
     private static Traverser.Admin<?> traverser() {
         return traverser("start");
@@ -125,59 +121,7 @@ public class GeoPTest {
     }
 
     /**
-     * The distance is in coordinate units for the cartesian model, and inclusive.
-     */
-    @RunWith(Parameterized.class)
-    public static class WithinDistanceTest {
-
-        @Parameterized.Parameter(value = 0)
-        public String value;
-
-        @Parameterized.Parameter(value = 1)
-        public String argument;
-
-        @Parameterized.Parameter(value = 2)
-        public Number distance;
-
-        @Parameterized.Parameter(value = 3)
-        public boolean expected;
-
-        @Parameterized.Parameters(name = "{0} is within {2} of {1} is {3}")
-        public static Collection<Object[]> data() {
-            return Arrays.asList(new Object[][]{
-                    // exactly the distance, which is inclusive
-                    {"POINT(3 4)", "POINT(0 0)", 5, true},
-                    {"POINT(3 4.1)", "POINT(0 0)", 5, false},
-                    // 1 from the nearest edge of the square
-                    {"POINT(5 2)", SQUARE, 1, true},
-                    {"POINT(5.1 2)", SQUARE, 1, false},    // just past 1
-                    // a value inside the argument, and one on its boundary, are both 0 away
-                    {"POINT(2 2)", SQUARE, 0, true},
-                    {"POINT(0 2)", SQUARE, 0, true},
-                    {"POINT(5 2)", SQUARE, 0, false},      // outside, so not 0 away
-                    {"POINT(1.5 1.5)", HOLED_SQUARE, 0.5, true},   // in the hole, 0.5 from the hole's ring
-                    {"POINT(1.5 1.5)", HOLED_SQUARE, 0.4, false},
-                    // a negative distance matches nothing, even where its magnitude would reach
-                    {"POINT(1 1)", "POINT(0 0)", -2, false},
-                    {"POINT(1 1)", "POINT(0 0)", Double.NaN, false},
-                    {"POINT(1000000 1000000)", "POINT(0 0)", Double.POSITIVE_INFINITY, true},
-                    // z is ignored, so the distance of a 3D operand is measured in 2D
-                    {"POINT Z (3 4 100)", "POINT(0 0)", 5, true},
-                    {"POINT(3 4)", "POINT Z (0 0 100)", 5, true},
-            });
-        }
-
-        @Test
-        public void shouldEvaluateWithinDistance() {
-            assertEquals(expected, GeoP.geoWithinDistance(Geometry.fromWkt(argument), distance)
-                    .test(Geometry.fromWkt(value)));
-        }
-
-    }
-
-    /**
-     * An argument given as a child traversal is resolved against each traverser, and the two
-     * arguments of {@code geoWithinDistance} keep the order they were written through resolution.
+     * An argument given as a child traversal is resolved against each traverser.
      */
     public static class TraversalArgumentTest {
 
@@ -187,24 +131,15 @@ public class GeoPTest {
 
         @Test
         public void shouldEvaluateWithinFromATraversalArgument() {
-            final P<Object> predicate = GeoP.geoWithin(__.constant(SQUARE_VALUE));
+            final P<Geometry> predicate = GeoP.geoWithin(__.constant(SQUARE_VALUE));
             predicate.resolve(traverser());
             assertTrue(predicate.test(Point.of(2, 2)));
             assertFalse(predicate.test(Point.of(5, 5)));
         }
 
         @Test
-        public void shouldEvaluateWithinDistanceFromTraversalArguments() {
-            final P<Object> predicate = GeoP.geoWithinDistance(__.constant(SQUARE_VALUE), __.constant(1));
-            predicate.resolve(traverser());
-            // 1 from the nearest edge of the square, and 2 from it
-            assertTrue(predicate.test(Point.of(5, 2)));
-            assertFalse(predicate.test(Point.of(6, 2)));
-        }
-
-        @Test
         public void shouldResolveATraversalArgumentForEachTraverser() {
-            final P<Object> predicate = GeoP.geoWithin(__.select("zone"));
+            final P<Geometry> predicate = GeoP.geoWithin(__.select("zone"));
 
             // the same value is within the first traverser's zone and outside the second's
             predicate.resolve(traverser(Collections.singletonMap("zone", SQUARE_VALUE)));
@@ -239,47 +174,12 @@ public class GeoPTest {
         public void shouldEvaluateWithinTheSquare() {
             assertTrue(GeoP.geoWithin(Geometry.fromWkt(SQUARE)).test(Geometry.fromWkt(value)));
         }
-
-        @Test
-        public void shouldEvaluateWithinDistanceOfTheSquare() {
-            assertTrue(GeoP.geoWithinDistance(Geometry.fromWkt(SQUARE), 0).test(Geometry.fromWkt(value)));
-        }
     }
 
     /**
-     * The geographic model measures in meters on a sphere, and evaluates the relate predicates in
-     * longitude and latitude.
+     * The geographic model evaluates the relate predicates in longitude and latitude.
      */
-    public static class GeographicDistanceTest {
-
-        @Test
-        public void shouldMeasureOneDegreeOfLatitudeBetweenPoints() {
-            final Geometry origin = Geometry.fromWkt("POINT(0 0)", Model.GEOGRAPHIC);
-            final Geometry oneDegreeNorth = Geometry.fromWkt("POINT(0 1)", Model.GEOGRAPHIC);
-
-            assertTrue(GeoP.geoWithinDistance(origin, ONE_DEGREE_OF_LATITUDE * (1.0 + 1e-6)).test(oneDegreeNorth));
-            assertFalse(GeoP.geoWithinDistance(origin, ONE_DEGREE_OF_LATITUDE * (1.0 - 1e-6)).test(oneDegreeNorth));
-        }
-
-        @Test
-        public void shouldMeasureAPointFiveKilometersAway() {
-            final Geometry manhattan = Geometry.fromWkt("POINT(-73.98 40.75)", Model.GEOGRAPHIC);
-            // offset in longitude, where the measure narrows by the cosine of the latitude: without
-            // that narrowing these 0.0593 degrees would measure 6593.9 meters rather than 4995.3
-            final Geometry fiveKilometersEast = Geometry.fromWkt("POINT(-73.9207 40.75)", Model.GEOGRAPHIC);
-
-            assertTrue(GeoP.geoWithinDistance(manhattan, 5000).test(fiveKilometersEast));
-            assertFalse(GeoP.geoWithinDistance(manhattan, 4990).test(fiveKilometersEast));
-        }
-
-        @Test
-        public void shouldMeasureToTheNearestPointOfALineString() {
-            final Geometry equatorSegment = Geometry.fromWkt("LINESTRING(0 0, 1 0)", Model.GEOGRAPHIC);
-            final Geometry oneDegreeNorth = Geometry.fromWkt("POINT(0.5 1)", Model.GEOGRAPHIC);
-
-            assertTrue(GeoP.geoWithinDistance(equatorSegment, 111200).test(oneDegreeNorth));
-            assertFalse(GeoP.geoWithinDistance(equatorSegment, 111190).test(oneDegreeNorth));
-        }
+    public static class GeographicModelTest {
 
         @Test
         public void shouldEvaluateWithinInLongitudeAndLatitude() {
@@ -303,15 +203,23 @@ public class GeoPTest {
         private static final Geometry POINT = Point.of(2, 2);
         private static final Geometry SQUARE_VALUE = Geometry.fromWkt(SQUARE);
 
-        private static List<P<Object>> predicatesAgainst(final Geometry argument) {
-            return Arrays.asList(GeoP.geoWithin(argument), GeoP.geoContains(argument),
-                    GeoP.geoWithinDistance(argument, 1000));
+        private static List<P<?>> predicatesAgainst(final Geometry argument) {
+            return Arrays.asList(GeoP.geoWithin(argument), GeoP.geoContains(argument));
         }
 
         private static void assertFalseForEvery(final Geometry argument, final Object value) {
-            for (final P<Object> predicate : predicatesAgainst(argument)) {
-                assertFalse(predicate.getPredicateName() + " of " + value, predicate.test(value));
+            for (final P<?> predicate : predicatesAgainst(argument)) {
+                assertFalse(predicate.getPredicateName() + " of " + value, test(predicate, value));
             }
+        }
+
+        /**
+         * Tests a value of any type, as a step does, since a value that is not a geometry is false
+         * rather than an error.
+         */
+        @SuppressWarnings("unchecked")
+        private static boolean test(final P<?> predicate, final Object value) {
+            return ((P<Object>) predicate).test(value);
         }
 
         @Test
@@ -345,7 +253,7 @@ public class GeoPTest {
 
         @Test
         public void shouldNotMatchWhenBothSidesAreInAnotherSpatialReferenceSystem() {
-            final P<Object> predicate = GeoP.geoWithin(__.constant(Geometry.fromWkt(SQUARE, 32618)));
+            final P<Geometry> predicate = GeoP.geoWithin(__.constant(Geometry.fromWkt(SQUARE, 32618)));
             predicate.resolve(traverser());
             assertFalse(predicate.test(Geometry.fromWkt("POINT(2 2)", 32618)));
         }
@@ -359,32 +267,18 @@ public class GeoPTest {
                     {"POLYGON EMPTY", POINT},
             };
             for (final Object[] argumentAndValue : cases) {
-                final P<Object> predicate = GeoP.geoWithin(__.constant(argumentAndValue[0]));
+                final P<Geometry> predicate = GeoP.geoWithin(__.constant(argumentAndValue[0]));
                 predicate.resolve(traverser());
-                assertFalse(String.valueOf(argumentAndValue[0]), predicate.test(argumentAndValue[1]));
+                assertFalse(String.valueOf(argumentAndValue[0]), test(predicate, argumentAndValue[1]));
             }
         }
 
         @Test
         public void shouldNotMatchWhenATraversalArgumentYieldsNothing() {
-            final P<Object> within = GeoP.geoWithin(__.limit(0));
+            final P<Geometry> within = GeoP.geoWithin(__.limit(0));
             within.resolve(traverser());
             assertTrue(within.isResolvedEmpty());
             assertFalse(within.test(POINT));
-
-            // when both arguments are traversals an unresolved one drops out, leaving a pair the
-            // predicate cannot read
-            final P<Object> withinDistance = GeoP.geoWithinDistance(__.limit(0), 1000);
-            withinDistance.resolve(traverser());
-            assertEquals(Collections.singletonList(1000), withinDistance.getValue());
-            assertFalse(withinDistance.test(POINT));
-        }
-
-        @Test
-        public void shouldNotMatchWhenADistanceFromATraversalIsNotANumber() {
-            final P<Object> predicate = GeoP.geoWithinDistance(SQUARE_VALUE, __.constant("1000"));
-            predicate.resolve(traverser());
-            assertFalse(predicate.test(POINT));
         }
 
         @Test
@@ -404,107 +298,58 @@ public class GeoPTest {
         }
 
         @Test
-        public void shouldRejectAConstantDistanceThatIsNotANumber() {
-            final IllegalArgumentException iae = assertThrows(IllegalArgumentException.class,
-                    () -> new GeoP(Geo.geoWithinDistance, Arrays.asList(SQUARE_VALUE, "10")));
-            assertEquals("The distance of geoWithinDistance must be a number, but was String", iae.getMessage());
-        }
-
-        @Test
-        public void shouldRejectAConstantDistanceArgumentThatIsNotAGeometryAndADistance() {
-            final IllegalArgumentException iae = assertThrows(IllegalArgumentException.class,
-                    () -> new GeoP(Geo.geoWithinDistance, SQUARE_VALUE));
-            assertEquals("geoWithinDistance takes a geometry and a distance, but was given Polygon",
-                    iae.getMessage());
-        }
-
-        @Test
-        public void shouldRejectAConstantGeometryGivenBesideADistanceTraversal() {
-            final IllegalArgumentException missing = assertThrows(IllegalArgumentException.class,
-                    () -> GeoP.geoWithinDistance((Geometry) null, __.select("radius")));
-            assertEquals("The geometry of geoWithinDistance must be a Geometry, but was null",
-                    missing.getMessage());
-
-            final IllegalArgumentException otherSrid = assertThrows(IllegalArgumentException.class,
-                    () -> GeoP.geoWithinDistance(Geometry.fromWkt(SQUARE, 32618), __.select("radius")));
-            assertEquals("The geometry of geoWithinDistance must be in the CARTESIAN or GEOGRAPHIC model, " +
-                    "but SRID 32618 is OTHER", otherSrid.getMessage());
-        }
-
-        @Test
-        public void shouldRejectAConstantDistanceGivenBesideAGeometryTraversal() {
-            final IllegalArgumentException iae = assertThrows(IllegalArgumentException.class,
-                    () -> GeoP.geoWithinDistance(__.select("zone"), (Number) null));
-            assertEquals("The distance of geoWithinDistance must be a number, but was null", iae.getMessage());
-        }
-
-        @Test
-        public void shouldExposeTheValueOfGeoWithinDistanceAsAnUnmodifiableList() {
-            final List<?> value = (List<?>) GeoP.geoWithinDistance(SQUARE_VALUE, 10).getValue();
-            assertThrows(UnsupportedOperationException.class, () -> ((List<Object>) value).set(0, POINT));
-        }
-
-        @Test
         public void shouldExposeTheGeoPredicateAndItsArgumentsToAProvider() {
             final HasContainer within = new HasContainer("loc", GeoP.geoWithin(SQUARE_VALUE));
             assertSame(Geo.geoWithin, within.getBiPredicate());
             assertEquals(SQUARE_VALUE, within.getValue());
-
-            final HasContainer withinDistance = new HasContainer("loc", GeoP.geoWithinDistance(SQUARE_VALUE, 10));
-            assertSame(Geo.geoWithinDistance, withinDistance.getBiPredicate());
-            assertEquals(Arrays.asList(SQUARE_VALUE, 10), withinDistance.getValue());
         }
 
         @Test
-        public void shouldNotMatchWhenGeoWithinDistanceIsGivenSomethingOtherThanAGeometryAndADistance() {
-            assertFalse(Geo.geoWithinDistance.test(POINT, SQUARE_VALUE));
-            assertFalse(Geo.geoWithinDistance.test(POINT, Collections.singletonList(SQUARE_VALUE)));
+        public void shouldFilterAStepThatYieldsGeometries() {
+            // a geo predicate is a predicate of a geometry, so a step that yields geometries takes it
+            final P<Geometry> within = GeoP.geoWithin(SQUARE_VALUE);
+            final GraphTraversal<?, Geometry> points = EmptyGraph.instance().traversal()
+                    .inject(Geometry.fromWkt("POINT(2 2)"), Geometry.fromWkt("POINT(5 5)"));
+            assertEquals(Collections.singletonList(Geometry.fromWkt("POINT(2 2)")),
+                    points.is(within).toList());
         }
 
         @Test
         public void shouldBeEqualWithEqualArguments() {
             assertEquals(GeoP.geoWithin(SQUARE_VALUE), GeoP.geoWithin(Geometry.fromWkt(SQUARE)));
             assertEquals(GeoP.geoWithin(SQUARE_VALUE).hashCode(), GeoP.geoWithin(Geometry.fromWkt(SQUARE)).hashCode());
-            assertEquals(GeoP.geoWithinDistance(SQUARE_VALUE, 10), GeoP.geoWithinDistance(Geometry.fromWkt(SQUARE), 10));
-            assertEquals(GeoP.geoWithinDistance(SQUARE_VALUE, 10).hashCode(),
-                    GeoP.geoWithinDistance(Geometry.fromWkt(SQUARE), 10).hashCode());
 
             assertNotEquals(GeoP.geoWithin(SQUARE_VALUE), GeoP.geoContains(SQUARE_VALUE));
             assertNotEquals(GeoP.geoWithin(SQUARE_VALUE), GeoP.geoWithin(POINT));
-            assertNotEquals(GeoP.geoWithinDistance(SQUARE_VALUE, 10), GeoP.geoWithinDistance(SQUARE_VALUE, 11));
             assertNotEquals(GeoP.geoWithin(SQUARE_VALUE), P.eq(SQUARE_VALUE));
         }
 
         @Test
-        public void shouldNegateWithoutLosingTheGeoWithinDistanceArguments() {
-            final P<Object> negated = GeoP.geoWithinDistance(SQUARE_VALUE, 10).negate();
-            assertEquals(Arrays.asList(SQUARE_VALUE, 10), negated.getValue());
+        public void shouldNegateWithoutLosingTheArgument() {
+            final P<Geometry> negated = GeoP.geoWithin(SQUARE_VALUE).negate();
+            assertEquals(SQUARE_VALUE, negated.getValue());
             assertFalse(negated.test(POINT));
+            assertTrue(negated.test(Point.of(5, 5)));
         }
 
         @Test
         public void shouldCloneWithTheSameArguments() {
-            final GeoP original = GeoP.geoWithinDistance(GValue.of("zone", SQUARE_VALUE),
-                    GValue.of("radius", (Number) 10));
+            final GeoP original = GeoP.geoWithin(GValue.of("zone", SQUARE_VALUE));
             final GeoP clone = original.clone();
             assertEquals(original, clone);
             assertTrue(clone.test(POINT));
 
             // giving the clone's variable a new value leaves the original's variables as they were
             clone.updateVariable("zone", Geometry.fromWkt("POLYGON((10 10, 14 10, 14 14, 10 14, 10 10))"));
-            assertEquals(new HashSet<>(Arrays.asList(GValue.of("zone", SQUARE_VALUE),
-                    GValue.of("radius", (Number) 10))), original.getGValues());
-
-            // so a new value for the original's other variable is composed with the geometry it was given
-            original.updateVariable("radius", 11);
-            assertEquals(Arrays.asList(SQUARE_VALUE, 11), original.getValue());
+            assertEquals(Collections.singleton(GValue.of("zone", SQUARE_VALUE)), original.getGValues());
+            assertEquals(SQUARE_VALUE, original.getValue());
             assertTrue(original.test(POINT));
         }
     }
 
     /**
      * A variable argument is resolved when the predicate is built and stays visible as a
-     * parameter, so that it can be given a new value without losing which argument it was for.
+     * parameter, so that it can be given a new value.
      */
     public static class VariableArgumentTest {
 
@@ -521,20 +366,12 @@ public class GeoPTest {
         }
 
         @Test
-        public void shouldHoldBothGeoWithinDistanceVariablesAsParameters() {
-            final GeoP predicate = GeoP.geoWithinDistance(GValue.of("zone", SQUARE_VALUE),
-                    GValue.of("radius", (Number) 1));
-            assertTrue(predicate.isParameterized());
-            assertEquals(Arrays.asList(SQUARE_VALUE, 1), predicate.getValue());
-            assertEquals(2, predicate.getGValues().size());
+        public void shouldMatchTheNewValueWhenAVariableTakesOne() {
+            final GeoP predicate = GeoP.geoWithin(GValue.of("zone", SQUARE_VALUE));
             assertTrue(predicate.test(POINT));
-        }
 
-        @Test
-        public void shouldKeepTheArgumentOrderWhenAVariableTakesANewValue() {
-            final GeoP predicate = GeoP.geoWithinDistance(GValue.of("zone", SQUARE_VALUE), 1);
             predicate.updateVariable("zone", FAR_SQUARE);
-            assertEquals(Arrays.asList(FAR_SQUARE, 1), predicate.getValue());
+            assertEquals(FAR_SQUARE, predicate.getValue());
             assertFalse(predicate.test(POINT));
         }
 
@@ -542,8 +379,6 @@ public class GeoPTest {
         public void shouldBeTheConstantPredicateWhenAnArgumentIsALiteral() {
             assertEquals(GeoP.geoWithin(SQUARE_VALUE), GeoP.geoWithin(GValue.of(null, SQUARE_VALUE)));
             assertEquals(GeoP.geoContains(SQUARE_VALUE), GeoP.geoContains(GValue.of(null, SQUARE_VALUE)));
-            assertEquals(GeoP.geoWithinDistance(SQUARE_VALUE, 10),
-                    GeoP.geoWithinDistance(GValue.of(null, SQUARE_VALUE), GValue.of(null, (Number) 10)));
             assertFalse(GeoP.geoWithin(GValue.of(null, SQUARE_VALUE)).isParameterized());
         }
 
@@ -556,14 +391,12 @@ public class GeoPTest {
         }
 
         @Test
-        public void shouldRejectAVariableHoldingNoDistance() {
-            final IllegalArgumentException iae = assertThrows(IllegalArgumentException.class,
-                    () -> GeoP.geoWithinDistance(GValue.of("zone", SQUARE_VALUE), GValue.of("radius", (Number) null)));
-            assertEquals("The distance of geoWithinDistance must be a number, but was null", iae.getMessage());
-        }
-
-        @Test
         public void shouldRejectAGeometryVariableThatTakesAValueThatIsNotAGeometry() {
+            // a variable's value is validated when the predicate is built
+            final IllegalArgumentException built = assertThrows(IllegalArgumentException.class,
+                    () -> GeoP.geoWithin((GValue) GValue.of("zone", "not a geometry")));
+            assertEquals("The geometry of geoWithin must be a Geometry, but was String", built.getMessage());
+
             final GeoP within = GeoP.geoWithin(GValue.of("zone", SQUARE_VALUE));
             final IllegalArgumentException iae = assertThrows(IllegalArgumentException.class,
                     () -> within.updateVariable("zone", "not a geometry"));
@@ -573,21 +406,6 @@ public class GeoPTest {
             assertEquals(SQUARE_VALUE, within.getValue());
             assertEquals(Collections.singleton(GValue.of("zone", SQUARE_VALUE)), within.getGValues());
             assertTrue(within.test(POINT));
-        }
-
-        @Test
-        public void shouldRejectADistanceVariableThatTakesAValueThatIsNotANumber() {
-            final GeoP predicate = GeoP.geoWithinDistance(GValue.of("zone", SQUARE_VALUE),
-                    GValue.of("radius", (Number) 1));
-            final IllegalArgumentException iae = assertThrows(IllegalArgumentException.class,
-                    () -> predicate.updateVariable("radius", "1000"));
-            assertEquals("The distance of geoWithinDistance must be a number, but was String", iae.getMessage());
-
-            // the rejected value is not kept
-            assertEquals(Arrays.asList(SQUARE_VALUE, 1), predicate.getValue());
-            assertEquals(new HashSet<>(Arrays.asList(GValue.of("zone", SQUARE_VALUE),
-                    GValue.of("radius", (Number) 1))), predicate.getGValues());
-            assertTrue(predicate.test(POINT));
         }
     }
 
@@ -603,7 +421,7 @@ public class GeoPTest {
         @Test
         public void shouldEvaluateConsistentlyAcrossThreads() throws Exception {
             final Geometry square = Geometry.fromWkt(SQUARE);
-            final P<Object> predicate = GeoP.geoWithin(square);
+            final P<Geometry> predicate = GeoP.geoWithin(square);
             final Geometry inside = Point.of(2, 2);
             final Geometry outside = Point.of(5, 5);
 

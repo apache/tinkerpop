@@ -18,58 +18,35 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal;
 
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.structure.geo.Geometry;
 import org.apache.tinkerpop.gremlin.structure.geo.Model;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 /**
  * Predefined {@code Predicate} values that filter {@link Geometry} values by a spatial
  * relationship, backed by the {@link Geo} predicates.
  * <p>
- * For {@code geoWithinDistance}, {@link #getValue()} is a two element list of the geometry and the
- * distance, in that order.
- * <p>
  * An argument may instead come from a child traversal, which is resolved against each traverser.
- * {@code geoWithinDistance} then holds a child traversal for each of its two arguments, and a
- * constant given beside a traversal is carried as a constant traversal. An argument may also be a
- * {@link GValue}, whose value is resolved when the traversal is built.
+ * An argument may also be a {@link GValue}, whose value is resolved when the traversal is built.
  * <p>
- * <b>Accuracy in the geographic model.</b> Distances are measured on a sphere of the WGS84 mean
- * radius, within about 1% of WGS84. Edges are straight in longitude and latitude, so the relate
- * predicates, and distances between shapes other than two points, hold for edges under about
- * 100 km that cross neither the antimeridian nor a pole.
+ * <b>Accuracy in the geographic model.</b> Shapes are related in longitude and latitude, with
+ * edges straight in both, so the predicates hold for edges under about 100 km that cross neither
+ * the antimeridian nor a pole.
  *
  * @since 4.0.0
  */
-public class GeoP extends P<Object> {
+public class GeoP extends P<Geometry> {
 
     /**
-     * {@code geoWithinDistance}'s arguments as they were given, each either a value or a
-     * {@link GValue}, so that the pair can be rebuilt when a variable takes a new value. Null
-     * unless one of the arguments is a variable.
-     */
-    private final List<Object> arguments;
-
-    /**
-     * Constructs a {@code GeoP} from the argument as it was given, which is validated unless it is
-     * a child traversal.
+     * Constructs a {@code GeoP} from the given geometry, which is validated as a constant. A
+     * geometry resolved at runtime is given as a child traversal instead.
      *
      * @since 4.0.0
      */
     public GeoP(final PBiPredicate<Object, Object> biPredicate, final Object value) {
-        super(biPredicate, value);
-        this.arguments = null;
-        if (!hasTraversal()) {
-            validateConstants(biPredicate, value);
-        }
+        super(asGeometryPredicate(biPredicate), GeoP.<Geometry>validatedValue(biPredicate, value));
     }
 
     /**
@@ -79,8 +56,7 @@ public class GeoP extends P<Object> {
      * @since 4.0.0
      */
     public GeoP(final PBiPredicate<Object, Object> biPredicate, final Traversal.Admin<?, ?> traversalValue) {
-        super(biPredicate, traversalValue);
-        this.arguments = null;
+        super(asGeometryPredicate(biPredicate), traversalValue);
     }
 
     /**
@@ -88,22 +64,9 @@ public class GeoP extends P<Object> {
      *
      * @since 4.0.0
      */
-    @SuppressWarnings("unchecked")
     public GeoP(final PBiPredicate<Object, Object> biPredicate, final GValue<?> value) {
-        super(biPredicate, (GValue<Object>) value);
-        this.arguments = null;
-        validateConstants(biPredicate, getValue());
-    }
-
-    /**
-     * Constructs a {@code GeoP} from arguments kept in the order they were written, so that a
-     * variable among them stays bound to the argument it was given for.
-     */
-    private GeoP(final PBiPredicate<Object, Object> biPredicate, final List<Object> arguments,
-                 final Map<String, Object> variables) {
-        super(biPredicate, Collections.<Object>singletonList(resolve(arguments, variables)), variables, false);
-        this.arguments = Collections.unmodifiableList(new ArrayList<>(arguments));
-        validateConstants(biPredicate, getValue());
+        super(asGeometryPredicate(biPredicate), asGeometryVariable(value));
+        validateConstants(biPredicate, null == value ? null : value.get());
     }
 
     @Override
@@ -112,7 +75,7 @@ public class GeoP extends P<Object> {
     }
 
     @Override
-    public P<Object> negate() {
+    public P<Geometry> negate() {
         return new NotP<>(this);
     }
 
@@ -132,20 +95,9 @@ public class GeoP extends P<Object> {
     public void updateVariable(final String name, final Object value) {
         if (!variables.containsKey(name)) return;
 
-        final Map<String, Object> proposed = new HashMap<>(variables);
-        proposed.put(name, value);
-        final List<Object> newLiterals = null == arguments
-                ? null
-                : Collections.singletonList((Object) resolve(arguments, proposed));
-
-        if (!hasTraversal()) {
-            validateConstants(biPredicate, null == newLiterals ? value : newLiterals.get(0));
-        }
+        validateConstants(biPredicate, value);
 
         super.updateVariable(name, value);
-        if (null != newLiterals) {
-            literals = newLiterals;
-        }
     }
 
     //////////////// statics
@@ -208,107 +160,6 @@ public class GeoP extends P<Object> {
         return new GeoP(Geo.geoContains, traversalValue.asAdmin());
     }
 
-    /**
-     * Determines if the distance between a geometry and the given geometry is at most
-     * {@code distance}, in coordinate units for {@link Model#CARTESIAN} and in meters for
-     * {@link Model#GEOGRAPHIC}.
-     *
-     * @since 4.0.0
-     */
-    public static GeoP geoWithinDistance(final Geometry value, final Number distance) {
-        return ofPair(value, distance);
-    }
-
-    /**
-     * Determines if the distance between a geometry and the geometry a variable holds is at most
-     * {@code distance}.
-     *
-     * @since 4.0.0
-     */
-    public static GeoP geoWithinDistance(final GValue<Geometry> value, final Number distance) {
-        return ofPair(value, distance);
-    }
-
-    /**
-     * Determines if the distance between a geometry and the given geometry is at most the distance
-     * a variable holds.
-     *
-     * @since 4.0.0
-     */
-    public static GeoP geoWithinDistance(final Geometry value, final GValue<Number> distance) {
-        return ofPair(value, distance);
-    }
-
-    /**
-     * Determines if the distance between a geometry and the geometry a variable holds is at most
-     * the distance a variable holds.
-     *
-     * @since 4.0.0
-     */
-    public static GeoP geoWithinDistance(final GValue<Geometry> value, final GValue<Number> distance) {
-        return ofPair(value, distance);
-    }
-
-    /**
-     * Determines if the distance between a geometry and the geometry resolved from a child
-     * traversal at runtime is at most {@code distance}.
-     *
-     * @since 4.0.0
-     */
-    public static GeoP geoWithinDistance(final Traversal<?, ?> traversalValue, final Number distance) {
-        validateDistance(Geo.geoWithinDistance.getPredicateName(), distance);
-        return new GeoP(Geo.geoWithinDistance, Arrays.asList(traversalValue.asAdmin(), __.constant(distance)));
-    }
-
-    /**
-     * Determines if the distance between a geometry and the geometry resolved from a child
-     * traversal at runtime is at most the distance a variable holds.
-     *
-     * @since 4.0.0
-     */
-    public static GeoP geoWithinDistance(final Traversal<?, ?> traversalValue, final GValue<Number> distance) {
-        if (null == distance || !distance.isVariable()) {
-            return geoWithinDistance(traversalValue, null == distance ? null : distance.get());
-        }
-        validateDistance(Geo.geoWithinDistance.getPredicateName(), distance.get());
-        return new GeoP(Geo.geoWithinDistance, Arrays.asList(traversalValue.asAdmin(), __.constant(distance)));
-    }
-
-    /**
-     * Determines if the distance between a geometry and the given geometry is at most the distance
-     * resolved from a child traversal at runtime.
-     *
-     * @since 4.0.0
-     */
-    public static GeoP geoWithinDistance(final Geometry value, final Traversal<?, ?> distanceTraversal) {
-        validateGeometry(Geo.geoWithinDistance.getPredicateName(), value);
-        return new GeoP(Geo.geoWithinDistance, Arrays.asList(__.constant(value), distanceTraversal.asAdmin()));
-    }
-
-    /**
-     * Determines if the distance between a geometry and the geometry a variable holds is at most
-     * the distance resolved from a child traversal at runtime.
-     *
-     * @since 4.0.0
-     */
-    public static GeoP geoWithinDistance(final GValue<Geometry> value, final Traversal<?, ?> distanceTraversal) {
-        if (null == value || !value.isVariable()) {
-            return geoWithinDistance(null == value ? null : value.get(), distanceTraversal);
-        }
-        validateGeometry(Geo.geoWithinDistance.getPredicateName(), value.get());
-        return new GeoP(Geo.geoWithinDistance, Arrays.asList(__.constant(value), distanceTraversal.asAdmin()));
-    }
-
-    /**
-     * Determines if the distance between a geometry and the geometry resolved from a child
-     * traversal at runtime is at most the distance resolved from a child traversal at runtime.
-     *
-     * @since 4.0.0
-     */
-    public static GeoP geoWithinDistance(final Traversal<?, ?> traversalValue, final Traversal<?, ?> distanceTraversal) {
-        return new GeoP(Geo.geoWithinDistance, Arrays.asList(traversalValue.asAdmin(), distanceTraversal.asAdmin()));
-    }
-
     //////////////// argument assembly
 
     /**
@@ -322,45 +173,31 @@ public class GeoP extends P<Object> {
     }
 
     /**
-     * Builds {@code geoWithinDistance} from arguments that may each be a {@link GValue}, using the
-     * plain form when neither is a variable.
+     * Carries the {@link Geo} predicates, which test a value of any type, as the predicate of a
+     * geometry. A value that is not a geometry is {@code false} rather than an error, so a type
+     * other than {@link Geometry} reaching {@code test} is answered and not cast.
      */
-    private static GeoP ofPair(final Object value, final Object distance) {
-        final List<Object> arguments = Arrays.asList(value, distance);
-        final Map<String, Object> variables = variablesOf(arguments);
-        if (variables.isEmpty()) {
-            return new GeoP(Geo.geoWithinDistance, (Object) resolve(arguments, variables));
-        }
-        return new GeoP(Geo.geoWithinDistance, arguments, variables);
+    @SuppressWarnings("unchecked")
+    private static PBiPredicate<Geometry, Geometry> asGeometryPredicate(final PBiPredicate<Object, Object> biPredicate) {
+        return (PBiPredicate<Geometry, Geometry>) (PBiPredicate<?, ?>) biPredicate;
     }
 
     /**
-     * Returns the value of every argument that is a variable, by name.
+     * Carries a variable as a variable of a geometry, whose value is validated by the constructor.
      */
-    private static Map<String, Object> variablesOf(final List<Object> arguments) {
-        final Map<String, Object> variables = new HashMap<>(arguments.size());
-        for (final Object argument : arguments) {
-            if (argument instanceof GValue && ((GValue<?>) argument).isVariable()) {
-                variables.put(((GValue<?>) argument).getName(), ((GValue<?>) argument).get());
-            }
-        }
-        return variables;
+    @SuppressWarnings("unchecked")
+    private static GValue<Geometry> asGeometryVariable(final GValue<?> value) {
+        return (GValue<Geometry>) value;
     }
 
     /**
-     * Returns the arguments with each variable replaced by its current value.
+     * Returns the argument as this predicate's value, after validating it as a constant. A
+     * {@code GeoP} filters by a geometry, so its value is one once it is accepted.
      */
-    private static List<Object> resolve(final List<Object> arguments, final Map<String, Object> variables) {
-        final List<Object> values = new ArrayList<>(arguments.size());
-        for (final Object argument : arguments) {
-            if (argument instanceof GValue) {
-                final GValue<?> gValue = (GValue<?>) argument;
-                values.add(gValue.isVariable() ? variables.get(gValue.getName()) : gValue.get());
-            } else {
-                values.add(argument);
-            }
-        }
-        return Collections.unmodifiableList(values);
+    @SuppressWarnings("unchecked")
+    private static <V> V validatedValue(final PBiPredicate<Object, Object> biPredicate, final Object value) {
+        validateConstants(biPredicate, value);
+        return (V) value;
     }
 
     //////////////// argument validation
@@ -370,26 +207,8 @@ public class GeoP extends P<Object> {
      * rather than a filter. The same value from a child traversal is false per traverser instead,
      * because it is data.
      */
-    private static void validateConstants(final PBiPredicate<Object, Object> biPredicate, final Object value) {
-        if (!(biPredicate instanceof Geo)) return;
-
+    private static void validateConstants(final PBiPredicate<?, ?> biPredicate, final Object value) {
         final String name = biPredicate.getPredicateName();
-        if (biPredicate != Geo.geoWithinDistance) {
-            validateGeometry(name, value);
-            return;
-        }
-
-        if (!(value instanceof List) || ((List<?>) value).size() != Geo.ARGUMENT_COUNT) {
-            throw new IllegalArgumentException(String.format(
-                    "%s takes a geometry and a distance, but was given %s", name, describe(value)));
-        }
-
-        final List<?> arguments = (List<?>) value;
-        validateGeometry(name, arguments.get(Geo.GEOMETRY_INDEX));
-        validateDistance(name, arguments.get(Geo.DISTANCE_INDEX));
-    }
-
-    private static void validateGeometry(final String name, final Object value) {
         if (!(value instanceof Geometry)) {
             throw new IllegalArgumentException(String.format(
                     "The geometry of %s must be a Geometry, but was %s", name, describe(value)));
@@ -399,13 +218,6 @@ public class GeoP extends P<Object> {
             throw new IllegalArgumentException(String.format(
                     "The geometry of %s must be in the CARTESIAN or GEOGRAPHIC model, but SRID %d is %s",
                     name, geometry.srid(), Model.OTHER));
-        }
-    }
-
-    private static void validateDistance(final String name, final Object distance) {
-        if (!(distance instanceof Number)) {
-            throw new IllegalArgumentException(String.format(
-                    "The distance of %s must be a number, but was %s", name, describe(distance)));
         }
     }
 

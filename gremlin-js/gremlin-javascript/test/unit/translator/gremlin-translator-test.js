@@ -64,19 +64,6 @@ const jvmGeometryTranslations = [
   ['g.inject(Geometry("POINT(1 2)", Model.GEOGRAPHIC))', 'g.inject(Geometry.fromWkt("POINT(1 2)", Model.GEOGRAPHIC))'],
   // the geo predicate forms the feature files do not use
   ['g.V().has("loc", geoWithin(x))', 'g.V().has("loc", GeoP.geoWithin(x))'],
-  ['g.V().has("loc", geoWithinDistance(x, y))', 'g.V().has("loc", GeoP.geoWithinDistance(x, y))'],
-  [
-    'g.V().has("loc", geoWithinDistance(__.select("zone"), 10))',
-    'g.V().has("loc", GeoP.geoWithinDistance(__.select("zone"), 10))',
-  ],
-  [
-    'g.V().has("loc", geoWithinDistance(Geometry("POINT(1 2)"), __.constant(10)))',
-    'g.V().has("loc", GeoP.geoWithinDistance(Geometry.fromWkt("POINT(1 2)"), __.constant(10)))',
-  ],
-  [
-    'g.V().has("loc", geoWithinDistance(__.select("zone"), __.select("radius")))',
-    'g.V().has("loc", GeoP.geoWithinDistance(__.select("zone"), __.select("radius")))',
-  ],
   [
     'g.V().has("loc", geoWithin(Geometry("POINT(1 2)")).negate())',
     'g.V().has("loc", GeoP.geoWithin(Geometry.fromWkt("POINT(1 2)")).negate())',
@@ -96,7 +83,6 @@ const unsupportedGeometry = [
   ['g.inject(Geometry("POINT(1 2)"))', 'geometry literals'],
   ['g.V().has("loc", geoWithin(x))', 'geo predicates'],
   ['g.V().has("loc", geoContains(x))', 'geo predicates'],
-  ['g.V().has("loc", geoWithinDistance(x, y))', 'geo predicates'],
   ['g.inject(123).is(P.typeOf(GType.POINT))', 'geometry types'],
 ];
 

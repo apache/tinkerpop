@@ -20,8 +20,6 @@ package org.apache.tinkerpop.gremlin.process.traversal;
 
 import org.apache.tinkerpop.gremlin.structure.geo.GeoPredicates;
 
-import java.util.List;
-
 /**
  * {@link Geo} is a {@code BiPredicate} that evaluates a spatial relationship between a geometry
  * value and the argument of a {@link GeoP}. A provider strategy that recognizes one of these
@@ -60,39 +58,7 @@ public enum Geo implements PBiPredicate<Object, Object> {
         public boolean test(final Object value, final Object argument) {
             return GeoPredicates.contains(value, argument);
         }
-    },
-
-    /**
-     * Evaluates if the distance between the value and the argument's geometry is at most the
-     * argument's distance. The argument is the geometry and the distance as a two element
-     * list, in that order, so an argument of any other shape is {@code false}.
-     *
-     * @since 4.0.0
-     */
-    geoWithinDistance {
-        @Override
-        public boolean test(final Object value, final Object argument) {
-            if (!(argument instanceof List)) return false;
-            final List<?> arguments = (List<?>) argument;
-            if (arguments.size() != ARGUMENT_COUNT) return false;
-            return GeoPredicates.withinDistance(value, arguments.get(GEOMETRY_INDEX), arguments.get(DISTANCE_INDEX));
-        }
     };
-
-    /**
-     * The position of the geometry in {@link #geoWithinDistance}'s argument list.
-     */
-    public static final int GEOMETRY_INDEX = 0;
-
-    /**
-     * The position of the distance in {@link #geoWithinDistance}'s argument list.
-     */
-    public static final int DISTANCE_INDEX = 1;
-
-    /**
-     * The size of {@link #geoWithinDistance}'s argument list.
-     */
-    public static final int ARGUMENT_COUNT = 2;
 
     /**
      * {@inheritDoc}

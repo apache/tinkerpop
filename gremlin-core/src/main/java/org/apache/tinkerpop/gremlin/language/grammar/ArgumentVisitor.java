@@ -157,15 +157,6 @@ public class ArgumentVisitor extends DefaultGremlinBaseVisitor<Object> {
     }
 
     @Override
-    public Object visitNumericArgument(final GremlinParser.NumericArgumentContext ctx) {
-        if (ctx.numericLiteral() != null) {
-            return antlr.genericVisitor.parseNumeric(ctx.numericLiteral());
-        } else {
-            return visitVariable(ctx.variable());
-        }
-    }
-
-    @Override
     public Object visitGeometryArgument(final GremlinParser.GeometryArgumentContext ctx) {
         if (ctx.geometryLiteral() != null) {
             return antlr.genericVisitor.visitGeometryLiteral(ctx.geometryLiteral());

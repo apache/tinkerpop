@@ -658,7 +658,6 @@ public class GremlinGroovyScriptEngineTest {
         final GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine();
         final Bindings bindings = new SimpleBindings();
         bindings.put("g", traversal().with(TinkerGraph.open()));
-        bindings.put("geo", traversal().with(TinkerGraph.open()));
 
         // cartesian points and a polygon, as a console session would add them
         engine.eval("g.addV(\"store\").property(\"loc\", geometry(\"POINT(2 2)\")).iterate()", bindings);
@@ -678,15 +677,5 @@ public class GremlinGroovyScriptEngineTest {
                 "g.V().has(\"loc\", geoContains(geometry(\"POINT(12 12)\"))).label().next()", bindings));
         assertEquals(0L, engine.eval(
                 "g.V().has(\"loc\", geoContains(geometry(\"POINT(20 20)\"))).count().next()", bindings));
-
-        // geographic points about 556 meters apart, and one far away
-        engine.eval("geo.addV(\"store\").property(\"loc\", geometry(\"POINT(2 2)\", GEOGRAPHIC)).iterate()", bindings);
-        engine.eval("geo.addV(\"store\").property(\"loc\", geometry(\"POINT(2.005 2)\", GEOGRAPHIC)).iterate()", bindings);
-        engine.eval("geo.addV(\"store\").property(\"loc\", geometry(\"POINT(5 5)\", GEOGRAPHIC)).iterate()", bindings);
-
-        assertEquals(2L, engine.eval(
-                "geo.V().has(\"loc\", geoWithinDistance(geometry(\"POINT(2 2)\", GEOGRAPHIC), 1000)).count().next()", bindings));
-        assertEquals(1L, engine.eval(
-                "geo.V().has(\"loc\", geoWithinDistance(geometry(\"POINT(2 2)\", GEOGRAPHIC), 100)).count().next()", bindings));
     }
 }

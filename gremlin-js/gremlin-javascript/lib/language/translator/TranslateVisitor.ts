@@ -380,7 +380,6 @@ export default class TranslateVisitor {
                 name === 'StringArgumentContext' ||
                 name === 'StringLiteralContext' ||
                 name === 'GeometryArgumentContext' ||
-                name === 'NumericArgumentContext' ||
                 name === 'NestedTraversalContext' ||
                 name === 'TraversalGTypeContext' ||
                 name === 'TraversalPredicateContext') {
@@ -421,7 +420,6 @@ export default class TranslateVisitor {
     visitTraversalPredicate_notRegex(ctx: any): void { this.visitP(ctx, 'TextP', 'notRegex'); }
     visitTraversalPredicate_geoWithin(ctx: any): void { this.visitP(ctx, 'GeoP', 'geoWithin'); }
     visitTraversalPredicate_geoContains(ctx: any): void { this.visitP(ctx, 'GeoP', 'geoContains'); }
-    visitTraversalPredicate_geoWithinDistance(ctx: any): void { this.visitP(ctx, 'GeoP', 'geoWithinDistance'); }
 
     visitBooleanArgument(ctx: any): void {
         if (ctx.booleanLiteral() != null) {

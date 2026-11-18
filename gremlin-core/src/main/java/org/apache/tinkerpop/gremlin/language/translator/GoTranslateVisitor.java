@@ -182,11 +182,6 @@ public class GoTranslateVisitor extends AbstractTranslateVisitor {
     }
 
     @Override
-    public Void visitTraversalPredicate_geoWithinDistance(final GremlinParser.TraversalPredicate_geoWithinDistanceContext ctx) {
-        throw new TranslatorException("Go does not support geo predicates");
-    }
-
-    @Override
     public Void visitGenericSetLiteral(final GremlinParser.GenericSetLiteralContext ctx) {
         sb.append(GO_PACKAGE_NAME);
         sb.append("NewSimpleSet(");

@@ -312,7 +312,6 @@ public class TranslateVisitor extends GremlinBaseVisitor<Void> {
                               t instanceof GremlinParser.StringArgumentContext ||
                               t instanceof GremlinParser.StringLiteralContext ||
                               t instanceof GremlinParser.GeometryArgumentContext ||
-                              t instanceof GremlinParser.NumericArgumentContext ||
                               t instanceof GremlinParser.NestedTraversalContext ||
                               t instanceof GremlinParser.TraversalGTypeContext ||
                               t instanceof GremlinParser.TraversalPredicateContext).collect(Collectors.toList());
@@ -451,12 +450,6 @@ public class TranslateVisitor extends GremlinBaseVisitor<Void> {
     }
 
     @Override
-    public Void visitTraversalPredicate_geoWithinDistance(final GremlinParser.TraversalPredicate_geoWithinDistanceContext ctx) {
-        visitP(ctx, GeoP.class, "geoWithinDistance");
-        return null;
-    }
-
-    @Override
     public Void visitBooleanArgument(final GremlinParser.BooleanArgumentContext ctx) {
         if (ctx.booleanLiteral() != null)
             visitBooleanLiteral(ctx.booleanLiteral());
@@ -480,16 +473,6 @@ public class TranslateVisitor extends GremlinBaseVisitor<Void> {
     public Void visitGeometryArgument(final GremlinParser.GeometryArgumentContext ctx) {
         if (ctx.geometryLiteral() != null)
             visitGeometryLiteral(ctx.geometryLiteral());
-        else
-            visitVariable(ctx.variable());
-
-        return null;
-    }
-
-    @Override
-    public Void visitNumericArgument(final GremlinParser.NumericArgumentContext ctx) {
-        if (ctx.numericLiteral() != null)
-            visit(ctx.numericLiteral());
         else
             visitVariable(ctx.variable());
 

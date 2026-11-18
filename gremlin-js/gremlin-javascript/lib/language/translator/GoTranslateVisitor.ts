@@ -216,10 +216,6 @@ export default class GoTranslateVisitor extends TranslateVisitor {
         throw new TranslatorException('Go does not support geo predicates');
     }
 
-    visitTraversalPredicate_geoWithinDistance(_ctx: any): void {
-        throw new TranslatorException('Go does not support geo predicates');
-    }
-
     visitGenericSetLiteral(ctx: any): void {
         this.sb.push(GO_PACKAGE_NAME + 'NewSimpleSet(');
         const literals: any[] = ctx.genericLiteral();

@@ -211,11 +211,6 @@ public class JavascriptTranslateVisitor extends AbstractTranslateVisitor {
     }
 
     @Override
-    public Void visitTraversalPredicate_geoWithinDistance(final GremlinParser.TraversalPredicate_geoWithinDistanceContext ctx) {
-        throw new TranslatorException("Javascript does not support geo predicates");
-    }
-
-    @Override
     public Void visitGenericSetLiteral(final GremlinParser.GenericSetLiteralContext ctx) {
         sb.append("new Set([");
         for (int i = 0; i < ctx.genericLiteral().size(); i++) {

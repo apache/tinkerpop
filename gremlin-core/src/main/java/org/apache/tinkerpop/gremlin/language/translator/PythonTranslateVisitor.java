@@ -270,11 +270,6 @@ public class PythonTranslateVisitor extends AbstractTranslateVisitor {
     }
 
     @Override
-    public Void visitTraversalPredicate_geoWithinDistance(final GremlinParser.TraversalPredicate_geoWithinDistanceContext ctx) {
-        throw new TranslatorException("Python does not support geo predicates");
-    }
-
-    @Override
     public Void visitGenericSetLiteral(final GremlinParser.GenericSetLiteralContext ctx) {
         if (ctx.genericLiteral().isEmpty()) {
             // handle the empty set case separately as `{}` in python is an empty dict, not a set

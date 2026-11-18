@@ -17,7 +17,7 @@ specific language governing permissions and limitations
 under the License.
 ////
 [[the-delivery]]
-[llms-summary="The delivery graph: a TinkerPop 4.x showcase for geometry property values and the geospatial predicates. Includes its GQL Graph Types schema and Gremlin examples that filter vertices and edges by location with geoWithin, geoContains and geoWithinDistance. Only the loading block runs at build time. The examples are static listings with their results in callouts."]
+[llms-summary="The delivery graph: a TinkerPop 4.x showcase for geometry property values and the geospatial predicates. Includes its GQL Graph Types schema and Gremlin examples that filter vertices and edges by location with geoWithin and geoContains. Only the loading block runs at build time. The examples are static listings with their results in callouts."]
 == The Delivery Graph
 
 The delivery graph models a grocery delivery company. It runs five hubs: `Hell's Kitchen`,
@@ -29,9 +29,9 @@ Earth. Inside the Hell's Kitchen hub is a small warehouse mapped in meters, wher
 works.
 
 The graph was created for TinkerPop 4.x to demonstrate `Geometry` property values and the geospatial
-predicates `geoWithin`, `geoContains` and `geoWithinDistance`. Every vertex carries its location in
-a `loc` property, and the `delivered` and `shipsTo` edges carry their route in a `path` property.
-Locations on the Earth use the `GEOGRAPHIC` model with longitude and latitude in degrees, while the
+predicates `geoWithin` and `geoContains`. Every vertex carries its location in a `loc` property, and
+the `delivered` and `shipsTo` edges carry their route in a `path` property. Locations on the Earth
+use the `GEOGRAPHIC` model with longitude and latitude in degrees, while the
 warehouse uses the `CARTESIAN` model with coordinates in meters. It is the reference example for
 filtering by location, because each geometry exercises a case that spatial filters commonly get
 wrong: a zone with a hole, a customer on a border, a zone across the prime meridian, a zone in two
@@ -120,42 +120,18 @@ g.V().hasLabel("zone").has("loc", geoContains(dee)).values("name") <1>
 
 <1> Empty: Dee sits exactly on the border that Midtown and North Brooklyn and Queens share.
 
-A `geoWithinDistance` bound of 0 keeps a geometry that meets its argument, here the East River.
+An edge's `path` is filtered like any other geometry, here the route of the only `delivered` edge.
 
 [source,groovy]
 ----
-river = g.V().has("name","East River").values("loc").next()
+box = geometry("POLYGON((-74 40.7, -73.95 40.7, -73.95 40.76, -74 40.76, -74 40.7))", GEOGRAPHIC)
 g.E().hasLabel("delivered").
-      has("path", geoWithinDistance(river, 0)).
+      has("path", geoWithin(box)).
       inV().values("name") <1>
 ----
 
-<1> Ana, whose delivery from Williamsburg crosses the river.
-
-Under the `GEOGRAPHIC` model distances are in meters, so a 6,000 km bound is written as `6000000`.
-
-[source,groovy]
-----
-hk = g.V().has("name","Hell's Kitchen").values("loc").next()
-g.V().hasLabel("hub").
-      has("loc", geoWithinDistance(hk, 6000000)).
-      values("name") <1>
-----
-
-<1> Hell's Kitchen, Williamsburg, Los Angeles and Greenwich. The bound is inclusive and a point is
-0 m from itself, so Hell's Kitchen is in its own result.
-
-A geometry built in the console works as an argument as well, here a point at Suva in Fiji.
-
-[source,groovy]
-----
-g.E().hasLabel("shipsTo").
-      has("path", geoWithinDistance(geometry("POINT(178.4419 -18.1416)", GEOGRAPHIC), 1500000)).
-      outV().values("name") <1>
-----
-
-<1> Los Angeles. Its lane to Auckland is the only one that passes within 1,500 km of Suva, and only
-because the path is split at the antimeridian rather than running the long way round the Earth.
+<1> Ana, whose delivery from Williamsburg runs entirely inside the box. Moving the box 0.1 degrees
+west leaves the route outside it and the result empty.
 
 A multipolygon is a single geometry, so `geoWithin` accepts a point in either of its parts.
 
@@ -167,21 +143,3 @@ g.V().has("loc", geoWithin(aklZone)).values("name") <1>
 
 <1> The Auckland hub, which lies in the central Auckland part, and the zone itself, since a polygon
 is within an equal polygon.
-
-The two models meet through graph steps: a `GEOGRAPHIC` predicate finds the site on the map and a
-`CARTESIAN` one searches its floor plan, each predicate comparing values of a single model.
-
-[source,groovy]
-----
-times = geometry("POINT(-73.9855 40.758)", GEOGRAPHIC)
-g.V().hasLabel("hub").has("loc", geoWithinDistance(times, 1000)).
-      out("hasRoom").as("room").
-      in("worksIn").
-      where(values("loc").is(geoWithin(__.select("room").values("loc")))).
-      values("name") <1>
-----
-
-<1> Pat. The `GEOGRAPHIC` predicate finds Hell's Kitchen, the only hub within 1 km of Times Square,
-the edges lead into its `CARTESIAN` warehouse, and the `CARTESIAN` predicate keeps the picker
-standing inside the room she works in. A `GEOGRAPHIC` value is never compared with a `CARTESIAN`
-one.

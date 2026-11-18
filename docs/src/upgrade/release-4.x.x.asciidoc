@@ -511,15 +511,13 @@ Gremlin Server `gremlin-groovy` scripts offer a `geometry()` function that takes
 geometry is also created from Well-Known Text with `Geometry.fromWkt()`, or from coordinates with factories such as
 `Point.of()`.
 
-Three predicates filter by spatial relationship. `geoWithin` keeps a geometry that lies entirely inside its argument,
-`geoContains` is its converse, and `geoWithinDistance` keeps a geometry that lies at most a given distance from its
-argument, in coordinate units under `CARTESIAN` and in meters under `GEOGRAPHIC`. In Java they are static methods of
-`GeoP`:
+Two predicates filter by spatial relationship. `geoWithin` keeps a geometry that lies entirely inside its argument and
+`geoContains` is its converse. In Java they are static methods of `GeoP`:
 
 [source,java]
 ----
 g.addV("store").property("name", "Midtown").property("loc", Geometry.fromWkt("POINT(-73.98 40.75)", Model.GEOGRAPHIC)).iterate();
-g.V().has("store", "loc", GeoP.geoWithinDistance(Point.of(-73.98, 40.76, Model.GEOGRAPHIC), 10000)).values("name").toList();
+g.V().has("store", "loc", GeoP.geoWithin(Geometry.fromWkt("POLYGON((-74 40.7, -73.9 40.7, -73.9 40.8, -74 40.8, -74 40.7))", Model.GEOGRAPHIC))).values("name").toList();
 ----
 
 The `GeoP` prefix may also be left off:
@@ -527,15 +525,13 @@ The `GeoP` prefix may also be left off:
 [source,groovy]
 ----
 gremlin> g.addV('store').property('name','Midtown').property('loc',geometry("POINT(-73.98 40.75)", GEOGRAPHIC)).iterate()
-gremlin> g.V().has('store','loc',geoWithinDistance(geometry("POINT(-73.98 40.76)", GEOGRAPHIC),10000)).values('name')
-==>Midtown
 gremlin> g.V().has('store','loc',geoWithin(geometry("POLYGON((-74 40.7, -73.9 40.7, -73.9 40.8, -74 40.8, -74 40.7))", GEOGRAPHIC))).values('name')
 ==>Midtown
 ----
 
 The boundary is excluded from `geoWithin` and `geoContains`, so a point lying only on a polygon's edge is not within
-it, while the bound of `geoWithinDistance` is inclusive. A value the predicate cannot compare, such as a geometry in a
-different spatial reference system or an empty geometry, does not match rather than raising an error. The geometry
+it. A value the predicate cannot compare, such as a geometry in a different spatial reference system or an empty
+geometry, does not match rather than raising an error. The geometry
 kinds also join the `GType` enum, so `typeOf(GType.POINT)` and `typeOf(GType.GEOGRAPHIC)` filter values by kind and by
 coordinate model.
 

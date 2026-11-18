@@ -200,15 +200,11 @@ public class GremlinLangTest {
                 // Geometry GType entries, both a kind and a model
                 {g.inject(1).is(P.typeOf(GType.GEOMETRY)), "g.inject(1).is(P.typeOf(GType.GEOMETRY))"},
                 {g.inject(1).is(P.typeOf(GType.GEOGRAPHIC)), "g.inject(1).is(P.typeOf(GType.GEOGRAPHIC))"},
-                // the geo predicates, with geoWithinDistance's two arguments written as two arguments
+                // the geo predicates
                 {g.V().has("loc", GeoP.geoWithin(Point.of(1, 2))),
                         "g.V().has(\"loc\",GeoP.geoWithin(Geometry(\"POINT(1 2)\",0)))"},
                 {g.V().has("loc", GeoP.geoContains(Point.of(1, 2, Model.GEOGRAPHIC))),
                         "g.V().has(\"loc\",GeoP.geoContains(Geometry(\"POINT(1 2)\",4326)))"},
-                {g.V().has("loc", GeoP.geoWithinDistance(Point.of(1, 2), 10)),
-                        "g.V().has(\"loc\",GeoP.geoWithinDistance(Geometry(\"POINT(1 2)\",0),10))"},
-                {g.V().has("loc", GeoP.geoWithinDistance(Point.of(1, 2, Model.GEOGRAPHIC), 10.5)),
-                        "g.V().has(\"loc\",GeoP.geoWithinDistance(Geometry(\"POINT(1 2)\",4326),10.5D))"},
                 {g.V().has("loc", GeoP.geoWithin(Point.of(1, 2)).negate()),
                         "g.V().has(\"loc\",P.not(GeoP.geoWithin(Geometry(\"POINT(1 2)\",0))))"},
                 // a connective keeps both geo predicates
@@ -218,16 +214,9 @@ public class GremlinLangTest {
                         "g.V().has(\"loc\",GeoP.geoWithin(Geometry(\"POINT(1 2)\",0)).or(GeoP.geoContains(Geometry(\"POINT(1 2)\",0))))"},
                 {g.V().has("loc", GeoP.geoWithin(__.select("zone"))),
                         "g.V().has(\"loc\",GeoP.geoWithin(__.select(\"zone\")))"},
-                {g.V().has("loc", GeoP.geoWithinDistance(__.select("zone"), 10)),
-                        "g.V().has(\"loc\",GeoP.geoWithinDistance(__.select(\"zone\"),__.constant(10)))"},
                 // a variable argument is written as the value it holds, as it is for the other predicates
                 {g.V().has("loc", GeoP.geoWithin(GValue.of("xx1", (Geometry) Point.of(1, 2)))),
                         "g.V().has(\"loc\",GeoP.geoWithin(Geometry(\"POINT(1 2)\",0)))"},
-                {g.V().has("loc", GeoP.geoWithinDistance(GValue.of("xx1", (Geometry) Point.of(1, 2)),
-                        GValue.of("xx2", (Number) 10))),
-                        "g.V().has(\"loc\",GeoP.geoWithinDistance(Geometry(\"POINT(1 2)\",0),10))"},
-                {g.V().has("loc", GeoP.geoWithinDistance(__.select("zone"), GValue.of("xx2", (Number) 10))),
-                        "g.V().has(\"loc\",GeoP.geoWithinDistance(__.select(\"zone\"),__.constant(xx2)))"},
         });
     }
 
@@ -682,23 +671,18 @@ public class GremlinLangTest {
 
         @Test
         public void shouldRoundTripEveryGeoPredicate() {
-            final Point point = Point.of(1, 2);
+            final Geometry point = Point.of(1, 2);
             final Geometry square = Geometry.fromWkt("POLYGON((0 0, 4 0, 4 4, 0 4, 0 0))", Model.GEOGRAPHIC);
-            final List<P<Object>> predicates = Arrays.asList(
+            final List<P<Geometry>> predicates = Arrays.asList(
                     GeoP.geoWithin(point),
                     GeoP.geoContains(square),
-                    GeoP.geoWithinDistance(point, 10),
-                    GeoP.geoWithinDistance(square, 10.5),
                     GeoP.geoWithin(point).negate(),
                     GeoP.geoWithin(__.select("zone")),
-                    GeoP.geoWithinDistance(__.select("zone"), 10),
-                    GeoP.geoWithinDistance(point, __.select("radius")),
-                    GeoP.geoWithinDistance(__.select("zone"), __.select("radius")),
                     GeoP.geoWithin(point).and(GeoP.geoContains(square)),
                     GeoP.geoWithin(point).or(GeoP.geoContains(square)));
 
-            for (final P<Object> predicate : predicates) {
-                final String gremlin = newG().inject(1).is(predicate).asAdmin().getGremlinLang().getGremlin();
+            for (final P<Geometry> predicate : predicates) {
+                final String gremlin = newG().inject(point).is(predicate).asAdmin().getGremlinLang().getGremlin();
                 final Traversal.Admin<?, ?> parsed = ((Traversal<?, ?>) GremlinQueryParser.parse(gremlin)).asAdmin();
                 assertEquals(gremlin, predicate, ((IsStep<?>) parsed.getEndStep()).getPredicate());
             }

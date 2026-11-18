@@ -29,7 +29,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.structure.geo.Geometry;
 
 import java.util.Collection;
-import java.util.List;
 import java.util.function.Supplier;
 
 public class TraversalPredicateVisitor extends DefaultGremlinBaseVisitor<P> {
@@ -319,29 +318,6 @@ public class TraversalPredicateVisitor extends DefaultGremlinBaseVisitor<P> {
         return build(() -> GeoP.geoContains(parseGeometry(ctx.geometryArgument())));
     }
 
-    @Override
-    public P visitTraversalPredicate_geoWithinDistance(final GremlinParser.TraversalPredicate_geoWithinDistanceContext ctx) {
-        // the geometry comes first and the distance second, and either may be given as a traversal,
-        // so the traversals of this context are taken in the order they were written
-        final List<GremlinParser.NestedTraversalContext> traversals = ctx.nestedTraversal();
-        final boolean geometryFromTraversal = null == ctx.geometryArgument();
-        final boolean distanceFromTraversal = null == ctx.numericArgument();
-
-        if (geometryFromTraversal && distanceFromTraversal) {
-            return GeoP.geoWithinDistance(parseTraversal(traversals.get(0)), parseTraversal(traversals.get(1)));
-        }
-        if (geometryFromTraversal) {
-            return build(() -> GeoP.geoWithinDistance(parseTraversal(traversals.get(0)),
-                    parseDistance(ctx.numericArgument())));
-        }
-        if (distanceFromTraversal) {
-            return build(() -> GeoP.geoWithinDistance(parseGeometry(ctx.geometryArgument()),
-                    parseTraversal(traversals.get(0))));
-        }
-        return build(() -> GeoP.geoWithinDistance(parseGeometry(ctx.geometryArgument()),
-                parseDistance(ctx.numericArgument())));
-    }
-
     /**
      * Builds a geo predicate, reporting an argument it rejects as a parse failure in the same way a
      * rejected literal is reported.
@@ -356,10 +332,6 @@ public class TraversalPredicateVisitor extends DefaultGremlinBaseVisitor<P> {
 
     private GValue<Geometry> parseGeometry(final GremlinParser.GeometryArgumentContext ctx) {
         return asGValue(antlr.argumentVisitor.visitGeometryArgument(ctx));
-    }
-
-    private GValue<Number> parseDistance(final GremlinParser.NumericArgumentContext ctx) {
-        return asGValue(antlr.argumentVisitor.visitNumericArgument(ctx));
     }
 
     /**
