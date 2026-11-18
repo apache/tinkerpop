@@ -178,7 +178,7 @@ limitations under the License.
         <dependency>
             <groupId>commons-logging</groupId>
             <artifactId>commons-logging</artifactId>
-            <version>1.3.4</version>
+            <version>1.3.5</version>
         </dependency>
         <!-- jackson versions are managed by the jackson-bom import above -->
         <dependency>
