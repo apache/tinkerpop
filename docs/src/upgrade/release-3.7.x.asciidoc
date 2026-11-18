@@ -65,6 +65,13 @@ as `map()`, `sideEffect()` and `coalesce()` still occur once per bulked traverse
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-3295[TINKERPOP-3295]
 
+==== Python 3.14 and 3.15 Support
+
+Gremlin-Python now supports Python 3.14 and 3.15. No action is needed. Applications that apply `nest_asyncio`
+themselves may see a warning on Python 3.12+ that asyncio is already patched, which can be safely ignored.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-3297[TINKERPOP-3297]
+
 == TinkerPop 3.7.7
 
 *Release Date: September 1, 2026*

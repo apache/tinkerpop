@@ -22,7 +22,7 @@ GLV builds and many integration tests will be skipped.
 - **Docker and Docker Compose** — required for all GLV test execution. Docker Desktop includes
   both. GLV tests run inside Docker containers, so local language runtimes are optional for
   test execution via Maven.
-- **Python 3.10–3.13** — optional for local development; Docker handles test execution.
+- **Python 3.10–3.15** — optional for local development; Docker handles test execution.
 - **Node.js 20+ / npm 10+** — optional; Maven downloads a local copy via `frontend-maven-plugin`
   for `gremlin-javascript`, `gremlint` and `gremlin-mcp` (the `runtime.node.version` property in
   the root `pom.xml` pins the exact version used by the build). The `docs/gremlint` web app is

@@ -26,9 +26,9 @@ description = "Gremlin-Python for Apache TinkerPop"
 readme = {file = "README.rst", content-type = "text/x-rst"}
 license = {text = "Apache 2"}
 maintainers = [{name = "Apache TinkerPop", email = "dev@tinkerpop.apache.org"}]
-requires-python = ">=3.10,<3.14"
+requires-python = ">=3.10,<3.16"
 dependencies = [
-    "nest_asyncio",
+    "nest-asyncio2>=1.7.3,<2.0.0",
     "aiohttp>=3.8.0,<4.0.0",
     "aenum>=1.4.5,<4.0.0",
     "isodate>=0.6.0,<1.0.0",
@@ -42,7 +42,9 @@ classifiers = [
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
-    "Programming Language :: Python :: 3.13"
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Programming Language :: Python :: 3.15"
 ]
 
 [project.urls]
