@@ -16163,6 +16163,88 @@
         ]
     },
     {
+        "scenario": "g_injectX1_1X_addEXknowsX_fromXV_hasXname_markoXX_toXV_hasXname_vadasXX",
+        "traversals": [
+            {
+                "original": "g.addV(\"person\").property(\"name\", \"marko\").addV(\"person\").property(\"name\", \"vadas\")",
+                "language": "g.addV(\"person\").property(\"name\", \"marko\").addV(\"person\").property(\"name\", \"vadas\")",
+                "canonical": "g.addV(\"person\").property(\"name\", \"marko\").addV(\"person\").property(\"name\", \"vadas\")",
+                "anonymized": "g.addV(string0).property(string1, string2).addV(string0).property(string1, string3)",
+                "dotnet": "g.AddV((string) \"person\").Property(\"name\", \"marko\").AddV((string) \"person\").Property(\"name\", \"vadas\")",
+                "go": "g.AddV(\"person\").Property(\"name\", \"marko\").AddV(\"person\").Property(\"name\", \"vadas\")",
+                "groovy": "g.addV(\"person\").property(\"name\", \"marko\").addV(\"person\").property(\"name\", \"vadas\")",
+                "java": "g.addV(\"person\").property(\"name\", \"marko\").addV(\"person\").property(\"name\", \"vadas\")",
+                "javascript": "g.addV(\"person\").property(\"name\", \"marko\").addV(\"person\").property(\"name\", \"vadas\")",
+                "python": "g.add_v('person').property('name', 'marko').add_v('person').property('name', 'vadas')"
+            },
+            {
+                "original": "g.inject(1, 1).addE(\"knows\").from(__.V().has(\"name\",\"marko\")).to(__.V().has(\"name\",\"vadas\"))",
+                "language": "g.inject(1, 1).addE(\"knows\").from(__.V().has(\"name\", \"marko\")).to(__.V().has(\"name\", \"vadas\"))",
+                "canonical": "g.inject(1, 1).addE(\"knows\").from(__.V().has(\"name\", \"marko\")).to(__.V().has(\"name\", \"vadas\"))",
+                "anonymized": "g.inject(number0, number0).addE(string0).from(__.V().has(string1, string2)).to(__.V().has(string1, string3))",
+                "dotnet": "g.Inject<object>(1, 1).AddE((string) \"knows\").From(__.V().Has(\"name\", \"marko\")).To(__.V().Has(\"name\", \"vadas\"))",
+                "go": "g.Inject(1, 1).AddE(\"knows\").From(gremlingo.T__.V().Has(\"name\", \"marko\")).To(gremlingo.T__.V().Has(\"name\", \"vadas\"))",
+                "groovy": "g.inject(1, 1).addE(\"knows\").from(__.V().has(\"name\", \"marko\")).to(__.V().has(\"name\", \"vadas\"))",
+                "java": "g.inject(1, 1).addE(\"knows\").from(__.V().has(\"name\", \"marko\")).to(__.V().has(\"name\", \"vadas\"))",
+                "javascript": "g.inject(1, 1).addE(\"knows\").from_(__.V().has(\"name\", \"marko\")).to(__.V().has(\"name\", \"vadas\"))",
+                "python": "g.inject(1, 1).add_e('knows').from_(__.V().has('name', 'marko')).to(__.V().has('name', 'vadas'))"
+            },
+            {
+                "original": "g.E().hasLabel(\"knows\")",
+                "language": "g.E().hasLabel(\"knows\")",
+                "canonical": "g.E().hasLabel(\"knows\")",
+                "anonymized": "g.E().hasLabel(string0)",
+                "dotnet": "g.E().HasLabel(\"knows\")",
+                "go": "g.E().HasLabel(\"knows\")",
+                "groovy": "g.E().hasLabel(\"knows\")",
+                "java": "g.E().hasLabel(\"knows\")",
+                "javascript": "g.E().hasLabel(\"knows\")",
+                "python": "g.E().has_label('knows')"
+            }
+        ]
+    },
+    {
+        "scenario": "g_V_hasXname_markoX_unionXidentity_identityX_barrier_addEXknowsX_toXV_hasXname_vadasXX",
+        "traversals": [
+            {
+                "original": "g.addV(\"person\").property(\"name\", \"marko\").addV(\"person\").property(\"name\", \"vadas\")",
+                "language": "g.addV(\"person\").property(\"name\", \"marko\").addV(\"person\").property(\"name\", \"vadas\")",
+                "canonical": "g.addV(\"person\").property(\"name\", \"marko\").addV(\"person\").property(\"name\", \"vadas\")",
+                "anonymized": "g.addV(string0).property(string1, string2).addV(string0).property(string1, string3)",
+                "dotnet": "g.AddV((string) \"person\").Property(\"name\", \"marko\").AddV((string) \"person\").Property(\"name\", \"vadas\")",
+                "go": "g.AddV(\"person\").Property(\"name\", \"marko\").AddV(\"person\").Property(\"name\", \"vadas\")",
+                "groovy": "g.addV(\"person\").property(\"name\", \"marko\").addV(\"person\").property(\"name\", \"vadas\")",
+                "java": "g.addV(\"person\").property(\"name\", \"marko\").addV(\"person\").property(\"name\", \"vadas\")",
+                "javascript": "g.addV(\"person\").property(\"name\", \"marko\").addV(\"person\").property(\"name\", \"vadas\")",
+                "python": "g.add_v('person').property('name', 'marko').add_v('person').property('name', 'vadas')"
+            },
+            {
+                "original": "g.V().has(\"name\",\"marko\").union(__.identity(), __.identity()).barrier().addE(\"knows\").to(__.V().has(\"name\",\"vadas\"))",
+                "language": "g.V().has(\"name\", \"marko\").union(__.identity(), __.identity()).barrier().addE(\"knows\").to(__.V().has(\"name\", \"vadas\"))",
+                "canonical": "g.V().has(\"name\", \"marko\").union(__.identity(), __.identity()).barrier().addE(\"knows\").to(__.V().has(\"name\", \"vadas\"))",
+                "anonymized": "g.V().has(string0, string1).union(__.identity(), __.identity()).barrier().addE(string2).to(__.V().has(string0, string3))",
+                "dotnet": "g.V().Has(\"name\", \"marko\").Union<object>(__.Identity(), __.Identity()).Barrier().AddE((string) \"knows\").To(__.V().Has(\"name\", \"vadas\"))",
+                "go": "g.V().Has(\"name\", \"marko\").Union(gremlingo.T__.Identity(), gremlingo.T__.Identity()).Barrier().AddE(\"knows\").To(gremlingo.T__.V().Has(\"name\", \"vadas\"))",
+                "groovy": "g.V().has(\"name\", \"marko\").union(__.identity(), __.identity()).barrier().addE(\"knows\").to(__.V().has(\"name\", \"vadas\"))",
+                "java": "g.V().has(\"name\", \"marko\").union(__.identity(), __.identity()).barrier().addE(\"knows\").to(__.V().has(\"name\", \"vadas\"))",
+                "javascript": "g.V().has(\"name\", \"marko\").union(__.identity(), __.identity()).barrier().addE(\"knows\").to(__.V().has(\"name\", \"vadas\"))",
+                "python": "g.V().has('name', 'marko').union(__.identity(), __.identity()).barrier().add_e('knows').to(__.V().has('name', 'vadas'))"
+            },
+            {
+                "original": "g.V().has(\"name\",\"marko\").outE(\"knows\")",
+                "language": "g.V().has(\"name\", \"marko\").outE(\"knows\")",
+                "canonical": "g.V().has(\"name\", \"marko\").outE(\"knows\")",
+                "anonymized": "g.V().has(string0, string1).outE(string2)",
+                "dotnet": "g.V().Has(\"name\", \"marko\").OutE(\"knows\")",
+                "go": "g.V().Has(\"name\", \"marko\").OutE(\"knows\")",
+                "groovy": "g.V().has(\"name\", \"marko\").outE(\"knows\")",
+                "java": "g.V().has(\"name\", \"marko\").outE(\"knows\")",
+                "javascript": "g.V().has(\"name\", \"marko\").outE(\"knows\")",
+                "python": "g.V().has('name', 'marko').out_e('knows')"
+            }
+        ]
+    },
+    {
         "scenario": "g_VX1X_addVXanimalX_propertyXage_selectXaX_byXageXX_propertyXname_puppyX",
         "traversals": [
             {
@@ -17756,6 +17838,204 @@
                 "java": "g.addV(__.constant(new ArrayList<Object>() {{ add(\"a\"); add(\"b\"); }}), __.constant(\"c\")).labels().fold()",
                 "javascript": "g.addV(__.constant([\"a\", \"b\"]), __.constant(\"c\")).labels().fold()",
                 "python": "g.add_v(__.constant(['a', 'b']), __.constant('c')).labels().fold()"
+            }
+        ]
+    },
+    {
+        "scenario": "g_injectX1_1X_addVXanimalX",
+        "traversals": [
+            {
+                "original": "g.inject(1, 1).addV(\"animal\")",
+                "language": "g.inject(1, 1).addV(\"animal\")",
+                "canonical": "g.inject(1, 1).addV(\"animal\")",
+                "anonymized": "g.inject(number0, number0).addV(string0)",
+                "dotnet": "g.Inject<object>(1, 1).AddV((string) \"animal\")",
+                "go": "g.Inject(1, 1).AddV(\"animal\")",
+                "groovy": "g.inject(1, 1).addV(\"animal\")",
+                "java": "g.inject(1, 1).addV(\"animal\")",
+                "javascript": "g.inject(1, 1).addV(\"animal\")",
+                "python": "g.inject(1, 1).add_v('animal')"
+            },
+            {
+                "original": "g.V().hasLabel(\"animal\")",
+                "language": "g.V().hasLabel(\"animal\")",
+                "canonical": "g.V().hasLabel(\"animal\")",
+                "anonymized": "g.V().hasLabel(string0)",
+                "dotnet": "g.V().HasLabel(\"animal\")",
+                "go": "g.V().HasLabel(\"animal\")",
+                "groovy": "g.V().hasLabel(\"animal\")",
+                "java": "g.V().hasLabel(\"animal\")",
+                "javascript": "g.V().hasLabel(\"animal\")",
+                "python": "g.V().has_label('animal')"
+            }
+        ]
+    },
+    {
+        "scenario": "g_V_constantX1X_barrier_addVXanimalX",
+        "traversals": [
+            {
+                "original": "g.addV(\"person\").property(\"name\", \"marko\").addV(\"person\").property(\"name\", \"vadas\")",
+                "language": "g.addV(\"person\").property(\"name\", \"marko\").addV(\"person\").property(\"name\", \"vadas\")",
+                "canonical": "g.addV(\"person\").property(\"name\", \"marko\").addV(\"person\").property(\"name\", \"vadas\")",
+                "anonymized": "g.addV(string0).property(string1, string2).addV(string0).property(string1, string3)",
+                "dotnet": "g.AddV((string) \"person\").Property(\"name\", \"marko\").AddV((string) \"person\").Property(\"name\", \"vadas\")",
+                "go": "g.AddV(\"person\").Property(\"name\", \"marko\").AddV(\"person\").Property(\"name\", \"vadas\")",
+                "groovy": "g.addV(\"person\").property(\"name\", \"marko\").addV(\"person\").property(\"name\", \"vadas\")",
+                "java": "g.addV(\"person\").property(\"name\", \"marko\").addV(\"person\").property(\"name\", \"vadas\")",
+                "javascript": "g.addV(\"person\").property(\"name\", \"marko\").addV(\"person\").property(\"name\", \"vadas\")",
+                "python": "g.add_v('person').property('name', 'marko').add_v('person').property('name', 'vadas')"
+            },
+            {
+                "original": "g.V().constant(1).barrier().addV(\"animal\")",
+                "language": "g.V().constant(1).barrier().addV(\"animal\")",
+                "canonical": "g.V().constant(1).barrier().addV(\"animal\")",
+                "anonymized": "g.V().constant(number0).barrier().addV(string0)",
+                "dotnet": "g.V().Constant<object>(1).Barrier().AddV((string) \"animal\")",
+                "go": "g.V().Constant(1).Barrier().AddV(\"animal\")",
+                "groovy": "g.V().constant(1).barrier().addV(\"animal\")",
+                "java": "g.V().constant(1).barrier().addV(\"animal\")",
+                "javascript": "g.V().constant(1).barrier().addV(\"animal\")",
+                "python": "g.V().constant(1).barrier().add_v('animal')"
+            },
+            {
+                "original": "g.V().hasLabel(\"animal\")",
+                "language": "g.V().hasLabel(\"animal\")",
+                "canonical": "g.V().hasLabel(\"animal\")",
+                "anonymized": "g.V().hasLabel(string0)",
+                "dotnet": "g.V().HasLabel(\"animal\")",
+                "go": "g.V().HasLabel(\"animal\")",
+                "groovy": "g.V().hasLabel(\"animal\")",
+                "java": "g.V().hasLabel(\"animal\")",
+                "javascript": "g.V().hasLabel(\"animal\")",
+                "python": "g.V().has_label('animal')"
+            }
+        ]
+    },
+    {
+        "scenario": "g_V_both_both_addVXanimalX",
+        "traversals": [
+            {
+                "original": "g.addV(\"person\").property(\"name\", \"marko\").as(\"marko\").addV(\"person\").property(\"name\", \"vadas\").as(\"vadas\").addV(\"person\").property(\"name\", \"josh\").as(\"josh\").addE(\"knows\").from(\"marko\").to(\"vadas\").addE(\"knows\").from(\"marko\").to(\"josh\")",
+                "language": "g.addV(\"person\").property(\"name\", \"marko\").as(\"marko\").addV(\"person\").property(\"name\", \"vadas\").as(\"vadas\").addV(\"person\").property(\"name\", \"josh\").as(\"josh\").addE(\"knows\").from(\"marko\").to(\"vadas\").addE(\"knows\").from(\"marko\").to(\"josh\")",
+                "canonical": "g.addV(\"person\").property(\"name\", \"marko\").as(\"marko\").addV(\"person\").property(\"name\", \"vadas\").as(\"vadas\").addV(\"person\").property(\"name\", \"josh\").as(\"josh\").addE(\"knows\").from(\"marko\").to(\"vadas\").addE(\"knows\").from(\"marko\").to(\"josh\")",
+                "anonymized": "g.addV(string0).property(string1, string2).as(string2).addV(string0).property(string1, string3).as(string3).addV(string0).property(string1, string4).as(string4).addE(string5).from(string2).to(string3).addE(string5).from(string2).to(string4)",
+                "dotnet": "g.AddV((string) \"person\").Property(\"name\", \"marko\").As(\"marko\").AddV((string) \"person\").Property(\"name\", \"vadas\").As(\"vadas\").AddV((string) \"person\").Property(\"name\", \"josh\").As(\"josh\").AddE((string) \"knows\").From(\"marko\").To(\"vadas\").AddE((string) \"knows\").From(\"marko\").To(\"josh\")",
+                "go": "g.AddV(\"person\").Property(\"name\", \"marko\").As(\"marko\").AddV(\"person\").Property(\"name\", \"vadas\").As(\"vadas\").AddV(\"person\").Property(\"name\", \"josh\").As(\"josh\").AddE(\"knows\").From(\"marko\").To(\"vadas\").AddE(\"knows\").From(\"marko\").To(\"josh\")",
+                "groovy": "g.addV(\"person\").property(\"name\", \"marko\").as(\"marko\").addV(\"person\").property(\"name\", \"vadas\").as(\"vadas\").addV(\"person\").property(\"name\", \"josh\").as(\"josh\").addE(\"knows\").from(\"marko\").to(\"vadas\").addE(\"knows\").from(\"marko\").to(\"josh\")",
+                "java": "g.addV(\"person\").property(\"name\", \"marko\").as(\"marko\").addV(\"person\").property(\"name\", \"vadas\").as(\"vadas\").addV(\"person\").property(\"name\", \"josh\").as(\"josh\").addE(\"knows\").from(\"marko\").to(\"vadas\").addE(\"knows\").from(\"marko\").to(\"josh\")",
+                "javascript": "g.addV(\"person\").property(\"name\", \"marko\").as(\"marko\").addV(\"person\").property(\"name\", \"vadas\").as(\"vadas\").addV(\"person\").property(\"name\", \"josh\").as(\"josh\").addE(\"knows\").from_(\"marko\").to(\"vadas\").addE(\"knows\").from_(\"marko\").to(\"josh\")",
+                "python": "g.add_v('person').property('name', 'marko').as_('marko').add_v('person').property('name', 'vadas').as_('vadas').add_v('person').property('name', 'josh').as_('josh').add_e('knows').from_('marko').to('vadas').add_e('knows').from_('marko').to('josh')"
+            },
+            {
+                "original": "g.V().both().both().addV(\"animal\")",
+                "language": "g.V().both().both().addV(\"animal\")",
+                "canonical": "g.V().both().both().addV(\"animal\")",
+                "anonymized": "g.V().both().both().addV(string0)",
+                "dotnet": "g.V().Both().Both().AddV((string) \"animal\")",
+                "go": "g.V().Both().Both().AddV(\"animal\")",
+                "groovy": "g.V().both().both().addV(\"animal\")",
+                "java": "g.V().both().both().addV(\"animal\")",
+                "javascript": "g.V().both().both().addV(\"animal\")",
+                "python": "g.V().both().both().add_v('animal')"
+            },
+            {
+                "original": "g.V().hasLabel(\"animal\")",
+                "language": "g.V().hasLabel(\"animal\")",
+                "canonical": "g.V().hasLabel(\"animal\")",
+                "anonymized": "g.V().hasLabel(string0)",
+                "dotnet": "g.V().HasLabel(\"animal\")",
+                "go": "g.V().HasLabel(\"animal\")",
+                "groovy": "g.V().hasLabel(\"animal\")",
+                "java": "g.V().hasLabel(\"animal\")",
+                "javascript": "g.V().hasLabel(\"animal\")",
+                "python": "g.V().has_label('animal')"
+            }
+        ]
+    },
+    {
+        "scenario": "g_injectX1_1X_addVXanimalX_propertyXT_id_1X",
+        "traversals": [
+            {
+                "original": "g.inject(1, 1).addV(\"animal\").property(T.id, \"1\")",
+                "language": "g.inject(1, 1).addV(\"animal\").property(T.id, \"1\")",
+                "canonical": "g.inject(1, 1).addV(\"animal\").property(T.id, \"1\")",
+                "anonymized": "g.inject(number0, number0).addV(string0).property(T.id, string1)",
+                "dotnet": "g.Inject<object>(1, 1).AddV((string) \"animal\").Property(T.Id, \"1\")",
+                "go": "g.Inject(1, 1).AddV(\"animal\").Property(gremlingo.T.Id, \"1\")",
+                "groovy": "g.inject(1, 1).addV(\"animal\").property(T.id, \"1\")",
+                "java": "g.inject(1, 1).addV(\"animal\").property(T.id, \"1\")",
+                "javascript": "g.inject(1, 1).addV(\"animal\").property(T.id, \"1\")",
+                "python": "g.inject(1, 1).add_v('animal').property(T.id_, '1')"
+            }
+        ]
+    },
+    {
+        "scenario": "g_V_hasXperson_name_aliceX_unionXidentity_identityX_barrier_propertyXlist_nickname_alX",
+        "traversals": [
+            {
+                "original": "g.addV(\"person\").property(\"name\", \"alice\")",
+                "language": "g.addV(\"person\").property(\"name\", \"alice\")",
+                "canonical": "g.addV(\"person\").property(\"name\", \"alice\")",
+                "anonymized": "g.addV(string0).property(string1, string2)",
+                "dotnet": "g.AddV((string) \"person\").Property(\"name\", \"alice\")",
+                "go": "g.AddV(\"person\").Property(\"name\", \"alice\")",
+                "groovy": "g.addV(\"person\").property(\"name\", \"alice\")",
+                "java": "g.addV(\"person\").property(\"name\", \"alice\")",
+                "javascript": "g.addV(\"person\").property(\"name\", \"alice\")",
+                "python": "g.add_v('person').property('name', 'alice')"
+            },
+            {
+                "original": "g.V().has(\"person\", \"name\", \"alice\").union(__.identity(), __.identity()).barrier().property(Cardinality.list, \"nickname\", \"al\")",
+                "language": "g.V().has(\"person\", \"name\", \"alice\").union(__.identity(), __.identity()).barrier().property(Cardinality.list, \"nickname\", \"al\")",
+                "canonical": "g.V().has(\"person\", \"name\", \"alice\").union(__.identity(), __.identity()).barrier().property(Cardinality.list, \"nickname\", \"al\")",
+                "anonymized": "g.V().has(string0, string1, string2).union(__.identity(), __.identity()).barrier().property(Cardinality.list, string3, string4)",
+                "dotnet": "g.V().Has(\"person\", \"name\", \"alice\").Union<object>(__.Identity(), __.Identity()).Barrier().Property(Cardinality.List, \"nickname\", \"al\")",
+                "go": "g.V().Has(\"person\", \"name\", \"alice\").Union(gremlingo.T__.Identity(), gremlingo.T__.Identity()).Barrier().Property(gremlingo.Cardinality.List, \"nickname\", \"al\")",
+                "groovy": "g.V().has(\"person\", \"name\", \"alice\").union(__.identity(), __.identity()).barrier().property(Cardinality.list, \"nickname\", \"al\")",
+                "java": "g.V().has(\"person\", \"name\", \"alice\").union(__.identity(), __.identity()).barrier().property(Cardinality.list, \"nickname\", \"al\")",
+                "javascript": "g.V().has(\"person\", \"name\", \"alice\").union(__.identity(), __.identity()).barrier().property(Cardinality.list, \"nickname\", \"al\")",
+                "python": "g.V().has('person', 'name', 'alice').union(__.identity(), __.identity()).barrier().property(Cardinality.list_, 'nickname', 'al')"
+            },
+            {
+                "original": "g.V().has(\"person\",\"name\",\"alice\").properties(\"nickname\")",
+                "language": "g.V().has(\"person\", \"name\", \"alice\").properties(\"nickname\")",
+                "canonical": "g.V().has(\"person\", \"name\", \"alice\").properties(\"nickname\")",
+                "anonymized": "g.V().has(string0, string1, string2).properties(string3)",
+                "dotnet": "g.V().Has(\"person\", \"name\", \"alice\").Properties<object>(\"nickname\")",
+                "go": "g.V().Has(\"person\", \"name\", \"alice\").Properties(\"nickname\")",
+                "groovy": "g.V().has(\"person\", \"name\", \"alice\").properties(\"nickname\")",
+                "java": "g.V().has(\"person\", \"name\", \"alice\").properties(\"nickname\")",
+                "javascript": "g.V().has(\"person\", \"name\", \"alice\").properties(\"nickname\")",
+                "python": "g.V().has('person', 'name', 'alice').properties('nickname')"
+            }
+        ]
+    },
+    {
+        "scenario": "g_injectXperson_person_person_person_softwareX_localXaddVXanimalX_propertyXsource_identityX_limitX1XX",
+        "traversals": [
+            {
+                "original": "g.inject(\"person\", \"person\", \"person\", \"person\", \"software\").local(__.addV(\"animal\").property(\"source\", __.identity()).limit(1))",
+                "language": "g.inject(\"person\", \"person\", \"person\", \"person\", \"software\").local(__.addV(\"animal\").property(\"source\", __.identity()).limit(1))",
+                "canonical": "g.inject(\"person\", \"person\", \"person\", \"person\", \"software\").local(__.addV(\"animal\").property(\"source\", __.identity()).limit(1))",
+                "anonymized": "g.inject(string0, string0, string0, string0, string1).local(__.addV(string2).property(string3, __.identity()).limit(number0))",
+                "dotnet": "g.Inject<object>(\"person\", \"person\", \"person\", \"person\", \"software\").Local<object>(__.AddV((string) \"animal\").Property(\"source\", __.Identity()).Limit<object>(1))",
+                "go": "g.Inject(\"person\", \"person\", \"person\", \"person\", \"software\").Local(gremlingo.T__.AddV(\"animal\").Property(\"source\", gremlingo.T__.Identity()).Limit(1))",
+                "groovy": "g.inject(\"person\", \"person\", \"person\", \"person\", \"software\").local(__.addV(\"animal\").property(\"source\", __.identity()).limit(1))",
+                "java": "g.inject(\"person\", \"person\", \"person\", \"person\", \"software\").local(__.addV(\"animal\").property(\"source\", __.identity()).limit(1))",
+                "javascript": "g.inject(\"person\", \"person\", \"person\", \"person\", \"software\").local(__.addV(\"animal\").property(\"source\", __.identity()).limit(1))",
+                "python": "g.inject('person', 'person', 'person', 'person', 'software').local(__.add_v('animal').property('source', __.identity()).limit(1))"
+            },
+            {
+                "original": "g.V().has(\"animal\",\"source\",\"software\")",
+                "language": "g.V().has(\"animal\", \"source\", \"software\")",
+                "canonical": "g.V().has(\"animal\", \"source\", \"software\")",
+                "anonymized": "g.V().has(string0, string1, string2)",
+                "dotnet": "g.V().Has(\"animal\", \"source\", \"software\")",
+                "go": "g.V().Has(\"animal\", \"source\", \"software\")",
+                "groovy": "g.V().has(\"animal\", \"source\", \"software\")",
+                "java": "g.V().has(\"animal\", \"source\", \"software\")",
+                "javascript": "g.V().has(\"animal\", \"source\", \"software\")",
+                "python": "g.V().has('animal', 'source', 'software')"
             }
         ]
     },
@@ -29459,6 +29739,165 @@
         ]
     },
     {
+        "scenario": "g_injectX1_1X_mergeEXlabel_knows_out_marko_in_vadasX_optionXonMatch_matched_YX",
+        "traversals": [
+            {
+                "original": "g.addV(\"person\").property(\"name\", \"marko\").addV(\"person\").property(\"name\", \"vadas\")",
+                "language": "g.addV(\"person\").property(\"name\", \"marko\").addV(\"person\").property(\"name\", \"vadas\")",
+                "canonical": "g.addV(\"person\").property(\"name\", \"marko\").addV(\"person\").property(\"name\", \"vadas\")",
+                "anonymized": "g.addV(string0).property(string1, string2).addV(string0).property(string1, string3)",
+                "dotnet": "g.AddV((string) \"person\").Property(\"name\", \"marko\").AddV((string) \"person\").Property(\"name\", \"vadas\")",
+                "go": "g.AddV(\"person\").Property(\"name\", \"marko\").AddV(\"person\").Property(\"name\", \"vadas\")",
+                "groovy": "g.addV(\"person\").property(\"name\", \"marko\").addV(\"person\").property(\"name\", \"vadas\")",
+                "java": "g.addV(\"person\").property(\"name\", \"marko\").addV(\"person\").property(\"name\", \"vadas\")",
+                "javascript": "g.addV(\"person\").property(\"name\", \"marko\").addV(\"person\").property(\"name\", \"vadas\")",
+                "python": "g.add_v('person').property('name', 'marko').add_v('person').property('name', 'vadas')"
+            },
+            {
+                "original": "g.inject(1, 1).mergeE(xx1).option(Merge.onMatch, xx2)",
+                "language": "g.inject(1, 1).mergeE(xx1).option(Merge.onMatch, xx2)",
+                "canonical": "g.inject(1, 1).mergeE(xx1).option(Merge.onMatch, xx2)",
+                "anonymized": "g.inject(number0, number0).mergeE(map0).option(Merge.onMatch, map1)",
+                "dotnet": "g.Inject<object>(1, 1).MergeE((IDictionary<object, object>) xx1).Option(Merge.OnMatch, (IDictionary<object, object>) xx2)",
+                "go": "g.Inject(1, 1).MergeE(xx1).Option(gremlingo.Merge.OnMatch, xx2)",
+                "groovy": "g.inject(1, 1).mergeE(xx1).option(Merge.onMatch, xx2)",
+                "java": "g.inject(1, 1).mergeE(xx1).option(Merge.onMatch, xx2)",
+                "javascript": "g.inject(1, 1).mergeE(xx1).option(Merge.onMatch, xx2)",
+                "python": "g.inject(1, 1).merge_e(xx1).option(Merge.on_match, xx2)"
+            },
+            {
+                "original": "g.E()",
+                "language": "g.E()",
+                "canonical": "g.E()",
+                "anonymized": "g.E()",
+                "dotnet": "g.E()",
+                "go": "g.E()",
+                "groovy": "g.E()",
+                "java": "g.E()",
+                "javascript": "g.E()",
+                "python": "g.E()"
+            },
+            {
+                "original": "g.E().hasLabel(\"knows\").has(\"matched\",\"Y\")",
+                "language": "g.E().hasLabel(\"knows\").has(\"matched\", \"Y\")",
+                "canonical": "g.E().hasLabel(\"knows\").has(\"matched\", \"Y\")",
+                "anonymized": "g.E().hasLabel(string0).has(string1, string2)",
+                "dotnet": "g.E().HasLabel(\"knows\").Has(\"matched\", \"Y\")",
+                "go": "g.E().HasLabel(\"knows\").Has(\"matched\", \"Y\")",
+                "groovy": "g.E().hasLabel(\"knows\").has(\"matched\", \"Y\")",
+                "java": "g.E().hasLabel(\"knows\").has(\"matched\", \"Y\")",
+                "javascript": "g.E().hasLabel(\"knows\").has(\"matched\", \"Y\")",
+                "python": "g.E().has_label('knows').has('matched', 'Y')"
+            }
+        ]
+    },
+    {
+        "scenario": "g_injectXlabel_knows_out_marko_in_vadas_label_knows_out_marko_in_vadasX_mergeE_optionXonMatch_matched_YX",
+        "traversals": [
+            {
+                "original": "g.addV(\"person\").property(\"name\", \"marko\").addV(\"person\").property(\"name\", \"vadas\")",
+                "language": "g.addV(\"person\").property(\"name\", \"marko\").addV(\"person\").property(\"name\", \"vadas\")",
+                "canonical": "g.addV(\"person\").property(\"name\", \"marko\").addV(\"person\").property(\"name\", \"vadas\")",
+                "anonymized": "g.addV(string0).property(string1, string2).addV(string0).property(string1, string3)",
+                "dotnet": "g.AddV((string) \"person\").Property(\"name\", \"marko\").AddV((string) \"person\").Property(\"name\", \"vadas\")",
+                "go": "g.AddV(\"person\").Property(\"name\", \"marko\").AddV(\"person\").Property(\"name\", \"vadas\")",
+                "groovy": "g.addV(\"person\").property(\"name\", \"marko\").addV(\"person\").property(\"name\", \"vadas\")",
+                "java": "g.addV(\"person\").property(\"name\", \"marko\").addV(\"person\").property(\"name\", \"vadas\")",
+                "javascript": "g.addV(\"person\").property(\"name\", \"marko\").addV(\"person\").property(\"name\", \"vadas\")",
+                "python": "g.add_v('person').property('name', 'marko').add_v('person').property('name', 'vadas')"
+            },
+            {
+                "original": "g.inject([T.label:\"knows\",(OUT):Merge.outV,(IN):Merge.inV], [T.label:\"knows\",(OUT):Merge.outV,(IN):Merge.inV]).mergeE().option(Merge.outV, __.V().has(\"name\",\"marko\")).option(Merge.inV, __.V().has(\"name\",\"vadas\")).option(Merge.onMatch, xx2)",
+                "language": "g.inject([T.label:\"knows\", (Direction.OUT):Merge.outV, (Direction.IN):Merge.inV], [T.label:\"knows\", (Direction.OUT):Merge.outV, (Direction.IN):Merge.inV]).mergeE().option(Merge.outV, __.V().has(\"name\", \"marko\")).option(Merge.inV, __.V().has(\"name\", \"vadas\")).option(Merge.onMatch, xx2)",
+                "canonical": "g.inject([T.label:\"knows\", (Direction.OUT):Merge.outV, (Direction.IN):Merge.inV], [T.label:\"knows\", (Direction.OUT):Merge.outV, (Direction.IN):Merge.inV]).mergeE().option(Merge.outV, __.V().has(\"name\", \"marko\")).option(Merge.inV, __.V().has(\"name\", \"vadas\")).option(Merge.onMatch, xx2)",
+                "anonymized": "g.inject(map0, map0).mergeE().option(Merge.outV, __.V().has(string0, string1)).option(Merge.inV, __.V().has(string0, string2)).option(Merge.onMatch, map1)",
+                "dotnet": "g.Inject<object>(new Dictionary<object, object> {{ T.Label, \"knows\" }, { Direction.Out, Merge.OutV }, { Direction.In, Merge.InV }}, new Dictionary<object, object> {{ T.Label, \"knows\" }, { Direction.Out, Merge.OutV }, { Direction.In, Merge.InV }}).MergeE().Option(Merge.OutV, (ITraversal) __.V().Has(\"name\", \"marko\")).Option(Merge.InV, (ITraversal) __.V().Has(\"name\", \"vadas\")).Option(Merge.OnMatch, (IDictionary<object, object>) xx2)",
+                "go": "g.Inject(map[interface{}]interface{}{gremlingo.T.Label: \"knows\", gremlingo.Direction.Out: gremlingo.Merge.OutV, gremlingo.Direction.In: gremlingo.Merge.InV }, map[interface{}]interface{}{gremlingo.T.Label: \"knows\", gremlingo.Direction.Out: gremlingo.Merge.OutV, gremlingo.Direction.In: gremlingo.Merge.InV }).MergeE().Option(gremlingo.Merge.OutV, gremlingo.T__.V().Has(\"name\", \"marko\")).Option(gremlingo.Merge.InV, gremlingo.T__.V().Has(\"name\", \"vadas\")).Option(gremlingo.Merge.OnMatch, xx2)",
+                "groovy": "g.inject([T.label:\"knows\", (Direction.OUT):Merge.outV, (Direction.IN):Merge.inV], [T.label:\"knows\", (Direction.OUT):Merge.outV, (Direction.IN):Merge.inV]).mergeE().option(Merge.outV, __.V().has(\"name\", \"marko\")).option(Merge.inV, __.V().has(\"name\", \"vadas\")).option(Merge.onMatch, xx2)",
+                "java": "g.inject(new LinkedHashMap<Object, Object>() {{ put(T.label, \"knows\"); put(Direction.OUT, Merge.outV); put(Direction.IN, Merge.inV); }}, new LinkedHashMap<Object, Object>() {{ put(T.label, \"knows\"); put(Direction.OUT, Merge.outV); put(Direction.IN, Merge.inV); }}).mergeE().option(Merge.outV, __.V().has(\"name\", \"marko\")).option(Merge.inV, __.V().has(\"name\", \"vadas\")).option(Merge.onMatch, xx2)",
+                "javascript": "g.inject(new Map([[T.label, \"knows\"], [Direction.OUT, Merge.outV], [Direction.IN, Merge.inV]]), new Map([[T.label, \"knows\"], [Direction.OUT, Merge.outV], [Direction.IN, Merge.inV]])).mergeE().option(Merge.outV, __.V().has(\"name\", \"marko\")).option(Merge.inV, __.V().has(\"name\", \"vadas\")).option(Merge.onMatch, xx2)",
+                "python": "g.inject({ T.label: 'knows', Direction.OUT: Merge.out_v, Direction.IN: Merge.in_v }, { T.label: 'knows', Direction.OUT: Merge.out_v, Direction.IN: Merge.in_v }).merge_e().option(Merge.out_v, __.V().has('name', 'marko')).option(Merge.in_v, __.V().has('name', 'vadas')).option(Merge.on_match, xx2)"
+            },
+            {
+                "original": "g.E()",
+                "language": "g.E()",
+                "canonical": "g.E()",
+                "anonymized": "g.E()",
+                "dotnet": "g.E()",
+                "go": "g.E()",
+                "groovy": "g.E()",
+                "java": "g.E()",
+                "javascript": "g.E()",
+                "python": "g.E()"
+            },
+            {
+                "original": "g.E().hasLabel(\"knows\").has(\"matched\",\"Y\")",
+                "language": "g.E().hasLabel(\"knows\").has(\"matched\", \"Y\")",
+                "canonical": "g.E().hasLabel(\"knows\").has(\"matched\", \"Y\")",
+                "anonymized": "g.E().hasLabel(string0).has(string1, string2)",
+                "dotnet": "g.E().HasLabel(\"knows\").Has(\"matched\", \"Y\")",
+                "go": "g.E().HasLabel(\"knows\").Has(\"matched\", \"Y\")",
+                "groovy": "g.E().hasLabel(\"knows\").has(\"matched\", \"Y\")",
+                "java": "g.E().hasLabel(\"knows\").has(\"matched\", \"Y\")",
+                "javascript": "g.E().hasLabel(\"knows\").has(\"matched\", \"Y\")",
+                "python": "g.E().has_label('knows').has('matched', 'Y')"
+            }
+        ]
+    },
+    {
+        "scenario": "g_injectXlabel_knows_out_marko_in_vadas_x4X_mergeE_optionXonMatch_projectXmatchCountX_byXE_hasLabelXknowsX_coalesceXvaluesXmatchCountX_mathX_plus_1X_constantX1XXXX",
+        "traversals": [
+            {
+                "original": "g.addV(\"person\").property(\"name\", \"marko\").addV(\"person\").property(\"name\", \"vadas\")",
+                "language": "g.addV(\"person\").property(\"name\", \"marko\").addV(\"person\").property(\"name\", \"vadas\")",
+                "canonical": "g.addV(\"person\").property(\"name\", \"marko\").addV(\"person\").property(\"name\", \"vadas\")",
+                "anonymized": "g.addV(string0).property(string1, string2).addV(string0).property(string1, string3)",
+                "dotnet": "g.AddV((string) \"person\").Property(\"name\", \"marko\").AddV((string) \"person\").Property(\"name\", \"vadas\")",
+                "go": "g.AddV(\"person\").Property(\"name\", \"marko\").AddV(\"person\").Property(\"name\", \"vadas\")",
+                "groovy": "g.addV(\"person\").property(\"name\", \"marko\").addV(\"person\").property(\"name\", \"vadas\")",
+                "java": "g.addV(\"person\").property(\"name\", \"marko\").addV(\"person\").property(\"name\", \"vadas\")",
+                "javascript": "g.addV(\"person\").property(\"name\", \"marko\").addV(\"person\").property(\"name\", \"vadas\")",
+                "python": "g.add_v('person').property('name', 'marko').add_v('person').property('name', 'vadas')"
+            },
+            {
+                "original": "g.inject([T.label:\"knows\",(OUT):Merge.outV,(IN):Merge.inV], [T.label:\"knows\",(OUT):Merge.outV,(IN):Merge.inV], [T.label:\"knows\",(OUT):Merge.outV,(IN):Merge.inV], [T.label:\"knows\",(OUT):Merge.outV,(IN):Merge.inV]).mergeE().option(Merge.outV, __.V().has(\"name\",\"marko\")).option(Merge.inV, __.V().has(\"name\",\"vadas\")).option(Merge.onMatch, __.project(\"matchCount\").by(__.E().hasLabel(\"knows\").coalesce(__.values(\"matchCount\").math(\"_ + 1\"), __.constant(1))))",
+                "language": "g.inject([T.label:\"knows\", (Direction.OUT):Merge.outV, (Direction.IN):Merge.inV], [T.label:\"knows\", (Direction.OUT):Merge.outV, (Direction.IN):Merge.inV], [T.label:\"knows\", (Direction.OUT):Merge.outV, (Direction.IN):Merge.inV], [T.label:\"knows\", (Direction.OUT):Merge.outV, (Direction.IN):Merge.inV]).mergeE().option(Merge.outV, __.V().has(\"name\", \"marko\")).option(Merge.inV, __.V().has(\"name\", \"vadas\")).option(Merge.onMatch, __.project(\"matchCount\").by(__.E().hasLabel(\"knows\").coalesce(__.values(\"matchCount\").math(\"_ + 1\"), __.constant(1))))",
+                "canonical": "g.inject([T.label:\"knows\", (Direction.OUT):Merge.outV, (Direction.IN):Merge.inV], [T.label:\"knows\", (Direction.OUT):Merge.outV, (Direction.IN):Merge.inV], [T.label:\"knows\", (Direction.OUT):Merge.outV, (Direction.IN):Merge.inV], [T.label:\"knows\", (Direction.OUT):Merge.outV, (Direction.IN):Merge.inV]).mergeE().option(Merge.outV, __.V().has(\"name\", \"marko\")).option(Merge.inV, __.V().has(\"name\", \"vadas\")).option(Merge.onMatch, __.project(\"matchCount\").by(__.E().hasLabel(\"knows\").coalesce(__.values(\"matchCount\").math(\"_ + 1\"), __.constant(1))))",
+                "anonymized": "g.inject(map0, map0, map0, map0).mergeE().option(Merge.outV, __.V().has(string0, string1)).option(Merge.inV, __.V().has(string0, string2)).option(Merge.onMatch, __.project(string3).by(__.E().hasLabel(string4).coalesce(__.values(string3).math(string5), __.constant(number0))))",
+                "dotnet": "g.Inject<object>(new Dictionary<object, object> {{ T.Label, \"knows\" }, { Direction.Out, Merge.OutV }, { Direction.In, Merge.InV }}, new Dictionary<object, object> {{ T.Label, \"knows\" }, { Direction.Out, Merge.OutV }, { Direction.In, Merge.InV }}, new Dictionary<object, object> {{ T.Label, \"knows\" }, { Direction.Out, Merge.OutV }, { Direction.In, Merge.InV }}, new Dictionary<object, object> {{ T.Label, \"knows\" }, { Direction.Out, Merge.OutV }, { Direction.In, Merge.InV }}).MergeE().Option(Merge.OutV, (ITraversal) __.V().Has(\"name\", \"marko\")).Option(Merge.InV, (ITraversal) __.V().Has(\"name\", \"vadas\")).Option(Merge.OnMatch, (ITraversal) __.Project<object>(\"matchCount\").By(__.E().HasLabel(\"knows\").Coalesce<object>(__.Values<object>(\"matchCount\").Math(\"_ + 1\"), __.Constant<object>(1))))",
+                "go": "g.Inject(map[interface{}]interface{}{gremlingo.T.Label: \"knows\", gremlingo.Direction.Out: gremlingo.Merge.OutV, gremlingo.Direction.In: gremlingo.Merge.InV }, map[interface{}]interface{}{gremlingo.T.Label: \"knows\", gremlingo.Direction.Out: gremlingo.Merge.OutV, gremlingo.Direction.In: gremlingo.Merge.InV }, map[interface{}]interface{}{gremlingo.T.Label: \"knows\", gremlingo.Direction.Out: gremlingo.Merge.OutV, gremlingo.Direction.In: gremlingo.Merge.InV }, map[interface{}]interface{}{gremlingo.T.Label: \"knows\", gremlingo.Direction.Out: gremlingo.Merge.OutV, gremlingo.Direction.In: gremlingo.Merge.InV }).MergeE().Option(gremlingo.Merge.OutV, gremlingo.T__.V().Has(\"name\", \"marko\")).Option(gremlingo.Merge.InV, gremlingo.T__.V().Has(\"name\", \"vadas\")).Option(gremlingo.Merge.OnMatch, gremlingo.T__.Project(\"matchCount\").By(gremlingo.T__.E().HasLabel(\"knows\").Coalesce(gremlingo.T__.Values(\"matchCount\").Math(\"_ + 1\"), gremlingo.T__.Constant(1))))",
+                "groovy": "g.inject([T.label:\"knows\", (Direction.OUT):Merge.outV, (Direction.IN):Merge.inV], [T.label:\"knows\", (Direction.OUT):Merge.outV, (Direction.IN):Merge.inV], [T.label:\"knows\", (Direction.OUT):Merge.outV, (Direction.IN):Merge.inV], [T.label:\"knows\", (Direction.OUT):Merge.outV, (Direction.IN):Merge.inV]).mergeE().option(Merge.outV, __.V().has(\"name\", \"marko\")).option(Merge.inV, __.V().has(\"name\", \"vadas\")).option(Merge.onMatch, __.project(\"matchCount\").by(__.E().hasLabel(\"knows\").coalesce(__.values(\"matchCount\").math(\"_ + 1\"), __.constant(1))))",
+                "java": "g.inject(new LinkedHashMap<Object, Object>() {{ put(T.label, \"knows\"); put(Direction.OUT, Merge.outV); put(Direction.IN, Merge.inV); }}, new LinkedHashMap<Object, Object>() {{ put(T.label, \"knows\"); put(Direction.OUT, Merge.outV); put(Direction.IN, Merge.inV); }}, new LinkedHashMap<Object, Object>() {{ put(T.label, \"knows\"); put(Direction.OUT, Merge.outV); put(Direction.IN, Merge.inV); }}, new LinkedHashMap<Object, Object>() {{ put(T.label, \"knows\"); put(Direction.OUT, Merge.outV); put(Direction.IN, Merge.inV); }}).mergeE().option(Merge.outV, __.V().has(\"name\", \"marko\")).option(Merge.inV, __.V().has(\"name\", \"vadas\")).option(Merge.onMatch, __.project(\"matchCount\").by(__.E().hasLabel(\"knows\").coalesce(__.values(\"matchCount\").math(\"_ + 1\"), __.constant(1))))",
+                "javascript": "g.inject(new Map([[T.label, \"knows\"], [Direction.OUT, Merge.outV], [Direction.IN, Merge.inV]]), new Map([[T.label, \"knows\"], [Direction.OUT, Merge.outV], [Direction.IN, Merge.inV]]), new Map([[T.label, \"knows\"], [Direction.OUT, Merge.outV], [Direction.IN, Merge.inV]]), new Map([[T.label, \"knows\"], [Direction.OUT, Merge.outV], [Direction.IN, Merge.inV]])).mergeE().option(Merge.outV, __.V().has(\"name\", \"marko\")).option(Merge.inV, __.V().has(\"name\", \"vadas\")).option(Merge.onMatch, __.project(\"matchCount\").by(__.E().hasLabel(\"knows\").coalesce(__.values(\"matchCount\").math(\"_ + 1\"), __.constant(1))))",
+                "python": "g.inject({ T.label: 'knows', Direction.OUT: Merge.out_v, Direction.IN: Merge.in_v }, { T.label: 'knows', Direction.OUT: Merge.out_v, Direction.IN: Merge.in_v }, { T.label: 'knows', Direction.OUT: Merge.out_v, Direction.IN: Merge.in_v }, { T.label: 'knows', Direction.OUT: Merge.out_v, Direction.IN: Merge.in_v }).merge_e().option(Merge.out_v, __.V().has('name', 'marko')).option(Merge.in_v, __.V().has('name', 'vadas')).option(Merge.on_match, __.project('matchCount').by(__.E().has_label('knows').coalesce(__.values('matchCount').math('_ + 1'), __.constant(1))))"
+            },
+            {
+                "original": "g.E()",
+                "language": "g.E()",
+                "canonical": "g.E()",
+                "anonymized": "g.E()",
+                "dotnet": "g.E()",
+                "go": "g.E()",
+                "groovy": "g.E()",
+                "java": "g.E()",
+                "javascript": "g.E()",
+                "python": "g.E()"
+            },
+            {
+                "original": "g.E().hasLabel(\"knows\").has(\"matchCount\",3.0d)",
+                "language": "g.E().hasLabel(\"knows\").has(\"matchCount\", 3.0d)",
+                "canonical": "g.E().hasLabel(\"knows\").has(\"matchCount\", 3.0d)",
+                "anonymized": "g.E().hasLabel(string0).has(string1, double0)",
+                "dotnet": "g.E().HasLabel(\"knows\").Has(\"matchCount\", 3.0d)",
+                "go": "g.E().HasLabel(\"knows\").Has(\"matchCount\", 3.0)",
+                "groovy": "g.E().hasLabel(\"knows\").has(\"matchCount\", 3.0d)",
+                "java": "g.E().hasLabel(\"knows\").has(\"matchCount\", 3.0d)",
+                "javascript": "g.E().hasLabel(\"knows\").has(\"matchCount\", 3.0)",
+                "python": "g.E().has_label('knows').has('matchCount', 3.0)"
+            }
+        ]
+    },
+    {
         "scenario": "g_mergeVXemptyX_optionXonMatch_nullX",
         "traversals": [
             {
@@ -33057,6 +33496,129 @@
                 "java": "g.V().has(\"device\", \"serial\", UUID.fromString(\"c47d2ea0-5b18-4a6f-b2eb-0f9eed7c6b5a\")).has(\"model\", \"TH-300\").has(\"online\", false)",
                 "javascript": "g.V().has(\"device\", \"serial\", uuid.parse(\"c47d2ea0-5b18-4a6f-b2eb-0f9eed7c6b5a\")).has(\"model\", \"TH-300\").has(\"online\", false)",
                 "python": "g.V().has('device', 'serial', uuid.UUID('c47d2ea0-5b18-4a6f-b2eb-0f9eed7c6b5a')).has('model', 'TH-300').has('online', False)"
+            }
+        ]
+    },
+    {
+        "scenario": "g_injectX1_1X_mergeVXlabel_person_name_aliceX_optionXonMatch_matched_YX",
+        "traversals": [
+            {
+                "original": "g.inject(1, 1).mergeV(xx1).option(Merge.onMatch, xx2)",
+                "language": "g.inject(1, 1).mergeV(xx1).option(Merge.onMatch, xx2)",
+                "canonical": "g.inject(1, 1).mergeV(xx1).option(Merge.onMatch, xx2)",
+                "anonymized": "g.inject(number0, number0).mergeV(map0).option(Merge.onMatch, map1)",
+                "dotnet": "g.Inject<object>(1, 1).MergeV((IDictionary<object, object>) xx1).Option(Merge.OnMatch, (IDictionary<object, object>) xx2)",
+                "go": "g.Inject(1, 1).MergeV(xx1).Option(gremlingo.Merge.OnMatch, xx2)",
+                "groovy": "g.inject(1, 1).mergeV(xx1).option(Merge.onMatch, xx2)",
+                "java": "g.inject(1, 1).mergeV(xx1).option(Merge.onMatch, xx2)",
+                "javascript": "g.inject(1, 1).mergeV(xx1).option(Merge.onMatch, xx2)",
+                "python": "g.inject(1, 1).merge_v(xx1).option(Merge.on_match, xx2)"
+            },
+            {
+                "original": "g.V()",
+                "language": "g.V()",
+                "canonical": "g.V()",
+                "anonymized": "g.V()",
+                "dotnet": "g.V()",
+                "go": "g.V()",
+                "groovy": "g.V()",
+                "java": "g.V()",
+                "javascript": "g.V()",
+                "python": "g.V()"
+            },
+            {
+                "original": "g.V().has(\"person\",\"name\",\"alice\").has(\"matched\",\"Y\")",
+                "language": "g.V().has(\"person\", \"name\", \"alice\").has(\"matched\", \"Y\")",
+                "canonical": "g.V().has(\"person\", \"name\", \"alice\").has(\"matched\", \"Y\")",
+                "anonymized": "g.V().has(string0, string1, string2).has(string3, string4)",
+                "dotnet": "g.V().Has(\"person\", \"name\", \"alice\").Has(\"matched\", \"Y\")",
+                "go": "g.V().Has(\"person\", \"name\", \"alice\").Has(\"matched\", \"Y\")",
+                "groovy": "g.V().has(\"person\", \"name\", \"alice\").has(\"matched\", \"Y\")",
+                "java": "g.V().has(\"person\", \"name\", \"alice\").has(\"matched\", \"Y\")",
+                "javascript": "g.V().has(\"person\", \"name\", \"alice\").has(\"matched\", \"Y\")",
+                "python": "g.V().has('person', 'name', 'alice').has('matched', 'Y')"
+            }
+        ]
+    },
+    {
+        "scenario": "g_injectXlabel_person_name_alice_label_person_name_aliceX_mergeV_optionXonMatch_matched_YX",
+        "traversals": [
+            {
+                "original": "g.inject([T.label:\"person\", name:\"alice\"], [T.label:\"person\", name:\"alice\"]).mergeV().option(Merge.onMatch, xx2)",
+                "language": "g.inject([T.label:\"person\", name:\"alice\"], [T.label:\"person\", name:\"alice\"]).mergeV().option(Merge.onMatch, xx2)",
+                "canonical": "g.inject([T.label:\"person\", name:\"alice\"], [T.label:\"person\", name:\"alice\"]).mergeV().option(Merge.onMatch, xx2)",
+                "anonymized": "g.inject(map0, map0).mergeV().option(Merge.onMatch, map1)",
+                "dotnet": "g.Inject<object>(new Dictionary<object, object> {{ T.Label, \"person\" }, { \"name\", \"alice\" }}, new Dictionary<object, object> {{ T.Label, \"person\" }, { \"name\", \"alice\" }}).MergeV().Option(Merge.OnMatch, (IDictionary<object, object>) xx2)",
+                "go": "g.Inject(map[interface{}]interface{}{gremlingo.T.Label: \"person\", \"name\": \"alice\" }, map[interface{}]interface{}{gremlingo.T.Label: \"person\", \"name\": \"alice\" }).MergeV().Option(gremlingo.Merge.OnMatch, xx2)",
+                "groovy": "g.inject([T.label:\"person\", name:\"alice\"], [T.label:\"person\", name:\"alice\"]).mergeV().option(Merge.onMatch, xx2)",
+                "java": "g.inject(new LinkedHashMap<Object, Object>() {{ put(T.label, \"person\"); put(\"name\", \"alice\"); }}, new LinkedHashMap<Object, Object>() {{ put(T.label, \"person\"); put(\"name\", \"alice\"); }}).mergeV().option(Merge.onMatch, xx2)",
+                "javascript": "g.inject(new Map([[T.label, \"person\"], [\"name\", \"alice\"]]), new Map([[T.label, \"person\"], [\"name\", \"alice\"]])).mergeV().option(Merge.onMatch, xx2)",
+                "python": "g.inject({ T.label: 'person', 'name': 'alice' }, { T.label: 'person', 'name': 'alice' }).merge_v().option(Merge.on_match, xx2)"
+            },
+            {
+                "original": "g.V()",
+                "language": "g.V()",
+                "canonical": "g.V()",
+                "anonymized": "g.V()",
+                "dotnet": "g.V()",
+                "go": "g.V()",
+                "groovy": "g.V()",
+                "java": "g.V()",
+                "javascript": "g.V()",
+                "python": "g.V()"
+            },
+            {
+                "original": "g.V().has(\"person\",\"name\",\"alice\").has(\"matched\",\"Y\")",
+                "language": "g.V().has(\"person\", \"name\", \"alice\").has(\"matched\", \"Y\")",
+                "canonical": "g.V().has(\"person\", \"name\", \"alice\").has(\"matched\", \"Y\")",
+                "anonymized": "g.V().has(string0, string1, string2).has(string3, string4)",
+                "dotnet": "g.V().Has(\"person\", \"name\", \"alice\").Has(\"matched\", \"Y\")",
+                "go": "g.V().Has(\"person\", \"name\", \"alice\").Has(\"matched\", \"Y\")",
+                "groovy": "g.V().has(\"person\", \"name\", \"alice\").has(\"matched\", \"Y\")",
+                "java": "g.V().has(\"person\", \"name\", \"alice\").has(\"matched\", \"Y\")",
+                "javascript": "g.V().has(\"person\", \"name\", \"alice\").has(\"matched\", \"Y\")",
+                "python": "g.V().has('person', 'name', 'alice').has('matched', 'Y')"
+            }
+        ]
+    },
+    {
+        "scenario": "g_injectXlabel_person_name_alice_x4X_mergeV_optionXonMatch_projectXmatchCountX_byXV_hasXname_aliceX_coalesceXvaluesXmatchCountX_mathX_plus_1X_constantX1XXXX",
+        "traversals": [
+            {
+                "original": "g.inject([T.label:\"person\", name:\"alice\"], [T.label:\"person\", name:\"alice\"], [T.label:\"person\", name:\"alice\"], [T.label:\"person\", name:\"alice\"]).mergeV().option(Merge.onMatch, __.project(\"matchCount\").by(__.V().has(\"person\",\"name\",\"alice\").coalesce(__.values(\"matchCount\").math(\"_ + 1\"), __.constant(1))))",
+                "language": "g.inject([T.label:\"person\", name:\"alice\"], [T.label:\"person\", name:\"alice\"], [T.label:\"person\", name:\"alice\"], [T.label:\"person\", name:\"alice\"]).mergeV().option(Merge.onMatch, __.project(\"matchCount\").by(__.V().has(\"person\", \"name\", \"alice\").coalesce(__.values(\"matchCount\").math(\"_ + 1\"), __.constant(1))))",
+                "canonical": "g.inject([T.label:\"person\", name:\"alice\"], [T.label:\"person\", name:\"alice\"], [T.label:\"person\", name:\"alice\"], [T.label:\"person\", name:\"alice\"]).mergeV().option(Merge.onMatch, __.project(\"matchCount\").by(__.V().has(\"person\", \"name\", \"alice\").coalesce(__.values(\"matchCount\").math(\"_ + 1\"), __.constant(1))))",
+                "anonymized": "g.inject(map0, map0, map0, map0).mergeV().option(Merge.onMatch, __.project(string0).by(__.V().has(string1, string2, string3).coalesce(__.values(string0).math(string4), __.constant(number0))))",
+                "dotnet": "g.Inject<object>(new Dictionary<object, object> {{ T.Label, \"person\" }, { \"name\", \"alice\" }}, new Dictionary<object, object> {{ T.Label, \"person\" }, { \"name\", \"alice\" }}, new Dictionary<object, object> {{ T.Label, \"person\" }, { \"name\", \"alice\" }}, new Dictionary<object, object> {{ T.Label, \"person\" }, { \"name\", \"alice\" }}).MergeV().Option(Merge.OnMatch, (ITraversal) __.Project<object>(\"matchCount\").By(__.V().Has(\"person\", \"name\", \"alice\").Coalesce<object>(__.Values<object>(\"matchCount\").Math(\"_ + 1\"), __.Constant<object>(1))))",
+                "go": "g.Inject(map[interface{}]interface{}{gremlingo.T.Label: \"person\", \"name\": \"alice\" }, map[interface{}]interface{}{gremlingo.T.Label: \"person\", \"name\": \"alice\" }, map[interface{}]interface{}{gremlingo.T.Label: \"person\", \"name\": \"alice\" }, map[interface{}]interface{}{gremlingo.T.Label: \"person\", \"name\": \"alice\" }).MergeV().Option(gremlingo.Merge.OnMatch, gremlingo.T__.Project(\"matchCount\").By(gremlingo.T__.V().Has(\"person\", \"name\", \"alice\").Coalesce(gremlingo.T__.Values(\"matchCount\").Math(\"_ + 1\"), gremlingo.T__.Constant(1))))",
+                "groovy": "g.inject([T.label:\"person\", name:\"alice\"], [T.label:\"person\", name:\"alice\"], [T.label:\"person\", name:\"alice\"], [T.label:\"person\", name:\"alice\"]).mergeV().option(Merge.onMatch, __.project(\"matchCount\").by(__.V().has(\"person\", \"name\", \"alice\").coalesce(__.values(\"matchCount\").math(\"_ + 1\"), __.constant(1))))",
+                "java": "g.inject(new LinkedHashMap<Object, Object>() {{ put(T.label, \"person\"); put(\"name\", \"alice\"); }}, new LinkedHashMap<Object, Object>() {{ put(T.label, \"person\"); put(\"name\", \"alice\"); }}, new LinkedHashMap<Object, Object>() {{ put(T.label, \"person\"); put(\"name\", \"alice\"); }}, new LinkedHashMap<Object, Object>() {{ put(T.label, \"person\"); put(\"name\", \"alice\"); }}).mergeV().option(Merge.onMatch, __.project(\"matchCount\").by(__.V().has(\"person\", \"name\", \"alice\").coalesce(__.values(\"matchCount\").math(\"_ + 1\"), __.constant(1))))",
+                "javascript": "g.inject(new Map([[T.label, \"person\"], [\"name\", \"alice\"]]), new Map([[T.label, \"person\"], [\"name\", \"alice\"]]), new Map([[T.label, \"person\"], [\"name\", \"alice\"]]), new Map([[T.label, \"person\"], [\"name\", \"alice\"]])).mergeV().option(Merge.onMatch, __.project(\"matchCount\").by(__.V().has(\"person\", \"name\", \"alice\").coalesce(__.values(\"matchCount\").math(\"_ + 1\"), __.constant(1))))",
+                "python": "g.inject({ T.label: 'person', 'name': 'alice' }, { T.label: 'person', 'name': 'alice' }, { T.label: 'person', 'name': 'alice' }, { T.label: 'person', 'name': 'alice' }).merge_v().option(Merge.on_match, __.project('matchCount').by(__.V().has('person', 'name', 'alice').coalesce(__.values('matchCount').math('_ + 1'), __.constant(1))))"
+            },
+            {
+                "original": "g.V()",
+                "language": "g.V()",
+                "canonical": "g.V()",
+                "anonymized": "g.V()",
+                "dotnet": "g.V()",
+                "go": "g.V()",
+                "groovy": "g.V()",
+                "java": "g.V()",
+                "javascript": "g.V()",
+                "python": "g.V()"
+            },
+            {
+                "original": "g.V().has(\"person\",\"name\",\"alice\").has(\"matchCount\",3.0d)",
+                "language": "g.V().has(\"person\", \"name\", \"alice\").has(\"matchCount\", 3.0d)",
+                "canonical": "g.V().has(\"person\", \"name\", \"alice\").has(\"matchCount\", 3.0d)",
+                "anonymized": "g.V().has(string0, string1, string2).has(string3, double0)",
+                "dotnet": "g.V().Has(\"person\", \"name\", \"alice\").Has(\"matchCount\", 3.0d)",
+                "go": "g.V().Has(\"person\", \"name\", \"alice\").Has(\"matchCount\", 3.0)",
+                "groovy": "g.V().has(\"person\", \"name\", \"alice\").has(\"matchCount\", 3.0d)",
+                "java": "g.V().has(\"person\", \"name\", \"alice\").has(\"matchCount\", 3.0d)",
+                "javascript": "g.V().has(\"person\", \"name\", \"alice\").has(\"matchCount\", 3.0)",
+                "python": "g.V().has('person', 'name', 'alice').has('matchCount', 3.0)"
             }
         ]
     },

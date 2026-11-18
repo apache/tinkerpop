@@ -51,6 +51,8 @@ public class AddEdgeStep<S> extends ScalarMapStep<S, Edge> implements AddEdgeSte
     private Parameters internalParameters = new Parameters();
     private Parameters withConfiguration = new Parameters();
     private CallbackRegistry<Event.EdgeAddedEvent> callbackRegistry;
+    private Traverser.Admin<S> bulkedStart = null;
+    private long remainingBulk = 0L;
 
     public AddEdgeStep(final Traversal.Admin traversal, final String edgeLabel) {
         super(traversal);
@@ -105,6 +107,35 @@ public class AddEdgeStep<S> extends ScalarMapStep<S, Edge> implements AddEdgeSte
     @Override
     public void setElementId(Object elementId) {
         configureInternalParams(T.id, elementId);
+    }
+
+    /**
+     * Adds an edge for each traverser that a bulked traverser represents.
+     */
+    @Override
+    protected Traverser.Admin<Edge> processNextStart() {
+        final Traverser.Admin<S> traverser = nextUnbulkedStart();
+        return traverser.split(this.map(traverser), this);
+    }
+
+    private Traverser.Admin<S> nextUnbulkedStart() {
+        if (null == this.bulkedStart) {
+            final Traverser.Admin<S> start = this.starts.next();
+            if (start.bulk() <= 1L) return start;
+            this.bulkedStart = start;
+            this.remainingBulk = start.bulk();
+        }
+        final Traverser.Admin<S> unit = this.bulkedStart.split();
+        unit.setBulk(1L);
+        if (--this.remainingBulk == 0L) this.bulkedStart = null;
+        return unit;
+    }
+
+    @Override
+    public void reset() {
+        super.reset();
+        this.bulkedStart = null;
+        this.remainingBulk = 0L;
     }
 
     @Override

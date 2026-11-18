@@ -52,6 +52,8 @@ public class AddVertexStep<S> extends ScalarMapStep<S, Vertex> implements AddVer
     private CallbackRegistry<Event.VertexAddedEvent> callbackRegistry;
     private boolean userProvidedLabel;
     private Object label;
+    private Traverser.Admin<S> bulkedStart = null;
+    private long remainingBulk = 0L;
 
     public AddVertexStep(final Traversal.Admin traversal, final String label) {
         super(traversal);
@@ -134,6 +136,35 @@ public class AddVertexStep<S> extends ScalarMapStep<S, Vertex> implements AddVer
         } else {
             this.internalParameters.set(this, keyValues);
         }
+    }
+
+    /**
+     * Adds a vertex for each traverser that a bulked traverser represents.
+     */
+    @Override
+    protected Traverser.Admin<Vertex> processNextStart() {
+        final Traverser.Admin<S> traverser = nextUnbulkedStart();
+        return traverser.split(this.map(traverser), this);
+    }
+
+    private Traverser.Admin<S> nextUnbulkedStart() {
+        if (null == this.bulkedStart) {
+            final Traverser.Admin<S> start = this.starts.next();
+            if (start.bulk() <= 1L) return start;
+            this.bulkedStart = start;
+            this.remainingBulk = start.bulk();
+        }
+        final Traverser.Admin<S> unit = this.bulkedStart.split();
+        unit.setBulk(1L);
+        if (--this.remainingBulk == 0L) this.bulkedStart = null;
+        return unit;
+    }
+
+    @Override
+    public void reset() {
+        super.reset();
+        this.bulkedStart = null;
+        this.remainingBulk = 0L;
     }
 
     @Override

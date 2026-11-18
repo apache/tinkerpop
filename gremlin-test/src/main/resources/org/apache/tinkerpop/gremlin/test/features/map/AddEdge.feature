@@ -553,3 +553,33 @@ Feature: Step - addE()
     Then the result should have a count of 1
     And the graph should return 1 for count of "g.E()"
     And the graph should return 1 for count of "g.V().has(\"account\",\"holder\",\"Ana Ruiz\").outE(\"payment\").has(\"amount\",P.typeOf(GType.BIGDECIMAL)).has(\"amount\",23.45m).has(\"at\",datetime(\"2024-04-02T09:15:00Z\")).inV().has(\"merchant\",\"name\",\"FreshMart\")"
+
+  Scenario: g_injectX1_1X_addEXknowsX_fromXV_hasXname_markoXX_toXV_hasXname_vadasXX
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("person").property("name", "marko").
+        addV("person").property("name", "vadas")
+      """
+    And the traversal of
+      """
+      g.inject(1, 1).addE("knows").from(__.V().has("name","marko")).to(__.V().has("name","vadas"))
+      """
+    When iterated to list
+    Then the result should have a count of 2
+    And the graph should return 2 for count of "g.E().hasLabel(\"knows\")"
+
+  Scenario: g_V_hasXname_markoX_unionXidentity_identityX_barrier_addEXknowsX_toXV_hasXname_vadasXX
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("person").property("name", "marko").
+        addV("person").property("name", "vadas")
+      """
+    And the traversal of
+      """
+      g.V().has("name","marko").union(__.identity(), __.identity()).barrier().addE("knows").to(__.V().has("name","vadas"))
+      """
+    When iterated to list
+    Then the result should have a count of 2
+    And the graph should return 2 for count of "g.V().has(\"name\",\"marko\").outE(\"knows\")"

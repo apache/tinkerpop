@@ -1202,3 +1202,54 @@ Feature: Step - mergeE()
     Then the result should have a count of 1
     And the graph should return 7 for count of "g.E()"
     And the graph should return 1 for count of "g.V().has(\"name\",\"marko\").out(\"knows\").has(\"name\",\"peter\")"
+
+  Scenario: g_injectX1_1X_mergeEXlabel_knows_out_marko_in_vadasX_optionXonMatch_matched_YX
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("person").property("name", "marko").
+        addV("person").property("name", "vadas")
+      """
+    And using the parameter xx1 defined as "m[{\"t[label]\": \"knows\", \"D[OUT]\":\"v[marko].id\", \"D[IN]\":\"v[vadas].id\"}]"
+    And using the parameter xx2 defined as "m[{\"matched\":\"Y\"}]"
+    And the traversal of
+      """
+      g.inject(1, 1).mergeE(xx1).option(Merge.onMatch, xx2)
+      """
+    When iterated to list
+    Then the result should have a count of 2
+    And the graph should return 1 for count of "g.E()"
+    And the graph should return 1 for count of "g.E().hasLabel(\"knows\").has(\"matched\",\"Y\")"
+
+  Scenario: g_injectXlabel_knows_out_marko_in_vadas_label_knows_out_marko_in_vadasX_mergeE_optionXonMatch_matched_YX
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("person").property("name", "marko").
+        addV("person").property("name", "vadas")
+      """
+    And using the parameter xx2 defined as "m[{\"matched\":\"Y\"}]"
+    And the traversal of
+      """
+      g.inject([T.label:"knows",(OUT):Merge.outV,(IN):Merge.inV], [T.label:"knows",(OUT):Merge.outV,(IN):Merge.inV]).mergeE().option(Merge.outV, __.V().has("name","marko")).option(Merge.inV, __.V().has("name","vadas")).option(Merge.onMatch, xx2)
+      """
+    When iterated to list
+    Then the result should have a count of 2
+    And the graph should return 1 for count of "g.E()"
+    And the graph should return 1 for count of "g.E().hasLabel(\"knows\").has(\"matched\",\"Y\")"
+    
+  Scenario: g_injectXlabel_knows_out_marko_in_vadas_x4X_mergeE_optionXonMatch_projectXmatchCountX_byXE_hasLabelXknowsX_coalesceXvaluesXmatchCountX_mathX_plus_1X_constantX1XXXX
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("person").property("name", "marko").
+        addV("person").property("name", "vadas")
+      """
+    And the traversal of
+      """
+      g.inject([T.label:"knows",(OUT):Merge.outV,(IN):Merge.inV], [T.label:"knows",(OUT):Merge.outV,(IN):Merge.inV], [T.label:"knows",(OUT):Merge.outV,(IN):Merge.inV], [T.label:"knows",(OUT):Merge.outV,(IN):Merge.inV]).mergeE().option(Merge.outV, __.V().has("name","marko")).option(Merge.inV, __.V().has("name","vadas")).option(Merge.onMatch, __.project("matchCount").by(__.E().hasLabel("knows").coalesce(__.values("matchCount").math("_ + 1"), __.constant(1))))
+      """
+    When iterated to list
+    Then the result should have a count of 4
+    And the graph should return 1 for count of "g.E()"
+    And the graph should return 1 for count of "g.E().hasLabel(\"knows\").has(\"matchCount\",3.0d)"
