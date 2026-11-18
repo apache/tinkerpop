@@ -46,8 +46,17 @@ type GraphBinarySerializer struct {
 // CustomTypeReader user provided function to deserialize custom types
 type CustomTypeReader func(data *[]byte, i *int) (interface{}, error)
 
-// CustomTypeWriter user provided function to serialize custom types
-type CustomTypeWriter func(value interface{}, buffer *bytes.Buffer, serializer *graphBinaryTypeSerializer) error
+// GraphBinaryWriter lets a CustomTypeWriter serialize nested values with standard GraphBinary encoding.
+type GraphBinaryWriter interface {
+	// Write serializes value in fully-qualified format: {type_code}{type_info}{value_flag}{value}.
+	Write(value interface{}, buffer *bytes.Buffer) error
+	// WriteValue serializes value without type information, preceded by a value_flag if nullable is true.
+	WriteValue(value interface{}, buffer *bytes.Buffer, nullable bool) error
+}
+
+// CustomTypeWriter user provided function to serialize custom types. The type code and type name are
+// already written when it is called, so it writes only the custom payload.
+type CustomTypeWriter func(value interface{}, buffer *bytes.Buffer, writer GraphBinaryWriter) error
 
 // CustomTypeInfo holds metadata for a registered custom type
 type CustomTypeInfo struct {
