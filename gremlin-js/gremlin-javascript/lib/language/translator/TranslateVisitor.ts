@@ -19,6 +19,7 @@
 
 import { ErrorNode, TerminalNode } from 'antlr4ng';
 import { GremlinLexer } from '../grammar/GremlinLexer.js';
+import { TranslatorException } from './TranslatorException.js';
 
 /**
  * Base visitor for translating Gremlin queries. Mirrors the Java TranslateVisitor.
@@ -275,7 +276,7 @@ export default class TranslateVisitor {
     }
 
     visitTraversalGType(ctx: any): void {
-        this.appendExplicitNaming(ctx.getText(), 'GType');
+        this.appendExplicitNaming(TranslateVisitor.extractGTypeName(ctx).toUpperCase(), 'GType');
     }
 
     /**
@@ -297,33 +298,46 @@ export default class TranslateVisitor {
 
     /**
      * Appends `Geometry.fromWkt("...")`, the form the JVM languages use since they have a WKT reader, with
-     * `Model.GEOGRAPHIC` or the SRID as a second argument where the geometry carries one. The WKT is written
-     * as the Gremlin spells it, since this translator has no WKT reader of its own to normalize it through.
-     * WKT holds no quote or backslash, so the text needs no escaping.
+     * `Model.GEOGRAPHIC` or the SRID as a second argument where the geometry carries one. The WKT is decoded
+     * from the Gremlin string literal and written back escaped for a JVM string literal, since this translator
+     * has no WKT reader of its own to normalize the text through. The whitespace the JVM WKT reader skips at
+     * either end is dropped, while the whitespace within the text is kept as written.
      */
     protected appendGeometryFromWkt(ctx: any): void {
-        this.sb.push('Geometry.fromWkt("');
-        this.sb.push(TranslateVisitor.removeFirstAndLastCharacters(ctx.stringLiteral().getText()));
-        this.sb.push('"');
+        const text = decodeStringLiteral(ctx.stringLiteral().getText()).trim();
+        // an EWKT SRID= prefix moves into the second argument, and must agree with an explicit model or SRID
+        const prefix = /^srid=\s*([+-]?\d+)\s*;/i.exec(text);
+        const ewktSrid = prefix !== null ? BigInt(prefix[1]) : null;
+        const wkt = prefix !== null ? text.slice(prefix[0].length).trim() : text;
 
+        let srid = ewktSrid ?? CARTESIAN_SRID;
         const modelCtx = ctx.traversalModel();
         if (modelCtx != null) {
             const modelName: string = modelCtx.getText().split('.').pop().toUpperCase();
-            // CARTESIAN is the default model and so goes unwritten
-            if (modelName === 'GEOGRAPHIC') {
-                this.sb.push(', Model.GEOGRAPHIC');
+            const modelSrid = modelName === 'GEOGRAPHIC' ? GEOGRAPHIC_SRID : CARTESIAN_SRID;
+            if (ewktSrid !== null && ewktSrid !== modelSrid) {
+                throw new TranslatorException(
+                    `Invalid Geometry literal: EWKT SRID ${ewktSrid} conflicts with model ${modelName}`);
             }
+            srid = modelSrid;
         } else if (ctx.integerLiteral() != null) {
-            const srid = parseSridLiteral(ctx.integerLiteral().getText());
-            // SRID 0 is CARTESIAN and SRID 4326 is GEOGRAPHIC, so those name their model instead
-            if (srid === GEOGRAPHIC_SRID) {
-                this.sb.push(', Model.GEOGRAPHIC');
-            } else if (srid !== CARTESIAN_SRID) {
-                this.sb.push(', ');
-                this.sb.push(String(srid));
+            const argumentSrid = readSridLiteral(ctx.integerLiteral().getText());
+            if (ewktSrid !== null && ewktSrid !== argumentSrid) {
+                throw new TranslatorException(
+                    `Invalid Geometry literal: EWKT SRID ${ewktSrid} conflicts with argument SRID ${argumentSrid}`);
             }
+            srid = argumentSrid;
         }
 
+        this.sb.push('Geometry.fromWkt(');
+        this.sb.push(JSON.stringify(wkt));
+        // SRID 0 is CARTESIAN, the default, and goes unwritten, while SRID 4326 is GEOGRAPHIC and names its model
+        if (srid === GEOGRAPHIC_SRID) {
+            this.sb.push(', Model.GEOGRAPHIC');
+        } else if (srid !== CARTESIAN_SRID) {
+            this.sb.push(', ');
+            this.sb.push(String(srid));
+        }
         this.sb.push(')');
     }
 
@@ -540,34 +554,78 @@ export default class TranslateVisitor {
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
 /** The SRID of the CARTESIAN model. */
-const CARTESIAN_SRID = 0;
+const CARTESIAN_SRID = 0n;
 
 /** The SRID of the GEOGRAPHIC model, which is WGS84. */
-const GEOGRAPHIC_SRID = 4326;
+const GEOGRAPHIC_SRID = 4326n;
+
+/** The range each integer type suffix holds: byte, short, int and long. */
+const SUFFIX_BOUNDS: Record<string, [bigint, bigint]> = {
+    b: [-128n, 127n],
+    s: [-32768n, 32767n],
+    i: [-2147483648n, 2147483647n],
+    l: [-9223372036854775808n, 9223372036854775807n],
+};
+
+/** Reads the SRID of a geometry literal exactly and checks it is a signed 32-bit integer, as the Java translator does. */
+function readSridLiteral(text: string): bigint {
+    let literal = text.toLowerCase().replace(/_/g, '');
+    const suffix = /[bsiln]$/.test(literal) ? literal.slice(-1) : '';
+    if (suffix !== '') literal = literal.slice(0, -1);
+    const negative = literal.startsWith('-');
+    if (/^[+-]/.test(literal)) literal = literal.slice(1);
+    if (suffix === 'n' && literal.startsWith('0x')) {
+        throw new TranslatorException(`Invalid Geometry literal: ${text} is not a decimal BigInteger`);
+    }
+    // a leading 0 marks octal, except with the n suffix, which is always decimal
+    const value = BigInt(suffix !== 'n' && /^0[0-7]+$/.test(literal) ? '0o' + literal.slice(1) : literal);
+    const srid = negative ? -value : value;
+    const bounds = SUFFIX_BOUNDS[suffix];
+    if (bounds !== undefined && (srid < bounds[0] || srid > bounds[1])) {
+        throw new TranslatorException(`Invalid Geometry literal: ${text} is out of range for its type`);
+    }
+    if (srid < SUFFIX_BOUNDS.i[0] || srid > SUFFIX_BOUNDS.i[1]) {
+        throw new TranslatorException('Invalid Geometry literal: SRID is out of range for a 32-bit integer');
+    }
+    return srid;
+}
+
+/** The characters a Gremlin string escape names, other than the octal and unicode forms. */
+const STRING_ESCAPES: Record<string, string> = {
+    b: '\b', t: '\t', n: '\n', f: '\f', r: '\r', '"': '"', "'": "'", '\\': '\\',
+};
 
 /**
- * Reads the SRID of a geometry literal, which the grammar writes in the decimal, hexadecimal or octal
- * form, with underscore separators and an optional integer type suffix.
+ * Decodes the text of a Gremlin string literal, as
+ * org.apache.tinkerpop.gremlin.language.grammar.GenericLiteralVisitor.visitStringLiteral does: the `s` suffix
+ * and the quotes are stripped and the escapes are read, including the octal and unicode forms. A backslash that
+ * names no escape is dropped, which is what the JVM unescaper does with it.
  */
-function parseSridLiteral(text: string): number {
-    let digits = text.replace(/_/g, '');
+function decodeStringLiteral(text: string): string {
+    // the 's' suffix marks a string explicitly, as in "a"s, and is not part of the value
+    const quoted = /['"]s$/.test(text) ? text.slice(0, -1) : text;
+    const inner = quoted.length > 0 ? quoted.substring(1, quoted.length - 1) : '';
 
-    let sign = 1;
-    if (digits.startsWith('-')) {
-        sign = -1;
-        digits = digits.slice(1);
-    } else if (digits.startsWith('+')) {
-        digits = digits.slice(1);
-    }
+    let decoded = '';
+    for (let i = 0; i < inner.length; i++) {
+        const c = inner.charAt(i);
+        if (c !== '\\' || i === inner.length - 1) {
+            decoded += c;
+            continue;
+        }
 
-    // a hexadecimal literal keeps a trailing b or s, which the lexer reads as a digit rather than a suffix
-    if (/^0[xX]/.test(digits)) {
-        return sign * parseInt(digits.slice(2).replace(/[ilnILN]$/, ''), 16);
+        const next = inner.charAt(++i);
+        const unicode = /^u+([0-9a-fA-F]{4})/.exec(inner.substring(i));
+        const octal = /^[0-3][0-7]{2}|^[0-7]{1,2}/.exec(inner.substring(i));
+        if (unicode !== null) {
+            decoded += String.fromCharCode(parseInt(unicode[1], 16));
+            i += unicode[0].length - 1;
+        } else if (octal !== null) {
+            decoded += String.fromCharCode(parseInt(octal[0], 8));
+            i += octal[0].length - 1;
+        } else {
+            decoded += STRING_ESCAPES[next] ?? next;
+        }
     }
-
-    digits = digits.replace(/[bsilnBSILN]$/, '');
-    if (/^0[0-7]+$/.test(digits)) {
-        return sign * parseInt(digits.slice(1), 8);
-    }
-    return sign * parseInt(digits, 10);
+    return decoded;
 }

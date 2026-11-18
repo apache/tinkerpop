@@ -117,24 +117,34 @@ public class GeoP extends P<Object> {
     }
 
     public GeoP clone() {
-        return (GeoP) super.clone();
+        final GeoP clone = (GeoP) super.clone();
+        clone.variables = new HashMap<>(variables);
+        return clone;
     }
 
     /**
      * {@inheritDoc}
      * <p>
      * A new value for one of this predicate's variables is validated as the same value given to a
-     * constructor would be.
+     * constructor would be, before it is kept.
      */
     @Override
     public void updateVariable(final String name, final Object value) {
-        super.updateVariable(name, value);
         if (!variables.containsKey(name)) return;
-        if (null != arguments) {
-            literals = Collections.singletonList((Object) resolve(arguments, variables));
-        }
+
+        final Map<String, Object> proposed = new HashMap<>(variables);
+        proposed.put(name, value);
+        final List<Object> newLiterals = null == arguments
+                ? null
+                : Collections.singletonList((Object) resolve(arguments, proposed));
+
         if (!hasTraversal()) {
-            validateConstants(biPredicate, getValue());
+            validateConstants(biPredicate, null == newLiterals ? value : newLiterals.get(0));
+        }
+
+        super.updateVariable(name, value);
+        if (null != newLiterals) {
+            literals = newLiterals;
         }
     }
 

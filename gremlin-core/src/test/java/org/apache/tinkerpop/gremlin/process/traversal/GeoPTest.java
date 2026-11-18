@@ -35,6 +35,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CyclicBarrier;
@@ -483,14 +484,20 @@ public class GeoPTest {
 
         @Test
         public void shouldCloneWithTheSameArguments() {
-            final GeoP original = GeoP.geoWithinDistance(GValue.of("zone", SQUARE_VALUE), 10);
+            final GeoP original = GeoP.geoWithinDistance(GValue.of("zone", SQUARE_VALUE),
+                    GValue.of("radius", (Number) 10));
             final GeoP clone = original.clone();
             assertEquals(original, clone);
             assertTrue(clone.test(POINT));
 
-            // giving the clone's variable a new value leaves the original reading as it was
+            // giving the clone's variable a new value leaves the original's variables as they were
             clone.updateVariable("zone", Geometry.fromWkt("POLYGON((10 10, 14 10, 14 14, 10 14, 10 10))"));
-            assertEquals(Arrays.asList(SQUARE_VALUE, 10), original.getValue());
+            assertEquals(new HashSet<>(Arrays.asList(GValue.of("zone", SQUARE_VALUE),
+                    GValue.of("radius", (Number) 10))), original.getGValues());
+
+            // so a new value for the original's other variable is composed with the geometry it was given
+            original.updateVariable("radius", 11);
+            assertEquals(Arrays.asList(SQUARE_VALUE, 11), original.getValue());
             assertTrue(original.test(POINT));
         }
     }
@@ -561,6 +568,11 @@ public class GeoPTest {
             final IllegalArgumentException iae = assertThrows(IllegalArgumentException.class,
                     () -> within.updateVariable("zone", "not a geometry"));
             assertEquals("The geometry of geoWithin must be a Geometry, but was String", iae.getMessage());
+
+            // the rejected value is not kept
+            assertEquals(SQUARE_VALUE, within.getValue());
+            assertEquals(Collections.singleton(GValue.of("zone", SQUARE_VALUE)), within.getGValues());
+            assertTrue(within.test(POINT));
         }
 
         @Test
@@ -570,6 +582,12 @@ public class GeoPTest {
             final IllegalArgumentException iae = assertThrows(IllegalArgumentException.class,
                     () -> predicate.updateVariable("radius", "1000"));
             assertEquals("The distance of geoWithinDistance must be a number, but was String", iae.getMessage());
+
+            // the rejected value is not kept
+            assertEquals(Arrays.asList(SQUARE_VALUE, 1), predicate.getValue());
+            assertEquals(new HashSet<>(Arrays.asList(GValue.of("zone", SQUARE_VALUE),
+                    GValue.of("radius", (Number) 1))), predicate.getGValues());
+            assertTrue(predicate.test(POINT));
         }
     }
 
