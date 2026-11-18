@@ -171,7 +171,7 @@ export default class PythonTranslateVisitor extends TranslateVisitor {
         throw new TranslatorException('Python does not support geometry literals');
     }
 
-    visitTraversalModel(_ctx: any): void {
+    visitGeoModel(_ctx: any): void {
         throw new TranslatorException('Python does not support geometry models');
     }
 

@@ -279,7 +279,7 @@ export default class TranslateVisitor {
         this.appendExplicitNaming(TranslateVisitor.extractGTypeName(ctx).toUpperCase(), 'GType');
     }
 
-    visitTraversalModel(ctx: any): void {
+    visitGeoModel(ctx: any): void {
         this.appendExplicitNaming(ctx.getText(), 'Model');
     }
 

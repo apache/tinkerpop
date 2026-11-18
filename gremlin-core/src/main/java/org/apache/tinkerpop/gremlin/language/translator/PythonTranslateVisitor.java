@@ -260,7 +260,7 @@ public class PythonTranslateVisitor extends AbstractTranslateVisitor {
     }
 
     @Override
-    public Void visitTraversalModel(final GremlinParser.TraversalModelContext ctx) {
+    public Void visitGeoModel(final GremlinParser.GeoModelContext ctx) {
         throw new TranslatorException("Python does not support geometry models");
     }
 

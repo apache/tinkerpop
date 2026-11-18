@@ -180,7 +180,7 @@ export default class DotNetTranslateVisitor extends TranslateVisitor {
         throw new TranslatorException('.NET does not support geometry literals');
     }
 
-    visitTraversalModel(_ctx: any): void {
+    visitGeoModel(_ctx: any): void {
         throw new TranslatorException('.NET does not support geometry models');
     }
 

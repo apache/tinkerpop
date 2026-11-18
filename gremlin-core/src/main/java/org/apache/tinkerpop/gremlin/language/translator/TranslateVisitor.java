@@ -239,7 +239,7 @@ public class TranslateVisitor extends GremlinBaseVisitor<Void> {
     }
 
     @Override
-    public Void visitTraversalModel(final GremlinParser.TraversalModelContext ctx) {
+    public Void visitGeoModel(final GremlinParser.GeoModelContext ctx) {
         appendExplicitNaming(ctx.getText(), Model.class.getSimpleName());
         return null;
     }

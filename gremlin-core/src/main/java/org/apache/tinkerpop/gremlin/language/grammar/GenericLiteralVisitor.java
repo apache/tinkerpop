@@ -738,7 +738,7 @@ public class GenericLiteralVisitor extends DefaultGremlinBaseVisitor<Object> {
      * {@inheritDoc}
      */
     @Override
-    public Object visitTraversalModel(final GremlinParser.TraversalModelContext ctx) {
+    public Object visitGeoModel(final GremlinParser.GeoModelContext ctx) {
         return TraversalEnumParser.parseTraversalEnumFromContext(Model.class, ctx);
     }
 

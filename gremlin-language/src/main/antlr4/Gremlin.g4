@@ -1114,7 +1114,7 @@ traversalDT
     ;
 
 // a Model value in value position is always written with its prefix, as the bare words name GType entries
-traversalModel
+geoModel
     : K_MODEL DOT K_CARTESIANU
     | K_MODEL DOT K_GEOGRAPHICU
     | K_MODEL DOT K_OTHERU
@@ -1746,7 +1746,7 @@ genericLiteral
     | traversalDT
     | geometryLiteral
     | traversalGType
-    | traversalModel
+    | geoModel
     | genericSetLiteral
     | genericCollectionLiteral
     | genericRangeLiteral

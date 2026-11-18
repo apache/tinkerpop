@@ -579,9 +579,9 @@ public class GeneralLiteralVisitorTest {
         public void shouldParse() {
             final GremlinLexer lexer = new GremlinLexer(CharStreams.fromString(script));
             final GremlinParser parser = new GremlinParser(new CommonTokenStream(lexer));
-            final GremlinParser.TraversalModelContext ctx = parser.traversalModel();
+            final GremlinParser.GeoModelContext ctx = parser.geoModel();
 
-            final Model model = (Model) new GenericLiteralVisitor(new GremlinAntlrToJava()).visitTraversalModel(ctx);
+            final Model model = (Model) new GenericLiteralVisitor(new GremlinAntlrToJava()).visitGeoModel(ctx);
             assertEquals(expected, model);
         }
     }

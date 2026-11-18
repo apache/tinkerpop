@@ -1504,7 +1504,7 @@ public class DotNetTranslateVisitor extends AbstractTranslateVisitor {
     }
 
     @Override
-    public Void visitTraversalModel(final GremlinParser.TraversalModelContext ctx) {
+    public Void visitGeoModel(final GremlinParser.GeoModelContext ctx) {
         throw new TranslatorException(".NET does not support geometry models");
     }
 

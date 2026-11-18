@@ -208,7 +208,7 @@ export default class GoTranslateVisitor extends TranslateVisitor {
         throw new TranslatorException('Go does not support geometry literals');
     }
 
-    visitTraversalModel(_ctx: any): void {
+    visitGeoModel(_ctx: any): void {
         throw new TranslatorException('Go does not support geometry models');
     }
 

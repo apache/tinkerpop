@@ -435,7 +435,7 @@ geometry("POINT(1 2)", 32618)
 [cartesian: 1, geographic: 2]
 [Model: 1]
 
-# traversalModel, where a Model value in value position carries its prefix
+# geoModel, where a Model value in value position carries its prefix
 Model.CARTESIAN
 Model.GEOGRAPHIC
 Model.OTHER
