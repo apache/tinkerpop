@@ -435,6 +435,14 @@ geometry("POINT(1 2)", 32618)
 [cartesian: 1, geographic: 2]
 [Model: 1]
 
+# traversalModel, where a Model value in value position carries its prefix
+Model.CARTESIAN
+Model.GEOGRAPHIC
+Model.OTHER
+[Model.OTHER]
+{Model.OTHER}
+[model:Model.OTHER]
+
 # traversalGType, where the geometry keyword in value position is the GType
 geometry
 GType.geometry

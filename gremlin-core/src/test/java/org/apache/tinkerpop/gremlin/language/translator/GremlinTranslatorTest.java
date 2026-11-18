@@ -1664,6 +1664,17 @@ public class GremlinTranslatorTest {
                             "g.inject(new PrimitivePDT(\"Uint32\", \"42\"))",
                             "g.inject(new PrimitivePDT(\"Uint32\", \"42\"))",
                             "g.inject(PrimitivePDT('Uint32', '42'))"},
+                    // a Model value is a literal in its own right, written with its prefix since the bare words name
+                    // GType entries, which the JVM languages render as the enum and the others reject
+                    {"g.inject(Model.OTHER)",
+                            null,
+                            null,
+                            ".NET does not support geometry models",
+                            "Go does not support geometry models",
+                            null,
+                            null,
+                            "Javascript does not support geometry models",
+                            "Python does not support geometry models"},
                     // a geometry literal passes through in gremlin-lang with its keyword and arguments as written and
                     // its arguments separated by ", ", while the JVM languages read the value back from its WKT and
                     // the non-JVM translators reject it

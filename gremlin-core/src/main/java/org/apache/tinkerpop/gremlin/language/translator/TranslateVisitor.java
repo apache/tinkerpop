@@ -230,6 +230,12 @@ public class TranslateVisitor extends GremlinBaseVisitor<Void> {
         return null;
     }
 
+    @Override
+    public Void visitTraversalModel(final GremlinParser.TraversalModelContext ctx) {
+        appendExplicitNaming(ctx.getText(), Model.class.getSimpleName());
+        return null;
+    }
+
     /**
      * Extracts the name of the type from a {@code GType} which may be written with or without the {@code GType}
      * prefix and in either the camel case or the upper case form, as in {@code lineString} and {@code LINESTRING}.
@@ -550,7 +556,7 @@ public class TranslateVisitor extends GremlinBaseVisitor<Void> {
         sb.append(ctx.stringLiteral().getText());
         if (ctx.COMMA() != null) {
             appendArgumentSeparator();
-            sb.append(ctx.traversalModel() != null ? ctx.traversalModel().getText() : ctx.integerLiteral().getText());
+            sb.append(ctx.geometryModel() != null ? ctx.geometryModel().getText() : ctx.integerLiteral().getText());
         }
         appendStepClose();
         return null;

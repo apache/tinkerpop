@@ -544,9 +544,9 @@ To try the predicates on realistic data, `TinkerFactory.createTheDelivery()` bui
 link:https://tinkerpop.apache.org/docs/x.y.z/data/#the-delivery[delivery graph], a toy graph of delivery hubs, zones,
 customers and a warehouse whose geometries cover cases such as polygon holes, shared borders and the antimeridian.
 
-These additions make the geometry words, such as `point`, `polygon`, `geometry`, `Model`, `GeoP` and the predicate
-names, keywords of the Gremlin grammar, so they can no longer be used as bare variable or parameter names and such a
-variable must be renamed. Quoted strings, property keys and naked map keys such as `[point:1]` are unaffected.
+These additions make the geometry words, such as `point`, `polygon`, `geometry`, `Model`, `OTHER`, `GeoP` and the
+predicate names, keywords of the Gremlin grammar, so they can no longer be used as bare variable or parameter names and
+such a variable must be renamed. Quoted strings, property keys and naked map keys such as `[point:1]` are unaffected.
 
 See: link:https://tinkerpop.apache.org/docs/x.y.z/reference/#a-note-on-predicates[A Note on Predicates],
 link:https://tinkerpop.apache.org/docs/x.y.z/dev/provider/#gremlin-semantics-geometry[Geometry Semantics]

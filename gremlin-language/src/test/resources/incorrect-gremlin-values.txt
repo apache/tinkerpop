@@ -33,3 +33,4 @@ geometry(1)
 geometry("POINT(1 2)", OTHER)
 geometry("POINT(1 2)", GType.GEOGRAPHIC)
 geometry("POINT(1 2)", "4326")
+OTHER

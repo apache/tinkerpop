@@ -62,6 +62,8 @@ const jvmGeometryTranslations = [
   ['g.inject(Geometry("SRID=32618;POINT(1 2)", 32618))', 'g.inject(Geometry.fromWkt("POINT(1 2)", 32618))'],
   // the qualified model form the feature files do not use
   ['g.inject(Geometry("POINT(1 2)", Model.GEOGRAPHIC))', 'g.inject(Geometry.fromWkt("POINT(1 2)", Model.GEOGRAPHIC))'],
+  // a Model value on its own, which always carries its prefix
+  ['g.inject(Model.OTHER)', 'g.inject(Model.OTHER)'],
   // the geo predicate forms the feature files do not use
   ['g.V().has("loc", geoWithin(x))', 'g.V().has("loc", GeoP.geoWithin(x))'],
   [
@@ -84,6 +86,7 @@ const unsupportedGeometry = [
   ['g.V().has("loc", geoWithin(x))', 'geo predicates'],
   ['g.V().has("loc", geoContains(x))', 'geo predicates'],
   ['g.inject(123).is(P.typeOf(GType.POINT))', 'geometry types'],
+  ['g.inject(Model.OTHER)', 'geometry models'],
 ];
 
 // Geometry literals the Java translator rejects.

@@ -208,6 +208,10 @@ export default class JavascriptTranslateVisitor extends TranslateVisitor {
         throw new TranslatorException('Javascript does not support geometry literals');
     }
 
+    visitTraversalModel(_ctx: any): void {
+        throw new TranslatorException('Javascript does not support geometry models');
+    }
+
     visitTraversalPredicate_geoWithin(_ctx: any): void {
         throw new TranslatorException('Javascript does not support geo predicates');
     }

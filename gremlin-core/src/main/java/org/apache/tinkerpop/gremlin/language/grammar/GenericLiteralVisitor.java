@@ -615,8 +615,8 @@ public class GenericLiteralVisitor extends DefaultGremlinBaseVisitor<Object> {
     public Object visitGeometryLiteral(final GremlinParser.GeometryLiteralContext ctx) {
         final String wkt = (String) this.visitStringLiteral(ctx.stringLiteral());
         try {
-            if (ctx.traversalModel() != null) {
-                return Geometry.fromWkt(wkt, TraversalEnumParser.parseTraversalEnumFromContext(Model.class, ctx.traversalModel()));
+            if (ctx.geometryModel() != null) {
+                return Geometry.fromWkt(wkt, TraversalEnumParser.parseTraversalEnumFromContext(Model.class, ctx.geometryModel()));
             }
             if (ctx.integerLiteral() != null) {
                 final Number srid = (Number) this.visitIntegerLiteral(ctx.integerLiteral());
@@ -746,6 +746,14 @@ public class GenericLiteralVisitor extends DefaultGremlinBaseVisitor<Object> {
     @Override
     public Object visitTraversalGType(final GremlinParser.TraversalGTypeContext ctx) {
         return TraversalEnumParser.parseTraversalGTypeFromContext(ctx);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Object visitTraversalModel(final GremlinParser.TraversalModelContext ctx) {
+        return TraversalEnumParser.parseTraversalEnumFromContext(Model.class, ctx);
     }
 
     @Override

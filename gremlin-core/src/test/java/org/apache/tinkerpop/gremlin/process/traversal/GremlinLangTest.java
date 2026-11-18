@@ -653,6 +653,15 @@ public class GremlinLangTest {
         }
 
         @Test
+        public void shouldRoundTripEveryModelValue() {
+            for (final Model model : Model.values()) {
+                final String gremlin = newG().inject(model).asAdmin().getGremlinLang().getGremlin();
+                assertEquals("g.inject(Model." + model.name() + ")", gremlin);
+                assertEquals(gremlin, model, parseInjected(gremlin));
+            }
+        }
+
+        @Test
         public void shouldRoundTripMapWithGeometryKey() {
             final Map<Object, Object> original = new LinkedHashMap<>();
             original.put(Point.of(1, 2, Model.GEOGRAPHIC), "home");

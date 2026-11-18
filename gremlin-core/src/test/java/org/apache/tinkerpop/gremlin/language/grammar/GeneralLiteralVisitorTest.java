@@ -558,6 +558,35 @@ public class GeneralLiteralVisitorTest {
     }
 
     @RunWith(Parameterized.class)
+    public static class ValidEnumModelLiteralTest {
+
+        @Parameterized.Parameter(value = 0)
+        public String script;
+
+        @Parameterized.Parameter(value = 1)
+        public Model expected;
+
+        @Parameterized.Parameters(name = "{0}")
+        public static Iterable<Object[]> generateTestParameters() {
+            return Arrays.asList(new Object[][]{
+                    {"Model.CARTESIAN", Model.CARTESIAN},
+                    {"Model.GEOGRAPHIC", Model.GEOGRAPHIC},
+                    {"Model.OTHER", Model.OTHER},
+            });
+        }
+
+        @Test
+        public void shouldParse() {
+            final GremlinLexer lexer = new GremlinLexer(CharStreams.fromString(script));
+            final GremlinParser parser = new GremlinParser(new CommonTokenStream(lexer));
+            final GremlinParser.TraversalModelContext ctx = parser.traversalModel();
+
+            final Model model = (Model) new GenericLiteralVisitor(new GremlinAntlrToJava()).visitTraversalModel(ctx);
+            assertEquals(expected, model);
+        }
+    }
+
+    @RunWith(Parameterized.class)
     public static class ValidDatetimeLiteralTest {
 
         @Parameterized.Parameter(value = 0)

@@ -274,6 +274,11 @@ public class GoTranslateVisitor extends AbstractTranslateVisitor {
     }
 
     @Override
+    public Void visitTraversalModel(final GremlinParser.TraversalModelContext ctx) {
+        throw new TranslatorException("Go does not support geometry models");
+    }
+
+    @Override
     public Void visitTraversalStrategy(final GremlinParser.TraversalStrategyContext ctx) {
         if (ctx.getChildCount() == 1)
             sb.append(GO_PACKAGE_NAME).append(ctx.getText()).append("()");

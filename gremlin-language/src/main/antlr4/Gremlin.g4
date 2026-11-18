@@ -1113,7 +1113,15 @@ traversalDT
     | K_DAY | K_DT DOT K_DAY
     ;
 
+// a Model value in value position is always written with its prefix, as the bare words name GType entries
 traversalModel
+    : K_MODEL DOT K_CARTESIANU
+    | K_MODEL DOT K_GEOGRAPHICU
+    | K_MODEL DOT K_OTHERU
+    ;
+
+// only the two models a geometry can be constructed with, for the second argument of a geometry literal
+geometryModel
     : K_CARTESIANU | K_MODEL DOT K_CARTESIANU
     | K_GEOGRAPHICU | K_MODEL DOT K_GEOGRAPHICU
     ;
@@ -1738,6 +1746,7 @@ genericLiteral
     | traversalDT
     | geometryLiteral
     | traversalGType
+    | traversalModel
     | genericSetLiteral
     | genericCollectionLiteral
     | genericRangeLiteral
@@ -1843,9 +1852,9 @@ binaryLiteral
 
 geometryLiteral
     : K_GEOMETRYC LPAREN stringLiteral RPAREN
-    | K_GEOMETRYC LPAREN stringLiteral COMMA (traversalModel | integerLiteral) RPAREN
+    | K_GEOMETRYC LPAREN stringLiteral COMMA (geometryModel | integerLiteral) RPAREN
     | K_GEOMETRY LPAREN stringLiteral RPAREN
-    | K_GEOMETRY LPAREN stringLiteral COMMA (traversalModel | integerLiteral) RPAREN
+    | K_GEOMETRY LPAREN stringLiteral COMMA (geometryModel | integerLiteral) RPAREN
     ;
 
 pdtLiteral
@@ -2089,6 +2098,7 @@ keyword
     | K_ORDER
     | K_ORDERU
     | K_OR
+    | K_OTHERU
     | K_OTHERV
     | K_OUT
     | K_OUTU
@@ -2430,6 +2440,7 @@ K_OPTIONAL: 'optional';
 K_ORDERU: 'Order';
 K_ORDER: 'order';
 K_OR: 'or';
+K_OTHERU: 'OTHER';
 K_OTHERV: 'otherV';
 K_OUTU: 'OUT';
 K_OUT: 'out';

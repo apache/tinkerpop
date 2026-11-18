@@ -279,6 +279,10 @@ export default class TranslateVisitor {
         this.appendExplicitNaming(TranslateVisitor.extractGTypeName(ctx).toUpperCase(), 'GType');
     }
 
+    visitTraversalModel(ctx: any): void {
+        this.appendExplicitNaming(ctx.getText(), 'Model');
+    }
+
     /**
      * Extracts the name of the type from a `GType` which may be written with or without the `GType`
      * prefix and in either the camel case or the upper case form, as in `lineString` and `LINESTRING`.
@@ -311,7 +315,7 @@ export default class TranslateVisitor {
         const wkt = prefix !== null ? text.slice(prefix[0].length).trim() : text;
 
         let srid = ewktSrid ?? CARTESIAN_SRID;
-        const modelCtx = ctx.traversalModel();
+        const modelCtx = ctx.geometryModel();
         if (modelCtx != null) {
             const modelName: string = modelCtx.getText().split('.').pop().toUpperCase();
             const modelSrid = modelName === 'GEOGRAPHIC' ? GEOGRAPHIC_SRID : CARTESIAN_SRID;
@@ -499,7 +503,7 @@ export default class TranslateVisitor {
         this.sb.push(ctx.stringLiteral().getText());
         if (ctx.COMMA() != null) {
             this.appendArgumentSeparator();
-            this.sb.push(ctx.traversalModel() != null ? ctx.traversalModel().getText() : ctx.integerLiteral().getText());
+            this.sb.push(ctx.geometryModel() != null ? ctx.geometryModel().getText() : ctx.integerLiteral().getText());
         }
         this.appendStepClose();
     }

@@ -201,6 +201,11 @@ public class JavascriptTranslateVisitor extends AbstractTranslateVisitor {
     }
 
     @Override
+    public Void visitTraversalModel(final GremlinParser.TraversalModelContext ctx) {
+        throw new TranslatorException("Javascript does not support geometry models");
+    }
+
+    @Override
     public Void visitTraversalPredicate_geoWithin(final GremlinParser.TraversalPredicate_geoWithinContext ctx) {
         throw new TranslatorException("Javascript does not support geo predicates");
     }

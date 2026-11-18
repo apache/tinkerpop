@@ -6738,12 +6738,11 @@ same predicate. A geometry is written with the `Geometry()` literal, which takes
 coordinate model or SRID and is described in <<canonical-gremlin-literal-types,Canonical Gremlin Literal Types>>. In
 Java the predicates are static methods of `GeoP`, and `Geometry.fromWkt()` and `Point.of()` create the same values.
 
-[source,text]
+[gremlin-groovy]
 ----
-gremlin> g = TinkerGraph.open().traversal()
-gremlin> g.addV('store').property('name','midtown').property('loc',geometry("POINT(2 2)")).addV('store').property('name','uptown').property('loc',geometry("POINT(9 9)")).iterate()
-gremlin> g.V().has('loc',geoWithin(geometry("POLYGON((0 0, 4 0, 4 4, 0 4, 0 0))"))).values('name')
-==>midtown
+g = traversal().with(TinkerGraph.open())
+g.addV('store').property('name','midtown').property('loc',geometry("POINT(2 2)")).addV('store').property('name','uptown').property('loc',geometry("POINT(9 9)")).iterate()
+g.V().has('loc',geoWithin(geometry("POLYGON((0 0, 4 0, 4 4, 0 4, 0 0))"))).values('name')
 ----
 
 NOTE: The reference implementation computes a `GEOGRAPHIC` relationship in longitude and latitude, treating an edge as
@@ -6853,8 +6852,8 @@ script requests.
 |UUID |`UUID("f47af10b-58cc-4372-a567-0f02b2f3d479")`, `UUID()` |A UUID string in the textual form written as 8-4-4-4-12 hexadecimal digit groups. `UUID()` generates a random UUID.
 |Duration |`Duration(3600,0)`, `Duration(30,0,false)` |The first argument is non-negative seconds. The second is nanoseconds from `0` to `999999999`. The optional third argument is a boolean sign flag with `false` negating the duration.
 |Binary |`Binary("AQID")` |A Base64-encoded string.
-|Geometry |`Geometry("POINT(1 2)")`, `Geometry("POINT(1 2)", GEOGRAPHIC)`, `Geometry("POINT(1 2)", 32618)` |A Well-Known Text or Extended Well-Known Text string. The optional second argument is the coordinate model `CARTESIAN` or `GEOGRAPHIC` (also written as `Model.CARTESIAN` and `Model.GEOGRAPHIC`), or an SRID as an integer. Without it the SRID is `0`, which is the `CARTESIAN` model. An `SRID=` prefix in the string that disagrees with the second argument is an error. The all-lowercase form `geometry` is also accepted (for example `geometry("POINT(1 2)", GEOGRAPHIC)`).
-|Enum |`T.id`, `Cardinality.single`, `Direction.OUT` |A Gremlin enum token from `T`, `Cardinality`, `Direction`, `Merge`, `Pick`, `DT`, or `GType`.
+|Geometry |`Geometry("POINT(1 2)")`, `Geometry("POINT(1 2)", GEOGRAPHIC)`, `Geometry("POINT(1 2)", 32618)` |A Well-Known Text or Extended Well-Known Text string. The optional second argument is the coordinate model `CARTESIAN` or `GEOGRAPHIC` (also written as `Model.CARTESIAN` and `Model.GEOGRAPHIC`), or an SRID as an integer. Without it the SRID is `0`, which is the `CARTESIAN` model. An `SRID=` prefix in the string that disagrees with the second argument is an error. The all-lowercase form `geometry` is also accepted (for example `geometry("POINT(1 2)", GEOGRAPHIC)`). `Model.CARTESIAN`, `Model.GEOGRAPHIC` and `Model.OTHER` are also values in their own right, always written with the `Model` prefix since the bare words name `GType` entries, though only `CARTESIAN` and `GEOGRAPHIC` can construct a geometry.
+|Enum |`T.id`, `Cardinality.single`, `Direction.OUT` |A Gremlin enum token from `T`, `Cardinality`, `Direction`, `Merge`, `Pick`, `DT`, `GType`, or `Model`.
 |List |`[1,"two",null]` |A comma-separated sequence of generic literals inside square brackets.
 |Set |`{1,"two"}` |A comma-separated sequence of generic literals inside braces.
 |Map |`[:]`, `["name":"marko", "age":29]` |An empty map is `[:]`. A populated map is a comma-separated sequence of `key:value` entries inside square brackets.
