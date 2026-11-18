@@ -155,8 +155,12 @@ async def async_connect(enable):
 
 
 def test_from_event_loop():
-    assert not asyncio.get_event_loop().run_until_complete(async_connect(False))
-    assert asyncio.get_event_loop().run_until_complete(async_connect(True))
+    loop = asyncio.new_event_loop()
+    try:
+        assert not loop.run_until_complete(async_connect(False))
+        assert loop.run_until_complete(async_connect(True))
+    finally:
+        loop.close()
 
 
 def test_client_gremlin(client):
@@ -463,10 +467,13 @@ async def asyncio_func():
 
 
 def test_asyncio(client):
+    loop = asyncio.new_event_loop()
     try:
-        asyncio.get_event_loop().run_until_complete(asyncio_func())
+        loop.run_until_complete(asyncio_func())
     except RuntimeError:
         assert False
+    finally:
+        loop.close()
 
 
 def test_client_custom_invalid_request_id_graphson_script(client):
