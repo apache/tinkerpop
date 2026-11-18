@@ -59,6 +59,7 @@ public class SettingsTest {
         conf.setProperty("connectionPool.sslEnabledProtocols", Arrays.asList("TLSv1.1","TLSv1.2"));
         conf.setProperty("connectionPool.sslCipherSuites", Arrays.asList("TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384", "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384"));
         conf.setProperty("connectionPool.sslSkipCertValidation", true);
+        conf.setProperty("connectionPool.sslHostnameVerification", true);
         conf.setProperty("connectionPool.minSize", 100);
         conf.setProperty("connectionPool.maxSize", 200);
         conf.setProperty("connectionPool.minSimultaneousUsagePerConnection", 300);
@@ -98,6 +99,7 @@ public class SettingsTest {
         assertEquals(Arrays.asList("TLSv1.1","TLSv1.2"), settings.connectionPool.sslEnabledProtocols);
         assertEquals(Arrays.asList("TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384", "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384"), settings.connectionPool.sslCipherSuites);
         assertThat(settings.connectionPool.sslSkipCertValidation, is(true));
+        assertThat(settings.connectionPool.sslHostnameVerification, is(true));
         assertEquals(100, settings.connectionPool.minSize);
         assertEquals(200, settings.connectionPool.maxSize);
         assertEquals(300, settings.connectionPool.minSimultaneousUsagePerConnection);
@@ -111,5 +113,11 @@ public class SettingsTest {
         assertEquals(1100, settings.connectionPool.resultIterationBatchSize);
         assertEquals("channelizer0", settings.connectionPool.channelizer);
         assertEquals("g.inject()", settings.connectionPool.validationRequest);
+    }
+
+    @Test
+    public void shouldDefaultSslHostnameVerificationToFalse() {
+        // guards the opt-in default: hostname verification must stay off unless explicitly enabled
+        assertThat(new Settings.ConnectionPoolSettings().sslHostnameVerification, is(false));
     }
 }
