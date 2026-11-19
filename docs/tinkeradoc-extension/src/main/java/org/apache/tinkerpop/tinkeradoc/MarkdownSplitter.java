@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.IdentityHashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -33,20 +34,17 @@ import java.util.regex.Pattern;
 
 /**
  * Splits a single rendered Markdown book (as produced by {@link MarkdownConverter}) into
- * agent-sized pages, each a named, heading-bounded section under the size budget, and rewrites
- * intra-document anchor links to point across pages.
+ * agent-sized pages, each a named, heading-bounded section, and rewrites intra-document anchor links
+ * to point across pages.
  * <p>
- * <b>Splitting rule (size-driven, heading-aligned).</b> Emit each page at the coarsest heading
- * level that keeps it under the byte budget; descend a level (h2 → h3 → h4) only for subtrees that
- * exceed the budget. Every page is a whole heading-bounded section, so page URLs stay semantic and
- * stable. This is one uniform rule with no per-file special cases: small books stay as whole-h2
- * pages, large books descend where needed.
+ * <b>Splitting rule.</b> A section becomes its own page if and only if it carries an
+ * {@code llms-summary}. The byte budget is only a lint; it does not drive splitting.
  * <p>
  * The splitter operates purely on the rendered Markdown text. It relies on the
  * {@code <a id="..."></a>} anchor {@link MarkdownConverter} emits immediately before each heading:
- * the anchor id becomes both the page's file name (for pages that start a file) and the link
- * fragment. Links of the form {@code [label](#anchor)} are rewritten to {@code [label](file.md#anchor)}
- * when the target anchor lives on a different page.
+ * the anchor id is the link fragment, and the page's file name is derived as described in
+ * {@link #fileNameFor}. Links of the form {@code [label](#anchor)} are rewritten to
+ * {@code [label](file.md#anchor)} when the target anchor lives on a different page.
  * <p>
  * <b>Links between books.</b> The AsciiDoc source links from one book to another with absolute site
  * URLs such as {@code https://tinkerpop.apache.org/docs/x.y.z/reference/#addedge-step}. They resolve
@@ -67,6 +65,8 @@ class MarkdownSplitter {
      * exceed it and are not marked {@code allow-oversize}.
      */
     static final int DEFAULT_BUDGET = 50_000;
+    /** Label of the link from a parent page to each child page; {@link LlmsTxtGenerator} follows it. */
+    static final String CHILD_LINK_LABEL = "Read more";
 
     private static final Pattern ANCHOR = Pattern.compile("^<a id=\"([^\"]+)\"></a>$");
     // Any anchor, including one inside a line (an inline anchor:id[] in the AsciiDoc).
@@ -289,9 +289,8 @@ class MarkdownSplitter {
 
     /**
      * Splits {@code markdown} into pages. The first page always carries the file name
-     * {@code indexFileName} (typically {@code index.md}) and holds the document preamble plus the
-     * top-level structure that fits; deeper sections that individually exceed the budget become
-     * their own pages named from their anchor id.
+     * {@code indexFileName} (typically {@code index.md}) and holds the document preamble; each
+     * summarized section becomes its own page, named as described in {@link #fileNameFor}.
      *
      * @param markdown      the full rendered Markdown book
      * @param indexFileName the file name for the landing page (e.g. {@code index.md})
@@ -344,7 +343,7 @@ class MarkdownSplitter {
         plans.add(index);
         nodeToFile.put(root, index.fileName);
         recordAnchorsUntilBreak(root, index.fileName, anchorToFile);
-        planBreaks(root, plans, anchorToFile, nodeToFile);
+        planBreaks(root, new ArrayList<>(), plans, anchorToFile, nodeToFile);
 
         final List<Page> pages = new ArrayList<>();
         for (final PagePlan plan : plans) {
@@ -377,19 +376,22 @@ class MarkdownSplitter {
     /**
      * Walks the tree creating a page for every summarized descendant of {@code node} (the node's own
      * page having already been created). Recurses through the whole tree so nested summarized
-     * sections each get a page.
+     * sections each get a page. {@code headings} is the heading path down to {@code node}.
      */
-    private void planBreaks(final Node node, final List<PagePlan> plans,
+    private void planBreaks(final Node node, final List<String> headings, final List<PagePlan> plans,
                             final Map<String, String> anchorToFile,
                             final Map<Node, String> nodeToFile) {
         for (final Node child : node.children) {
+            final List<String> childHeadings = new ArrayList<>(headings);
+            final String heading = headingText(child);
+            if (heading != null) childHeadings.add(heading);
             if (hasSummary(child)) {
-                final PagePlan page = new PagePlan(fileNameFor(child, plans), child);
+                final PagePlan page = new PagePlan(fileNameFor(child, childHeadings, plans), child);
                 plans.add(page);
                 nodeToFile.put(child, page.fileName);
                 recordAnchorsUntilBreak(child, page.fileName, anchorToFile);
             }
-            planBreaks(child, plans, anchorToFile, nodeToFile);
+            planBreaks(child, childHeadings, plans, anchorToFile, nodeToFile);
         }
     }
 
@@ -459,7 +461,7 @@ class MarkdownSplitter {
         }
         final String file = nodeToFile.get(child);
         if (file != null) {
-            sb.append("[Read more](").append(file).append(")\n\n");
+            sb.append("[").append(CHILD_LINK_LABEL).append("](").append(file).append(")\n\n");
         }
     }
 
@@ -591,9 +593,19 @@ class MarkdownSplitter {
         return false;
     }
 
-    private String fileNameFor(final Node node, final List<PagePlan> plans) {
-        final String base = node.anchor != null && !node.anchor.isEmpty()
-                ? sanitize(node.anchor) : "section";
+    /**
+     * The page's file name: the anchor if the author wrote one, otherwise a slug of the heading path.
+     * Asciidoctor's generated ids (prefixed {@code _}) number repeated headings by position, so they
+     * would change whenever an identically titled heading is added above.
+     */
+    private String fileNameFor(final Node node, final List<String> headings, final List<PagePlan> plans) {
+        final String base;
+        if (isAuthoredAnchor(node.anchor)) {
+            base = sanitize(node.anchor);
+        } else {
+            final String slug = slug(headings);
+            base = slug.isEmpty() ? "section" : slug;
+        }
         String candidate = base + ".md";
         int n = 2;
         while (fileExists(plans, candidate)) {
@@ -605,6 +617,30 @@ class MarkdownSplitter {
     private boolean fileExists(final List<PagePlan> plans, final String fileName) {
         for (final PagePlan p : plans) if (p.fileName.equals(fileName)) return true;
         return false;
+    }
+
+    /** Asciidoctor's generated ids start with its default {@code idprefix}, {@code _}. */
+    private static boolean isAuthoredAnchor(final String anchor) {
+        return anchor != null && !anchor.isEmpty() && !anchor.startsWith("_");
+    }
+
+    /**
+     * Joins the headings into a file-name-safe slug, keeping dots so versions stay readable:
+     * {@code ["TinkerPop 3.5.0", "Upgrading for Providers"]} becomes
+     * {@code tinkerpop-3.5.0-upgrading-for-providers}.
+     */
+    static String slug(final List<String> headings) {
+        final List<String> parts = new ArrayList<>();
+        for (final String heading : headings) {
+            final String part = heading
+                    .replaceAll("\\[([^\\]]*)\\]\\([^)]*\\)", "$1")   // [text](url) -> text
+                    .replaceAll("&#?[A-Za-z0-9]+;", "")               // &#8217; &amp; ...
+                    .toLowerCase(Locale.ROOT)
+                    .replaceAll("[^a-z0-9.]+", "-")
+                    .replaceAll("^[-.]+|[-.]+$", "");
+            if (!part.isEmpty()) parts.add(part);
+        }
+        return String.join("-", parts);
     }
 
     private static String sanitize(final String anchor) {
