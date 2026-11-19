@@ -36,12 +36,15 @@ import io.netty.util.ReferenceCountUtil;
 import org.apache.tinkerpop.gremlin.groovy.engine.GremlinExecutor;
 import org.apache.tinkerpop.gremlin.jsr223.GremlinScriptChecker;
 import org.apache.tinkerpop.gremlin.process.remote.traversal.DefaultRemoteTraverser;
+import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.AbstractTraverser;
 import org.apache.tinkerpop.gremlin.server.GraphManager;
 import org.apache.tinkerpop.gremlin.server.GremlinServer;
 import org.apache.tinkerpop.gremlin.server.Settings;
 import org.apache.tinkerpop.gremlin.server.auth.AuthenticatedUser;
+import org.apache.tinkerpop.gremlin.server.authz.AuthorizationException;
+import org.apache.tinkerpop.gremlin.server.authz.Authorizer;
 import org.apache.tinkerpop.gremlin.server.util.MetricManager;
 import org.apache.tinkerpop.gremlin.server.util.TextPlainMessageSerializer;
 import org.apache.tinkerpop.gremlin.structure.Element;
@@ -87,10 +90,16 @@ import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERR
 import static io.netty.handler.codec.http.HttpResponseStatus.METHOD_NOT_ALLOWED;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
+import static io.netty.handler.codec.http.HttpResponseStatus.UNAUTHORIZED;
 import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
 /**
  * Handler that processes HTTP requests to the HTTP Gremlin endpoint.
+ * <p>
+ * When an {@link Authorizer} is configured, this handler authorizes each request on the deserialized
+ * {@link RequestMessage} before it is evaluated. It uses the {@link Authorizer} that Gremlin Server creates from
+ * {@link Settings#authorization}, as returned by {@link Settings.AuthorizationSettings#getAuthorizerInstance()} when
+ * this handler is constructed.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
@@ -115,6 +124,12 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
     private final GraphManager graphManager;
     private final Settings settings;
 
+    /**
+     * The {@link Authorizer} applied to each HTTP request before it is evaluated, or {@code null} when none is
+     * configured.
+     */
+    private final Authorizer authorizer;
+
     private static final Pattern pattern = Pattern.compile("(.*);q=(.*)");
 
     public HttpGremlinEndpointHandler(final Map<String, MessageSerializer<?>> serializers,
@@ -125,6 +140,33 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
         this.gremlinExecutor = gremlinExecutor;
         this.graphManager = graphManager;
         this.settings = settings;
+        this.authorizer = null == settings || null == settings.authorization ? null :
+                settings.authorization.getAuthorizerInstance().orElse(null);
+
+        if (null == authorizer && settings != null && settings.authorization != null && settings.authorization.authorizer != null) {
+            logger.warn("An authorizer ({}) is configured but these settings hold no Authorizer instance, so this " +
+                    "HttpGremlinEndpointHandler does not authorize HTTP requests itself. Construct it with the " +
+                    "server's Settings after AbstractChannelizer.init() has run.", settings.authorization.authorizer);
+        }
+    }
+
+    /**
+     * Returns {@code true} if this handler authorizes each HTTP request itself, which is the case when it has an
+     * {@link Authorizer} and its class does not override {@link #channelRead(ChannelHandlerContext, Object)}. When an
+     * {@link Authorizer} is configured and this returns {@code false}, {@link SaslAndHttpBasicAuthenticationHandler}
+     * adds an {@link HttpBasicAuthorizationHandler} in front of this handler.
+     */
+    boolean authorizesRequests() {
+        return authorizer != null && declaresChannelRead(getClass());
+    }
+
+    private static boolean declaresChannelRead(final Class<?> handlerClass) {
+        try {
+            return handlerClass.getMethod("channelRead", ChannelHandlerContext.class, Object.class)
+                    .getDeclaringClass() == HttpGremlinEndpointHandler.class;
+        } catch (NoSuchMethodException ex) {
+            return false;
+        }
     }
 
     @Override
@@ -149,12 +191,42 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
                     return;
                 }
 
-                final RequestMessage requestMessage;
+                final RequestMessage parsedMessage;
                 try {
-                    requestMessage = HttpHandlerUtil.getRequestMessageFromHttpRequest(req, serializers);
+                    parsedMessage = HttpHandlerUtil.getRequestMessageFromHttpRequest(req, serializers);
                 } catch (IllegalArgumentException|SerializationException ex) {
                     HttpHandlerUtil.sendError(ctx, BAD_REQUEST, ex.getMessage(), keepAlive);
                     return;
+                }
+
+                final RequestMessage requestMessage;
+                if (null == authorizer) {
+                    requestMessage = parsedMessage;
+                } else {
+                    final String invalidForAuthorization = validateForAuthorization(parsedMessage);
+                    if (invalidForAuthorization != null) {
+                        HttpHandlerUtil.sendError(ctx, BAD_REQUEST, parsedMessage.getRequestId(), invalidForAuthorization, keepAlive);
+                        return;
+                    }
+
+                    // Authorize the parsed request that is evaluated below. For bytecode, the authorizer may return a
+                    // different Bytecode, which is then the one evaluated.
+                    try {
+                        requestMessage = authorize(ctx, parsedMessage);
+                    } catch (AuthorizationException ex) {  // Expected: users can alternate between allowed and disallowed requests
+                        final String script = String.valueOf(parsedMessage.getArgOrDefault(Tokens.ARGS_GREMLIN, ""));
+                        auditLogger.info("User {} with address {} attempted an unauthorized http request: {}",
+                                resolveUser(ctx).getName(), remoteAddress(ctx), script);
+                        HttpHandlerUtil.sendError(ctx, UNAUTHORIZED, parsedMessage.getRequestId(),
+                                String.format("No authorization for script [%s] - check permissions.", script), keepAlive);
+                        return;
+                    } catch (Exception ex) {
+                        logger.error("Unexpected error authorizing HTTP request with {}",
+                                authorizer.getClass().getSimpleName(), ex);
+                        HttpHandlerUtil.sendError(ctx, INTERNAL_SERVER_ERROR, parsedMessage.getRequestId(), String.format(
+                                "%s is not ready to handle requests - unknown error", authorizer.getClass().getSimpleName()), keepAlive);
+                        return;
+                    }
                 }
 
                 final UUID requestId = requestMessage.getRequestId();
@@ -178,13 +250,7 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
                         requestMessage.getArgOrDefault(Tokens.ARGS_BINDINGS, Collections.emptyMap()),
                         Thread.currentThread().getName());
                     if (settings.enableAuditLog) {
-                        AuthenticatedUser user = ctx.channel().attr(StateKey.AUTHENTICATED_USER).get();
-                        if (null == user) {    // This is expected when using the AllowAllAuthenticator
-                            user = AuthenticatedUser.ANONYMOUS_USER;
-                        }
-                        String address = ctx.channel().remoteAddress().toString();
-                        if (address.startsWith("/") && address.length() > 1) address = address.substring(1);
-                        auditLogger.info("User {} with address {} requested: {}", user.getName(), address,
+                        auditLogger.info("User {} with address {} requested: {}", resolveUser(ctx).getName(), remoteAddress(ctx),
                                 requestMessage.getArgOrDefault(Tokens.ARGS_GREMLIN, ""));
                     }
                     final ChannelPromise promise = ctx.channel().newPromise();
@@ -330,6 +396,66 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
         if (ctx.channel().isActive()) {
             HttpHandlerUtil.sendError(ctx, INTERNAL_SERVER_ERROR, cause.getMessage(), false);
         }
+    }
+
+    private static String remoteAddress(final ChannelHandlerContext ctx) {
+        final String address = ctx.channel().remoteAddress().toString();
+        return address.startsWith("/") && address.length() > 1 ? address.substring(1) : address;
+    }
+
+    private AuthenticatedUser resolveUser(final ChannelHandlerContext ctx) {
+        final AuthenticatedUser channelUser = ctx.channel().attr(StateKey.AUTHENTICATED_USER).get();
+        // channelUser is null when using the AllowAllAuthenticator
+        return null == channelUser ? AuthenticatedUser.ANONYMOUS_USER : channelUser;
+    }
+
+    /**
+     * Checks a request before it is authorized, returning an error message for a {@code 400} response or
+     * {@code null} if the request is acceptable. Authorization is routed by {@code op}, so the {@code gremlin}
+     * argument must be a {@link Bytecode} exactly when the op is {@code bytecode}. Bytecode requests must also carry
+     * exactly one alias named {@code g}, matching the validation in {@code TraversalOpProcessor} and the single alias
+     * the {@link Authorizer} contract describes. Script requests may rebind several traversal sources and are not
+     * restricted.
+     */
+    private String validateForAuthorization(final RequestMessage requestMessage) {
+        final boolean bytecodeOp = Tokens.OPS_BYTECODE.equals(requestMessage.getOp());
+        final boolean bytecodeGremlin = requestMessage.getArgs().get(Tokens.ARGS_GREMLIN) instanceof Bytecode;
+        if (bytecodeOp != bytecodeGremlin) {
+            return String.format("The [%s] argument must be bytecode if and only if the request op is [%s].",
+                    Tokens.ARGS_GREMLIN, Tokens.OPS_BYTECODE);
+        }
+
+        if (bytecodeOp) {
+            final Object aliases = requestMessage.getArgs().get(Tokens.ARGS_ALIASES);
+            if (!(aliases instanceof Map) || ((Map<?, ?>) aliases).size() != 1
+                    || !(((Map<?, ?>) aliases).get(Tokens.VAL_TRAVERSAL_SOURCE_ALIAS) instanceof String)) {
+                return String.format("A message with [%s] op code requires the [%s] argument to be a Map containing one alias assignment named '%s'.",
+                        Tokens.OPS_BYTECODE, Tokens.ARGS_ALIASES, Tokens.VAL_TRAVERSAL_SOURCE_ALIAS);
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Authorizes {@code requestMessage} against the configured {@link Authorizer}, returning the (possibly
+     * rewritten) message to evaluate. For bytecode requests the authorizer may return a different {@link Bytecode}, as
+     * with {@link WebSocketAuthorizationHandler} on the WebSocket path.
+     */
+    @SuppressWarnings("unchecked")
+    private RequestMessage authorize(final ChannelHandlerContext ctx, final RequestMessage requestMessage) throws AuthorizationException {
+        final AuthenticatedUser user = resolveUser(ctx);
+        if (Tokens.OPS_BYTECODE.equals(requestMessage.getOp())) {
+            final Bytecode bytecode = (Bytecode) requestMessage.getArgs().get(Tokens.ARGS_GREMLIN);
+            final Map<String, String> aliases = (Map<String, String>) requestMessage.getArgs().get(Tokens.ARGS_ALIASES);
+            final Bytecode restrictedBytecode = authorizer.authorize(user, bytecode, aliases);
+            return RequestMessage.from(requestMessage)
+                    .addArg(Tokens.ARGS_GREMLIN, restrictedBytecode)
+                    .addArg(Tokens.ARGS_ALIASES, aliases).create();
+        }
+
+        authorizer.authorize(user, requestMessage);
+        return requestMessage;
     }
 
     private Bindings createBindings(final Map<String, Object> bindingMap, final Map<String, String> rebindingMap) {

@@ -31,6 +31,9 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Fixed bug in `TinkerTransactionGraph` where an indexed lookup missed a vertex or edge that had been modified in the same transaction, such as by adding an edge to a vertex or changing another property.
 * Added the `connectionPool.sslHostnameVerification` setting to the Java driver, which, when enabled, fails the TLS handshake if the server certificate's hostname does not match the host being connected to.
 * Made `TextP.regex()` and `TextP.notRegex()` matching interruptible, so a long-running match stops when the configured `evaluationTimeout` is exceeded.
+* Changed Gremlin Server to apply the `Authorizer` to HTTP requests on all HTTP-capable channelizers, including bytecode requests, and to check the `op`, `gremlin` and `aliases` of HTTP requests as on WebSocket when an `Authorizer` is configured.
+* Deprecated `HttpBasicAuthorizationHandler`.
+* Fixed `WsAndHttpChannelizer` and `UnifiedChannelizer` creating and setting up a second `Authorizer` instance.
 * Fixed `TinkerTransactionGraph` rollback, which threw a `NullPointerException` when only a vertex index existed and left rolled-back entries visible to an indexed edge lookup when only an edge index existed.
 * Fixed `TinkerGraph` throwing a `NullPointerException` when an indexed property with a `null` value was changed or removed.
 * Fixed `addV()`, `addE()`, `mergeV()`, `mergeE()` and `property()` mutating the graph only once when duplicate traversers were bulked together.

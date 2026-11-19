@@ -21,7 +21,6 @@ package org.apache.tinkerpop.gremlin.server.handler;
 
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.ChannelPipeline;
 import io.netty.handler.codec.http.HttpMessage;
 import org.apache.tinkerpop.gremlin.server.auth.Authenticator;
@@ -52,6 +51,7 @@ public class SaslAndHttpBasicAuthenticationHandler extends SaslAuthenticationHan
     }
 
     @Override
+    @SuppressWarnings("deprecation")
     public void channelRead(final ChannelHandlerContext ctx, final Object obj) throws Exception {
         if (obj instanceof HttpMessage && !WebSocketHandlerUtil.isWebSocket((HttpMessage)obj)) {
             final ChannelPipeline pipeline = ctx.pipeline();
@@ -60,10 +60,15 @@ public class SaslAndHttpBasicAuthenticationHandler extends SaslAuthenticationHan
             }
             pipeline.addAfter(PIPELINE_AUTHENTICATOR, HTTP_AUTH, new HttpBasicAuthenticationHandler(authenticator, this.settings));
 
-            if (authorizer != null) {
-                final ChannelInboundHandlerAdapter authorizationHandler = new HttpBasicAuthorizationHandler(authorizer);
+            if (pipeline.get(PIPELINE_AUTHORIZER) != null) {
                 pipeline.remove(PIPELINE_AUTHORIZER);
-                pipeline.addAfter(HTTP_AUTH, PIPELINE_AUTHORIZER, authorizationHandler);
+            }
+
+            // HttpBasicAuthorizationHandler is only added when the pipeline has no HttpGremlinEndpointHandler that
+            // authorizes requests itself.
+            final HttpGremlinEndpointHandler endpoint = pipeline.get(HttpGremlinEndpointHandler.class);
+            if (authorizer != null && (null == endpoint || !endpoint.authorizesRequests())) {
+                pipeline.addAfter(HTTP_AUTH, PIPELINE_AUTHORIZER, new HttpBasicAuthorizationHandler(authorizer));
             }
 
             ctx.fireChannelRead(obj);

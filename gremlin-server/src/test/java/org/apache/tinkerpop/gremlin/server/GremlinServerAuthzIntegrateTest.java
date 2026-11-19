@@ -24,19 +24,27 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
+import org.apache.tinkerpop.gremlin.driver.Channelizer;
 import org.apache.tinkerpop.gremlin.driver.Client;
 import org.apache.tinkerpop.gremlin.driver.Cluster;
 import org.apache.tinkerpop.gremlin.driver.exception.ResponseException;
+import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.util.message.ResponseStatusCode;
 import org.apache.tinkerpop.gremlin.driver.remote.DriverRemoteConnection;
 import org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource;
+import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.server.auth.AllowAllAuthenticator;
+import org.apache.tinkerpop.gremlin.server.auth.AuthenticatedUser;
 import org.apache.tinkerpop.gremlin.server.auth.SimpleAuthenticator;
 import org.apache.tinkerpop.gremlin.server.authz.AllowListAuthorizer;
+import org.apache.tinkerpop.gremlin.server.authz.Authorizer;
 import org.apache.tinkerpop.gremlin.server.channel.HttpChannelizer;
+import org.apache.tinkerpop.gremlin.server.channel.UnifiedChannelizer;
 import org.apache.tinkerpop.gremlin.server.channel.WebSocketChannelizer;
+import org.apache.tinkerpop.gremlin.server.channel.WsAndHttpChannelizer;
 import org.apache.tinkerpop.gremlin.server.handler.SaslAndHttpBasicAuthenticationHandler;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONTokens;
 import org.apache.tinkerpop.gremlin.util.function.Lambda;
@@ -51,8 +59,10 @@ import org.junit.Test;
 import java.time.Instant;
 import java.util.Base64;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.CompletionException;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
@@ -136,6 +146,41 @@ public class GremlinServerAuthzIntegrateTest extends AbstractGremlinServerIntegr
                 authSettings.config = null;
                 final String fileHttp = Objects.requireNonNull(getClass().getClassLoader().getResource(yamlHttpName)).getFile();
                 authzSettings.config.put(AllowListAuthorizer.KEY_AUTHORIZATION_ALLOWLIST, fileHttp);
+                break;
+            case "shouldAuthorizeWithAllowAllAuthenticatorAndWsAndHttpTransport":
+                settings.channelizer = WsAndHttpChannelizer.class.getName();
+                authSettings.authenticator = AllowAllAuthenticator.class.getName();
+                authSettings.config = null;
+                final String fileWsAndHttp = Objects.requireNonNull(getClass().getClassLoader().getResource(yamlHttpName)).getFile();
+                authzSettings.config.put(AllowListAuthorizer.KEY_AUTHORIZATION_ALLOWLIST, fileWsAndHttp);
+                break;
+            case "shouldFailAuthorizeWithAllowAllAuthenticatorAndWsAndHttpTransport":
+                settings.channelizer = WsAndHttpChannelizer.class.getName();
+                authSettings.authenticator = AllowAllAuthenticator.class.getName();
+                authSettings.config = null;
+                break;
+            case "shouldFailAuthorizeWithAllowAllAuthenticatorAndUnifiedTransport":
+                settings.channelizer = UnifiedChannelizer.class.getName();
+                authSettings.authenticator = AllowAllAuthenticator.class.getName();
+                authSettings.config = null;
+                break;
+            case "shouldEvaluateBytecodeReturnedByAuthorizerWithHttpTransport":
+                settings.channelizer = HttpChannelizer.class.getName();
+                authSettings.authenticator = AllowAllAuthenticator.class.getName();
+                authSettings.config = null;
+                authzSettings.authorizer = InjectingAuthorizer.class.getName();
+                break;
+            case "shouldCreateOneAuthorizerForWsAndHttpTransport":
+                settings.channelizer = WsAndHttpChannelizer.class.getName();
+                authzSettings.authorizer = InstanceCountingAuthorizer.class.getName();
+                InstanceCountingAuthorizer.instances.set(0);
+                InstanceCountingAuthorizer.setups.set(0);
+                break;
+            case "shouldCreateOneAuthorizerForUnifiedTransport":
+                settings.channelizer = UnifiedChannelizer.class.getName();
+                authzSettings.authorizer = InstanceCountingAuthorizer.class.getName();
+                InstanceCountingAuthorizer.instances.set(0);
+                InstanceCountingAuthorizer.setups.set(0);
                 break;
         }
         return settings;
@@ -416,6 +461,98 @@ public class GremlinServerAuthzIntegrateTest extends AbstractGremlinServerIntegr
         }
     }
 
+    /**
+     * Over HTTP, the bytecode returned by {@link Authorizer#authorize(AuthenticatedUser, Bytecode, Map)} is the one
+     * that is evaluated.
+     */
+    @Test
+    public void shouldEvaluateBytecodeReturnedByAuthorizerWithHttpTransport() throws Exception {
+        final Cluster cluster = TestClientFactory.build().channelizer(Channelizer.HttpChannelizer.class).create();
+        try {
+            final GraphTraversalSource g = AnonymousTraversalSource.traversal().withRemote(
+                    DriverRemoteConnection.using(cluster, "gmodern"));
+            assertEquals(42, ((Number) g.V().count().next()).intValue());
+        } finally {
+            cluster.close();
+        }
+    }
+
+    /**
+     * A channelizer that serves both HTTP and WebSocket creates a single {@link Authorizer} and sets it up once.
+     */
+    @Test
+    public void shouldCreateOneAuthorizerForWsAndHttpTransport() {
+        assertEquals(1, InstanceCountingAuthorizer.instances.get());
+        assertEquals(1, InstanceCountingAuthorizer.setups.get());
+    }
+
+    /**
+     * A channelizer that serves both HTTP and WebSocket creates a single {@link Authorizer} and sets it up once.
+     */
+    @Test
+    public void shouldCreateOneAuthorizerForUnifiedTransport() {
+        assertEquals(1, InstanceCountingAuthorizer.instances.get());
+        assertEquals(1, InstanceCountingAuthorizer.setups.get());
+    }
+
+    /**
+     * An anonymous HTTP request on the {@link WsAndHttpChannelizer} with the {@link AllowAllAuthenticator} is
+     * authorized and evaluated when the allow-list grants the anonymous user.
+     */
+    @Test
+    public void shouldAuthorizeWithAllowAllAuthenticatorAndWsAndHttpTransport() throws Exception {
+        final CloseableHttpClient httpclient = HttpClients.createDefault();
+        final HttpGet httpget = new HttpGet(TestClientFactory.createURLString("?gremlin=7-1"));
+
+        try (final CloseableHttpResponse response = httpclient.execute(httpget)) {
+            assertEquals(200, response.getStatusLine().getStatusCode());
+            assertEquals("application/json", response.getEntity().getContentType().getValue());
+            final String json = EntityUtils.toString(response.getEntity());
+            final JsonNode node = mapper.readTree(json);
+            assertEquals(6, node.get("result").get("data").get(GraphSONTokens.VALUEPROP).get(0).get(GraphSONTokens.VALUEPROP).intValue());
+        }
+    }
+
+    /**
+     * An anonymous HTTP request on the {@link WsAndHttpChannelizer} with the {@link AllowAllAuthenticator} is
+     * answered with {@code 401} when the allow-list does not grant the anonymous user.
+     */
+    @Test
+    public void shouldFailAuthorizeWithAllowAllAuthenticatorAndWsAndHttpTransport() throws Exception {
+        final CloseableHttpClient httpclient = HttpClients.createDefault();
+        final HttpGet httpget = new HttpGet(TestClientFactory.createURLString("?gremlin=2-1"));
+
+        try (final CloseableHttpResponse response = httpclient.execute(httpget)) {
+            assertEquals(401, response.getStatusLine().getStatusCode());
+        }
+        // wait for logger to flush - (don't think there is a way to detect this)
+        stopServer();
+        Thread.sleep(1000);
+
+        assertThat(logCaptor.getLogs().stream().anyMatch(m -> m.matches(
+                "User anonymous with address .+? attempted an unauthorized http request: 2-1")), is(true));
+    }
+
+    /**
+     * An anonymous HTTP request on the {@link UnifiedChannelizer} with the {@link AllowAllAuthenticator} is
+     * answered with {@code 401} when the allow-list does not grant the anonymous user.
+     */
+    @Test
+    public void shouldFailAuthorizeWithAllowAllAuthenticatorAndUnifiedTransport() throws Exception {
+        final CloseableHttpClient httpclient = HttpClients.createDefault();
+        final HttpGet httpget = new HttpGet(TestClientFactory.createURLString("?gremlin=2-1"));
+
+        try (final CloseableHttpResponse response = httpclient.execute(httpget)) {
+            assertEquals(401, response.getStatusLine().getStatusCode());
+        }
+        // wait for logger to flush - (don't think there is a way to detect this)
+        stopServer();
+        Thread.sleep(1000);
+
+        assertThat(logCaptor.getLogs().stream().anyMatch(m -> m.matches(
+                "User anonymous with address .+? attempted an unauthorized http request: 2-1")), is(true));
+    }
+
     @Test
     public void shouldRespectTimeoutWithAuth() {
         final Cluster cluster = TestClientFactory.build().credentials("stephen", "password").create();
@@ -432,6 +569,42 @@ public class GremlinServerAuthzIntegrateTest extends AbstractGremlinServerIntegr
             Assert.assertTrue(Instant.now().toEpochMilli() - instant.toEpochMilli() < DEFAULT_EVALUATION_TIMEOUT / 2);
         } finally {
             cluster.close();
+        }
+    }
+
+    public static class InstanceCountingAuthorizer extends AllowListAuthorizer {
+        static final AtomicInteger instances = new AtomicInteger();
+        static final AtomicInteger setups = new AtomicInteger();
+
+        public InstanceCountingAuthorizer() {
+            instances.incrementAndGet();
+        }
+
+        @Override
+        public void setup(final Map<String, Object> config) {
+            setups.incrementAndGet();
+            super.setup(config);
+        }
+    }
+
+    /**
+     * Allows every request and replaces the bytecode of each bytecode request with {@code inject(42)}.
+     */
+    public static class InjectingAuthorizer implements Authorizer {
+        @Override
+        public void setup(final Map<String, Object> config) {
+        }
+
+        @Override
+        public Bytecode authorize(final AuthenticatedUser user, final Bytecode bytecode,
+                                  final Map<String, String> aliases) {
+            final Bytecode injected = new Bytecode();
+            injected.addStep(GraphTraversal.Symbols.inject, 42);
+            return injected;
+        }
+
+        @Override
+        public void authorize(final AuthenticatedUser user, final RequestMessage msg) {
         }
     }
 }
