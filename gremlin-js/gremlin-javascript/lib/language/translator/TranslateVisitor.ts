@@ -19,6 +19,7 @@
 
 import { ErrorNode, TerminalNode } from 'antlr4ng';
 import { GremlinLexer } from '../grammar/GremlinLexer.js';
+import { TranslatorException } from './TranslatorException.js';
 
 /**
  * Base visitor for translating Gremlin queries. Mirrors the Java TranslateVisitor.
@@ -29,6 +30,16 @@ import { GremlinLexer } from '../grammar/GremlinLexer.js';
  * - Makes enums explicit with their proper name
  */
 export default class TranslateVisitor {
+
+    /**
+     * The names of the `GType` entries that identify a geometry, which includes the model based
+     * `CARTESIAN` and `GEOGRAPHIC` entries. Kept in step with the geometry entries of
+     * org.apache.tinkerpop.gremlin.process.traversal.GType.
+     */
+    protected static readonly GEOMETRY_GTYPE_NAMES: ReadonlySet<string> = new Set([
+        'CARTESIAN', 'GEOGRAPHIC', 'GEOMETRY', 'GEOMETRYCOLLECTION', 'LINESTRING',
+        'MULTILINESTRING', 'MULTIPOINT', 'MULTIPOLYGON', 'POINT', 'POLYGON',
+    ]);
 
     protected readonly graphTraversalSourceName: string;
     protected readonly sb: string[] = [];
@@ -265,7 +276,81 @@ export default class TranslateVisitor {
     }
 
     visitTraversalGType(ctx: any): void {
-        this.appendExplicitNaming(ctx.getText(), 'GType');
+        this.appendExplicitNaming(TranslateVisitor.extractGTypeName(ctx).toUpperCase(), 'GType');
+    }
+
+    visitGeoModel(ctx: any): void {
+        this.appendExplicitNaming(ctx.getText(), 'Model');
+    }
+
+    /**
+     * Extracts the name of the type from a `GType` which may be written with or without the `GType`
+     * prefix and in either the camel case or the upper case form, as in `lineString` and `LINESTRING`.
+     */
+    protected static extractGTypeName(ctx: any): string {
+        const split: string[] = ctx.getText().split('.');
+        return split[split.length - 1];
+    }
+
+    /**
+     * Determines if a `GType` names a geometry type, which the translators that have no geometry support use
+     * to reject the type.
+     */
+    protected static isGeometryGType(ctx: any): boolean {
+        return TranslateVisitor.GEOMETRY_GTYPE_NAMES.has(TranslateVisitor.extractGTypeName(ctx).toUpperCase());
+    }
+
+    /**
+     * Appends `Geometry.fromWkt("...")`, the form the JVM languages use since they have a WKT reader, with
+     * `Model.GEOGRAPHIC` or the SRID as a second argument where the geometry carries one. The WKT is decoded
+     * from the Gremlin string literal and written back escaped for a JVM string literal, since this translator
+     * has no WKT reader of its own to normalize the text through. The whitespace the JVM WKT reader skips at
+     * either end is dropped, while the whitespace within the text is kept as written.
+     */
+    protected appendGeometryFromWkt(ctx: any): void {
+        const decoded = decodeStringLiteral(ctx.stringLiteral().getText());
+        const text = decoded.trim();
+        // an EWKT SRID= prefix moves into the second argument, and must agree with an explicit model or SRID
+        const prefix = /^srid=\s*([+-]?\d+)\s*;/i.exec(text);
+        const ewktSrid = prefix !== null ? readEwktSrid(prefix[1]) : null;
+        const wkt = prefix !== null ? text.slice(prefix[0].length).trim() : text;
+        // WktReader reads one prefix, so it rejects a second as an unknown geometry type at the position it starts
+        if (prefix !== null && /^srid=/i.test(wkt)) {
+            const afterPrefix = text.slice(prefix[0].length);
+            const position = decoded.length - decoded.trimStart().length + prefix[0].length +
+                afterPrefix.length - afterPrefix.trimStart().length;
+            throw new TranslatorException(`Invalid Geometry literal: Unknown geometry type at position ${position}`);
+        }
+
+        let srid = ewktSrid ?? CARTESIAN_SRID;
+        const modelCtx = ctx.geometryModel();
+        if (modelCtx != null) {
+            const modelName: string = modelCtx.getText().split('.').pop().toUpperCase();
+            const modelSrid = modelName === 'GEOGRAPHIC' ? GEOGRAPHIC_SRID : CARTESIAN_SRID;
+            if (ewktSrid !== null && ewktSrid !== modelSrid) {
+                throw new TranslatorException(
+                    `Invalid Geometry literal: EWKT SRID ${ewktSrid} conflicts with model ${modelName}`);
+            }
+            srid = modelSrid;
+        } else if (ctx.integerLiteral() != null) {
+            const argumentSrid = readSridLiteral(ctx.integerLiteral().getText());
+            if (ewktSrid !== null && ewktSrid !== argumentSrid) {
+                throw new TranslatorException(
+                    `Invalid Geometry literal: EWKT SRID ${ewktSrid} conflicts with argument SRID ${argumentSrid}`);
+            }
+            srid = argumentSrid;
+        }
+
+        this.sb.push('Geometry.fromWkt(');
+        this.sb.push(JSON.stringify(wkt));
+        // SRID 0 is CARTESIAN, the default, and goes unwritten, while SRID 4326 is GEOGRAPHIC and names its model
+        if (srid === GEOGRAPHIC_SRID) {
+            this.sb.push(', Model.GEOGRAPHIC');
+        } else if (srid !== CARTESIAN_SRID) {
+            this.sb.push(', ');
+            this.sb.push(String(srid));
+        }
+        this.sb.push(')');
     }
 
     visitTraversalPredicate(ctx: any): void {
@@ -306,6 +391,8 @@ export default class TranslateVisitor {
                 name === 'GenericArgumentVarargsContext' ||
                 name === 'StringArgumentContext' ||
                 name === 'StringLiteralContext' ||
+                name === 'GeometryArgumentContext' ||
+                name === 'NestedTraversalContext' ||
                 name === 'TraversalGTypeContext' ||
                 name === 'TraversalPredicateContext') {
                 children.push(child);
@@ -343,6 +430,8 @@ export default class TranslateVisitor {
     visitTraversalPredicate_notEndingWith(ctx: any): void { this.visitP(ctx, 'TextP', 'notEndingWith'); }
     visitTraversalPredicate_regex(ctx: any): void { this.visitP(ctx, 'TextP', 'regex'); }
     visitTraversalPredicate_notRegex(ctx: any): void { this.visitP(ctx, 'TextP', 'notRegex'); }
+    visitTraversalPredicate_geoWithin(ctx: any): void { this.visitP(ctx, 'GeoP', 'geoWithin'); }
+    visitTraversalPredicate_geoContains(ctx: any): void { this.visitP(ctx, 'GeoP', 'geoContains'); }
 
     visitBooleanArgument(ctx: any): void {
         if (ctx.booleanLiteral() != null) {
@@ -355,6 +444,14 @@ export default class TranslateVisitor {
     visitGenericArgument(ctx: any): void {
         if (ctx.genericLiteral() != null) {
             this.visitGenericLiteral(ctx.genericLiteral());
+        } else {
+            this.visitVariable(ctx.variable());
+        }
+    }
+
+    visitGeometryArgument(ctx: any): void {
+        if (ctx.geometryLiteral() != null) {
+            this.visitGeometryLiteral(ctx.geometryLiteral());
         } else {
             this.visitVariable(ctx.variable());
         }
@@ -406,6 +503,19 @@ export default class TranslateVisitor {
         this.sb.push(ctx.getText());
     }
 
+    visitGeometryLiteral(ctx: any): void {
+        // the keyword and the arguments are echoed as written, which keeps the "Geometry" and "geometry"
+        // spellings apart, while the arguments are separated the way every other argument list is
+        this.sb.push(ctx.getChild(0).getText());
+        this.appendStepOpen();
+        this.sb.push(ctx.stringLiteral().getText());
+        if (ctx.COMMA() != null) {
+            this.appendArgumentSeparator();
+            this.sb.push(ctx.geometryModel() != null ? ctx.geometryModel().getText() : ctx.integerLiteral().getText());
+        }
+        this.appendStepClose();
+    }
+
     visitStringLiteral(ctx: any): void {
         const text = TranslateVisitor.removeFirstAndLastCharacters(ctx.getText());
         this.handleStringLiteralText(text);
@@ -449,4 +559,100 @@ export default class TranslateVisitor {
     visitMapEntry(ctx: any): void {
         this.visitChildren(ctx);
     }
+}
+
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+
+/** The SRID of the CARTESIAN model. */
+const CARTESIAN_SRID = 0n;
+
+/** The SRID of the GEOGRAPHIC model, which is WGS84. */
+const GEOGRAPHIC_SRID = 4326n;
+
+/** The range each integer type suffix holds: byte, short, int and long. */
+const SUFFIX_BOUNDS: Record<string, [bigint, bigint]> = {
+    b: [-128n, 127n],
+    s: [-32768n, 32767n],
+    i: [-2147483648n, 2147483647n],
+    l: [-9223372036854775808n, 9223372036854775807n],
+};
+
+/** Reads the SRID of a geometry literal exactly and checks it is a signed 32-bit integer, as the Java translator does. */
+function readSridLiteral(text: string): bigint {
+    let literal = text.toLowerCase().replace(/_/g, '');
+    const suffix = /[bsiln]$/.test(literal) ? literal.slice(-1) : '';
+    if (suffix !== '') literal = literal.slice(0, -1);
+    const negative = literal.startsWith('-');
+    if (/^[+-]/.test(literal)) literal = literal.slice(1);
+    if (suffix === 'n' && literal.startsWith('0x')) {
+        throw new TranslatorException(`Invalid Geometry literal: ${text} is not a decimal BigInteger`);
+    }
+    // a leading 0 marks octal, except with the n suffix, which is always decimal
+    const value = BigInt(suffix !== 'n' && /^0[0-7]+$/.test(literal) ? '0o' + literal.slice(1) : literal);
+    const srid = negative ? -value : value;
+    const bounds = SUFFIX_BOUNDS[suffix];
+    if (bounds !== undefined && (srid < bounds[0] || srid > bounds[1])) {
+        throw new TranslatorException(`Invalid Geometry literal: ${text} is out of range for its type`);
+    }
+    if (srid < SUFFIX_BOUNDS.i[0] || srid > SUFFIX_BOUNDS.i[1]) {
+        throw new TranslatorException('Invalid Geometry literal: SRID is out of range for a 32-bit integer');
+    }
+    return srid;
+}
+
+/**
+ * Reads the SRID of an EWKT SRID= prefix: an optional sign and at most ten digits, holding a signed 32-bit value.
+ */
+function readEwktSrid(text: string): bigint {
+    if (text.replace(/^[+-]/, '').length > MAX_EWKT_SRID_DIGITS) {
+        throw new TranslatorException(`Invalid Geometry literal: SRID has more than ${MAX_EWKT_SRID_DIGITS} digits`);
+    }
+    const srid = BigInt(text);
+    if (srid < SUFFIX_BOUNDS.i[0] || srid > SUFFIX_BOUNDS.i[1]) {
+        throw new TranslatorException('Invalid Geometry literal: SRID is out of range for a 32-bit integer');
+    }
+    return srid;
+}
+
+/** The most digits an EWKT SRID= prefix may hold. */
+const MAX_EWKT_SRID_DIGITS = 10;
+
+/** The characters a Gremlin string escape names, other than the octal and unicode forms. */
+const STRING_ESCAPES: Record<string, string> = {
+    b: '\b', t: '\t', n: '\n', f: '\f', r: '\r', '"': '"', "'": "'", '\\': '\\',
+};
+
+/**
+ * Decodes the text of a Gremlin string literal, as
+ * org.apache.tinkerpop.gremlin.language.grammar.GenericLiteralVisitor.visitStringLiteral does: the `s` suffix
+ * and the quotes are stripped and the escapes are read, including the octal and unicode forms. A backslash that
+ * names no escape is dropped, which is what the JVM unescaper does with it.
+ */
+export function decodeStringLiteral(text: string): string {
+    // the 's' suffix marks a string explicitly, as in "a"s, and is not part of the value
+    const quoted = /['"]s$/.test(text) ? text.slice(0, -1) : text;
+    const inner = quoted.length > 0 ? quoted.substring(1, quoted.length - 1) : '';
+
+    let decoded = '';
+    for (let i = 0; i < inner.length; i++) {
+        const c = inner.charAt(i);
+        if (c !== '\\' || i === inner.length - 1) {
+            decoded += c;
+            continue;
+        }
+
+        const next = inner.charAt(++i);
+        const unicode = /^u+([0-9a-fA-F]{4})/.exec(inner.substring(i));
+        const octal = /^[0-3][0-7]{2}|^[0-7]{1,2}/.exec(inner.substring(i));
+        if (unicode !== null) {
+            decoded += String.fromCharCode(parseInt(unicode[1], 16));
+            i += unicode[0].length - 1;
+        } else if (octal !== null) {
+            decoded += String.fromCharCode(parseInt(octal[0], 8));
+            i += octal[0].length - 1;
+        } else {
+            decoded += STRING_ESCAPES[next] ?? next;
+        }
+    }
+    return decoded;
 }

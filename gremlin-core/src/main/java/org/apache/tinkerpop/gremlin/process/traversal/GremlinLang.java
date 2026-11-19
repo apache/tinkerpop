@@ -30,6 +30,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversal;
 import org.apache.tinkerpop.gremlin.structure.Column;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.geo.Geometry;
 import org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefined;
 import org.apache.tinkerpop.gremlin.structure.io.pdt.PrimitivePDTAdapter;
 import org.apache.tinkerpop.gremlin.structure.io.pdt.PrimitivePDT;
@@ -191,6 +192,13 @@ public class GremlinLang implements Cloneable, Serializable {
             return String.format("Binary(\"%s\")", Base64.getEncoder().encodeToString((byte[]) arg));
         }
 
+        if (arg instanceof Geometry) {
+            // WKT contains no quotes or backslashes, so the text needs no escaping. The SRID is
+            // always written as an int so that every model round trips, including OTHER.
+            final Geometry geometry = (Geometry) arg;
+            return "Geometry(\"" + geometry.toWKT() + "\"," + geometry.srid() + ")";
+        }
+
         if (arg instanceof PrimitivePDT) {
             final PrimitivePDT pdt = (PrimitivePDT) arg;
             return "PDT(" + argAsString(pdt.getName()) + "," + argAsString(pdt.getValue()) + ")";
@@ -328,6 +336,13 @@ public class GremlinLang implements Cloneable, Serializable {
         final StringBuilder sb = new StringBuilder();
         if (p instanceof TextP) {
             sb.append("TextP.").append(p.getPredicateName()).append("(");
+            if (p.hasTraversal()) {
+                sb.append(argAsString(p.getChildTraversals().get(0)));
+            } else {
+                sb.append(argAsString(p.getValue()));
+            }
+        } else if (p instanceof GeoP) {
+            sb.append("GeoP.").append(p.getPredicateName()).append("(");
             if (p.hasTraversal()) {
                 sb.append(argAsString(p.getChildTraversals().get(0)));
             } else {

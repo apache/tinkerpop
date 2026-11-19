@@ -22,9 +22,14 @@ import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.apache.tinkerpop.gremlin.language.antlr.GremlinLexer;
 import org.apache.tinkerpop.gremlin.language.antlr.GremlinParser;
+import org.apache.tinkerpop.gremlin.process.traversal.GeoP;
 import org.apache.tinkerpop.gremlin.process.traversal.GType;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.TextP;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
+import org.apache.tinkerpop.gremlin.structure.geo.Geometry;
+import org.apache.tinkerpop.gremlin.structure.geo.Model;
+import org.apache.tinkerpop.gremlin.structure.geo.Point;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -101,6 +106,42 @@ public class TraversalPredicateVisitorTest {
                 {"typeOf(GType.int)", P.typeOf(GType.INT)},
                 {"typeOf(int)", P.typeOf(GType.INT)},
                 {"P.typeOf(GType.string)", P.typeOf(GType.STRING)},
+                // each geometry GType is written once prefixed and once bare, and the two spellings
+                // of its token alternate between those two forms so that both are parsed
+                {"typeOf(GType.GEOMETRY)", P.typeOf(GType.GEOMETRY)},
+                {"typeOf(geometry)", P.typeOf(GType.GEOMETRY)},
+                {"typeOf(GType.point)", P.typeOf(GType.POINT)},
+                {"typeOf(POINT)", P.typeOf(GType.POINT)},
+                {"typeOf(GType.LINESTRING)", P.typeOf(GType.LINESTRING)},
+                {"typeOf(lineString)", P.typeOf(GType.LINESTRING)},
+                {"typeOf(GType.polygon)", P.typeOf(GType.POLYGON)},
+                {"typeOf(POLYGON)", P.typeOf(GType.POLYGON)},
+                {"typeOf(GType.MULTIPOINT)", P.typeOf(GType.MULTIPOINT)},
+                {"typeOf(multiPoint)", P.typeOf(GType.MULTIPOINT)},
+                {"typeOf(GType.multiLineString)", P.typeOf(GType.MULTILINESTRING)},
+                {"typeOf(MULTILINESTRING)", P.typeOf(GType.MULTILINESTRING)},
+                {"typeOf(GType.MULTIPOLYGON)", P.typeOf(GType.MULTIPOLYGON)},
+                {"typeOf(multiPolygon)", P.typeOf(GType.MULTIPOLYGON)},
+                {"typeOf(GType.geometryCollection)", P.typeOf(GType.GEOMETRYCOLLECTION)},
+                {"typeOf(GEOMETRYCOLLECTION)", P.typeOf(GType.GEOMETRYCOLLECTION)},
+                {"typeOf(GType.CARTESIAN)", P.typeOf(GType.CARTESIAN)},
+                {"typeOf(cartesian)", P.typeOf(GType.CARTESIAN)},
+                {"typeOf(GType.geographic)", P.typeOf(GType.GEOGRAPHIC)},
+                {"typeOf(GEOGRAPHIC)", P.typeOf(GType.GEOGRAPHIC)},
+                {"typeOf(GEOGRAPHIC).and(typeOf(POINT))", P.typeOf(GType.GEOGRAPHIC).and(P.typeOf(GType.POINT))},
+                {"geoWithin(Geometry(\"POINT(1 2)\"))", GeoP.geoWithin(Point.of(1, 2))},
+                {"GeoP.geoWithin(Geometry(\"POINT(1 2)\"))", GeoP.geoWithin(Point.of(1, 2))},
+                {"geoWithin(Geometry(\"POLYGON((0 0, 4 0, 4 4, 0 4, 0 0))\", GEOGRAPHIC))",
+                        GeoP.geoWithin(Geometry.fromWkt("POLYGON((0 0, 4 0, 4 4, 0 4, 0 0))", Model.GEOGRAPHIC))},
+                {"geoContains(Geometry(\"POINT(1 2)\"))", GeoP.geoContains(Point.of(1, 2))},
+                {"GeoP.geoContains(Geometry(\"POINT(1 2)\"))", GeoP.geoContains(Point.of(1, 2))},
+                {"geoWithin(__.select('zone'))", GeoP.geoWithin(__.select("zone"))},
+                {"geoContains(__.select('zone'))", GeoP.geoContains(__.select("zone"))},
+                {"geoWithin(Geometry(\"POINT(1 2)\")).negate()", GeoP.geoWithin(Point.of(1, 2)).negate()},
+                {"not(geoWithin(Geometry(\"POINT(1 2)\")))", P.not(GeoP.geoWithin(Point.of(1, 2)))},
+                {"P.not(GeoP.geoWithin(Geometry(\"POINT(1 2)\")))", P.not(GeoP.geoWithin(Point.of(1, 2)))},
+                {"geoWithin(Geometry(\"POINT(1 2)\")).and(geoContains(Geometry(\"POINT(3 4)\")))",
+                        GeoP.geoWithin(Point.of(1, 2)).and(GeoP.geoContains(Point.of(3, 4)))},
         });
     }
 

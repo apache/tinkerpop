@@ -42,6 +42,7 @@ import org.apache.tinkerpop.gremlin.structure.geo.Geometry;
 import org.apache.tinkerpop.gremlin.structure.geo.Model;
 import org.apache.tinkerpop.gremlin.structure.geo.Polygon;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
+import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.apache.tinkerpop.gremlin.util.function.Lambda;
 import org.javatuples.Pair;
 import org.junit.Test;
@@ -609,5 +610,45 @@ public class GremlinGroovyScriptEngineTest {
 
         // a bare GEOGRAPHIC names the GType
         assertEquals(GType.GEOGRAPHIC, engine.eval("GEOGRAPHIC"));
+    }
+
+    @Test
+    public void shouldNotResolveGeometryFunction() throws Exception {
+        final GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine();
+
+        // geometry(...) is a gremlin-lang literal only, so gremlin-groovy scripts use Geometry.fromWkt(...)
+        try {
+            engine.eval("geometry(\"POINT(1 2)\")");
+            fail("Should have tanked since geometry() is not a gremlin-groovy function");
+        } catch (Exception ex) {
+            final Throwable root = ExceptionUtils.getRootCause(ex);
+            assertThat(root, instanceOf(MissingMethodException.class));
+        }
+    }
+
+    @Test
+    public void shouldEvalGeoPredicatesOverTinkerGraph() throws Exception {
+        final GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine();
+        final Bindings bindings = new SimpleBindings();
+        bindings.put("g", traversal().with(TinkerGraph.open()));
+
+        // cartesian points and a polygon, as a console session would add them
+        engine.eval("g.addV(\"store\").property(\"loc\", Point.of(2, 2)).iterate()", bindings);
+        engine.eval("g.addV(\"store\").property(\"loc\", Geometry.fromWkt(\"POINT(5 5)\")).iterate()", bindings);
+        engine.eval("g.addV(\"zone\").property(\"loc\", Geometry.fromWkt(\"POLYGON((10 10, 14 10, 14 14, 10 14, 10 10))\")).iterate()", bindings);
+
+        // only the point inside the polygon is within it
+        assertEquals(1L, engine.eval(
+                "g.V().has(\"loc\", geoWithin(Geometry.fromWkt(\"POLYGON((0 0, 4 0, 4 4, 0 4, 0 0))\"))).count().next()", bindings));
+        assertEquals(Geometry.fromWkt("POINT(2 2)"), engine.eval(
+                "g.V().has(\"loc\", geoWithin(Geometry.fromWkt(\"POLYGON((0 0, 4 0, 4 4, 0 4, 0 0))\"))).values(\"loc\").next()", bindings));
+
+        // only the polygon property contains the point
+        assertEquals(1L, engine.eval(
+                "g.V().has(\"loc\", geoContains(Point.of(12, 12))).count().next()", bindings));
+        assertEquals("zone", engine.eval(
+                "g.V().has(\"loc\", geoContains(Point.of(12, 12))).label().next()", bindings));
+        assertEquals(0L, engine.eval(
+                "g.V().has(\"loc\", geoContains(Geometry.fromWkt(\"POINT(20 20)\"))).count().next()", bindings));
     }
 }

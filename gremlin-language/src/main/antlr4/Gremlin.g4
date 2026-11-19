@@ -1113,6 +1113,19 @@ traversalDT
     | K_DAY | K_DT DOT K_DAY
     ;
 
+// a Model value in value position is always written with its prefix, as the bare words name GType entries
+geoModel
+    : K_MODEL DOT K_CARTESIANU
+    | K_MODEL DOT K_GEOGRAPHICU
+    | K_MODEL DOT K_OTHERU
+    ;
+
+// only the two models a geometry can be constructed with, for the second argument of a geometry literal
+geometryModel
+    : K_CARTESIANU | K_MODEL DOT K_CARTESIANU
+    | K_GEOGRAPHICU | K_MODEL DOT K_GEOGRAPHICU
+    ;
+
 traversalGType
     : K_BIGDECIMAL | K_GTYPE DOT K_BIGDECIMAL
     | K_BIGDECIMALU | K_GTYPE DOT K_BIGDECIMALU
@@ -1124,6 +1137,8 @@ traversalGType
     | K_BOOLEANU | K_GTYPE DOT K_BOOLEANU
     | K_BYTE | K_GTYPE DOT K_BYTE
     | K_BYTEU | K_GTYPE DOT K_BYTEU
+    | K_CARTESIAN | K_GTYPE DOT K_CARTESIAN
+    | K_CARTESIANU | K_GTYPE DOT K_CARTESIANU
     | K_CHAR | K_GTYPE DOT K_CHAR
     | K_CHARU | K_GTYPE DOT K_CHARU
     | K_DATETIME | K_GTYPE DOT K_DATETIME
@@ -1136,22 +1151,40 @@ traversalGType
     | K_EDGEU | K_GTYPE DOT K_EDGEU
     | K_FLOAT | K_GTYPE DOT K_FLOAT
     | K_FLOATU | K_GTYPE DOT K_FLOATU
+    | K_GEOGRAPHIC | K_GTYPE DOT K_GEOGRAPHIC
+    | K_GEOGRAPHICU | K_GTYPE DOT K_GEOGRAPHICU
+    | K_GEOMETRY | K_GTYPE DOT K_GEOMETRY
+    | K_GEOMETRYU | K_GTYPE DOT K_GEOMETRYU
+    | K_GEOMETRYCOLLECTION | K_GTYPE DOT K_GEOMETRYCOLLECTION
+    | K_GEOMETRYCOLLECTIONU | K_GTYPE DOT K_GEOMETRYCOLLECTIONU
     | K_GRAPH | K_GTYPE DOT K_GRAPH
     | K_GRAPHU | K_GTYPE DOT K_GRAPHU
     | K_INT | K_GTYPE DOT K_INT
     | K_INTU | K_GTYPE DOT K_INTU
+    | K_LINESTRING | K_GTYPE DOT K_LINESTRING
+    | K_LINESTRINGU | K_GTYPE DOT K_LINESTRINGU
     | K_LIST | K_GTYPE DOT K_LIST
     | K_LISTU | K_GTYPE DOT K_LISTU
     | K_LONG | K_GTYPE DOT K_LONG
     | K_LONGU | K_GTYPE DOT K_LONGU
     | K_MAP | K_GTYPE DOT K_MAP
     | K_MAPU | K_GTYPE DOT K_MAPU
+    | K_MULTILINESTRING | K_GTYPE DOT K_MULTILINESTRING
+    | K_MULTILINESTRINGU | K_GTYPE DOT K_MULTILINESTRINGU
+    | K_MULTIPOINT | K_GTYPE DOT K_MULTIPOINT
+    | K_MULTIPOINTU | K_GTYPE DOT K_MULTIPOINTU
+    | K_MULTIPOLYGON | K_GTYPE DOT K_MULTIPOLYGON
+    | K_MULTIPOLYGONU | K_GTYPE DOT K_MULTIPOLYGONU
     | K_NULL | K_GTYPE DOT K_NULL
     | K_NULLU | K_GTYPE DOT K_NULLU
     | K_NUMBER | K_GTYPE DOT K_NUMBER
     | K_NUMBERU | K_GTYPE DOT K_NUMBERU
     | K_PATH | K_GTYPE DOT K_PATH
     | K_PATHU | K_GTYPE DOT K_PATHU
+    | K_POINT | K_GTYPE DOT K_POINT
+    | K_POINTU | K_GTYPE DOT K_POINTU
+    | K_POLYGON | K_GTYPE DOT K_POLYGON
+    | K_POLYGONU | K_GTYPE DOT K_POLYGONU
     | K_PROPERTY | K_GTYPE DOT K_PROPERTY
     | K_PROPERTYU | K_GTYPE DOT K_PROPERTYU
     | K_SET | K_GTYPE DOT K_SET
@@ -1192,6 +1225,8 @@ traversalPredicate
     | traversalPredicate_notContaining
     | traversalPredicate_regex
     | traversalPredicate_notRegex
+    | traversalPredicate_geoWithin
+    | traversalPredicate_geoContains
     | traversalPredicate DOT K_AND LPAREN traversalPredicate RPAREN
     | traversalPredicate DOT K_OR LPAREN traversalPredicate RPAREN
     | traversalPredicate DOT K_NEGATE LPAREN RPAREN
@@ -1330,6 +1365,16 @@ traversalPredicate_regex
 
 traversalPredicate_notRegex
     : (K_TEXTP DOT K_NOTREGEX | K_NOTREGEX) LPAREN stringArgument RPAREN
+    ;
+
+traversalPredicate_geoWithin
+    : (K_GEOP DOT K_GEOWITHIN | K_GEOWITHIN) LPAREN geometryArgument RPAREN
+    | (K_GEOP DOT K_GEOWITHIN | K_GEOWITHIN) LPAREN nestedTraversal RPAREN
+    ;
+
+traversalPredicate_geoContains
+    : (K_GEOP DOT K_GEOCONTAINS | K_GEOCONTAINS) LPAREN geometryArgument RPAREN
+    | (K_GEOP DOT K_GEOCONTAINS | K_GEOCONTAINS) LPAREN nestedTraversal RPAREN
     ;
 
 traversalTerminalMethod_explain
@@ -1576,6 +1621,11 @@ integerArgument
     | variable
     ;
 
+geometryArgument
+    : geometryLiteral
+    | variable
+    ;
+
 stringArgument
     : stringLiteral
     | variable
@@ -1694,7 +1744,9 @@ genericLiteral
     | traversalMerge
     | traversalPick
     | traversalDT
+    | geometryLiteral
     | traversalGType
+    | geoModel
     | genericSetLiteral
     | genericCollectionLiteral
     | genericRangeLiteral
@@ -1721,6 +1773,7 @@ mapKey
     | (LPAREN genericMapLiteral RPAREN | genericMapLiteral)
     | (LPAREN stringLiteral RPAREN | stringLiteral)
     | (LPAREN numericLiteral RPAREN | numericLiteral)
+    | (LPAREN geometryLiteral RPAREN | geometryLiteral)
     | (keyword | nakedKey)
     ;
 
@@ -1797,6 +1850,13 @@ binaryLiteral
     : K_BINARYC LPAREN stringLiteral RPAREN
     ;
 
+geometryLiteral
+    : K_GEOMETRYC LPAREN stringLiteral RPAREN
+    | K_GEOMETRYC LPAREN stringLiteral COMMA (geometryModel | integerLiteral) RPAREN
+    | K_GEOMETRY LPAREN stringLiteral RPAREN
+    | K_GEOMETRY LPAREN stringLiteral COMMA (geometryModel | integerLiteral) RPAREN
+    ;
+
 pdtLiteral
     : K_PDT LPAREN stringLiteral COMMA genericMapLiteral RPAREN
     | K_PDT LPAREN stringLiteral COMMA stringLiteral RPAREN
@@ -1859,6 +1919,8 @@ keyword
     | K_CALL
     | K_CAP
     | K_CARDINALITY
+    | K_CARTESIAN
+    | K_CARTESIANU
     | K_CHAR
     | K_CHARU
     | K_CHOOSE
@@ -1920,6 +1982,16 @@ keyword
     | K_FOLD
     | K_FORMAT
     | K_FROM
+    | K_GEOCONTAINS
+    | K_GEOGRAPHIC
+    | K_GEOGRAPHICU
+    | K_GEOMETRY
+    | K_GEOMETRYC
+    | K_GEOMETRYCOLLECTION
+    | K_GEOMETRYCOLLECTIONU
+    | K_GEOMETRYU
+    | K_GEOP
+    | K_GEOWITHIN
     | K_GLOBAL
     | K_GT
     | K_GTE
@@ -1967,6 +2039,8 @@ keyword
     | K_LAST
     | K_LENGTH
     | K_LIMIT
+    | K_LINESTRING
+    | K_LINESTRINGU
     | K_LIST
     | K_LISTU
     | K_LOCAL
@@ -1991,7 +2065,14 @@ keyword
     | K_MINUTE
     | K_MINUS
     | K_MIXED
+    | K_MODEL
     | K_MULT
+    | K_MULTILINESTRING
+    | K_MULTILINESTRINGU
+    | K_MULTIPOINT
+    | K_MULTIPOINTU
+    | K_MULTIPOLYGON
+    | K_MULTIPOLYGONU
     | K_N
     | K_NAN
     | K_NEGATE
@@ -2017,6 +2098,7 @@ keyword
     | K_ORDER
     | K_ORDERU
     | K_OR
+    | K_OTHERU
     | K_OTHERV
     | K_OUT
     | K_OUTU
@@ -2032,6 +2114,10 @@ keyword
     | K_PEERPRESSURE
     | K_PEERPRESSUREU
     | K_PICK
+    | K_POINT
+    | K_POINTU
+    | K_POLYGON
+    | K_POLYGONU
     | K_POP
     | K_PROFILE
     | K_PROJECT
@@ -2175,6 +2261,8 @@ K_BYTEU: 'BYTE';
 K_CALL: 'call';
 K_CAP: 'cap';
 K_CARDINALITY: 'Cardinality';
+K_CARTESIAN: 'cartesian';
+K_CARTESIANU: 'CARTESIAN';
 K_CHAR: 'char';
 K_CHARU: 'CHAR';
 K_CHOOSE: 'choose';
@@ -2236,6 +2324,16 @@ K_FLOATU: 'FLOAT';
 K_FOLD: 'fold';
 K_FORMAT: 'format';
 K_FROM: 'from';
+K_GEOCONTAINS: 'geoContains';
+K_GEOGRAPHIC: 'geographic';
+K_GEOGRAPHICU: 'GEOGRAPHIC';
+K_GEOMETRY: 'geometry';
+K_GEOMETRYC: 'Geometry';
+K_GEOMETRYU: 'GEOMETRY';
+K_GEOMETRYCOLLECTION: 'geometryCollection';
+K_GEOMETRYCOLLECTIONU: 'GEOMETRYCOLLECTION';
+K_GEOP: 'GeoP';
+K_GEOWITHIN: 'geoWithin';
 K_GLOBAL: 'global';
 K_GT: 'gt';
 K_GTE: 'gte';
@@ -2283,6 +2381,8 @@ K_LABEL: 'label';
 K_LAST: 'last';
 K_LENGTH: 'length';
 K_LIMIT: 'limit';
+K_LINESTRING: 'lineString';
+K_LINESTRINGU: 'LINESTRING';
 K_LIST: 'list';
 K_LISTU: 'LIST';
 K_LOCAL: 'local';
@@ -2307,7 +2407,14 @@ K_MIN: 'min';
 K_MINUTE: 'minute';
 K_MINUS: 'minus';
 K_MIXED: 'mixed';
+K_MODEL: 'Model';
 K_MULT: 'mult';
+K_MULTILINESTRING: 'multiLineString';
+K_MULTILINESTRINGU: 'MULTILINESTRING';
+K_MULTIPOINT: 'multiPoint';
+K_MULTIPOINTU: 'MULTIPOINT';
+K_MULTIPOLYGON: 'multiPolygon';
+K_MULTIPOLYGONU: 'MULTIPOLYGON';
 K_N: 'N';
 K_NAN: 'NaN';
 K_NEGATE: 'negate';
@@ -2333,6 +2440,7 @@ K_OPTIONAL: 'optional';
 K_ORDERU: 'Order';
 K_ORDER: 'order';
 K_OR: 'or';
+K_OTHERU: 'OTHER';
 K_OTHERV: 'otherV';
 K_OUTU: 'OUT';
 K_OUT: 'out';
@@ -2348,6 +2456,10 @@ K_PDT: 'PDT';
 K_PEERPRESSUREU: 'PeerPressure';
 K_PEERPRESSURE: 'peerPressure';
 K_PICK: 'Pick';
+K_POINT: 'point';
+K_POINTU: 'POINT';
+K_POLYGON: 'polygon';
+K_POLYGONU: 'POLYGON';
 K_POP: 'Pop';
 K_PROFILE: 'profile';
 K_PROJECT: 'project';

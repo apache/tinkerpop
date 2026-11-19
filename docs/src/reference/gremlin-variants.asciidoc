@@ -909,6 +909,21 @@ time zone offset of UTC(+00:00):
 
 The `datetime()` function returns a `java.time.OffsetDateTime`.
 
+In `gremlin-groovy` scripts, including those run in the Gremlin Console and those sent to Gremlin Server, a geometry is
+built with the Java API, either from Well-Known Text or Extended Well-Known Text with `Geometry.fromWkt()` or from
+coordinates with the factories of the geometry classes such as `Point.of()`. The coordinate model is written there as
+`Model.CARTESIAN` or `Model.GEOGRAPHIC`, since a bare `CARTESIAN` or `GEOGRAPHIC` names the `GType` entry. A geometry
+cannot yet be serialized, so a server script can use geometries within a traversal but cannot return one to a client.
+
+[source,groovy]
+----
+Geometry.fromWkt("POINT(1 2)")
+Geometry.fromWkt("POINT(-73.98 40.75)", Model.GEOGRAPHIC)
+Geometry.fromWkt("SRID=4326;POINT(-73.98 40.75)")
+Geometry.fromWkt("POINT(583960 4507523)", 32618)
+Point.of(-73.98, 40.75, Model.GEOGRAPHIC)
+----
+
 anchor:connecting-via-remotegraph[]
 anchor:connecting-via-java[]
 [[gremlin-java]]

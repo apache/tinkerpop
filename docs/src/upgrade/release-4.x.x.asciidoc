@@ -497,6 +497,44 @@ They were already unusable by ordinary applications because their signatures req
 `GraphSONModule`, `GraphSONModuleBuilder` and `Settings.ConnectionPoolSettings` are now public so that applications can
 use the public APIs that expose them.
 
+==== Geospatial Data
+
+Graphs have long held locations, but Gremlin had no native type for them, so a geometry traveled as a string or as a
+provider defined type and each graph settled on a representation of its own, which left no spatial filter portable
+between them. TinkerPop 4.0.0 adds `Geometry` as a Gremlin value type with the kinds `Point`, `LineString`, `Polygon`,
+`MultiPoint`, `MultiLineString`, `MultiPolygon` and `GeometryCollection`.
+
+The `geoWithin` and `geoContains` predicates filter geometries by their spatial relationship to another geometry. The
+following Gremlin Console session, with `g` bound to an empty TinkerGraph, finds a store whose location lies inside a
+neighborhood:
+
+[source,groovy]
+----
+gremlin> g.addV('store').property('name','Midtown').property('loc',Geometry.fromWkt("POINT(-73.98 40.75)", Model.GEOGRAPHIC)).iterate()
+gremlin> g.V().has('store','loc',geoWithin(Geometry.fromWkt("POLYGON((-74 40.7, -73.9 40.7, -73.9 40.8, -74 40.8, -74 40.7))", Model.GEOGRAPHIC))).values('name')
+==>Midtown
+----
+
+A Gremlin query string parsed by the `gremlin-lang` grammar writes a geometry as a literal such as
+`Geometry("POINT(1 2)")`. In this release geometries, that literal and the geo predicates run in embedded Java and in
+the Gremlin Console against a local graph such as TinkerGraph. GraphBinary, GraphSON and Gryo serialization, the
+language variants, and remote use through a driver or Gremlin Server are not yet supported.
+The Java and Groovy translators render geometries, while the Python, .NET, Go and JavaScript translators reject them.
+
+To try the predicates on realistic data, `TinkerFactory.createTheDelivery()` builds the
+link:https://tinkerpop.apache.org/docs/x.y.z/data/#the-delivery[delivery graph], a toy graph of delivery hubs, zones,
+customers and a warehouse whose geometries cover cases such as polygon holes, shared borders and the antimeridian.
+
+These additions make the geometry words, such as `point`, `polygon`, `geometry`, `Model`, `OTHER`, `GeoP` and the
+predicate names, keywords of the Gremlin grammar, so they can no longer be used as bare variable or parameter names and
+such a variable must be renamed. Quoted strings, property keys and naked map keys such as `[point:1]` are unaffected.
+
+See: link:https://tinkerpop.apache.org/docs/x.y.z/reference/#a-note-on-predicates[A Note on Predicates],
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#canonical-gremlin-literal-types[Canonical Gremlin Literal Types],
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#gremlin-groovy-differences[Gremlin-Groovy Differences],
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#gtype-enum[GType Enums],
+link:https://tinkerpop.apache.org/docs/x.y.z/dev/provider/#gremlin-semantics-geometry[Geometry Semantics]
+
 === Upgrading for Providers
 
 ==== Graph System Providers
@@ -581,6 +619,20 @@ And the traversal of
 ----
 
 See: link:https://tinkerpop.apache.org/docs/4.0.0-beta.4/dev/developer/#gremlin-language-test-cases[Gremlin Language Test Cases]
+
+===== Geospatial Gherkin Scenarios
+
+The Gherkin scenarios that exercise geometries carry the `@DataGeometry` tag, and those that query a geometry graph
+use the delivery graph. A scenario that stores a geometry also carries `@AllowGeometryPropertyValues`, and one that
+holds `CARTESIAN` and `GEOGRAPHIC` values in the same graph carries `@AllowMixedGeometryModels`. A provider whose
+graph cannot hold geometry values should add `and not @DataGeometry` to its `@CucumberOptions` tag filter. In this
+release the scenarios are run by the embedded Java runners, while the remote, Hadoop and Spark runners exclude them.
+The language variant translators reject geometry literals, the geo predicates and the geometry `GType` tokens, so the
+generated test files for Python, .NET, Go and JavaScript hold a placeholder for each of these scenarios and the
+language variant runners skip `@DataGeometry`.
+
+See: link:https://tinkerpop.apache.org/docs/x.y.z/dev/developer/#gherkin-tags[Gherkin Tags],
+link:https://tinkerpop.apache.org/docs/x.y.z/data/#the-delivery[The Delivery]
 
 ===== Gremlin Console Extensions
 

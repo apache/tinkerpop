@@ -247,6 +247,34 @@ public class PythonTranslateVisitor extends AbstractTranslateVisitor {
     }
 
     @Override
+    public Void visitTraversalGType(final GremlinParser.TraversalGTypeContext ctx) {
+        if (isGeometryGType(ctx))
+            throw new TranslatorException("Python does not support geometry types");
+
+        return super.visitTraversalGType(ctx);
+    }
+
+    @Override
+    public Void visitGeometryLiteral(final GremlinParser.GeometryLiteralContext ctx) {
+        throw new TranslatorException("Python does not support geometry literals");
+    }
+
+    @Override
+    public Void visitGeoModel(final GremlinParser.GeoModelContext ctx) {
+        throw new TranslatorException("Python does not support geometry models");
+    }
+
+    @Override
+    public Void visitTraversalPredicate_geoWithin(final GremlinParser.TraversalPredicate_geoWithinContext ctx) {
+        throw new TranslatorException("Python does not support geo predicates");
+    }
+
+    @Override
+    public Void visitTraversalPredicate_geoContains(final GremlinParser.TraversalPredicate_geoContainsContext ctx) {
+        throw new TranslatorException("Python does not support geo predicates");
+    }
+
+    @Override
     public Void visitGenericSetLiteral(final GremlinParser.GenericSetLiteralContext ctx) {
         if (ctx.genericLiteral().isEmpty()) {
             // handle the empty set case separately as `{}` in python is an empty dict, not a set

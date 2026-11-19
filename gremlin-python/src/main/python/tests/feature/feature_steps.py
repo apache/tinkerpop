@@ -91,6 +91,10 @@ def choose_graph(step, graph_name):
     if not step.context.ignore:
         step.context.ignore = "MultiLabelDefault" in tagset
 
+    # geometry values cannot be serialized
+    if not step.context.ignore:
+        step.context.ignore = "DataGeometry" in tagset
+
     if (step.context.ignore):
         return
 

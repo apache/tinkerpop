@@ -70,6 +70,10 @@ export default class GoTranslateVisitor extends TranslateVisitor {
     }
 
     visitTraversalGType(ctx: any): void {
+        if (TranslateVisitor.isGeometryGType(ctx)) {
+            throw new TranslatorException('Go does not support geometry types');
+        }
+
         const parts: string[] = ctx.getText().split('.');
         this.sb.push(GO_PACKAGE_NAME);
         this.sb.push(this.processGremlinSymbol(parts[0]));
@@ -198,6 +202,22 @@ export default class GoTranslateVisitor extends TranslateVisitor {
 
     visitGenericRangeLiteral(_ctx: any): void {
         throw new TranslatorException('Go does not support range literals');
+    }
+
+    visitGeometryLiteral(_ctx: any): void {
+        throw new TranslatorException('Go does not support geometry literals');
+    }
+
+    visitGeoModel(_ctx: any): void {
+        throw new TranslatorException('Go does not support geometry models');
+    }
+
+    visitTraversalPredicate_geoWithin(_ctx: any): void {
+        throw new TranslatorException('Go does not support geo predicates');
+    }
+
+    visitTraversalPredicate_geoContains(_ctx: any): void {
+        throw new TranslatorException('Go does not support geo predicates');
     }
 
     visitGenericSetLiteral(ctx: any): void {

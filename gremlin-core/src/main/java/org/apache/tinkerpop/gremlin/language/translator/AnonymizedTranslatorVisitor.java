@@ -20,6 +20,14 @@ package org.apache.tinkerpop.gremlin.language.translator;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.apache.tinkerpop.gremlin.language.antlr.GremlinParser;
+import org.apache.tinkerpop.gremlin.structure.geo.Geometry;
+import org.apache.tinkerpop.gremlin.structure.geo.GeometryCollection;
+import org.apache.tinkerpop.gremlin.structure.geo.LineString;
+import org.apache.tinkerpop.gremlin.structure.geo.MultiLineString;
+import org.apache.tinkerpop.gremlin.structure.geo.MultiPoint;
+import org.apache.tinkerpop.gremlin.structure.geo.MultiPolygon;
+import org.apache.tinkerpop.gremlin.structure.geo.Point;
+import org.apache.tinkerpop.gremlin.structure.geo.Polygon;
 import org.apache.tinkerpop.gremlin.structure.io.pdt.PrimitivePDT;
 import org.apache.tinkerpop.gremlin.structure.io.pdt.CompositePDT;
 
@@ -30,13 +38,32 @@ import java.time.Duration;
 import java.time.OffsetDateTime;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * A translator that anonymizes Gremlin so that arguments that might contain sensitive information are removed.
  */
 public class AnonymizedTranslatorVisitor extends TranslateVisitor {
+
+    /**
+     * The geometry classes named by the WKT type keywords.
+     */
+    private static final Map<String, Class<? extends Geometry>> GEOMETRY_KINDS = Map.of(
+            "POINT", Point.class,
+            "LINESTRING", LineString.class,
+            "POLYGON", Polygon.class,
+            "MULTIPOINT", MultiPoint.class,
+            "MULTILINESTRING", MultiLineString.class,
+            "MULTIPOLYGON", MultiPolygon.class,
+            "GEOMETRYCOLLECTION", GeometryCollection.class);
+
+    private static final Pattern EWKT_PREFIX = Pattern.compile("^srid=[^;]*;", Pattern.CASE_INSENSITIVE);
+
+    private static final Pattern GEOMETRY_KEYWORD = Pattern.compile("[a-z]+", Pattern.CASE_INSENSITIVE);
 
     private final Map<String, Map<Object, String>> simpleNameToObjectCache = new HashMap<>();
 
@@ -205,6 +232,22 @@ public class AnonymizedTranslatorVisitor extends TranslateVisitor {
     @Override
     public Void visitBinaryLiteral(final GremlinParser.BinaryLiteralContext ctx) {
         return anonymize(ctx, ByteBuffer.class);
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * The type keyword that leads the WKT, after an optional {@code SRID=} prefix, names the value, so a literal
+     * anonymizes by its kind (for example {@code point0}) whether or not the rest of it is valid. A keyword that
+     * names none of the kinds falls back to the general geometry name.
+     */
+    @Override
+    public Void visitGeometryLiteral(final GremlinParser.GeometryLiteralContext ctx) {
+        final String text = (String) literalVisitor.visitStringLiteral(ctx.stringLiteral());
+        final Matcher keyword = GEOMETRY_KEYWORD.matcher(EWKT_PREFIX.matcher(text.trim()).replaceFirst("").trim());
+        return anonymize(ctx, keyword.lookingAt()
+                ? GEOMETRY_KINDS.getOrDefault(keyword.group().toUpperCase(Locale.ROOT), Geometry.class)
+                : Geometry.class);
     }
 
     @Override

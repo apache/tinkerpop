@@ -35,6 +35,7 @@ import static org.apache.tinkerpop.gremlin.structure.Graph.Features.DataTypeFeat
 import static org.apache.tinkerpop.gremlin.structure.Graph.Features.DataTypeFeatures.FEATURE_DOUBLE_VALUES;
 import static org.apache.tinkerpop.gremlin.structure.Graph.Features.DataTypeFeatures.FEATURE_FLOAT_VALUES;
 import static org.apache.tinkerpop.gremlin.structure.Graph.Features.DataTypeFeatures.FEATURE_INTEGER_VALUES;
+import static org.apache.tinkerpop.gremlin.structure.Graph.Features.DataTypeFeatures.FEATURE_MAP_VALUES;
 import static org.apache.tinkerpop.gremlin.structure.Graph.Features.DataTypeFeatures.FEATURE_STRING_VALUES;
 import static org.apache.tinkerpop.gremlin.structure.Graph.Features.VertexFeatures.FEATURE_META_PROPERTIES;
 import static org.apache.tinkerpop.gremlin.structure.Graph.Features.VertexFeatures.FEATURE_MULTI_PROPERTIES;
@@ -105,7 +106,22 @@ public @interface LoadGraphWith {
          * (Gryo, GraphSON) correctly round-trip multi-label vertices yet. It is only usable via a
          * {@link GraphProvider} that builds the graph directly, e.g. with {@code TinkerFactory.createTheZoo()}.
          */
-        ZOO;
+        ZOO,
+
+        /**
+         * Loads "The Delivery" TinkerPop4 toy graph which showcases geometry property values and the geospatial
+         * predicates. It models a delivery network of hubs, zones, customers, places and a warehouse.
+         * <p/>
+         * Note that this {@code GraphData} does not currently support {@link #location()}, which throws an
+         * {@code UnsupportedOperationException}, since none of the serialization formats used to produce a data
+         * file for it (Gryo, GraphSON) can write geometry values. It is only usable via a {@link GraphProvider}
+         * that builds the graph directly, e.g. with {@code TinkerFactory.createTheDelivery()}. The
+         * {@link #featuresRequired()} cover the string, map and double values in the graph. No feature flag exists
+         * for geometry values, so a provider must also be able to store {@code Geometry} property values on vertices
+         * and edges. Only {@code @DataGeometry} scenarios use this graph, so a provider that cannot build it or
+         * cannot store geometry values can leave those scenarios out with the tag filter {@code not @DataGeometry}.
+         */
+        DELIVERY;
 
         private static final List<FeatureRequirement> featuresRequiredByClassic = new ArrayList<FeatureRequirement>() {{
             add(FeatureRequirement.Factory.create(FEATURE_STRING_VALUES, VertexPropertyFeatures.class));
@@ -143,6 +159,12 @@ public @interface LoadGraphWith {
             add(FeatureRequirement.Factory.create(FEATURE_INTEGER_VALUES, EdgePropertyFeatures.class));
         }};
 
+        private static final List<FeatureRequirement> featuresRequiredByDelivery = new ArrayList<FeatureRequirement>() {{
+            add(FeatureRequirement.Factory.create(FEATURE_STRING_VALUES, VertexPropertyFeatures.class));
+            add(FeatureRequirement.Factory.create(FEATURE_MAP_VALUES, VertexPropertyFeatures.class));
+            add(FeatureRequirement.Factory.create(FEATURE_DOUBLE_VALUES, EdgePropertyFeatures.class));
+        }};
+
         public String location() {
             switch (this) {
                 case CLASSIC:
@@ -157,6 +179,9 @@ public @interface LoadGraphWith {
                     return RESOURCE_PATH_PREFIX + "tinkerpop-sink-v3.kryo";
                 case AIR_ROUTES:
                     return RESOURCE_PATH_PREFIX + "air-routes-v3.kryo";
+                case DELIVERY:
+                    throw new UnsupportedOperationException(
+                            "There is no data file for the delivery graph since its geometry values cannot be serialized");
             }
 
             throw new RuntimeException("No file for this GraphData type");
@@ -176,6 +201,8 @@ public @interface LoadGraphWith {
                     return featuresRequiredBySink;
                 case AIR_ROUTES:
                     return featuresRequiredByAirRoutes;
+                case DELIVERY:
+                    return featuresRequiredByDelivery;
             }
 
             throw new RuntimeException("No features for this GraphData type");

@@ -147,6 +147,7 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
     }
 
     public void setValue(final V value) {
+        validateValue(value);
         // Full reset — completely replace the predicate's value state.
         this.childTraversals = null;
         this.variables.clear();
@@ -154,6 +155,16 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
         this.isCollection = false;
         this.resolvedEmpty = false;
         applyValue(value);
+    }
+
+    /**
+     * Checks a value before {@link #setValue(Object)} replaces the predicate's value state with it, so that a
+     * subclass can reject a value it cannot hold. It accepts every value by default. The value is typed as an
+     * {@code Object} because {@code setValue} is also given child traversals, including by the constructors.
+     *
+     * @since 4.0.0
+     */
+    protected void validateValue(final Object value) {
     }
 
     /**

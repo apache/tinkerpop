@@ -20,7 +20,7 @@
 // Context parameters are typed as `any` because the generated grammar files
 // require accepting arbitrary context types at runtime.
 
-import TranslateVisitor from './TranslateVisitor.js';
+import TranslateVisitor, { decodeStringLiteral } from './TranslateVisitor.js';
 
 /**
  * Anonymizes a Gremlin traversal by replacing literal values with type-based
@@ -153,6 +153,10 @@ export default class AnonymizedTranslateVisitor extends TranslateVisitor {
         this.anonymize(ctx, 'ByteBuffer');
     }
 
+    visitGeometryLiteral(ctx: any): void {
+        this.anonymize(ctx, geometryKind(ctx));
+    }
+
     // ─── Keys — output unquoted (only values are anonymized) ─────────────────
 
     visitNakedKey(ctx: any): void {
@@ -169,4 +173,26 @@ export default class AnonymizedTranslateVisitor extends TranslateVisitor {
             this.sb.push(' ');
         }
     }
+}
+
+/** The Java simple class name of each geometry kind, keyed by its WKT type keyword in upper case. */
+const GEOMETRY_KINDS: Record<string, string> = {
+    POINT: 'Point',
+    LINESTRING: 'LineString',
+    POLYGON: 'Polygon',
+    MULTIPOINT: 'MultiPoint',
+    MULTILINESTRING: 'MultiLineString',
+    MULTIPOLYGON: 'MultiPolygon',
+    GEOMETRYCOLLECTION: 'GeometryCollection',
+};
+
+/**
+ * Names the kind of a geometry literal from the type keyword that leads its WKT, after an optional EWKT
+ * `SRID=n;` prefix, so that a point anonymizes as `point0` whether or not the rest of the literal is valid, as
+ * the Java translator does. A keyword that names none of the kinds falls back to `Geometry`.
+ */
+function geometryKind(ctx: any): string {
+    const text = decodeStringLiteral(ctx.stringLiteral().getText()).trim().replace(/^srid=[^;]*;/i, '').trim();
+    const keyword = /^[a-z]+/i.exec(text);
+    return (keyword !== null ? GEOMETRY_KINDS[keyword[0].toUpperCase()] : undefined) ?? 'Geometry';
 }

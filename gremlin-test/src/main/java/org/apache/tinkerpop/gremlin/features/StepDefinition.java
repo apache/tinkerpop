@@ -51,6 +51,7 @@ import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
+import org.apache.tinkerpop.gremlin.structure.geo.Geometry;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedEdge;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertexProperty;
@@ -178,6 +179,7 @@ public final class StepDefinition {
                 return String.format("Duration(%s, %s, %s)", parts[0].trim(), parts[1].trim(), parts[2].trim());
         }));
         add(Pair.with(Pattern.compile("bin\\[(.*)\\]"), s -> String.format("Binary(\"%s\")", s)));
+        add(Pair.with(Pattern.compile("geo\\[(.*)\\]"), s -> String.format("Geometry(\"%s\")", s)));
 
         add(Pair.with(Pattern.compile("v\\[(.+)\\]\\.id"), s -> world.convertIdToScript(g.V().has("name", s).id().next(), Vertex.class)));
         add(Pair.with(Pattern.compile("v\\[(.+)\\]\\.sid"), s -> world.convertIdToScript(g.V().has("name", s).id().next(), Vertex.class)));
@@ -250,6 +252,7 @@ public final class StepDefinition {
 
         add(Pair.with(Pattern.compile("dt\\[(.*)\\]"), DatetimeHelper::parse));
         add(Pair.with(Pattern.compile("uuid\\[(.*)\\]"), UUID::fromString));
+        add(Pair.with(Pattern.compile("geo\\[(.*)\\]"), Geometry::fromWkt));
 
         add(Pair.with(Pattern.compile("char\\[(.)\\]"), s -> s.charAt(0)));
         add(Pair.with(Pattern.compile("dur\\[(.*)\\]"), s -> {

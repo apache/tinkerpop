@@ -441,3 +441,53 @@ Feature: Orderability
       | java |
       | lop |
       | java |
+
+  @GraphComputerVerificationInjectionNotSupported @DataGeometry
+  Scenario: g_injectXgeometriesX_order
+    Given the empty graph
+    And the traversal of
+      """
+      g.inject(Geometry("POINT(1 2)", GEOGRAPHIC),"foo",Geometry("POINT EMPTY"),1,Geometry("POINT(1 2)"),null).order()
+      """
+    When iterated to list
+    Then the result should be ordered
+      | result |
+      | null |
+      | d[1].i |
+      | foo |
+      | geo[POINT EMPTY] |
+      | geo[POINT(1 2)] |
+      | geo[SRID=4326;POINT(1 2)] |
+
+  @GraphComputerVerificationInjectionNotSupported @DataGeometry
+  Scenario: g_injectXgeometriesX_order_byXdescX
+    Given the empty graph
+    And the traversal of
+      """
+      g.inject(Geometry("POINT(1 2)", GEOGRAPHIC),"foo",Geometry("POINT EMPTY"),1,Geometry("POINT(1 2)"),null).order().by(desc)
+      """
+    When iterated to list
+    Then the result should be ordered
+      | result |
+      | geo[SRID=4326;POINT(1 2)] |
+      | geo[POINT(1 2)] |
+      | geo[POINT EMPTY] |
+      | foo |
+      | d[1].i |
+      | null |
+
+  @AllowGeometryPropertyValues @DataGeometry
+  Scenario: g_V_hasLabelXcustomerX_valuesXlocX_order
+    Given the delivery graph
+    And the traversal of
+      """
+      g.V().hasLabel("customer").values("loc").order()
+      """
+    When iterated to list
+    Then the result should be ordered
+      | result |
+      | geo[SRID=4326;POINT(-73.9654 40.7829)] |
+      | geo[SRID=4326;POINT(-73.93 40.77)] |
+      | geo[SRID=4326;POINT Z (-73.9857 40.7484 86)] |
+      | geo[SRID=4326;POINT Z (-74.05 40.72 12)] |
+      | geo[SRID=4326;POINT Z (0.012 51.481 0)] |

@@ -177,3 +177,42 @@ Feature: Equality
       | d[1].n |
       | d[1].m |
       | d[1].b |
+
+  @AllowGeometryPropertyValues @DataGeometry
+  Scenario: Geometry_eqXstoredPointX
+    Given the delivery graph
+    And using the parameter xx1 defined as "geo[SRID=4326;POINT(0 51.48)]"
+    And the traversal of
+      """
+      g.V().values("loc").where(__.is(xx1))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | geo[SRID=4326;POINT(0 51.48)] |
+
+  @GraphComputerVerificationInjectionNotSupported @DataGeometry
+  Scenario: Geometry_eqXnegativeZeroX
+    Given the empty graph
+    And using the parameter xx1 defined as "geo[POINT(0 0)]"
+    And the traversal of
+      """
+      g.inject([Geometry("POINT(-0 0)")]).unfold().where(__.is(xx1))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | geo[POINT(-0 0)] |
+
+  @GraphComputerVerificationInjectionNotSupported @DataGeometry
+  Scenario: Geometry_eqXemptyPointX
+    Given the empty graph
+    And using the parameter xx1 defined as "geo[POINT EMPTY]"
+    And the traversal of
+      """
+      g.inject([Geometry("POINT EMPTY"),Geometry("POLYGON EMPTY")]).unfold().where(__.is(xx1))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | geo[POINT EMPTY] |

@@ -127,6 +127,11 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
                         failedSteps.Add(scenario.Steps.First(), new IgnoreException(IgnoreReason.WriteStepTestingNotSupported));
                         continue;
                     }
+                    if (scenario.Tags.Concat(feature.Tags).Any(t => t.Name == "@DataGeometry"))
+                    {
+                        failedSteps.Add(scenario.Steps.First(), new IgnoreException(IgnoreReason.GeometryNotSupported));
+                        continue;
+                    }
 
                     StepBlock? currentStep = null;
                     StepDefinition? stepDefinition = null;

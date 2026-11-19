@@ -760,6 +760,9 @@ value is positive and false if its negative.
 * Edge - *e[_xxx_]* - The "xxx" should be replaced with a representation of an edge in the form of the
 `vertex_name-edgelabel->vertex_name`. This syntax may also include the `.id` suffix which would indicate getting the
 edge identifier or the `.sid` suffix which gets a string representation of the edge identifier.
+* Geometry - *geo[_xxx_]* - The "xxx" should be replaced with the Well-Known Text of a geometry, as in
+`geo[POINT(1 2)]`. When the SRID is not zero, the Extended Well-Known Text form carries it, as in
+`geo[SRID=4326;POINT(1 2)]`.
 * List - *l[_xxx_,_yyy_,_zzz_,...]* - A comma separated collection of values that make up the list should be added to
 between the square brackets. These values respect the type system thus allowing for creation of lists of vertices,
 edges, maps, and any other available type. Spaces are taken literally, therefore it is important to avoid spaces unless
@@ -1037,12 +1040,18 @@ they simply cannot support. It is important to be aware of the following tags wh
 tag when one is necessary will cause provider tests to fail:
 
 * `@AllowDateTimePropertyValues` - The scenario requires that the graph can store a `DateTime` as a property value.
+* `@AllowGeometryPropertyValues` - The scenario requires that the graph can store a `Geometry` as a property value.
 * `@AllowListPropertyValues` - The scenario requires that the graph can store a `List` as a property value.
 * `@AllowMapPropertyValues` - The scenario requires that the graph can store a `Map` as a property value.
+* `@AllowMixedGeometryModels` - The scenario queries `CARTESIAN` and `GEOGRAPHIC` geometries stored in the same graph.
 * `@AllowNullPropertyValues` - The scenario requires that the graph be configured with `AllowNullPropertyValues` as
 `true` (meaning that it can store `null` values).
 * `@AllowSetPropertyValues` - The scenario requires that the graph can store a `Set` as a property value.
 * `@AllowUUIDPropertyValues` - The scenario requires that the graph can store a `UUID` as a property value.
+* `@DataGeometry` - The scenario tests `Geometry` values. In this release only the embedded Java TinkerGraph runners
+run these scenarios, since geometry serialization is not available. The remote, Hadoop and Spark runners exclude them
+with `and not @DataGeometry` in their `@CucumberOptions` tag filter, and the Python, .NET, Go and JavaScript runners
+skip the tag in their own test configuration.
 * `@DisallowNullPropertyValues` - The scenario requires that the graph be configured with `AllowNullPropertyValues` as
 `false` (meaning that it cannot store `null` values).
 * `@GraphComputerOnly` - The scenario is only supported with `GraphComputer`.

@@ -23,7 +23,10 @@ import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.apache.tinkerpop.gremlin.language.antlr.GremlinBaseVisitor;
 import org.apache.tinkerpop.gremlin.language.antlr.GremlinParser;
+import org.apache.tinkerpop.gremlin.language.grammar.GenericLiteralVisitor;
+import org.apache.tinkerpop.gremlin.language.grammar.GremlinAntlrToJava;
 import org.apache.tinkerpop.gremlin.process.traversal.DT;
+import org.apache.tinkerpop.gremlin.process.traversal.GeoP;
 import org.apache.tinkerpop.gremlin.process.traversal.GType;
 import org.apache.tinkerpop.gremlin.process.traversal.Merge;
 import org.apache.tinkerpop.gremlin.process.traversal.Operator;
@@ -38,11 +41,16 @@ import org.apache.tinkerpop.gremlin.structure.Column;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty.Cardinality;
+import org.apache.tinkerpop.gremlin.structure.geo.Geometry;
+import org.apache.tinkerpop.gremlin.structure.geo.Model;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * A Gremlin to Gremlin translator. Makes no changes to input except:
@@ -55,11 +63,27 @@ import java.util.stream.Collectors;
  */
 public class TranslateVisitor extends GremlinBaseVisitor<Void> {
 
+    /**
+     * The names of the {@link GType} entries that identify a geometry, which includes the model based
+     * {@code CARTESIAN} and {@code GEOGRAPHIC} entries.
+     */
+    protected static final Set<String> GEOMETRY_GTYPE_NAMES = Collections.unmodifiableSet(
+            Stream.of(GType.values()).
+                    filter(t -> t.getType() != null && Geometry.class.isAssignableFrom(t.getType())).
+                    map(Enum::name).
+                    collect(Collectors.toSet()));
+
     protected final String graphTraversalSourceName;
 
     protected final StringBuilder sb = new StringBuilder();
 
     protected final Set<String> parameters = new HashSet<>();
+
+    /**
+     * Parses literals into their values, for translators that render from a value rather than from the
+     * literal's text.
+     */
+    protected final GenericLiteralVisitor literalVisitor = new GenericLiteralVisitor(new GremlinAntlrToJava());
 
     public TranslateVisitor() {
         this("g");
@@ -210,8 +234,45 @@ public class TranslateVisitor extends GremlinBaseVisitor<Void> {
 
     @Override
     public Void visitTraversalGType(final GremlinParser.TraversalGTypeContext ctx) {
-        appendExplicitNaming(ctx.getText(), GType.class.getSimpleName());
+        appendExplicitNaming(extractGTypeName(ctx).toUpperCase(Locale.ROOT), GType.class.getSimpleName());
         return null;
+    }
+
+    @Override
+    public Void visitGeoModel(final GremlinParser.GeoModelContext ctx) {
+        appendExplicitNaming(ctx.getText(), Model.class.getSimpleName());
+        return null;
+    }
+
+    /**
+     * Extracts the name of the type from a {@code GType} which may be written with or without the {@code GType}
+     * prefix and in either the camel case or the upper case form, as in {@code lineString} and {@code LINESTRING}.
+     */
+    protected static String extractGTypeName(final GremlinParser.TraversalGTypeContext ctx) {
+        final String[] split = ctx.getText().split("\\.");
+        return split[split.length - 1];
+    }
+
+    /**
+     * Determines if a {@code GType} names a geometry type, which the translators that have no geometry support use
+     * to reject the type.
+     */
+    protected static boolean isGeometryGType(final GremlinParser.TraversalGTypeContext ctx) {
+        return GEOMETRY_GTYPE_NAMES.contains(extractGTypeName(ctx).toUpperCase(Locale.ROOT));
+    }
+
+    /**
+     * Appends {@code Geometry.fromWkt("...")}, the form the JVM languages use since they have a WKT reader, with
+     * {@code Model.GEOGRAPHIC} or the SRID as a second argument where the geometry carries one. WKT holds no quote
+     * or backslash, so the text needs no escaping.
+     */
+    protected void appendGeometryFromWkt(final Geometry geometry) {
+        sb.append("Geometry.fromWkt(\"").append(geometry.toWKT()).append("\"");
+        if (geometry.model() == Model.GEOGRAPHIC)
+            sb.append(", Model.GEOGRAPHIC");
+        else if (geometry.model() == Model.OTHER)
+            sb.append(", ").append(geometry.srid());
+        sb.append(")");
     }
 
     @Override
@@ -264,6 +325,8 @@ public class TranslateVisitor extends GremlinBaseVisitor<Void> {
                               t instanceof GremlinParser.GenericArgumentVarargsContext ||
                               t instanceof GremlinParser.StringArgumentContext ||
                               t instanceof GremlinParser.StringLiteralContext ||
+                              t instanceof GremlinParser.GeometryArgumentContext ||
+                              t instanceof GremlinParser.NestedTraversalContext ||
                               t instanceof GremlinParser.TraversalGTypeContext ||
                               t instanceof GremlinParser.TraversalPredicateContext).collect(Collectors.toList());
         for (int ix = 0; ix < list.size(); ix++) {
@@ -389,6 +452,18 @@ public class TranslateVisitor extends GremlinBaseVisitor<Void> {
     }
 
     @Override
+    public Void visitTraversalPredicate_geoWithin(final GremlinParser.TraversalPredicate_geoWithinContext ctx) {
+        visitP(ctx, GeoP.class, "geoWithin");
+        return null;
+    }
+
+    @Override
+    public Void visitTraversalPredicate_geoContains(final GremlinParser.TraversalPredicate_geoContainsContext ctx) {
+        visitP(ctx, GeoP.class, "geoContains");
+        return null;
+    }
+
+    @Override
     public Void visitBooleanArgument(final GremlinParser.BooleanArgumentContext ctx) {
         if (ctx.booleanLiteral() != null)
             visitBooleanLiteral(ctx.booleanLiteral());
@@ -402,6 +477,16 @@ public class TranslateVisitor extends GremlinBaseVisitor<Void> {
     public Void visitGenericArgument(final GremlinParser.GenericArgumentContext ctx) {
         if (ctx.genericLiteral() != null)
             visitGenericLiteral(ctx.genericLiteral());
+        else
+            visitVariable(ctx.variable());
+
+        return null;
+    }
+
+    @Override
+    public Void visitGeometryArgument(final GremlinParser.GeometryArgumentContext ctx) {
+        if (ctx.geometryLiteral() != null)
+            visitGeometryLiteral(ctx.geometryLiteral());
         else
             visitVariable(ctx.variable());
 
@@ -467,6 +552,21 @@ public class TranslateVisitor extends GremlinBaseVisitor<Void> {
     @Override
     public Void visitBinaryLiteral(final GremlinParser.BinaryLiteralContext ctx) {
         sb.append(ctx.getText());
+        return null;
+    }
+
+    @Override
+    public Void visitGeometryLiteral(final GremlinParser.GeometryLiteralContext ctx) {
+        // the keyword and the arguments are echoed as written, which keeps the "Geometry" and "geometry"
+        // spellings apart, while the arguments are separated the way every other argument list is
+        sb.append(ctx.getChild(0).getText());
+        appendStepOpen();
+        sb.append(ctx.stringLiteral().getText());
+        if (ctx.COMMA() != null) {
+            appendArgumentSeparator();
+            sb.append(ctx.geometryModel() != null ? ctx.geometryModel().getText() : ctx.integerLiteral().getText());
+        }
+        appendStepClose();
         return null;
     }
 

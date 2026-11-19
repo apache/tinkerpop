@@ -99,6 +99,7 @@ public abstract class TinkerWorld implements World {
         private static final AbstractTinkerGraph grateful = registerTestServices(TinkerFactory.createGratefulDead());
         private static final AbstractTinkerGraph zoo = registerTestServices(TinkerFactory.createTheZoo());
         private static final AbstractTinkerGraph airRoutes = registerTestServices(TinkerFactory.createAirRoutes());
+        private static final AbstractTinkerGraph delivery = registerTestServices(TinkerFactory.createTheDelivery());
 
         @Override
         public GraphTraversalSource getGraphTraversalSource(final LoadGraphWith.GraphData graphData) {
@@ -118,6 +119,8 @@ public abstract class TinkerWorld implements World {
                 return zoo.traversal();
             else if (graphData == LoadGraphWith.GraphData.AIR_ROUTES)
                 return airRoutes.traversal();
+            else if (graphData == LoadGraphWith.GraphData.DELIVERY)
+                return delivery.traversal();
             else
                 throw new UnsupportedOperationException("GraphData not supported: " + graphData.name());
         }
@@ -172,6 +175,7 @@ public abstract class TinkerWorld implements World {
         private static final AbstractTinkerGraph grateful;
         private static final AbstractTinkerGraph zoo;
         private static final AbstractTinkerGraph airRoutes;
+        private static final AbstractTinkerGraph delivery;
 
         static {
             modern = TinkerStorageGraph.open(getNumberIdManagerConfiguration());
@@ -208,6 +212,11 @@ public abstract class TinkerWorld implements World {
             TinkerFactory.generateAirRoutes(airRoutes);
             airRoutes.tx().commit();
             registerTestServices(airRoutes);
+
+            delivery = TinkerStorageGraph.open(getNumberIdManagerConfiguration());
+            TinkerFactory.generateTheDelivery(delivery);
+            delivery.tx().commit();
+            registerTestServices(delivery);
         }
 
         @Override
@@ -228,6 +237,8 @@ public abstract class TinkerWorld implements World {
                 return zoo.traversal();
             else if (graphData == LoadGraphWith.GraphData.AIR_ROUTES)
                 return airRoutes.traversal();
+            else if (graphData == LoadGraphWith.GraphData.DELIVERY)
+                return delivery.traversal();
             else
                 throw new UnsupportedOperationException("GraphData not supported: " + graphData.name());
         }
@@ -257,6 +268,7 @@ public abstract class TinkerWorld implements World {
         private static final TinkerShuffleGraph grateful;
         private static final TinkerShuffleGraph zoo;
         private static final TinkerShuffleGraph airRoutes;
+        private static final TinkerShuffleGraph delivery;
 
         static {
             modern = TinkerShuffleGraph.open();
@@ -280,6 +292,9 @@ public abstract class TinkerWorld implements World {
             airRoutes = TinkerShuffleGraph.open();
             TinkerFactory.generateAirRoutes(airRoutes);
             registerTestServices(airRoutes);
+            delivery = TinkerShuffleGraph.open();
+            TinkerFactory.generateTheDelivery(delivery);
+            registerTestServices(delivery);
         }
 
         @Override
@@ -300,6 +315,8 @@ public abstract class TinkerWorld implements World {
                 return zoo.traversal();
             else if (graphData == LoadGraphWith.GraphData.AIR_ROUTES)
                 return airRoutes.traversal();
+            else if (graphData == LoadGraphWith.GraphData.DELIVERY)
+                return delivery.traversal();
             else
                 throw new UnsupportedOperationException("GraphData not supported: " + graphData.name());
         }

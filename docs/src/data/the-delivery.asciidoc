@@ -1,0 +1,145 @@
+////
+Licensed to the Apache Software Foundation (ASF) under one
+or more contributor license agreements.  See the NOTICE file
+distributed with this work for additional information
+regarding copyright ownership.  The ASF licenses this file
+to you under the Apache License, Version 2.0 (the
+"License"); you may not use this file except in compliance
+with the License.  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on an
+"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied.  See the License for the
+specific language governing permissions and limitations
+under the License.
+////
+[[the-delivery]]
+[llms-summary="The delivery graph: a TinkerPop 4.x showcase for geometry property values and the geospatial predicates. Includes its GQL Graph Types schema and Gremlin examples that filter vertices and edges by location with geoWithin and geoContains. Only the loading block runs at build time. The examples are static listings with their results in callouts."]
+== The Delivery Graph
+
+The delivery graph models a grocery delivery company. It runs five hubs: `Hell's Kitchen`,
+`Williamsburg` and `Los Angeles` in the United States, `Greenwich` in the United Kingdom, and
+`Auckland` in New Zealand. Every hub apart from Los Angeles `serves` a delivery zone, customers
+such as `Ana` and `Dee` place orders that are `orderedFrom` a hub, and the hubs ship stock to one
+another over `shipsTo` lanes running from about 3,900 km up to nearly half the circumference of the
+Earth. Inside the Hell's Kitchen hub is a small warehouse mapped in meters, where the picker `Pat`
+works.
+
+The graph was created for TinkerPop 4.x to demonstrate `Geometry` property values and the geospatial
+predicates `geoWithin` and `geoContains`. Every vertex carries its location in a `loc` property, and
+the `delivered` and `shipsTo` edges carry their route in a `path` property. Locations on the Earth
+use the `GEOGRAPHIC` model with longitude and latitude in degrees, while the
+warehouse uses the `CARTESIAN` model with coordinates in meters. It is the reference example for
+filtering by location, because each geometry exercises a case that spatial filters commonly get
+wrong: a zone with a hole, a customer on a border, a zone across the prime meridian, a zone in two
+parts, a shipping lane across the antimeridian, z values including z = 0, overlapping zones, and an
+invalid polygon. It is created with `TinkerFactory.createTheDelivery()` and, because geometry
+serialization is not yet available, has no data file.
+
+.The Delivery Graph
+image::the-delivery-graph.png[width=685]
+
+=== Schema
+
+[source,gql]
+----
+-- node types
+(:hub => { name :: STRING NOT NULL, country :: STRING, loc :: ANY }),
+(:zone => { name :: STRING NOT NULL, loc :: ANY }),
+(:waterway => { name :: STRING NOT NULL, loc :: ANY }),
+(:event => { name :: STRING NOT NULL, loc :: ANY }),
+(:customer => { name :: STRING NOT NULL, loc :: ANY, coords :: RECORD { lon :: DOUBLE, lat :: DOUBLE }, raw :: STRING }),
+(:room => { name :: STRING NOT NULL, loc :: ANY }),
+(:picker => { name :: STRING NOT NULL, loc :: ANY }),
+
+-- edge types
+(:hub)-[:serves]->(:zone),
+(:customer)-[:orderedFrom]->(:hub),
+(:hub)-[:delivered { path :: ANY }]->(:customer),
+(:hub)-[:shipsTo { path :: ANY, km :: DOUBLE }]->(:hub),
+(:hub)-[:hasRoom]->(:room),
+(:picker)-[:worksIn]->(:room),
+(:event)-[:near]->(:hub),
+(:hub)-[:proposes]->(:zone)
+----
+
+GQL Graph Types has no geometry type, so every `loc` and `path` above is typed `ANY` and the
+geometry kind each one holds is a property of the data rather than of the schema. Hubs, customers
+and the picker hold points, five of the six zones hold polygons while `Auckland and Waiheke` holds
+the one multipolygon, the `East River` waterway holds a multilinestring, and the `Night Market`
+event holds a geometry collection. A `path` is a linestring, except the Los Angeles to Auckland
+lane, which is a multilinestring split at the antimeridian. The rooms and the picker are the only
+`CARTESIAN` values in the graph. Everything else is `GEOGRAPHIC`. The `country` property appears
+only on hubs, the `coords` map only on the customer Eli and the `raw` string only on the customer
+Hana, where they stand for addresses imported from a spreadsheet and are kept as input for
+converting a map or a string into a geometry. The `km` property on `shipsTo` is the great-circle
+distance between the two hubs, rounded to 0.1 km.
+
+=== Loading the Delivery Graph
+
+The examples that follow assume a traversal source `g` bound to the delivery graph, which the
+`TinkerFactory` helper builds in memory and populates directly.
+
+[gremlin-groovy]
+----
+graph = TinkerFactory.createTheDelivery()
+g = traversal().with(graph)
+----
+
+The graph has no data file, so it cannot be loaded with `g.io(...)` as the other toy graphs can.
+
+=== Examples
+
+The examples below write the predicates without the `GeoP` prefix and create geometries with
+`Geometry.fromWkt()`. The loading block above runs at build time. These examples are static
+listings, so their results are in callouts.
+
+Midtown is the zone Hell's Kitchen serves, and it is passed to `geoWithin` as a traversal.
+
+[source,groovy]
+----
+g.V().has("name","Hell's Kitchen").out("serves").values("loc").as("z").
+      V().hasLabel("customer").
+      where(values("loc").is(geoWithin(__.select("z")))).
+      values("name") <1>
+----
+
+<1> Only Ana is within Midtown: Ben ordered to a spot inside the Central Park hole, Dee lives on
+Midtown's eastern border, Eli is outside every zone, and Hana is in London. Ana's z is ignored.
+
+Because the boundary is excluded, no zone contains Dee either.
+
+[source,groovy]
+----
+dee = g.V().has("name","Dee").values("loc").next()
+g.V().hasLabel("zone").has("loc", geoContains(dee)).values("name") <1>
+----
+
+<1> Empty: Dee sits exactly on the border that Midtown and North Brooklyn and Queens share.
+
+An edge's `path` is filtered like any other geometry, here the route of the only `delivered` edge.
+
+[source,groovy]
+----
+box = Geometry.fromWkt("POLYGON((-74 40.7, -73.95 40.7, -73.95 40.76, -74 40.76, -74 40.7))", Model.GEOGRAPHIC)
+g.E().hasLabel("delivered").
+      has("path", geoWithin(box)).
+      inV().values("name") <1>
+----
+
+<1> Ana, whose delivery from Williamsburg runs entirely inside the box. Moving the box 0.1 degrees
+west leaves the route outside it and the result empty.
+
+A multipolygon is a single geometry, so `geoWithin` accepts a point in either of its parts.
+
+[source,groovy]
+----
+aklZone = g.V().has("name","Auckland and Waiheke").values("loc").next()
+g.V().has("loc", geoWithin(aklZone)).values("name") <1>
+----
+
+<1> The Auckland hub, which lies in the central Auckland part, and the zone itself, since a polygon
+is within an equal polygon.

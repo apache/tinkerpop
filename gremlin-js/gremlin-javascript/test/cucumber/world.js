@@ -148,6 +148,11 @@ Before({tags: "@DataDuration"}, function() {
   return 'skipped'
 })
 
+// geometry values cannot be serialized
+Before({tags: "@DataGeometry"}, function() {
+  return 'skipped'
+})
+
 function getVertices(connection) {
   const g = anon.traversal().withRemote(connection);
   return g.V().group().by('name').by(__.tail()).next().then(it => {

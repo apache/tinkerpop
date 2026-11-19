@@ -30,6 +30,99 @@ import JavaTranslateVisitor from '../../../lib/language/translator/JavaTranslate
 import GroovyTranslateVisitor from '../../../lib/language/translator/GroovyTranslateVisitor.js';
 import AnonymizedTranslateVisitor from '../../../lib/language/translator/AnonymizedTranslateVisitor.js';
 
+// Geometry translations shared by the Java and Groovy tests, with the output of the Java translator.
+const jvmGeometryTranslations = [
+  // the string is decoded and trimmed
+  ['g.inject(Geometry("POINT(1 2)"s))', 'g.inject(Geometry.fromWkt("POINT(1 2)"))'],
+  ['g.inject(Geometry("POINT(1\\u00202)"))', 'g.inject(Geometry.fromWkt("POINT(1 2)"))'],
+  ['g.inject(Geometry("POINT(1\\0402)"))', 'g.inject(Geometry.fromWkt("POINT(1 2)"))'],
+  ['g.inject(Geometry("POINT(1 2)\\u000a"))', 'g.inject(Geometry.fromWkt("POINT(1 2)"))'],
+  ["g.inject(Geometry('POINT(1 2)'s))", 'g.inject(Geometry.fromWkt("POINT(1 2)"))'],
+  // a line break inside the text is escaped
+  ['g.inject(Geometry("POINT(1\\u000a2)"))', 'g.inject(Geometry.fromWkt("POINT(1\\n2)"))'],
+  // a GType name is written upper case
+  ['g.inject(123).is(P.typeOf(GType.lineString))', 'g.inject(123).is(P.typeOf(GType.LINESTRING))'],
+  ['g.inject(123).is(P.typeOf(lineString))', 'g.inject(123).is(P.typeOf(GType.LINESTRING))'],
+  // an SRID is read exactly, in each integer form the grammar accepts
+  ['g.inject(Geometry("POINT(1 2)", 32618I))', 'g.inject(Geometry.fromWkt("POINT(1 2)", 32618))'],
+  ['g.inject(Geometry("POINT(1 2)", 32618L))', 'g.inject(Geometry.fromWkt("POINT(1 2)", 32618))'],
+  ['g.inject(Geometry("POINT(1 2)", 32618N))', 'g.inject(Geometry.fromWkt("POINT(1 2)", 32618))'],
+  ['g.inject(Geometry("POINT(1 2)", 32_618))', 'g.inject(Geometry.fromWkt("POINT(1 2)", 32618))'],
+  ['g.inject(Geometry("POINT(1 2)", 0x7F5A))', 'g.inject(Geometry.fromWkt("POINT(1 2)", 32602))'],
+  ['g.inject(Geometry("POINT(1 2)", 017))', 'g.inject(Geometry.fromWkt("POINT(1 2)", 15))'],
+  ['g.inject(Geometry("POINT(1 2)", -0x7F5A))', 'g.inject(Geometry.fromWkt("POINT(1 2)", -32602))'],
+  ['g.inject(Geometry("POINT(1 2)", 017N))', 'g.inject(Geometry.fromWkt("POINT(1 2)", 17))'],
+  // an EWKT prefix moves into the second argument, and is accepted where it agrees with an explicit one
+  ['g.inject(Geometry("SRID=4326;POINT(1 2)"))', 'g.inject(Geometry.fromWkt("POINT(1 2)", Model.GEOGRAPHIC))'],
+  ['g.inject(Geometry("SRID=32618;POINT(1 2)"))', 'g.inject(Geometry.fromWkt("POINT(1 2)", 32618))'],
+  // the largest prefix SRID, and the most digits a prefix may hold
+  ['g.inject(Geometry("SRID=2147483647;POINT(1 2)"))', 'g.inject(Geometry.fromWkt("POINT(1 2)", 2147483647))'],
+  ['g.inject(Geometry("SRID=0000032618;POINT(1 2)"))', 'g.inject(Geometry.fromWkt("POINT(1 2)", 32618))'],
+  [
+    'g.inject(Geometry("SRID=4326;POINT(1 2)", GEOGRAPHIC))',
+    'g.inject(Geometry.fromWkt("POINT(1 2)", Model.GEOGRAPHIC))',
+  ],
+  ['g.inject(Geometry("SRID=32618;POINT(1 2)", 32618))', 'g.inject(Geometry.fromWkt("POINT(1 2)", 32618))'],
+  // the qualified model form the feature files do not use
+  ['g.inject(Geometry("POINT(1 2)", Model.GEOGRAPHIC))', 'g.inject(Geometry.fromWkt("POINT(1 2)", Model.GEOGRAPHIC))'],
+  // a Model value on its own, which always carries its prefix
+  ['g.inject(Model.OTHER)', 'g.inject(Model.OTHER)'],
+  // the geo predicate forms the feature files do not use
+  ['g.V().has("loc", geoWithin(x))', 'g.V().has("loc", GeoP.geoWithin(x))'],
+  [
+    'g.V().has("loc", geoWithin(Geometry("POINT(1 2)")).negate())',
+    'g.V().has("loc", GeoP.geoWithin(Geometry.fromWkt("POINT(1 2)")).negate())',
+  ],
+  [
+    'g.V().has("loc", P.not(geoWithin(Geometry("POINT(1 2)"))))',
+    'g.V().has("loc", P.not(GeoP.geoWithin(Geometry.fromWkt("POINT(1 2)"))))',
+  ],
+  [
+    'g.V().has("loc", geoWithin(Geometry("POINT(1 2)")).or(geoContains(Geometry("POINT(1 2)"))))',
+    'g.V().has("loc", GeoP.geoWithin(Geometry.fromWkt("POINT(1 2)")).or(GeoP.geoContains(Geometry.fromWkt("POINT(1 2)"))))',
+  ],
+];
+
+// The geometry inputs the Python, .NET, Go and JavaScript translators reject, with what each names in its message.
+const unsupportedGeometry = [
+  ['g.inject(Geometry("POINT(1 2)"))', 'geometry literals'],
+  ['g.V().has("loc", geoWithin(x))', 'geo predicates'],
+  ['g.V().has("loc", geoContains(x))', 'geo predicates'],
+  ['g.inject(123).is(P.typeOf(GType.POINT))', 'geometry types'],
+  ['g.inject(Model.OTHER)', 'geometry models'],
+];
+
+// Geometry literals the Java translator rejects.
+const jvmGeometryErrors = [
+  ['g.inject(Geometry("POINT(1 2)", 32618B))', 'Invalid Geometry literal: 32618B is out of range for its type'],
+  ['g.inject(Geometry("POINT(1 2)", 2147483648L))', 'Invalid Geometry literal: SRID is out of range for a 32-bit integer'],
+  ['g.inject(Geometry("POINT(1 2)", 2147483648))', 'Invalid Geometry literal: SRID is out of range for a 32-bit integer'],
+  ['g.inject(Geometry("POINT(1 2)", 0x1N))', 'Invalid Geometry literal: 0x1N is not a decimal BigInteger'],
+  [
+    'g.inject(Geometry("SRID=4326;POINT(1 2)", CARTESIAN))',
+    'Invalid Geometry literal: EWKT SRID 4326 conflicts with model CARTESIAN',
+  ],
+  [
+    'g.inject(Geometry("SRID=32618;POINT(1 2)", GEOGRAPHIC))',
+    'Invalid Geometry literal: EWKT SRID 32618 conflicts with model GEOGRAPHIC',
+  ],
+  ['g.inject(Geometry("SRID=4326;POINT(1 2)", 0))', 'Invalid Geometry literal: EWKT SRID 4326 conflicts with argument SRID 0'],
+  [
+    'g.inject(Geometry("SRID=2147483648;POINT(1 2)"))',
+    'Invalid Geometry literal: SRID is out of range for a 32-bit integer',
+  ],
+  [
+    'g.inject(Geometry("SRID=-2147483649;POINT(1 2)"))',
+    'Invalid Geometry literal: SRID is out of range for a 32-bit integer',
+  ],
+  ['g.inject(Geometry("SRID=00000000000;POINT(1 2)"))', 'Invalid Geometry literal: SRID has more than 10 digits'],
+  // a second prefix, at the position the JVM WKT reader reports, counting the whitespace it skips
+  [
+    'g.inject(Geometry("  SRID=4326;  SRID=4326;POINT(1 2)"))',
+    'Invalid Geometry literal: Unknown geometry type at position 14',
+  ],
+];
+
 describe('GremlinTranslator', function () {
   describe('basic translation', function () {
     const tests = [
@@ -85,6 +178,17 @@ describe('GremlinTranslator', function () {
       it(`translates: ${input}`, function () {
         const result = GremlinTranslator.translate(input);
         assert.strictEqual(result.getTranslated(), expected);
+      });
+    });
+  });
+
+  describe('geometry is unsupported', function () {
+    unsupportedGeometry.forEach(function ([input, kind]) {
+      it(`throws for: ${input}`, function () {
+        assert.throws(() => GremlinTranslator.translate(input), {
+          name: 'TranslatorException',
+          message: `Javascript does not support ${kind}`,
+        });
       });
     });
   });
@@ -223,11 +327,21 @@ describe('PythonTranslateVisitor', function () {
       ['g.tx().begin()', 'g.tx().begin()'],
       ['g.tx().commit()', 'g.tx().commit()'],
       ['g.tx().rollback()', 'g.tx().rollback()'],
+      // a GType name is written upper case
+      ['g.inject(1).is(P.typeOf(GType.bigDecimal))', 'g.inject(1).is_(P.type_of(GType.BIGDECIMAL))'],
     ];
 
     tests.forEach(function ([input, expected]) {
       it(`translates: ${input}`, function () {
         assert.strictEqual(translate(input), expected);
+      });
+    });
+  });
+
+  describe('geometry is unsupported', function () {
+    unsupportedGeometry.forEach(function ([input, kind]) {
+      it(`throws for: ${input}`, function () {
+        assert.throws(() => translate(input), { name: 'TranslatorException', message: `Python does not support ${kind}` });
       });
     });
   });
@@ -320,6 +434,14 @@ describe('GoTranslateVisitor', function () {
     tests.forEach(function ([input, expected]) {
       it(`translates: ${input}`, function () {
         assert.strictEqual(translate(input), expected);
+      });
+    });
+  });
+
+  describe('geometry is unsupported', function () {
+    unsupportedGeometry.forEach(function ([input, kind]) {
+      it(`throws for: ${input}`, function () {
+        assert.throws(() => translate(input), { name: 'TranslatorException', message: `Go does not support ${kind}` });
       });
     });
   });
@@ -417,6 +539,14 @@ describe('DotNetTranslateVisitor', function () {
     });
   });
 
+  describe('geometry is unsupported', function () {
+    unsupportedGeometry.forEach(function ([input, kind]) {
+      it(`throws for: ${input}`, function () {
+        assert.throws(() => translate(input), { name: 'TranslatorException', message: `.NET does not support ${kind}` });
+      });
+    });
+  });
+
   describe('Translator registry', function () {
     it('accepts DOTNET key', function () {
       const result = GremlinTranslator.translate('g.V()', 'g', 'DOTNET');
@@ -502,6 +632,22 @@ describe('JavaTranslateVisitor', function () {
     tests.forEach(function ([input, expected]) {
       it(`translates: ${input}`, function () {
         assert.strictEqual(translate(input), expected);
+      });
+    });
+  });
+
+  describe('geometry translation', function () {
+    jvmGeometryTranslations.forEach(function ([input, expected]) {
+      it(`translates: ${input}`, function () {
+        assert.strictEqual(translate(input), expected);
+      });
+    });
+  });
+
+  describe('invalid geometry literals throw', function () {
+    jvmGeometryErrors.forEach(function ([input, message]) {
+      it(`throws for: ${input}`, function () {
+        assert.throws(() => translate(input), { name: 'TranslatorException', message });
       });
     });
   });
@@ -604,6 +750,22 @@ describe('GroovyTranslateVisitor', function () {
     });
   });
 
+  describe('geometry translation', function () {
+    jvmGeometryTranslations.forEach(function ([input, expected]) {
+      it(`translates: ${input}`, function () {
+        assert.strictEqual(translate(input), expected);
+      });
+    });
+  });
+
+  describe('invalid geometry literals throw', function () {
+    jvmGeometryErrors.forEach(function ([input, message]) {
+      it(`throws for: ${input}`, function () {
+        assert.throws(() => translate(input), { name: 'TranslatorException', message });
+      });
+    });
+  });
+
   describe('Translator registry', function () {
     it('accepts GROOVY key', function () {
       const result = GremlinTranslator.translate('g.V()', 'g', 'GROOVY');
@@ -667,6 +829,19 @@ describe('AnonymizedTranslateVisitor', function () {
       ['g.inject(Duration(9000,0))', 'g.inject(duration0)'],
       // binary → bytebuffer
       ['g.inject(Binary("AQID"))', 'g.inject(bytebuffer0)'],
+      // geometry -> the kind its WKT names, with a counter per kind
+      ['g.inject(Geometry("POINT(1 2)"))', 'g.inject(point0)'],
+      ['g.inject(Geometry("SRID=4326;POINT(1 2)"))', 'g.inject(point0)'],
+      // the kind comes from the type keyword whether or not the rest is valid, as in GremlinTranslatorTest
+      ['g.inject(Geometry("POINT nonsense"))', 'g.inject(point0)'],
+      ['g.inject(Geometry("SRID=4326;POINT nonsense"))', 'g.inject(point0)'],
+      ['g.inject(Geometry("NOT WKT"))', 'g.inject(geometry0)'],
+      ['g.inject(Geometry(" linestring EMPTY", GEOGRAPHIC))', 'g.inject(linestring0)'],
+      ['g.inject(Geometry("\\u0050OLYGON EMPTY", 32618))', 'g.inject(polygon0)'],
+      ['g.inject(Geometry("POINT(1 2)"), Geometry("MULTIPOINT((1 2))"), Geometry("POINT(3 4)"), Geometry("POINT(1 2)"))',
+        'g.inject(point0, multipoint0, point1, point0)'],
+      ['g.inject(Geometry("MULTILINESTRING EMPTY"), Geometry("MULTIPOLYGON EMPTY"), Geometry("GEOMETRYCOLLECTION EMPTY"))',
+        'g.inject(multilinestring0, multipolygon0, geometrycollection0)'],
       // map → map
       ['g.addV("person").property(T.id, [(T.label): "person"])', 'g.addV(string0).property(T.id, map0)'],
       // enums/traversal steps pass through unchanged

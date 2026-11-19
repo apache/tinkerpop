@@ -20,6 +20,7 @@
 import org.apache.tinkerpop.gremlin.language.translator.GremlinTranslator
 import org.apache.tinkerpop.gremlin.language.translator.Translator
 import org.apache.tinkerpop.gremlin.language.translator.DotNetTranslateVisitor
+import org.apache.tinkerpop.gremlin.language.translator.TranslatorException
 import org.apache.tinkerpop.gremlin.language.corpus.FeatureReader
 
 import java.nio.file.Paths
@@ -156,21 +157,29 @@ radishGremlinFile.withWriter('UTF-8') { Writer writer ->
         if (staticTranslate.containsKey(k)) {
             writer.writeLine(staticTranslate[k])
         } else {
-            writer.write("               {\"")
-            writer.write(k)
-            writer.write("\", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {")
-            def collected = v.collect { GremlinTranslator.translate(it, Translator.DOTNET) }
-            def gremlinItty = collected.iterator()
-            while (gremlinItty.hasNext()) {
-                def t = gremlinItty.next()
-                writer.write("(g,p) =>")
-                writer.write(substituteCSharpParameters(t.getTranslated(), false))
-                if (gremlinItty.hasNext())
-                    writer.write(', ')
-                else
-                    writer.write("}")
+            try {
+                def collected = v.collect { GremlinTranslator.translate(it, Translator.DOTNET) }
+                writer.write("               {\"")
+                writer.write(k)
+                writer.write("\", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {")
+                def gremlinItty = collected.iterator()
+                while (gremlinItty.hasNext()) {
+                    def t = gremlinItty.next()
+                    writer.write("(g,p) =>")
+                    writer.write(substituteCSharpParameters(t.getTranslated(), false))
+                    if (gremlinItty.hasNext())
+                        writer.write(', ')
+                    else
+                        writer.write("}")
+                }
+                writer.writeLine('}, ')
+            } catch (TranslatorException ignored) {
+                // emit a placeholder for scenarios with unsupported literals to keep the file
+                // syntactically valid; the scenario will be skipped at test runtime via tag exclusions
+                writer.write("               {\"")
+                writer.write(k)
+                writer.writeLine("\", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) => null}}, ")
             }
-            writer.writeLine('}, ')
         }
     }
     writer.writeLine('            };\n')
@@ -185,21 +194,29 @@ radishGremlinFile.withWriter('UTF-8') { Writer writer ->
         if (staticTranslate.containsKey(k)) {
             writer.writeLine(staticTranslate[k])
         } else {
-            writer.write("               {\"")
-            writer.write(k)
-            writer.write("\", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {")
-            def collected = v.collect { GremlinTranslator.translate(it, new DotNetTranslateVisitor("g", true)) }
-            def gremlinItty = collected.iterator()
-            while (gremlinItty.hasNext()) {
-                def t = gremlinItty.next()
-                writer.write("(g,p) =>")
-                writer.write(substituteCSharpParameters(t.getTranslated(), true))
-                if (gremlinItty.hasNext())
-                    writer.write(', ')
-                else
-                    writer.write("}")
+            try {
+                def collected = v.collect { GremlinTranslator.translate(it, new DotNetTranslateVisitor("g", true)) }
+                writer.write("               {\"")
+                writer.write(k)
+                writer.write("\", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {")
+                def gremlinItty = collected.iterator()
+                while (gremlinItty.hasNext()) {
+                    def t = gremlinItty.next()
+                    writer.write("(g,p) =>")
+                    writer.write(substituteCSharpParameters(t.getTranslated(), true))
+                    if (gremlinItty.hasNext())
+                        writer.write(', ')
+                    else
+                        writer.write("}")
+                }
+                writer.writeLine('}, ')
+            } catch (TranslatorException ignored) {
+                // emit a placeholder for scenarios with unsupported literals to keep the file
+                // syntactically valid; the scenario will be skipped at test runtime via tag exclusions
+                writer.write("               {\"")
+                writer.write(k)
+                writer.writeLine("\", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) => null}}, ")
             }
-            writer.writeLine('}, ')
         }
     }
     writer.writeLine('            };\n')

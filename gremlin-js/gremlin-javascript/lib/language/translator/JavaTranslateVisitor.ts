@@ -226,6 +226,10 @@ export default class JavaTranslateVisitor extends TranslateVisitor {
         this.sb.push('))');
     }
 
+    visitGeometryLiteral(ctx: any): void {
+        this.appendGeometryFromWkt(ctx);
+    }
+
     visitGenericRangeLiteral(_ctx: any): void {
         throw new TranslatorException('Java does not support range literals');
     }

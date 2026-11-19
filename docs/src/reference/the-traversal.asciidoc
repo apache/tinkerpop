@@ -6632,12 +6632,12 @@ empty result rather than raising an error.
 
 <<gremlin-java-gvalue,Java>>, <<parameterized-scripts,Server>>
 
-[llms-summary="A note on predicates used in Gremlin traversals, including standard and text predicates."]
+[llms-summary="A note on predicates used in Gremlin traversals, including standard, text and geometry predicates."]
 [[a-note-on-predicates]]
 == A Note on Predicates
 
 A `P` is a predicate of the form `Function<Object,Boolean>`. That is, given some object, return true or false. Gremlin
-supports text predicates (`TextP`), which are specialized predicates that only work on String values and are of the form `Function<String,Boolean>`. Additionally, type predicate (`P.typeOf`) supports filtering traversers based on their runtime types. The provided predicates are outlined in the table below and are used in various steps such as <<has-step,`has()`>>-step, <<where-step,`where()`>>-step, <<is-step,`is()`>>-step, etc.
+supports text predicates (`TextP`), which are specialized predicates that only work on String values and are of the form `Function<String,Boolean>`. Gremlin also supports geometry predicates (`GeoP`), which filter `Geometry` values by a spatial relationship. Additionally, type predicate (`P.typeOf`) supports filtering traversers based on their runtime types. The provided predicates are outlined in the table below and are used in various steps such as <<has-step,`has()`>>-step, <<where-step,`where()`>>-step, <<is-step,`is()`>>-step, etc.
 
 [width="100%",cols="3,15",options="header"]
 |=========================================================
@@ -6663,6 +6663,8 @@ supports text predicates (`TextP`), which are specialized predicates that only w
 | `TextP.notContaining(string)` | Does the incoming `String` not contain the provided `String`?
 | `TextP.regex(string)` | Does the incoming `String` match the regular expression in the provided `String`?
 | `TextP.notRegex(string)` | Does the incoming `String` fail to match the regular expression in the provided `String`?
+| `GeoP.geoWithin(geometry)` | Does the incoming `Geometry` lie entirely inside the provided `Geometry`?
+| `GeoP.geoContains(geometry)` | Does the incoming `Geometry` entirely contain the provided `Geometry`?
 |=========================================================
 
 NOTE: The TinkerPop reference implementation uses the Java `Pattern` and `Matcher` classes for it regular expression
@@ -6725,6 +6727,34 @@ g.V().has('person', 'name', regex('r')).values('name')
 g.V().has('person', 'name', regex('r$')).values('name')
 ----
 
+The geometry predicates match a value only against a `Geometry` in the same spatial reference system, and a value they
+cannot compare does not match rather than raising an error. `geoWithin` and `geoContains` exclude the boundary, so a
+point lying only on a polygon's edge is not within that polygon. All geometry math is two dimensional, so z is ignored.
+The link:https://tinkerpop.apache.org/docs/x.y.z/dev/provider/#gremlin-semantics-geometry[Geometry Section] of the
+Gremlin Semantics specification defines these rules in full.
+
+The predicates may be written with or without the `GeoP` prefix, so `GeoP.geoWithin(g)` and `geoWithin(g)` are the
+same predicate. A geometry is written with the `Geometry()` literal, which takes Well-Known Text and an optional
+coordinate model or SRID and is described in <<canonical-gremlin-literal-types,Canonical Gremlin Literal Types>>. In
+Java the predicates are static methods of `GeoP`. There, and in `gremlin-groovy` scripts such as those run in the
+Gremlin Console, a geometry is created with `Geometry.fromWkt()` or with factories such as `Point.of()`, as in the
+example below.
+
+[gremlin-groovy]
+----
+g = traversal().with(TinkerGraph.open())
+midtown = Geometry.fromWkt("POINT(2 2)")
+uptown = Geometry.fromWkt("POINT(9 9)")
+square = Geometry.fromWkt("POLYGON((0 0, 4 0, 4 4, 0 4, 0 0))")
+g.addV('store').property('name','midtown').property('loc',midtown).addV('store').property('name','uptown').property('loc',uptown).iterate()
+g.V().has('loc',geoWithin(square)).values('name')
+----
+
+NOTE: The reference implementation computes a `GEOGRAPHIC` relationship in longitude and latitude, treating an edge as
+straight in those coordinates rather than as a geodesic. For an edge shorter than about 100 km that crosses neither the
+antimeridian nor a pole, a relationship is correct. A provider may compute geodetic results more precisely, so it's a
+good idea to check the documentation for the implementation in use.
+
 Finally, note that <<where-step,`where()`>>-step takes a `P<String>`. The provided string value refers to a variable
 binding, not to the explicit string value.
 
@@ -6757,6 +6787,8 @@ as the argument to the `typeOf()` predicate used for filtering values based on t
 * **Collection types**: `LIST`, `SET`, `MAP`
 * **Graph types**: `VERTEX`, `EDGE`, `PROPERTY`, `VPROPERTY`, `PATH`, `TREE`, `GRAPH`
 * **Temporal types**: `DATETIME`, `DURATION`
+* **Spatial types**: `GEOMETRY`, `POINT`, `LINESTRING`, `POLYGON`, `MULTIPOINT`, `MULTILINESTRING`, `MULTIPOLYGON`,
+`GEOMETRYCOLLECTION`, and `CARTESIAN` and `GEOGRAPHIC`, which match a geometry of any kind by its coordinate model
 * **Special types**: `NULL`, `NUMBER` (supertype for all numeric types)
 
 As mentioned, the `typeOf()` predicate becomes particularly useful when dealing with mixed data scenarios. For example,
@@ -6825,7 +6857,8 @@ script requests.
 |UUID |`UUID("f47af10b-58cc-4372-a567-0f02b2f3d479")`, `UUID()` |A UUID string in the textual form written as 8-4-4-4-12 hexadecimal digit groups. `UUID()` generates a random UUID.
 |Duration |`Duration(3600,0)`, `Duration(30,0,false)` |The first argument is non-negative seconds. The second is nanoseconds from `0` to `999999999`. The optional third argument is a boolean sign flag with `false` negating the duration.
 |Binary |`Binary("AQID")` |A Base64-encoded string.
-|Enum |`T.id`, `Cardinality.single`, `Direction.OUT` |A Gremlin enum token from `T`, `Cardinality`, `Direction`, `Merge`, `Pick`, `DT`, or `GType`.
+|Geometry |`Geometry("POINT(1 2)")`, `Geometry("POINT(1 2)", GEOGRAPHIC)`, `Geometry("POINT(1 2)", 32618)` |A Well-Known Text or Extended Well-Known Text string. The optional second argument is the coordinate model `CARTESIAN` or `GEOGRAPHIC` (also written as `Model.CARTESIAN` and `Model.GEOGRAPHIC`), or an SRID as an integer. Without it the SRID is `0`, which is the `CARTESIAN` model. An `SRID=` prefix in the string that disagrees with the second argument is an error. The all-lowercase form `geometry` is also accepted (for example `geometry("POINT(1 2)", GEOGRAPHIC)`). `Model.CARTESIAN`, `Model.GEOGRAPHIC` and `Model.OTHER` are also values in their own right, always written with the `Model` prefix since a bare `CARTESIAN` or `GEOGRAPHIC` names a `GType` entry, though only `CARTESIAN` and `GEOGRAPHIC` can construct a geometry.
+|Enum |`T.id`, `Cardinality.single`, `Direction.OUT` |A Gremlin enum token from `T`, `Cardinality`, `Direction`, `Merge`, `Pick`, `DT`, `GType`, or `Model`.
 |List |`[1,"two",null]` |A comma-separated sequence of generic literals inside square brackets.
 |Set |`{1,"two"}` |A comma-separated sequence of generic literals inside braces.
 |Map |`[:]`, `["name":"marko", "age":29]` |An empty map is `[:]`. A populated map is a comma-separated sequence of `key:value` entries inside square brackets.

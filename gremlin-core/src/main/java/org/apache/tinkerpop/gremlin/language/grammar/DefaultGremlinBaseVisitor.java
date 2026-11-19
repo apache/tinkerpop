@@ -1178,6 +1178,14 @@ public class DefaultGremlinBaseVisitor<T> extends AbstractParseTreeVisitor<T> im
 	/**
 	 * {@inheritDoc}
 	 */
+	@Override public T visitGeoModel(final GremlinParser.GeoModelContext ctx) { notImplemented(ctx); return null; }
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override public T visitGeometryModel(final GremlinParser.GeometryModelContext ctx) { notImplemented(ctx); return null; }
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override public T visitTraversalGType(GremlinParser.TraversalGTypeContext ctx) { notImplemented(ctx); return null; }
 	/**
 	 * {@inheritDoc}
@@ -1287,6 +1295,14 @@ public class DefaultGremlinBaseVisitor<T> extends AbstractParseTreeVisitor<T> im
 	 * {@inheritDoc}
 	 */
 	@Override public T visitTraversalPredicate_notRegex(final GremlinParser.TraversalPredicate_notRegexContext ctx) { notImplemented(ctx); return null; }
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override public T visitTraversalPredicate_geoWithin(final GremlinParser.TraversalPredicate_geoWithinContext ctx) { notImplemented(ctx); return null; }
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override public T visitTraversalPredicate_geoContains(final GremlinParser.TraversalPredicate_geoContainsContext ctx) { notImplemented(ctx); return null; }
 	/**
 	 * {@inheritDoc}
 	 */
@@ -1432,6 +1448,10 @@ public class DefaultGremlinBaseVisitor<T> extends AbstractParseTreeVisitor<T> im
      */
     @Override public T visitBinaryLiteral(final GremlinParser.BinaryLiteralContext ctx) { notImplemented(ctx); return null; }
     /**
+     * {@inheritDoc}
+     */
+    @Override public T visitGeometryLiteral(final GremlinParser.GeometryLiteralContext ctx) { notImplemented(ctx); return null; }
+    /**
 	 * {@inheritDoc}
 	 */
     @Override public T visitPdtLiteral(final GremlinParser.PdtLiteralContext ctx) { notImplemented(ctx); return null; }
@@ -1531,6 +1551,10 @@ public class DefaultGremlinBaseVisitor<T> extends AbstractParseTreeVisitor<T> im
 	 * {@inheritDoc}
 	 */
 	@Override public T visitIntegerArgument(final GremlinParser.IntegerArgumentContext ctx) { notImplemented(ctx); return null; }
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override public T visitGeometryArgument(final GremlinParser.GeometryArgumentContext ctx) { notImplemented(ctx); return null; }
 	/**
 	 * {@inheritDoc}
 	 */

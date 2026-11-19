@@ -1328,3 +1328,109 @@ Feature: Comparability
       """
     When iterated to list
     Then the result should be empty
+
+  ######################################################
+  ## Geometry vs. Double
+  ######################################################
+
+  @AllowGeometryPropertyValues @DataGeometry
+  Scenario: g_V_hasXname_PatX_valuesXlocX_isXeqX1dXX
+    Given the delivery graph
+    And the traversal of
+      """
+      g.V().has("name", "Pat").values("loc").is(P.eq(1.0d))
+      """
+    When iterated to list
+    Then the result should be empty
+
+  @AllowGeometryPropertyValues @DataGeometry
+  Scenario: g_V_hasXname_PatX_valuesXlocX_isXneqX1dXX
+    Given the delivery graph
+    And the traversal of
+      """
+      g.V().has("name", "Pat").values("loc").is(P.neq(1.0d))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | geo[POINT(3 4)] |
+
+  @AllowGeometryPropertyValues @DataGeometry
+  Scenario: g_V_hasXname_PatX_valuesXlocX_isXltX1dXX
+    Given the delivery graph
+    And the traversal of
+      """
+      g.V().has("name", "Pat").values("loc").is(P.lt(1.0d))
+      """
+    When iterated to list
+    Then the result should be empty
+
+  @AllowGeometryPropertyValues @DataGeometry
+  Scenario: g_V_hasXname_PatX_valuesXlocX_isXlteX1dXX
+    Given the delivery graph
+    And the traversal of
+      """
+      g.V().has("name", "Pat").values("loc").is(P.lte(1.0d))
+      """
+    When iterated to list
+    Then the result should be empty
+
+  @AllowGeometryPropertyValues @DataGeometry
+  Scenario: g_V_hasXname_PatX_valuesXlocX_isXgtX1dXX
+    Given the delivery graph
+    And the traversal of
+      """
+      g.V().has("name", "Pat").values("loc").is(P.gt(1.0d))
+      """
+    When iterated to list
+    Then the result should be empty
+
+  @AllowGeometryPropertyValues @DataGeometry
+  Scenario: g_V_hasXname_PatX_valuesXlocX_isXgteX1dXX
+    Given the delivery graph
+    And the traversal of
+      """
+      g.V().has("name", "Pat").values("loc").is(P.gte(1.0d))
+      """
+    When iterated to list
+    Then the result should be empty
+
+  ######################################################
+  ## Geometry vs. Geometry
+  ######################################################
+
+  @GraphComputerVerificationInjectionNotSupported @DataGeometry
+  Scenario: InjectXemptyPointX_ltXpointX
+    Given the empty graph
+    And the traversal of
+      """
+      g.inject(Geometry("POINT EMPTY")).is(P.lt(Geometry("POINT(1 2)")))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | geo[POINT EMPTY] |
+
+  @GraphComputerVerificationInjectionNotSupported @DataGeometry
+  Scenario: InjectXpointX_gtXemptyPointX
+    Given the empty graph
+    And the traversal of
+      """
+      g.inject(Geometry("POINT(1 2)")).is(P.gt(Geometry("POINT EMPTY")))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | geo[POINT(1 2)] |
+
+  @AllowGeometryPropertyValues @DataGeometry
+  Scenario: g_V_hasXname_PatX_valuesXlocX_isXltXgeographicPointXX
+    Given the delivery graph
+    And the traversal of
+      """
+      g.V().has("name", "Pat").values("loc").is(P.lt(Geometry("POINT(3 4)", GEOGRAPHIC)))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | geo[POINT(3 4)] |

@@ -56,9 +56,10 @@ import java.util.Optional;
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData;
 import static org.apache.tinkerpop.gremlin.features.World.GRAPHCOMPUTER_TAG_FILTER;
 
+// @DataGeometry scenarios are excluded since geometry values cannot be serialized
 @RunWith(Cucumber.class)
 @CucumberOptions(
-        tags = GRAPHCOMPUTER_TAG_FILTER + " and not @WithElementIdStrategy",
+        tags = GRAPHCOMPUTER_TAG_FILTER + " and not @WithElementIdStrategy and not @DataGeometry",
         glue = { "org.apache.tinkerpop.gremlin.features" },
         objectFactory = SparkGraphFeatureIntegrateTest.SparkGraphGuiceFactory.class,
         features = { "classpath:/org/apache/tinkerpop/gremlin/test/features" },
