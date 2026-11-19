@@ -108,40 +108,6 @@ public final class ExtensionStep {
         this.anchoredAtPatternTarget = anchoredAtPatternTarget;
     }
 
-    public ExtensionStep(final String anchorVariable, final String edgeLabel,
-                         final Direction direction, final String edgeVariable,
-                         final List<PropertyPredicate> edgePredicates,
-                         final String targetLabel, final String targetVariable,
-                         final List<PropertyPredicate> targetPredicates,
-                         final long estimatedCost) {
-        this(anchorVariable, edgeLabel, direction, edgeVariable, edgePredicates,
-             targetLabel, targetVariable, targetPredicates, estimatedCost, 1, 1, false, false);
-    }
-
-    public ExtensionStep(final String anchorVariable, final String edgeLabel,
-                         final Direction direction, final String edgeVariable,
-                         final String targetLabel, final String targetVariable,
-                         final List<PropertyPredicate> targetPredicates,
-                         final long estimatedCost) {
-        this(anchorVariable, edgeLabel, direction, edgeVariable, Collections.emptyList(),
-             targetLabel, targetVariable, targetPredicates, estimatedCost, 1, 1, false, false);
-    }
-
-    public ExtensionStep(final String anchorVariable, final String edgeLabel,
-                         final Direction direction, final String edgeVariable,
-                         final String targetLabel, final String targetVariable,
-                         final List<PropertyPredicate> targetPredicates) {
-        this(anchorVariable, edgeLabel, direction, edgeVariable, Collections.emptyList(),
-             targetLabel, targetVariable, targetPredicates, Long.MAX_VALUE, 1, 1, false, false);
-    }
-
-    public ExtensionStep(final String anchorVariable, final String edgeLabel,
-                         final Direction direction, final String edgeVariable,
-                         final String targetLabel, final String targetVariable) {
-        this(anchorVariable, edgeLabel, direction, edgeVariable, Collections.emptyList(),
-             targetLabel, targetVariable, Collections.emptyList(), Long.MAX_VALUE, 1, 1, false, false);
-    }
-
     /** The variable name of the already-bound vertex used as the starting point for this step. */
     public String getAnchorVariable() {
         return anchorVariable;
