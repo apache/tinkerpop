@@ -68,6 +68,10 @@ limitations under the License.
                     <artifactId>nimbus-jose-jwt</artifactId>
                 </exclusion>
                 <exclusion>
+                    <groupId>net.minidev</groupId>
+                    <artifactId>json-smart</artifactId>
+                </exclusion>
+                <exclusion>
                     <groupId>com.fasterxml.jackson.core</groupId>
                     <artifactId>jackson-core</artifactId>
                 </exclusion>
@@ -128,7 +132,13 @@ limitations under the License.
         <dependency>
             <groupId>com.nimbusds</groupId>
             <artifactId>nimbus-jose-jwt</artifactId>
-            <version>9.8.1</version>
+            <version>9.37.4</version>
+        </dependency>
+        <!-- hadoop-auth pulls an older json-smart with known vulnerabilities; use a patched one -->
+        <dependency>
+            <groupId>net.minidev</groupId>
+            <artifactId>json-smart</artifactId>
+            <version>2.4.9</version>
         </dependency>
         <dependency>
             <groupId>com.google.guava</groupId>
