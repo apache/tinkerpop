@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.jsr223;
 
 import org.junit.Test;
 
+import java.util.Collections;
 import java.util.Optional;
 
 import static org.apache.tinkerpop.gremlin.jsr223.GremlinScriptChecker.EMPTY_RESULT;
@@ -516,5 +517,70 @@ public class GremlinScriptCheckerTest {
         assertEquals("gremlin-groovy", r.getLanguage().get());
         assertEquals("32", r.getBatchSize().get());
         assertEquals(Boolean.TRUE, r.getBulkResults().get());
+    }
+
+    @Test
+    public void shouldNotOverflowStackOnLongBlockCommentLikeContent() {
+        // long string literals holding code fragments (e.g. SQL/CSS "/*") must not blow the stack while comments
+        // are stripped. each fragment opens a "/*" that is never closed, so the comment matcher scans from there to
+        // the end of the script
+        final StringBuilder sb = new StringBuilder("g.V().has('code', within(");
+        for (int i = 0; i < 200; i++) {
+            if (i > 0) sb.append(",");
+            sb.append("'<script language=\"php\">$x = 1; /* fragment ").append(i).append(" SELECT * FROM t WHERE x = 1;</script>'");
+        }
+        sb.append(")).with('timeoutMillis', 1000L)");
+        assertEquals(1000, GremlinScriptChecker.parse(sb.toString()).getTimeout().get().longValue());
+
+        final String longComment = "g.with('timeoutMillis', 1000L).V().has('x', '/*" +
+                String.join("", Collections.nCopies(100000, "a")) + "*/')";
+        assertEquals(1000, GremlinScriptChecker.parse(longComment).getTimeout().get().longValue());
+    }
+
+    @Test
+    public void shouldStripMultiLineBlockComment() {
+        assertEquals(Optional.empty(), GremlinScriptChecker.parse("g./*\n with('timeoutMillis', 1000L).\r\n */with(true).V()").getTimeout());
+        assertEquals(1000, GremlinScriptChecker.parse("g./*\n with('timeoutMillis', 5L).\r\n */with('timeoutMillis', 1000L).V()").getTimeout().get().longValue());
+    }
+
+    @Test(timeout = 30000)
+    public void shouldStripCommentsInLinearTime() {
+        // a regex rescans to the end of the script from every unterminated "/*", which would take hours here
+        final String unterminated = "g.with('timeoutMillis', 1000L).V()" + String.join("", Collections.nCopies(1000000, "\n/*"));
+        assertEquals(1000, GremlinScriptChecker.parse(unterminated).getTimeout().get().longValue());
+    }
+
+    @Test
+    public void shouldStripCommentsAndWhitespace() {
+        assertEquals("g.V()", GremlinScriptChecker.stripCommentsAndWhitespace(" g . V ( )\t\n\r\u000B\f"));
+        assertEquals("g.V()", GremlinScriptChecker.stripCommentsAndWhitespace("g.V()// comment"));
+        assertEquals("g.V().out()", GremlinScriptChecker.stripCommentsAndWhitespace("g.V()// comment\r\n.out()"));
+        assertEquals("g.V().out()", GremlinScriptChecker.stripCommentsAndWhitespace("g.V()// comment\r.out()"));
+        assertEquals("g.V()", GremlinScriptChecker.stripCommentsAndWhitespace("g./* a\n\u2028 */V/**/()"));
+        // a "/*" that is never closed is left in place and only whitespace is removed after it
+        assertEquals("g./*V()", GremlinScriptChecker.stripCommentsAndWhitespace("g./* V()"));
+        assertEquals("g./*/V()/*x", GremlinScriptChecker.stripCommentsAndWhitespace("g./*/ V()/* x"));
+        // "//" after an unterminated "/*" is still a comment
+        assertEquals("g./*V()", GremlinScriptChecker.stripCommentsAndWhitespace("g./* V()// x"));
+        assertEquals("/", GremlinScriptChecker.stripCommentsAndWhitespace("/"));
+        assertEquals("", GremlinScriptChecker.stripCommentsAndWhitespace("//"));
+        assertEquals("", GremlinScriptChecker.stripCommentsAndWhitespace("/**/"));
+        assertEquals("ab", GremlinScriptChecker.stripCommentsAndWhitespace("a/**/b"));
+        assertEquals("V()", GremlinScriptChecker.stripCommentsAndWhitespace("/***/V()"));
+        // the "*" of "/*" can't also be the start of its "*/"
+        assertEquals("/*/", GremlinScriptChecker.stripCommentsAndWhitespace("/*/"));
+        assertEquals("V()", GremlinScriptChecker.stripCommentsAndWhitespace("/*/ x */V()"));
+        // block comments don't nest, the first "*/" closes and any later "*/" is left as is
+        assertEquals("c*/", GremlinScriptChecker.stripCommentsAndWhitespace("/* a /* b */ c */"));
+        assertEquals("V()", GremlinScriptChecker.stripCommentsAndWhitespace("/* a /* b */V()"));
+        // a "*/" with no "/*" before it is left as is
+        assertEquals("g.V()*/", GremlinScriptChecker.stripCommentsAndWhitespace("g.V() */"));
+        // an unterminated "/*" after a closed one is left in place
+        assertEquals("V()/*b", GremlinScriptChecker.stripCommentsAndWhitespace("/* a */V()/* b"));
+        // "//" inside a block comment doesn't hide its "*/"
+        assertEquals("c", GremlinScriptChecker.stripCommentsAndWhitespace("/* a // b */ c"));
+        assertEquals("V()", GremlinScriptChecker.stripCommentsAndWhitespace("/* a\n// */\nV()"));
+        // "/*" inside a line comment doesn't start a block comment
+        assertEquals("y*/z", GremlinScriptChecker.stripCommentsAndWhitespace("// x /*\n y */ z"));
     }
 }
