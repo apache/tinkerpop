@@ -55,6 +55,9 @@ const jvmGeometryTranslations = [
   // an EWKT prefix moves into the second argument, and is accepted where it agrees with an explicit one
   ['g.inject(Geometry("SRID=4326;POINT(1 2)"))', 'g.inject(Geometry.fromWkt("POINT(1 2)", Model.GEOGRAPHIC))'],
   ['g.inject(Geometry("SRID=32618;POINT(1 2)"))', 'g.inject(Geometry.fromWkt("POINT(1 2)", 32618))'],
+  // the largest prefix SRID, and the most digits a prefix may hold
+  ['g.inject(Geometry("SRID=2147483647;POINT(1 2)"))', 'g.inject(Geometry.fromWkt("POINT(1 2)", 2147483647))'],
+  ['g.inject(Geometry("SRID=0000032618;POINT(1 2)"))', 'g.inject(Geometry.fromWkt("POINT(1 2)", 32618))'],
   [
     'g.inject(Geometry("SRID=4326;POINT(1 2)", GEOGRAPHIC))',
     'g.inject(Geometry.fromWkt("POINT(1 2)", Model.GEOGRAPHIC))',
@@ -104,6 +107,20 @@ const jvmGeometryErrors = [
     'Invalid Geometry literal: EWKT SRID 32618 conflicts with model GEOGRAPHIC',
   ],
   ['g.inject(Geometry("SRID=4326;POINT(1 2)", 0))', 'Invalid Geometry literal: EWKT SRID 4326 conflicts with argument SRID 0'],
+  [
+    'g.inject(Geometry("SRID=2147483648;POINT(1 2)"))',
+    'Invalid Geometry literal: SRID is out of range for a 32-bit integer',
+  ],
+  [
+    'g.inject(Geometry("SRID=-2147483649;POINT(1 2)"))',
+    'Invalid Geometry literal: SRID is out of range for a 32-bit integer',
+  ],
+  ['g.inject(Geometry("SRID=00000000000;POINT(1 2)"))', 'Invalid Geometry literal: SRID has more than 10 digits'],
+  // a second prefix, at the position the JVM WKT reader reports, counting the whitespace it skips
+  [
+    'g.inject(Geometry("  SRID=4326;  SRID=4326;POINT(1 2)"))',
+    'Invalid Geometry literal: Unknown geometry type at position 14',
+  ],
 ];
 
 describe('GremlinTranslator', function () {
@@ -815,6 +832,10 @@ describe('AnonymizedTranslateVisitor', function () {
       // geometry -> the kind its WKT names, with a counter per kind
       ['g.inject(Geometry("POINT(1 2)"))', 'g.inject(point0)'],
       ['g.inject(Geometry("SRID=4326;POINT(1 2)"))', 'g.inject(point0)'],
+      // the kind comes from the type keyword whether or not the rest is valid, as in GremlinTranslatorTest
+      ['g.inject(Geometry("POINT nonsense"))', 'g.inject(point0)'],
+      ['g.inject(Geometry("SRID=4326;POINT nonsense"))', 'g.inject(point0)'],
+      ['g.inject(Geometry("NOT WKT"))', 'g.inject(geometry0)'],
       ['g.inject(Geometry(" linestring EMPTY", GEOGRAPHIC))', 'g.inject(linestring0)'],
       ['g.inject(Geometry("\\u0050OLYGON EMPTY", 32618))', 'g.inject(polygon0)'],
       ['g.inject(Geometry("POINT(1 2)"), Geometry("MULTIPOINT((1 2))"), Geometry("POINT(3 4)"), Geometry("POINT(1 2)"))',

@@ -2103,6 +2103,34 @@ public class GremlinTranslatorTest {
     }
 
     /**
+     * A geometry anonymizes by the type keyword that leads its WKT, whether or not the rest of the literal is valid,
+     * as the TypeScript anonymizer does, whose tests hold the same rows.
+     */
+    @RunWith(Parameterized.class)
+    public static class AnonymizedGeometryKindTest {
+
+        @Parameterized.Parameter(value = 0)
+        public String query;
+
+        @Parameterized.Parameter(value = 1)
+        public String expected;
+
+        @Parameterized.Parameters(name = "{0}")
+        public static Collection<Object[]> data() {
+            return Arrays.asList(new Object[][]{
+                    {"g.inject(Geometry(\"POINT nonsense\"))", "g.inject(point0)"},
+                    {"g.inject(Geometry(\"SRID=4326;POINT nonsense\"))", "g.inject(point0)"},
+                    {"g.inject(Geometry(\"NOT WKT\"))", "g.inject(geometry0)"},
+            });
+        }
+
+        @Test
+        public void shouldTranslateForAnonymized() {
+            assertEquals(expected, GremlinTranslator.translate(query, Translator.ANONYMIZED).getTranslated());
+        }
+    }
+
+    /**
      * An SRID may be written in any integer width and in decimal, hexadecimal or octal form. Java
      * reads the same number from each of them.
      */

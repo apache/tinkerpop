@@ -308,11 +308,19 @@ export default class TranslateVisitor {
      * either end is dropped, while the whitespace within the text is kept as written.
      */
     protected appendGeometryFromWkt(ctx: any): void {
-        const text = decodeStringLiteral(ctx.stringLiteral().getText()).trim();
+        const decoded = decodeStringLiteral(ctx.stringLiteral().getText());
+        const text = decoded.trim();
         // an EWKT SRID= prefix moves into the second argument, and must agree with an explicit model or SRID
         const prefix = /^srid=\s*([+-]?\d+)\s*;/i.exec(text);
-        const ewktSrid = prefix !== null ? BigInt(prefix[1]) : null;
+        const ewktSrid = prefix !== null ? readEwktSrid(prefix[1]) : null;
         const wkt = prefix !== null ? text.slice(prefix[0].length).trim() : text;
+        // WktReader reads one prefix, so it rejects a second as an unknown geometry type at the position it starts
+        if (prefix !== null && /^srid=/i.test(wkt)) {
+            const afterPrefix = text.slice(prefix[0].length);
+            const position = decoded.length - decoded.trimStart().length + prefix[0].length +
+                afterPrefix.length - afterPrefix.trimStart().length;
+            throw new TranslatorException(`Invalid Geometry literal: Unknown geometry type at position ${position}`);
+        }
 
         let srid = ewktSrid ?? CARTESIAN_SRID;
         const modelCtx = ctx.geometryModel();
@@ -591,6 +599,23 @@ function readSridLiteral(text: string): bigint {
     }
     return srid;
 }
+
+/**
+ * Reads the SRID of an EWKT SRID= prefix: an optional sign and at most ten digits, holding a signed 32-bit value.
+ */
+function readEwktSrid(text: string): bigint {
+    if (text.replace(/^[+-]/, '').length > MAX_EWKT_SRID_DIGITS) {
+        throw new TranslatorException(`Invalid Geometry literal: SRID has more than ${MAX_EWKT_SRID_DIGITS} digits`);
+    }
+    const srid = BigInt(text);
+    if (srid < SUFFIX_BOUNDS.i[0] || srid > SUFFIX_BOUNDS.i[1]) {
+        throw new TranslatorException('Invalid Geometry literal: SRID is out of range for a 32-bit integer');
+    }
+    return srid;
+}
+
+/** The most digits an EWKT SRID= prefix may hold. */
+const MAX_EWKT_SRID_DIGITS = 10;
 
 /** The characters a Gremlin string escape names, other than the octal and unicode forms. */
 const STRING_ESCAPES: Record<string, string> = {

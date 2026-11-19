@@ -188,8 +188,8 @@ const GEOMETRY_KINDS: Record<string, string> = {
 
 /**
  * Names the kind of a geometry literal from the type keyword that leads its WKT, after an optional EWKT
- * `SRID=n;` prefix, so that a point anonymizes as `point0` the way the Java translator names it from the parsed
- * geometry. A keyword that names none of the kinds falls back to `Geometry`.
+ * `SRID=n;` prefix, so that a point anonymizes as `point0` whether or not the rest of the literal is valid, as
+ * the Java translator does. A keyword that names none of the kinds falls back to `Geometry`.
  */
 function geometryKind(ctx: any): string {
     const text = decodeStringLiteral(ctx.stringLiteral().getText()).trim().replace(/^srid=[^;]*;/i, '').trim();

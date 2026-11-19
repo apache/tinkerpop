@@ -298,6 +298,29 @@ public class GeoPTest {
         }
 
         @Test
+        public void shouldValidateASetValueAsTheConstructorDoes() {
+            final GeoP within = GeoP.geoWithin(SQUARE_VALUE);
+            final Geometry otherSrid = Geometry.fromWkt(SQUARE, 32618);
+            final String message = "The geometry of geoWithin must be in the CARTESIAN or GEOGRAPHIC model, " +
+                    "but SRID 32618 is OTHER";
+            assertEquals(message, assertThrows(IllegalArgumentException.class,
+                    () -> within.setValue(otherSrid)).getMessage());
+            // a variable is validated by the value it holds
+            assertEquals(message, assertThrows(IllegalArgumentException.class,
+                    () -> ((P) within).setValue(GValue.of("zone", otherSrid))).getMessage());
+
+            // the rejected values are not kept
+            assertEquals(SQUARE_VALUE, within.getValue());
+            assertTrue(within.test(POINT));
+
+            // a geometry the constructor accepts replaces the value
+            final Geometry farSquare = Geometry.fromWkt("POLYGON((10 10, 14 10, 14 14, 10 14, 10 10))");
+            within.setValue(farSquare);
+            assertEquals(farSquare, within.getValue());
+            assertFalse(within.test(POINT));
+        }
+
+        @Test
         public void shouldExposeTheGeoPredicateAndItsArgumentsToAProvider() {
             final HasContainer within = new HasContainer("loc", GeoP.geoWithin(SQUARE_VALUE));
             assertSame(Geo.geoWithin, within.getBiPredicate());

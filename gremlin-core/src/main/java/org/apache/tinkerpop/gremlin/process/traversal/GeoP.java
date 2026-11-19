@@ -100,6 +100,17 @@ public class GeoP extends P<Geometry> {
         super.updateVariable(name, value);
     }
 
+    /**
+     * {@inheritDoc}
+     * <p>
+     * A value other than a child traversal is validated as the same value given to a constructor would be.
+     */
+    @Override
+    protected void validateValue(final Object value) {
+        if (value instanceof Traversal) return;
+        validateConstants(biPredicate, value instanceof GValue ? ((GValue<?>) value).get() : value);
+    }
+
     //////////////// statics
 
     /**
