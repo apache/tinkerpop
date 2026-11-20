@@ -134,6 +134,7 @@ that override `channelRead()` and an `HttpGremlinEndpointHandler` built from set
 instance. A custom channelizer that adds `HttpBasicAuthorizationHandler` in front of `HttpGremlinEndpointHandler`
 should stop doing so, as it authorizes each request a second time and rejects serialized driver requests with `400`.
 
+[llms-summary="Upgrade notes for the TinkerPop 3.7.7 release: security hardening of Gryo, GraphSON and OLAP IO, traversal strategy and class registration, pre-authentication request limits, and step behavior changes."]
 == TinkerPop 3.7.7
 
 *Release Date: September 1, 2026*
