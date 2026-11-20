@@ -23,10 +23,13 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -56,16 +59,27 @@ class LlmsTxtGenerator {
     private static final Pattern INLINE_CODE = Pattern.compile("`([^`]*)`");
     private static final Pattern HTML_TAG = Pattern.compile("<[^>]+>");
 
+    private static final Pattern CHILD_LINK = Pattern.compile(
+            "^\\[" + Pattern.quote(MarkdownSplitter.CHILD_LINK_LABEL) + "\\]\\(([^/#()\\s]+\\.md)\\)$");
+
     /** One page's index metadata. */
     static final class Entry {
         final String relativePath; // e.g. "dev/io/graphson.md"
         final String title;
         final String description;
+        /** File names of the pages split off from this one, in order. */
+        final List<String> children;
 
         Entry(final String relativePath, final String title, final String description) {
+            this(relativePath, title, description, Collections.emptyList());
+        }
+
+        Entry(final String relativePath, final String title, final String description,
+              final List<String> children) {
             this.relativePath = relativePath;
             this.title = title;
             this.description = description;
+            this.children = children;
         }
     }
 
@@ -91,8 +105,8 @@ class LlmsTxtGenerator {
 
     /**
      * Renders the llms.txt body from entries grouped by book. Books are the top path segment (e.g.
-     * {@code dev/io} -> section "dev/io"); within a section, the book landing page ({@code index.md})
-     * is listed first, then the rest in path order.
+     * {@code dev/io} -> section "dev/io"); within a section, pages are listed in document order (see
+     * {@link #inDocumentOrder}).
      */
     String generate(final List<Entry> entries) {
         final StringBuilder sb = new StringBuilder();
@@ -110,9 +124,7 @@ class LlmsTxtGenerator {
 
         for (final Map.Entry<String, List<Entry>> section : byBook.entrySet()) {
             sb.append("## ").append(section.getKey()).append("\n\n");
-            final List<Entry> pages = section.getValue();
-            pages.sort(landingFirst());
-            for (final Entry e : pages) {
+            for (final Entry e : inDocumentOrder(section.getValue())) {
                 sb.append("- [").append(e.title).append("](").append(linkPrefix).append(e.relativePath).append(')');
                 if (e.description != null && !e.description.isEmpty()) {
                     sb.append(": ").append(e.description);
@@ -122,6 +134,29 @@ class LlmsTxtGenerator {
             sb.append('\n');
         }
         return sb.toString();
+    }
+
+    /**
+     * Orders one book's pages as their sections appear in the book: the landing page first, then a
+     * depth-first walk of the child links. Pages no link reaches follow in path order.
+     */
+    static List<Entry> inDocumentOrder(final List<Entry> pages) {
+        final List<Entry> sorted = new ArrayList<>(pages);
+        sorted.sort(landingFirst());
+        final Map<String, Entry> byFileName = new LinkedHashMap<>();
+        for (final Entry e : sorted) byFileName.put(fileNameOf(e.relativePath), e);
+        final Set<Entry> visited = new LinkedHashSet<>();
+        for (final Entry e : sorted) visit(e, byFileName, visited);
+        return new ArrayList<>(visited);
+    }
+
+    private static void visit(final Entry e, final Map<String, Entry> byFileName, final Set<Entry> visited) {
+        if (e == null || !visited.add(e)) return;
+        for (final String child : e.children) visit(byFileName.get(child), byFileName, visited);
+    }
+
+    private static String fileNameOf(final String relativePath) {
+        return relativePath.substring(relativePath.lastIndexOf('/') + 1);
     }
 
     private static Comparator<Entry> landingFirst() {
@@ -161,7 +196,8 @@ class LlmsTxtGenerator {
             for (final Path md : mdFiles) {
                 final String rel = markdownRoot.relativize(md).toString().replace('\\', '/');
                 final String content = new String(Files.readAllBytes(md), StandardCharsets.UTF_8);
-                entries.add(new Entry(rel, extractTitle(content, rel), extractDescription(content)));
+                entries.add(new Entry(rel, extractTitle(content, rel), extractDescription(content),
+                        extractChildPages(content)));
             }
         }
         final String body = generate(entries);
@@ -237,6 +273,23 @@ class LlmsTxtGenerator {
             }
         }
         return "";
+    }
+
+    /** File names this page links to with {@link MarkdownSplitter#CHILD_LINK_LABEL}, outside code fences. */
+    static List<String> extractChildPages(final String content) {
+        final List<String> children = new ArrayList<>();
+        boolean inFence = false;
+        for (final String raw : content.split("\n", -1)) {
+            final String line = raw.trim();
+            if (line.startsWith("```")) {
+                inFence = !inFence;
+                continue;
+            }
+            if (inFence) continue;
+            final Matcher m = CHILD_LINK.matcher(line);
+            if (m.matches()) children.add(m.group(1));
+        }
+        return children;
     }
 
     private static String flattenInline(final String s) {

@@ -275,6 +275,63 @@ public class MarkdownSplitterTest {
         }
     }
 
+    /**
+     * Mimics the upgrade book: repeated headings with Asciidoctor-generated ids. {@code providersAbove}
+     * adds an identically titled heading earlier, shifting the generated counters after it.
+     */
+    private static String upgradeBook(final boolean providersAbove) {
+        final String extra = providersAbove ? heading("_upgrading_for_providers", 3, "Upgrading for Providers")
+                + "\n3.7.1 provider notes\n\n" : "";
+        final String providersId = providersAbove ? "_upgrading_for_providers_2" : "_upgrading_for_providers";
+        return "preamble\n\n"
+                + summarized("_tinkerpop_upgrade_information", 1, "TinkerPop Upgrade Information", "Upgrades.")
+                + "\nintro\n\n"
+                + summarized("_tinkerpop_3_7_0", 1, "TinkerPop 3.7.0", "The 3.7.x line.") + "\nline intro\n\n"
+                + heading("_tinkerpop_3_7_1", 2, "TinkerPop 3.7.1") + "\n3.7.1 notes\n\n" + extra
+                + summarized("_tinkerpop_3_7_0_2", 2, "TinkerPop 3.7.0", "The 3.7.0 release.") + "\n3.7.0 notes\n\n"
+                + summarized(providersId, 3, "Upgrading for Providers", "3.7.0 providers.")
+                + "\n3.7.0 provider notes, see [the release](#_tinkerpop_3_7_0_2)\n";
+    }
+
+    @Test
+    public void generatedIdsAreNamedFromTheHeadingPath() {
+        final List<MarkdownSplitter.Page> pages = new MarkdownSplitter().split(upgradeBook(false), "index.md");
+        assertThat(fileNames(pages), is(List.of("index.md", "tinkerpop-3.7.0.md",
+                "tinkerpop-3.7.0-tinkerpop-3.7.0.md",
+                "tinkerpop-3.7.0-tinkerpop-3.7.0-upgrading-for-providers.md")));
+        assertThat(page(pages, "tinkerpop-3.7.0.md").getContent(), containsString("line intro"));
+        assertThat(page(pages, "tinkerpop-3.7.0-tinkerpop-3.7.0.md").getContent(), containsString("3.7.0 notes"));
+        assertThat(page(pages, "tinkerpop-3.7.0-tinkerpop-3.7.0-upgrading-for-providers.md").getContent(),
+                containsString("[the release](tinkerpop-3.7.0-tinkerpop-3.7.0.md#_tinkerpop_3_7_0_2)"));
+    }
+
+    @Test
+    public void pageNamesDoNotShiftWhenAnIdenticallyTitledHeadingIsAddedAbove() {
+        final List<String> before = fileNames(new MarkdownSplitter().split(upgradeBook(false), "index.md"));
+        final List<MarkdownSplitter.Page> after = new MarkdownSplitter().split(upgradeBook(true), "index.md");
+        assertThat(fileNames(after), is(before));
+        assertThat(page(after, "tinkerpop-3.7.0-tinkerpop-3.7.0-upgrading-for-providers.md").getContent(),
+                containsString("3.7.0 provider notes"));
+    }
+
+    @Test
+    public void authoredAnchorsStillNameTheirPages() {
+        final String md = "preamble\n\n" + heading("io", 1, "IO Reference") + "\nintro\n\n"
+                + summarized("graphson", 1, "GraphSON", "GraphSON.") + "\nbody\n\n"
+                + summarized("graphson-3d0", 2, "Version 3.0", "GraphSON 3.0.") + "\nv3 body\n";
+        final List<MarkdownSplitter.Page> pages = new MarkdownSplitter().split(md, "index.md");
+        assertThat(fileNames(pages), is(List.of("index.md", "graphson.md", "graphson-3d0.md")));
+    }
+
+    @Test
+    public void slugDropsMarkupAndKeepsVersionDots() {
+        assertThat(MarkdownSplitter.slug(List.of("Gremlin&#8217;s Anatomy")), is("gremlins-anatomy"));
+        assertThat(MarkdownSplitter.slug(List.of("TinkerPop 3.5.0", "Upgrading for Providers")),
+                is("tinkerpop-3.5.0-upgrading-for-providers"));
+        assertThat(MarkdownSplitter.slug(List.of("The `math()` [Step](https://x.org/a.b)")), is("the-math-step"));
+        assertThat(MarkdownSplitter.slug(List.of("...", "")), is(""));
+    }
+
     @Test
     public void pointerFallsBackToSiteRootWithoutAVersion() {
         assertThat(MarkdownSplitter.llmsPointer(null), containsString("[llms.txt](/llms.txt)"));

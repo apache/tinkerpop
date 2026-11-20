@@ -72,6 +72,69 @@ themselves may see a warning on Python 3.12+ that asyncio is already patched, wh
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-3297[TINKERPOP-3297]
 
+==== Java Driver Hostname Check
+
+The Java driver can now verify that the hostname in the server's TLS certificate matches the host it connects to,
+failing the TLS handshake on a mismatch. The check is disabled by default, so existing configurations behave as
+before, and is enabled with the `sslHostnameVerification` connection pool setting or the matching `Cluster.Builder`
+method:
+
+[source,java]
+----
+Cluster cluster = Cluster.build("gremlin.example.com").enableSsl(true).sslHostnameVerification(true).create();
+----
+
+[source,yaml]
+----
+connectionPool: {
+  enableSsl: true,
+  sslHostnameVerification: true}
+----
+
+The setting has no effect when `sslSkipCertValidation` is enabled or when an `SslContext` is supplied to the
+`Cluster.Builder`.
+
+See: link:https://tinkerpop.apache.org/docs/3.7.8/reference/#gremlin-java-configuration[Reference Documentation - Gremlin-Java Configuration]
+
+==== HTTP Authorization
+
+Gremlin Server now applies the configured `Authorizer` to HTTP requests on every HTTP-capable channelizer, in the
+same way as WebSocket requests. Only deployments that configure an `Authorizer` are affected.
+
+On the `WsAndHttpChannelizer` and `UnifiedChannelizer`, HTTP requests are now authorized for every authenticator,
+including the `AllowAllAuthenticator`. HTTP clients of such deployments need a grant from the authorizer, for example
+one for the anonymous user, and otherwise receive `401`.
+
+With an authorizer configured, an HTTP request is rejected with `400` unless it is in the form the drivers send. A
+bytecode request must use the bytecode op and carry `aliases` with a single entry named `g`, while a script request
+may still rebind several aliases. The Java driver's `HttpChannelizer` and the HTTP transport of `gremlin-python`
+already send requests in this form. No serialization format, wire protocol or configuration changed.
+
+See: link:https://tinkerpop.apache.org/docs/3.7.8/reference/#authorization[Reference Documentation - Authorization]
+
+=== Upgrading for Providers
+
+==== Graph System Providers
+
+===== Channelizer HTTP Authorization
+
+HTTP authorization is now performed by `HttpGremlinEndpointHandler` itself. It uses the `Authorizer` that Gremlin
+Server creates from the `authorization` settings, which is now kept on those settings and returned by
+`Settings.AuthorizationSettings.getAuthorizerInstance()`. A custom channelizer that constructs
+`HttpGremlinEndpointHandler` with the server's `Settings` after calling `AbstractChannelizer.init()` needs no change.
+The `Authorizer` is created and set up once for a `Settings` object, so `WsAndHttpChannelizer` and
+`UnifiedChannelizer` use the same instance for HTTP and WebSocket requests. An application that embeds Gremlin Server
+can supply its own instance with `Settings.AuthorizationSettings.overrideAuthorizer(Authorizer)`, in which case the
+`authorizer` and `config` settings are ignored.
+
+`HttpBasicAuthorizationHandler` is deprecated and the bundled channelizers no longer add it.
+`SaslAndHttpBasicAuthenticationHandler` still adds it, as in earlier versions, in front of any request handler that
+does not authorize requests itself. That covers custom request handlers, subclasses of `HttpGremlinEndpointHandler`
+that override `channelRead()` and an `HttpGremlinEndpointHandler` built from settings that hold no `Authorizer`
+instance. A custom channelizer that adds `HttpBasicAuthorizationHandler` in front of `HttpGremlinEndpointHandler`
+should stop doing so, as it authorizes each request a second time and rejects serialized driver requests with `400`.
+
+[llms-summary="Upgrade notes for the TinkerPop 3.7.7 release: security hardening of Gryo, GraphSON and OLAP IO, traversal strategy and class registration, pre-authentication request limits, and step behavior changes."]
 == TinkerPop 3.7.7
 
 *Release Date: September 1, 2026*

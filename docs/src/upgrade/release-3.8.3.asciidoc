@@ -16,12 +16,15 @@ KIND, either express or implied.  See the License for the
 specific language governing permissions and limitations
 under the License.
 ////
+[llms-summary="Upgrade notes for the TinkerPop 3.8.3 release: the Experimental API designation and the experimental asynchronous Gremlin-Python driver."]
 == TinkerPop 3.8.3
 
 *Release Date: NOT OFFICIALLY RELEASED YET*
 
 Please see the link:https://github.com/apache/tinkerpop/blob/3.8.3/CHANGELOG.asciidoc#release-3-8-3[changelog] for a
 complete list of all the modifications that are part of this release.
+
+=== Upgrading for Users
 
 ==== Experimental API Designation
 
@@ -30,3 +33,22 @@ development. An explicitly designated experimental API may have breaking changes
 release.
 
 See: link:https://tinkerpop.apache.org/docs/3.8.3/reference/#api-stability[Reference Documentation - API Stability]
+
+==== Experimental Asynchronous Gremlin-Python Driver
+
+`gremlin-python` now includes an experimental native `asyncio` WebSocket driver and traversal API (`AsyncDriverRemoteConnection`,
+`AsyncClient`, `async_traversal()`, and `AsyncTransaction`) for executing traversals, streaming results, and managing
+session-bound transactions without blocking an `asyncio` event loop.
+
+[source,python]
+----
+async with AsyncDriverRemoteConnection('ws://localhost:8182/gremlin', 'g') as rc:
+    g = async_traversal().with_remote(rc)
+    names = await g.V().has_label('person').values('name').to_list()
+    print(names)
+
+# ['marko', 'vadas', 'josh', 'peter']
+----
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2774[TINKERPOP-2774],
+link:https://tinkerpop.apache.org/docs/3.8.3/reference/#gremlin-python-async[Reference Documentation - Asynchronous Usage]

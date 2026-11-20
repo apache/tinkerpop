@@ -20,8 +20,10 @@ package org.apache.tinkerpop.tinkeradoc;
 
 import org.junit.Test;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.is;
@@ -69,6 +71,66 @@ public class LlmsTxtGeneratorTest {
         final int idx = out.indexOf("dev/io/index.md");
         final int gs = out.indexOf("dev/io/graphson.md");
         assertThat("landing page must come first", idx < gs, is(true));
+    }
+
+    private static List<String> paths(final List<LlmsTxtGenerator.Entry> entries) {
+        return entries.stream().map(e -> e.relativePath).collect(Collectors.toList());
+    }
+
+    @Test
+    public void pagesAreListedInDocumentOrderNotFileNameOrder() {
+        // File-name order would be providers, release, line: the reverse of the book.
+        final List<LlmsTxtGenerator.Entry> entries = Arrays.asList(
+                new LlmsTxtGenerator.Entry("upgrade/v3.5-v3.5-providers.md", "Upgrading for Providers", "p"),
+                new LlmsTxtGenerator.Entry("upgrade/v3.5-v3.5.md", "TinkerPop 3.5.0", "r",
+                        List.of("v3.5-v3.5-providers.md")),
+                new LlmsTxtGenerator.Entry("upgrade/v3.5.md", "TinkerPop 3.5.0", "l", List.of("v3.5-v3.5.md")),
+                new LlmsTxtGenerator.Entry("upgrade/v3.7.md", "TinkerPop 3.7.0", "l"),
+                new LlmsTxtGenerator.Entry("upgrade/index.md", "Upgrade", "i", List.of("v3.7.md", "v3.5.md")));
+        assertThat(paths(LlmsTxtGenerator.inDocumentOrder(entries)), is(List.of("upgrade/index.md",
+                "upgrade/v3.7.md", "upgrade/v3.5.md", "upgrade/v3.5-v3.5.md", "upgrade/v3.5-v3.5-providers.md")));
+    }
+
+    @Test
+    public void pagesNoChildLinkReachesAreAppendedInPathOrder() {
+        final List<LlmsTxtGenerator.Entry> entries = Arrays.asList(
+                new LlmsTxtGenerator.Entry("b/z.md", "Z", "z"),
+                new LlmsTxtGenerator.Entry("b/y.md", "Y", "y"),
+                new LlmsTxtGenerator.Entry("b/x.md", "X", "x"),
+                new LlmsTxtGenerator.Entry("b/index.md", "B", "b", List.of("z.md", "missing.md")));
+        assertThat(paths(LlmsTxtGenerator.inDocumentOrder(entries)),
+                is(List.of("b/index.md", "b/z.md", "b/x.md", "b/y.md")));
+    }
+
+    @Test
+    public void extractsOnlyTheSplittersChildLinks() {
+        final String content = "# Parent\n\n[Read more](child-a.md)\n\nSee [Read more](inline.md) here.\n\n"
+                + "[Other](other.md)\n\n[Read more](../other-book/x.md)\n\n```\n[Read more](fenced.md)\n```\n\n"
+                + "[Read more](child-b.md)\n";
+        assertThat(LlmsTxtGenerator.extractChildPages(content), is(List.of("child-a.md", "child-b.md")));
+    }
+
+    @Test
+    public void splitBookIsIndexedInTheOrderOfItsSections() {
+        // End to end over real splitter output.
+        final String md = "preamble\n\n"
+                + "<a id=\"_upgrade\"></a>\n# TinkerPop Upgrade Information\n<!-- llms-summary: Upgrades. -->\n\nintro\n\n"
+                + "<a id=\"_tinkerpop_3_5_0\"></a>\n# TinkerPop 3.5.0\n<!-- llms-summary: The 3.5.x line. -->\n\n"
+                + "<a id=\"_tinkerpop_3_5_0_2\"></a>\n## TinkerPop 3.5.0\n<!-- llms-summary: The 3.5.0 release. -->\n\n"
+                + "<a id=\"_upgrading_for_providers\"></a>\n### Upgrading for Providers\n"
+                + "<!-- llms-summary: 3.5.0 providers. -->\n\nnotes\n";
+        final List<LlmsTxtGenerator.Entry> entries = new ArrayList<>();
+        for (final MarkdownSplitter.Page p : new MarkdownSplitter().split(md, "index.md")) {
+            final String rel = "upgrade/" + p.getFileName();
+            entries.add(new LlmsTxtGenerator.Entry(rel, LlmsTxtGenerator.extractTitle(p.getContent(), rel),
+                    LlmsTxtGenerator.extractDescription(p.getContent()),
+                    LlmsTxtGenerator.extractChildPages(p.getContent())));
+        }
+        final String out = gen.generate(entries);
+        final int line = out.indexOf("The 3.5.x line.");
+        final int release = out.indexOf("The 3.5.0 release.");
+        final int providers = out.indexOf("3.5.0 providers.");
+        assertThat(line > 0 && line < release && release < providers, is(true));
     }
 
     @Test
