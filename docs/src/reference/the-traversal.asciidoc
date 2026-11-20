@@ -5362,7 +5362,7 @@ g.V().as('a').out().as('b').out().as('c').select('a','b','c')
 g.V().as('a').out().as('b').out().as('c').select('a','b')
 g.V().as('a').out().as('b').out().as('c').select('a','b').by('name')
 g.V().as('a').out().as('b').out().as('c').select('a') <1>
-g.V(1).as('a').both().as('b').select('a','b').by('age')
+g.V(1).as('a').both().as('b').select('a','b').by('age') <2>
 ----
 
 <1> If the selection is one step, no map is returned.

@@ -1940,7 +1940,7 @@ limitations under the License.
                                     <sourceFileExcludes>
                                         <sourceFileExclude>**/module-info.java</sourceFileExclude>
                                     </sourceFileExcludes>
-                                    <destDir>full</destDir>
+                                    <outputDirectory>${project.build.directory}/javadoc-raw/full</outputDirectory>
                                     <additionalJOption>-Xdoclint:none</additionalJOption>
                                     <overview>${basedir}/docs/javadoc/overview.html</overview>
                                     <quiet>true</quiet>
@@ -2221,7 +2221,7 @@ limitations under the License.
                                     <sourceFileExcludes>
                                         <sourceFileExclude>**/module-info.java</sourceFileExclude>
                                     </sourceFileExcludes>
-                                    <destDir>core</destDir>
+                                    <outputDirectory>${project.build.directory}/javadoc-raw/core</outputDirectory>
                                     <additionalJOption>-Xdoclint:none</additionalJOption>
                                     <overview>${basedir}/docs/javadoc/overview.html</overview>
                                     <quiet>true</quiet>
@@ -2302,6 +2302,28 @@ limitations under the License.
                                         </include>
                                     </sourceFileIncludes>
                                     <additionalDependencies>
+                                        <!-- without a sourcepath, the types that the included files reference from
+                                             packages outside the include list must come from the classpath -->
+                                        <additionalDependency>
+                                            <groupId>org.apache.tinkerpop</groupId>
+                                            <artifactId>gremlin-language</artifactId>
+                                            <version>${project.version}</version>
+                                        </additionalDependency>
+                                        <additionalDependency>
+                                            <groupId>org.apache.tinkerpop</groupId>
+                                            <artifactId>gremlin-core</artifactId>
+                                            <version>${project.version}</version>
+                                        </additionalDependency>
+                                        <additionalDependency>
+                                            <groupId>org.apache.tinkerpop</groupId>
+                                            <artifactId>gremlin-util</artifactId>
+                                            <version>${project.version}</version>
+                                        </additionalDependency>
+                                        <additionalDependency>
+                                            <groupId>org.apache.tinkerpop</groupId>
+                                            <artifactId>gremlin-driver</artifactId>
+                                            <version>${project.version}</version>
+                                        </additionalDependency>
                                         <additionalDependency>
                                             <groupId>org.antlr</groupId>
                                             <artifactId>antlr4</artifactId>
@@ -2488,9 +2510,17 @@ limitations under the License.
                                 </goals>
                                 <configuration>
                                     <outputDirectory>${basedir}/target/javadoc-temp</outputDirectory>
+                                    <!-- the javadoc goal always writes into an "apidocs" folder under its outputDirectory,
+                                         so map each raw run into its core/ or full/ folder here -->
                                     <resources>
                                         <resource>
-                                            <directory>${basedir}/target/site/apidocs</directory>
+                                            <directory>${basedir}/target/javadoc-raw/core/apidocs</directory>
+                                            <targetPath>core</targetPath>
+                                            <filtering>true</filtering>
+                                        </resource>
+                                        <resource>
+                                            <directory>${basedir}/target/javadoc-raw/full/apidocs</directory>
+                                            <targetPath>full</targetPath>
                                             <filtering>true</filtering>
                                         </resource>
                                     </resources>

@@ -263,9 +263,9 @@ driver/client. A partial release is helpful in that it decouples the release of 
 typically server modules. In this way, for example, a small fix can be applied and released around .NET without having
 to release all the other components which may not have experienced any real change.
 
-1. A client with a specific `MAJOR.MINOR` will be backward compatible with user application code written for
+. A client with a specific `MAJOR.MINOR` will be backward compatible with user application code written for
 `MAJOR.MINOR`.
-1. A client with specific `MAJOR` will be backward compatible with the `MAJOR` version of the server.
+. A client with specific `MAJOR` will be backward compatible with the `MAJOR` version of the server.
 
 In short, the dev mailing list is open to discussion on where a change will land. The discussion just needs to have
 good reasoning and use the general principles above as a framework for coming to a consensus.

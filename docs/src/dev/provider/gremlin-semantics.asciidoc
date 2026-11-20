@@ -2027,10 +2027,6 @@ Because the step performs no type checking on the incoming traverser, a value ou
 `Property` domain is neither passed through nor filtered from the traversal stream. Such input
 violates the step's domain contract and causes the traversal to fail with an error.
 
-[llms-summary="The formal semantics of the format() step: a mid-traversal step which will handle result formatting to string values."]
-[[format-step]]
-=== format()
-
 *Exceptions:*
 
 None

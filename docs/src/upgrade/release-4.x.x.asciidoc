@@ -24,7 +24,7 @@ image::gremlins-wildest-dreams.png[width=185]
 
 *Gremlin's Wildest Dreams*
 
-[llms-summary="Upgrade notes for the TinkerPop 4.0.0-beta.4 release: the TinkerGraph split into in-memory and disk-backed implementations, the Gremlin Console move to Groovy 6, Gremlin naming in JavaScript, variable-length paths in TinkerGQL, plus provider guidance."]
+[llms-summary="Upgrade notes for the TinkerPop 4.0.0-beta.4 release: the TinkerGraph split into in-memory and disk-backed implementations, the Gremlin Console move to Groovy 6, Gremlin naming in JavaScript, variable-length paths in TinkerGQL, GraphBinary length limits, Java module system support, geospatial data, plus provider guidance."]
 == TinkerPop 4.0.0-beta.4
 
 *Release Date: NOT OFFICIALLY RELEASED YET*
@@ -61,12 +61,14 @@ Code that referenced the renamed classes directly must be updated:
 `TinkerTransactionGraph.open()` becomes `TinkerStorageGraph.open()`.
 * Code depending on the exact runtime class of `TinkerGraph.open()` now sees `TinkerMemoryGraph`, including the value
 of `graph.configuration().getString("gremlin.graph")` and the `toString()` rendering of the graph, which is now
-`tinkermemorygraph[...]`. This also applies to the default graph produced by `subgraph()`.
+`tinkermemorygraph[...]`. The default graph produced by `subgraph()` also has the `TinkerMemoryGraph` runtime class
+and `toString()` rendering, although its `gremlin.graph` value remains `...TinkerGraph`.
 * `TinkerHelper.getVertices(graph)` and `TinkerHelper.getEdges(graph)` now take a `TinkerMemoryGraph` argument, and
 `TinkerFactory` creation methods return `TinkerMemoryGraph`.
 * Whole-graph payloads serialized with Gryo or typed GraphSON by an earlier version embed the old class name and are
-not guaranteed readable across the rename. The GraphSON type name `tinker:graph` is unchanged, so wire-level
-serialization of subgraphs between 4.0.0 processes is unaffected.
+not guaranteed readable across the rename. The GraphSON type names of the graph, `tinker:graph` in GraphSON 2.0 and
+3.0 and `g:graph` in GraphSON 4.0, are unchanged, so wire-level serialization of subgraphs between 4.0.0 processes is
+unaffected.
 * Test suite classes were renamed accordingly, for example `TinkerGraphProvider` to `TinkerMemoryGraphProvider`,
 which affects providers that extended them.
 
@@ -133,7 +135,7 @@ g.io('/tmp/graph.kryo').read().iterate()
 
 Configurations that previously relied on the in-memory graph loading itself from `graphLocation` on open must either
 call `io().read()` explicitly or switch to `TinkerStorageGraph` with a storage engine. Both
-`gremlin.tinkergraph.graphLocation` and `gremlin.tinkergraph.graphFormat` are retired as TinkerGraph settings; no graph
+`gremlin.tinkergraph.graphLocation` and `gremlin.tinkergraph.graphFormat` are retired as TinkerGraph settings, and no graph
 implementation reads either one. They survive only in Gremlin Server's `SimpleAuthenticator`, which uses them to read
 its credential store at startup.
 
@@ -153,8 +155,7 @@ See: link:https://tinkerpop.apache.org/docs/4.0.0-beta.4/reference/#tinkergraph-
 ==== TinkerGraph Close Ends Use of the Graph
 
 Calling `close()` on a TinkerGraph now ends its use, in line with what `close()` means for a graph backed by durable
-storage. Previously, `TinkerMemoryGraph` ignored `close()` entirely, so a graph kept accepting reads and writes after it
-was closed. A closed TinkerGraph, whether a `TinkerMemoryGraph` or a `TinkerStorageGraph`, now throws an
+storage. Previously, a TinkerGraph kept accepting reads and writes after it was closed. A closed TinkerGraph, whether a `TinkerMemoryGraph` or a `TinkerStorageGraph`, now throws an
 `IllegalStateException` for any use of the `Graph` API, for a new traversal, and for a write through an element obtained
 before the graph was closed. Reads through such an element, and traversals already being iterated, still see the data
 as it stood at close.
@@ -162,9 +163,9 @@ as it stood at close.
 [source,text]
 ----
 gremlin> graph = TinkerGraph.open()
-==>tinkermemorygraph[vertices:0 edges:0]
+==>null
 gremlin> g = traversal().with(graph)
-==>graphtraversalsource[tinkermemorygraph[vertices:0 edges:0], standard]
+==>null
 gremlin> g.addV('person')
 ==>v[0]
 gremlin> graph.close()
@@ -344,14 +345,14 @@ and remains a `List` even for `{1}`.
 
 [source,groovy]
 ----
-g.match("MATCH (a:person {name: 'marko'})-[:created]-{2}(b:person)").
-  select("a", "b").by("name")
+gremlin> g.match("MATCH (a:person {name: 'marko'})-[:created]-{2}(b:person)").
+......1>   select("a", "b").by("name")
 ==>[a:marko,b:josh]
 ==>[a:marko,b:peter]
 ----
 
-Zero-length quantifiers, reuse of a quantified edge variable, and bounds above `2147483646` are rejected, as
-listed under link:https://tinkerpop.apache.org/docs/4.0.0-beta.4/reference/#tinkergql-unsupported-features[Unsupported Features].
+Bounds above `2147483646` are rejected, as are zero-length quantifiers and reuse of a quantified edge variable, which
+are listed under link:https://tinkerpop.apache.org/docs/4.0.0-beta.4/reference/#tinkergql-unsupported-features[Unsupported Features].
 
 An undirected relationship, quantified or not, now matches a self-loop edge once, as GQL specifies. In
 4.0.0-beta.3 a named undirected relationship, as in `MATCH (a)-[r]-(b)`, returned two identical rows for each
@@ -473,13 +474,13 @@ The generated Gremlin parser classes moved from `org.apache.tinkerpop.gremlin.la
 
 [source,java]
 ----
-// 3.x
+// 3.x and 4.0.0-beta.3
 import org.apache.tinkerpop.gremlin.language.grammar.GremlinBaseVisitor;
 import org.apache.tinkerpop.gremlin.language.grammar.GremlinParser;
 import org.apache.tinkerpop.gremlin.util.MessageSerializer;
 import static org.apache.tinkerpop.gremlin.util.Tokens.TIMEOUT_MILLIS;
 
-// 4.x
+// 4.0.0-beta.4
 import org.apache.tinkerpop.gremlin.language.antlr.GremlinBaseVisitor;
 import org.apache.tinkerpop.gremlin.language.antlr.GremlinParser;
 import org.apache.tinkerpop.gremlin.util.ser.MessageSerializer;
@@ -522,18 +523,18 @@ language variants, and remote use through a driver or Gremlin Server are not yet
 The Java and Groovy translators render geometries, while the Python, .NET, Go and JavaScript translators reject them.
 
 To try the predicates on realistic data, `TinkerFactory.createTheDelivery()` builds the
-link:https://tinkerpop.apache.org/docs/x.y.z/data/#the-delivery[delivery graph], a toy graph of delivery hubs, zones,
+link:https://tinkerpop.apache.org/docs/4.0.0-beta.4/data/#the-delivery[delivery graph], a toy graph of delivery hubs, zones,
 customers and a warehouse whose geometries cover cases such as polygon holes, shared borders and the antimeridian.
 
 These additions make the geometry words, such as `point`, `polygon`, `geometry`, `Model`, `OTHER`, `GeoP` and the
 predicate names, keywords of the Gremlin grammar, so they can no longer be used as bare variable or parameter names and
 such a variable must be renamed. Quoted strings, property keys and naked map keys such as `[point:1]` are unaffected.
 
-See: link:https://tinkerpop.apache.org/docs/x.y.z/reference/#a-note-on-predicates[A Note on Predicates],
-link:https://tinkerpop.apache.org/docs/x.y.z/reference/#canonical-gremlin-literal-types[Canonical Gremlin Literal Types],
-link:https://tinkerpop.apache.org/docs/x.y.z/reference/#gremlin-groovy-differences[Gremlin-Groovy Differences],
-link:https://tinkerpop.apache.org/docs/x.y.z/reference/#gtype-enum[GType Enums],
-link:https://tinkerpop.apache.org/docs/x.y.z/dev/provider/#gremlin-semantics-geometry[Geometry Semantics]
+See: link:https://tinkerpop.apache.org/docs/4.0.0-beta.4/reference/#a-note-on-predicates[A Note on Predicates],
+link:https://tinkerpop.apache.org/docs/4.0.0-beta.4/reference/#canonical-gremlin-literal-types[Canonical Gremlin Literal Types],
+link:https://tinkerpop.apache.org/docs/4.0.0-beta.4/reference/#gremlin-groovy-differences[Gremlin-Groovy Differences],
+link:https://tinkerpop.apache.org/docs/4.0.0-beta.4/reference/#gtype-enum[GType Enums],
+link:https://tinkerpop.apache.org/docs/4.0.0-beta.4/dev/provider/#gremlin-semantics-geometry[Geometry Semantics]
 
 === Upgrading for Providers
 
@@ -631,8 +632,8 @@ The language variant translators reject geometry literals, the geo predicates an
 generated test files for Python, .NET, Go and JavaScript hold a placeholder for each of these scenarios and the
 language variant runners skip `@DataGeometry`.
 
-See: link:https://tinkerpop.apache.org/docs/x.y.z/dev/developer/#gherkin-tags[Gherkin Tags],
-link:https://tinkerpop.apache.org/docs/x.y.z/data/#the-delivery[The Delivery]
+See: link:https://tinkerpop.apache.org/docs/4.0.0-beta.4/dev/developer/#gherkin-tags[Gherkin Tags],
+link:https://tinkerpop.apache.org/docs/4.0.0-beta.4/data/#the-delivery[The Delivery]
 
 ===== Gremlin Console Extensions
 

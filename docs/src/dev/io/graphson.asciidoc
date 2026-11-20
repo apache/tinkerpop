@@ -20,7 +20,7 @@ under the License.
 [[graphson]]
 = GraphSON
 
-image:../../../static/images/gremlin-graphson.png[width=350,float=left] GraphSON is a JSON-based format that is designed for human readable
+image:gremlin-graphson.png[width=350,float=left] GraphSON is a JSON-based format that is designed for human readable
 output that is easily supported in any programming language through the wide-array of JSON parsing libraries that
 exist on virtually all platforms. GraphSON versions 1 to 3 were considered to be both a "graph" format and a
 generalized object serialization format. That characteristic makes it useful as a serialization format for Gremlin

@@ -589,6 +589,7 @@ Simply provide a `InputFormat` and `OutputFormat` that can be referenced by a `H
 in the link:https://tinkerpop.apache.org/docs/x.y.z/reference/#clonevertexprogram[Reference Documentation].
 
 [[tinkerpop-providers-tinkergql]]
+[llms-summary="How a graph system provider supports declarative pattern matching with TinkerGQL: the Maven dependency, registering the strategy, performance hints, property index integration, a custom executor, and implementing a different declarative language."]
 ==== Supporting Declarative Pattern Matching (TinkerGQL)
 
 Graph providers can offer declarative pattern matching via the `match(String)` step by integrating the

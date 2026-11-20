@@ -659,7 +659,8 @@ is unnecessary and will result in error:
 gremlin> def x = 10
 ==>10
 gremlin> x
-No such property: x for class: groovysh_evaluate
+No such property: x for class: Script4
+Type ':help' or ':h' for help.
 Display stack trace? [yN] n
 ----
 

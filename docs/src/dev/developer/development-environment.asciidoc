@@ -789,23 +789,23 @@ tags to use or ignore. For example to just run the `coin()` tests: `-Dcucumber.f
 Debugging Python within this mainly JVM-based project structure requires a bit of configuration. The following steps
 will help get Intellij prepared for this task:
 
-1. Install the Python plugin from JetBrains which should provide PyCharm like functionality.
-1. Right-click the "tinkerpop" top-level module in Intellij's project explorer and "Open Module Settings".
-1. Select "Platform Settings | SDKs" and then click the "+" to "Add Python SDK..."
-1. Choose a "Virtualenv Environment" and a "New environment". Set the "Location" to
+. Install the Python plugin from JetBrains which should provide PyCharm like functionality.
+. Right-click the "tinkerpop" top-level module in Intellij's project explorer and "Open Module Settings".
+. Select "Platform Settings | SDKs" and then click the "+" to "Add Python SDK..."
+. Choose a "Virtualenv Environment" and a "New environment". Set the "Location" to
 "<project-root>/gremlin-python/src/main/python". Select a "Base interpreter" that matches the version required by
 `gremlin-python` and click "OK".
-1. Select "Project Settings | Modules" and then select "gremlin-python" from the listing. Change the "Module SDK" to
+. Select "Project Settings | Modules" and then select "gremlin-python" from the listing. Change the "Module SDK" to
 the newly added Python SDK.
-1. Open a terminal to `gremlin-python/scr/main/python` and do `venv/bin/pip3 install -e .` to pull in all of the
+. Open a terminal to `gremlin-python/src/main/python` and do `venv/bin/pip3 install -e .` to pull in all of the
 `gremlin-python` dependencies.
 
 At this stage, it should be possible to run unit tests in Python:
 
-1. Pull down the drop down in the toolbar for "Run/Debug Configurations" and select "Edit Configurations..."
-1. Click the "+" to "Python Tests | pytest" and browse to a test to supply the "Script path".
-1. Go to "Python interpreter" and select "Use SDK of module" and choose "gremlin-python" in the drop-down and click OK.
-1. The test should not appear in the "Run/Debug Configurations" and can be executed.
+. Pull down the drop down in the toolbar for "Run/Debug Configurations" and select "Edit Configurations..."
+. Click the "+" to "Python Tests | pytest" and browse to a test to supply the "Script path".
+. Go to "Python interpreter" and select "Use SDK of module" and choose "gremlin-python" in the drop-down and click OK.
+. The test should now appear in the "Run/Debug Configurations" and can be executed.
 
 NOTE: When the Debug button is pressed, Intellij may display a notification that using the debugger requires some
 additional downloads - confirm those installations as required.
