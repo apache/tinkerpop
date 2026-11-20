@@ -79,7 +79,9 @@ def bd_write(*args):
 
 
 def as_list(payload):
-    """bd sometimes returns a bare object where a list is expected."""
+    """bd sometimes returns a bare object, or null, where a list is expected."""
+    if payload is None:
+        return []
     if isinstance(payload, dict):
         return payload.get("issues", [payload])
     return payload

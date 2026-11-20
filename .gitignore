@@ -64,3 +64,5 @@ gremlin-js/node/
 /gremlin-javascript/
 /gremlin-mcp/
 /gremlint/
+# bd writes a migration-gate lock beside .beads/ and never deletes it
+*.gate.lock*

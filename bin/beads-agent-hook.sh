@@ -105,7 +105,7 @@ REDIRECT_RE='(^|[[:space:]])(no,|nope|instead|rather than|we tried|already tried
 text=""
 case "$event" in
     session-start)
-        text=$(bd prime 2>/dev/null)
+        text=$(bd prime --no-memories 2>/dev/null)
         ;;
 
     stop)

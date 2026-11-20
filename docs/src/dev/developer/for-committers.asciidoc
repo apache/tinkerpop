@@ -83,7 +83,8 @@ must grounded on the dev list.
 === Setting Up Beads
 
 The `bd` tool, available from link:https://beads.gascity.com/[the beads project], must be installed
-before any of the commands below will work. Beads data lives in a Dolt database published at
+before any of the commands below will work. The database requires `bd` 1.3.4 or later, and an
+older `bd` refuses to open it. Beads data lives in a Dolt database published at
 link:https://www.dolthub.com/repositories/tinkerpop/tinkerbeads[tinkerpop/tinkerbeads], and only
 `.beads/PRIME.md` and `.beads/config.yaml` are tracked in the repository. Running the following
 command from the repository root reads the remote recorded in `config.yaml` and clones that
@@ -229,10 +230,15 @@ motion that resolves its JIRA issue, the whole subgraph beneath the root is pinn
 bd children <root>
 bin/beads-commits.py --root <root> --branch 3.7-dev --suggest
 bin/beads-commits.py --root <root> --branch 3.7-dev --commits <hash>...
-bd close <root>
+bd close <root> --force
 bd update <id1> <id2> ... -s pinned
 bd dolt pull && bd dolt push
 ----
+
+The root is closed with `--force` because the commit record that `bin/beads-commits.py` writes is a
+pinned child, and `bd` will not close a bead while a child is anything other than closed. The flag
+overrides every other refusal as well, so the `bd children` listing is the real check. Pinned records
+should be the only children not yet closed, and anything else still open is unfinished work.
 
 Pinning is what makes a bead permanent. Destructive maintenance operations act on closed beads
 and skip pinned ones, so a subgraph left closed but unpinned remains eligible for routine
@@ -396,7 +402,16 @@ bd list --type gate --status open --assignee <email>
 
 For each gate, the committer reads the reason and either revises the errand's Change and Acceptance
 sections and then runs `bd gate resolve` on the gate, which makes the errand available again, or
-abandons the errand by closing it together with its gate.
+abandons the errand by closing it together with its gate:
+
+[source,text]
+----
+bd close <gate> <errand> --actor <email>
+----
+
+The gate is named first because `bd` will not close an errand that an open gate still blocks. The
+`--actor` value is the email address the gate is assigned to, since `bd` otherwise acts as the git
+`user.name` and will not close a bead assigned to someone else.
 
 [[beads-shared]]
 === A Shared Database
