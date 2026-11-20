@@ -112,10 +112,7 @@ public @interface LoadGraphWith {
          * Loads "The Delivery" TinkerPop4 toy graph which showcases geometry property values and the geospatial
          * predicates. It models a delivery network of hubs, zones, customers, places and a warehouse.
          * <p/>
-         * Note that this {@code GraphData} does not currently support {@link #location()}, which throws an
-         * {@code UnsupportedOperationException}, since none of the serialization formats used to produce a data
-         * file for it (Gryo, GraphSON) can write geometry values. It is only usable via a {@link GraphProvider}
-         * that builds the graph directly, e.g. with {@code TinkerFactory.createTheDelivery()}. The
+         * The {@link #location()} is a Gryo file, since GraphSON V1, V2 and V3 cannot write geometry values. The
          * {@link #featuresRequired()} cover the string, map and double values in the graph. No feature flag exists
          * for geometry values, so a provider must also be able to store {@code Geometry} property values on vertices
          * and edges. Only {@code @DataGeometry} scenarios use this graph, so a provider that cannot build it or
@@ -180,8 +177,7 @@ public @interface LoadGraphWith {
                 case AIR_ROUTES:
                     return RESOURCE_PATH_PREFIX + "air-routes-v3.kryo";
                 case DELIVERY:
-                    throw new UnsupportedOperationException(
-                            "There is no data file for the delivery graph since its geometry values cannot be serialized");
+                    return RESOURCE_PATH_PREFIX + "tinkerpop-delivery-v3.kryo";
             }
 
             throw new RuntimeException("No file for this GraphData type");

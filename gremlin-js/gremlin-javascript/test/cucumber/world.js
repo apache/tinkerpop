@@ -148,7 +148,7 @@ Before({tags: "@DataDuration"}, function() {
   return 'skipped'
 })
 
-// geometry values cannot be serialized
+// gremlin-javascript has no geo predicates and the translator rejects geometries, so these scenarios are placeholders
 Before({tags: "@DataGeometry"}, function() {
   return 'skipped'
 })

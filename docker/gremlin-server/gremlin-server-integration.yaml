@@ -50,6 +50,9 @@ graphs: {
   airroutes: {
     configuration: conf/tinkergraph-empty.properties,
     traversalSources: [{name: gairroutes}]},
+  delivery: {
+    configuration: conf/tinkergraph-empty.properties,
+    traversalSources: [{name: gdelivery}]},
   tx: {
     configuration: conf/tinkerstoragegraph-service.properties,
     traversalSources: [{name: gtx}]}}
@@ -61,6 +64,7 @@ lifecycleHooks:
   - { className: org.apache.tinkerpop.gremlin.server.util.TinkerFactoryDataLoader, config: {graph: sink, dataset: sink}}
   - { className: org.apache.tinkerpop.gremlin.server.util.TinkerFactoryDataLoader, config: {graph: zoo, dataset: zoo}}
   - { className: org.apache.tinkerpop.gremlin.server.util.TinkerFactoryDataLoader, config: {graph: airroutes, dataset: airroutes}}
+  - { className: org.apache.tinkerpop.gremlin.server.util.TinkerFactoryDataLoader, config: {graph: delivery, dataset: delivery}}
 scriptEngines: {
   gremlin-lang : {},
   gremlin-groovy: {

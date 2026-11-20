@@ -1297,7 +1297,7 @@ func TestCucumberFeatures(t *testing.T) {
 		TestSuiteInitializer: InitializeTestSuite,
 		ScenarioInitializer:  InitializeScenario,
 		Options: &godog.Options{
-			// @DataGeometry is excluded since geometry values cannot be serialized
+			// @DataGeometry is excluded since gremlin-go has no geo predicates and the translator rejects geometries
 			Tags:     "~@GraphComputerOnly && ~@AllowNullPropertyValues && ~@StepWrite && ~@MultiLabelDefault && ~@DataGeometry",
 			Format:   "pretty",
 			Paths:    []string{getEnvOrDefaultString("CUCUMBER_FEATURE_FOLDER", "../../../gremlin-test/src/main/resources/org/apache/tinkerpop/gremlin/test/features")},
