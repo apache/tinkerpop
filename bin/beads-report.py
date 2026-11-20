@@ -107,7 +107,7 @@ def load_subtree(root):
 
     `bd children` recurses in its text output but NOT under `--json`, which
     returns direct children only -- so a single call silently truncates the
-    subtree to depth 1. Verified against a four-level tree at bd 1.1.2."""
+    subtree to depth 1. Verified against a four-level tree at bd 1.3.4."""
     beads = {}
     for record in as_list(bd("show", root)):
         beads.setdefault(record["id"], record)

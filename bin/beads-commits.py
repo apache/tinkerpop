@@ -118,7 +118,9 @@ def bd(*args):
 
 
 def as_list(payload):
-    """bd sometimes returns a bare object where a list is expected."""
+    """bd sometimes returns a bare object, or null, where a list is expected."""
+    if payload is None:
+        return []
     if isinstance(payload, dict):
         return payload.get("issues", [payload])
     return payload
@@ -230,8 +232,7 @@ def record_pr(root, ref, dry_run):
         print(f"--dry-run: would create a record for {ref} under {root} and pin it")
         return
     created = as_list(bd("create", "--type=record", f"--parent={root}",
-                         f"--title={ref}", f"--external-ref={ref}"))
-    bd("update", created[0]["id"], "-s", "pinned")
+                         f"--title={ref}", f"--external-ref={ref}", "--status=pinned"))
     print(f"created {created[0]['id']} for {ref} under {root}, pinned")
 
 
@@ -454,11 +455,9 @@ def main():
             print(f"--dry-run: would create a record under {args.root} and pin it")
         else:
             created = as_list(bd("create", "--type=record", f"--parent={args.root}",
-                                 f"--title={ref}", f"--external-ref={ref}", f"--notes={notes}"))
+                                 f"--title={ref}", f"--external-ref={ref}", f"--notes={notes}",
+                                 "--status=pinned"))
             record = created[0]["id"]
-            # Records are created pinned (PRIME.md section 6), but `bd create` has no
-            # status flag, so pinning is a second call.
-            bd("update", record, "-s", "pinned")
             print(f"created {record} under {args.root}, pinned, {len(shas)} commit(s)")
 
     for number in prs:

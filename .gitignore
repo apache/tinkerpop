@@ -60,3 +60,5 @@ CLAUDE.md
 gremlin-python/src/main/python/build/
 .skills/tinker-review/node_modules/
 gremlin-js/
+# bd writes a migration-gate lock beside .beads/ and never deletes it
+*.gate.lock*
