@@ -263,6 +263,11 @@ public abstract class AbstractChannelizer extends ChannelInitializer<SocketChann
     }
 
     private Authorizer createAuthorizer(final Settings.AuthorizationSettings config) {
+        // a channelizer that delegates to another channelizer shares its settings, so the Authorizer created by the
+        // first one is reused here rather than created and set up a second time
+        if (config.getAuthorizerInstance().isPresent()) {
+            return config.getAuthorizerInstance().get();
+        }
         final String authorizerClass = config.authorizer;
         if (null == authorizerClass) {
             return null;
@@ -271,6 +276,7 @@ public abstract class AbstractChannelizer extends ChannelInitializer<SocketChann
             final Class<?> clazz = Class.forName(authorizerClass);
             final Authorizer authorizer = (Authorizer) clazz.newInstance();
             authorizer.setup(config.config);
+            config.overrideAuthorizer(authorizer);
             return authorizer;
         } catch (Exception ex) {
             logger.warn(ex.getMessage());

@@ -906,7 +906,6 @@ Base64 encoded string however as the old approach will likely be removed in the 
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1600[TINKERPOP-1600]
 
-[llms-summary="Upgrade notes specific to the TinkerPop 3.2.3 release: its changes and changelog."]
 == TinkerPop 3.2.3
 
 *Release Date: October 17, 2016*

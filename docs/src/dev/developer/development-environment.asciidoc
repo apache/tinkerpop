@@ -209,7 +209,9 @@ The build emits three kinds of artifact under `target/docs`:
 * a site-root *discovery index* at `/llms.txt`.
 
 Pages are summary-driven: a section becomes its own Markdown page if and only if it carries an `llms-summary` attribute,
-whose value is the one-line description used in `llms.txt`. Authors add these directly in the AsciiDoc source:
+whose value is the one-line description used in `llms.txt`. The page is named from the section's anchor
+(`looping.md` below) or, without one, from its heading and the headings above it. Authors add these directly in the
+AsciiDoc source:
 
 [source,asciidoc]
 ----

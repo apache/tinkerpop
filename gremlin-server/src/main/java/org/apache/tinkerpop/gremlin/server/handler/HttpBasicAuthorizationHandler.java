@@ -43,7 +43,11 @@ import static io.netty.handler.codec.http.HttpResponseStatus.UNAUTHORIZED;
  *  An authorization handler for the http channel that allows the {@link Authorizer} to be plugged into it.
  *
  * @author Marc de Lignie
+ * @deprecated As of release 3.7.8, HTTP authorization is performed by {@link HttpGremlinEndpointHandler} on the
+ * deserialized {@link RequestMessage}. {@link SaslAndHttpBasicAuthenticationHandler} only adds this handler in front
+ * of a request handler that does not authorize requests itself.
  */
+@Deprecated
 @ChannelHandler.Sharable
 public class HttpBasicAuthorizationHandler extends ChannelInboundHandlerAdapter {
     private static final Logger logger = LoggerFactory.getLogger(HttpBasicAuthorizationHandler.class);

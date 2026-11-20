@@ -575,6 +575,27 @@ public class Settings {
          * {@link Authorizer} implementation for specifics on what configurations are expected.
          */
         public Map<String, Object> config = null;
+
+        private Authorizer authorizerInstance;
+
+        /**
+         * When this value is set, it is the {@link Authorizer} that Gremlin Server uses and the {@link #authorizer}
+         * and {@link #config} settings are ignored. Gremlin Server sets it to the {@link Authorizer} it creates from
+         * those settings, so that every channelizer and handler that shares these settings uses the same instance.
+         * The instance stays on these settings, so a server started again with the same {@link Settings} object
+         * reuses the {@link Authorizer} that was already set up rather than creating a new one.
+         */
+        public void overrideAuthorizer(final Authorizer authorizer) {
+            this.authorizerInstance = authorizer;
+        }
+
+        /**
+         * Gets the {@link Authorizer} that Gremlin Server uses for these settings, if one was created or set with
+         * {@link #overrideAuthorizer(Authorizer)}.
+         */
+        public Optional<Authorizer> getAuthorizerInstance() {
+            return Optional.ofNullable(authorizerInstance);
+        }
     }
 
     /**
