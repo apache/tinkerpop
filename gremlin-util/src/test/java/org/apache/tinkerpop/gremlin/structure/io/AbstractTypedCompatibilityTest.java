@@ -40,6 +40,7 @@ import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
+import org.apache.tinkerpop.gremlin.structure.geo.Geometry;
 import org.apache.tinkerpop.gremlin.structure.io.graphbinary.GraphBinaryCompatibilityTest;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONTypedCompatibilityTest;
 import org.apache.tinkerpop.gremlin.structure.io.pdt.CompositePDT;
@@ -593,6 +594,140 @@ public abstract class AbstractTypedCompatibilityTest extends AbstractCompatibili
         assertEquals(fromStatic, recycled);
         assertEquals(resource, fromStatic);
         assertEquals(resource, recycled);
+    }
+
+    @Test
+    public void shouldReadWritePointGeometry() throws Exception {
+        final String resourceName = "point-geometry";
+
+        final Geometry resource = findModelEntryObject(resourceName);
+        final Geometry fromStatic = read(readFromResource(resourceName), Geometry.class);
+        final Geometry recycled = read(write(fromStatic, Geometry.class, resourceName), Geometry.class);
+        assertNotSame(fromStatic, recycled);
+        assertEquals(fromStatic, recycled);
+        assertEquals(resource, fromStatic);
+        assertEquals(resource, recycled);
+    }
+
+    @Test
+    public void shouldReadWritePointZGeometry() throws Exception {
+        final String resourceName = "point-z-geometry";
+
+        final Geometry resource = findModelEntryObject(resourceName);
+        final Geometry fromStatic = read(readFromResource(resourceName), Geometry.class);
+        final Geometry recycled = read(write(fromStatic, Geometry.class, resourceName), Geometry.class);
+        assertNotSame(fromStatic, recycled);
+        assertEquals(fromStatic, recycled);
+        assertEquals(resource, fromStatic);
+        assertEquals(resource, recycled);
+    }
+
+    @Test
+    public void shouldReadWriteEmptyPointGeometry() throws Exception {
+        final String resourceName = "empty-point-geometry";
+
+        final Geometry resource = findModelEntryObject(resourceName);
+        final Geometry fromStatic = read(readFromResource(resourceName), Geometry.class);
+        final Geometry recycled = read(write(fromStatic, Geometry.class, resourceName), Geometry.class);
+        assertNotSame(fromStatic, recycled);
+        assertEquals(fromStatic, recycled);
+        assertEquals(resource, fromStatic);
+        assertEquals(resource, recycled);
+    }
+
+    @Test
+    public void shouldReadWriteLineStringGeometry() throws Exception {
+        final String resourceName = "linestring-geometry";
+
+        final Geometry resource = findModelEntryObject(resourceName);
+        final Geometry fromStatic = read(readFromResource(resourceName), Geometry.class);
+        final Geometry recycled = read(write(fromStatic, Geometry.class, resourceName), Geometry.class);
+        assertNotSame(fromStatic, recycled);
+        assertEquals(fromStatic, recycled);
+        assertEquals(resource, fromStatic);
+        assertEquals(resource, recycled);
+    }
+
+    @Test
+    public void shouldReadWritePolygonGeometry() throws Exception {
+        final String resourceName = "polygon-geometry";
+
+        final Geometry resource = findModelEntryObject(resourceName);
+        final Geometry fromStatic = read(readFromResource(resourceName), Geometry.class);
+        final Geometry recycled = read(write(fromStatic, Geometry.class, resourceName), Geometry.class);
+        assertNotSame(fromStatic, recycled);
+        assertEquals(fromStatic, recycled);
+        assertEquals(resource, fromStatic);
+        assertEquals(resource, recycled);
+    }
+
+    @Test
+    public void shouldReadWriteMultiPointGeometry() throws Exception {
+        final String resourceName = "multipoint-geometry";
+
+        final Geometry resource = findModelEntryObject(resourceName);
+        final Geometry fromStatic = read(readFromResource(resourceName), Geometry.class);
+        final Geometry recycled = read(write(fromStatic, Geometry.class, resourceName), Geometry.class);
+        assertNotSame(fromStatic, recycled);
+        assertEquals(fromStatic, recycled);
+        assertEquals(resource, fromStatic);
+        assertEquals(resource, recycled);
+    }
+
+    @Test
+    public void shouldReadWriteMultiLineStringGeometry() throws Exception {
+        final String resourceName = "multilinestring-geometry";
+
+        final Geometry resource = findModelEntryObject(resourceName);
+        final Geometry fromStatic = read(readFromResource(resourceName), Geometry.class);
+        final Geometry recycled = read(write(fromStatic, Geometry.class, resourceName), Geometry.class);
+        assertNotSame(fromStatic, recycled);
+        assertEquals(fromStatic, recycled);
+        assertEquals(resource, fromStatic);
+        assertEquals(resource, recycled);
+    }
+
+    @Test
+    public void shouldReadWriteMultiPolygonGeometry() throws Exception {
+        final String resourceName = "multipolygon-geometry";
+
+        final Geometry resource = findModelEntryObject(resourceName);
+        final Geometry fromStatic = read(readFromResource(resourceName), Geometry.class);
+        final Geometry recycled = read(write(fromStatic, Geometry.class, resourceName), Geometry.class);
+        assertNotSame(fromStatic, recycled);
+        assertEquals(fromStatic, recycled);
+        assertEquals(resource, fromStatic);
+        assertEquals(resource, recycled);
+    }
+
+    @Test
+    public void shouldReadWriteGeometryCollectionGeometry() throws Exception {
+        final String resourceName = "geometrycollection-geometry";
+
+        final Geometry resource = findModelEntryObject(resourceName);
+        final Geometry fromStatic = read(readFromResource(resourceName), Geometry.class);
+        final Geometry recycled = read(write(fromStatic, Geometry.class, resourceName), Geometry.class);
+        assertNotSame(fromStatic, recycled);
+        assertEquals(fromStatic, recycled);
+        assertEquals(resource, fromStatic);
+        assertEquals(resource, recycled);
+    }
+
+    /**
+     * GraphBinary and GraphSON both carry the SRID of a geometry, so an SRID whose model is OTHER round trips.
+     */
+    @Test
+    public void shouldReadWriteOtherSridGeometry() throws Exception {
+        final String resourceName = "other-srid-geometry";
+
+        final Geometry resource = findModelEntryObject(resourceName);
+        final Geometry fromStatic = read(readFromResource(resourceName), Geometry.class);
+        final Geometry recycled = read(write(fromStatic, Geometry.class, resourceName), Geometry.class);
+        assertNotSame(fromStatic, recycled);
+        assertEquals(fromStatic, recycled);
+        assertEquals(resource, fromStatic);
+        assertEquals(resource, recycled);
+        assertEquals(3857, recycled.srid());
     }
 
     @Test

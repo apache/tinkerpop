@@ -157,6 +157,16 @@ public class IoDataGenerationTest {
      * No assertions.  Just write out the graph for convenience.
      */
     @Test
+    public void shouldWriteTheDeliveryGraphAsGryoV3() throws IOException {
+        final OutputStream os = new FileOutputStream(new File(tempPath, "tinkerpop-delivery-v3.kryo"));
+        GryoWriter.build().mapper(GryoMapper.build().version(GryoVersion.V3_0).create()).create().writeGraph(os, TinkerFactory.createTheDelivery());
+        os.close();
+    }
+
+    /**
+     * No assertions.  Just write out the graph for convenience.
+     */
+    @Test
     public void shouldWriteDEFAULTClassicGraphAsGryoV3() throws IOException {
         final OutputStream os = new FileOutputStream(new File(tempPath, "tinkerpop-classic.kryo"));
         GryoWriter.build().mapper(GryoMapper.build().version(GryoVersion.V3_0).create()).create().writeGraph(os, TinkerFactory.createClassic());
@@ -180,6 +190,16 @@ public class IoDataGenerationTest {
     public void shouldWriteDEFAULTCrewGraphAsGryoV3() throws IOException {
         final OutputStream os = new FileOutputStream(new File(tempPath, "tinkerpop-crew.kryo"));
         GryoWriter.build().mapper(GryoMapper.build().version(GryoVersion.V3_0).create()).create().writeGraph(os, TinkerFactory.createTheCrew());
+        os.close();
+    }
+
+    /**
+     * No assertions.  Just write out the graph for convenience.
+     */
+    @Test
+    public void shouldWriteDEFAULTTheDeliveryGraphAsGryoV3() throws IOException {
+        final OutputStream os = new FileOutputStream(new File(tempPath, "tinkerpop-delivery.kryo"));
+        GryoWriter.build().mapper(GryoMapper.build().version(GryoVersion.V3_0).create()).create().writeGraph(os, TinkerFactory.createTheDelivery());
         os.close();
     }
 
@@ -545,6 +565,17 @@ public class IoDataGenerationTest {
         final OutputStream os = new FileOutputStream(new File(tempPath, "tinkerpop-zoo.json"));
         GraphSONWriter.build().mapper(GraphSONMapper.build().version(GraphSONVersion.V4_0).create()).create()
                 .writeGraph(os, TinkerFactory.createTheZoo());
+        os.close();
+    }
+
+    /**
+     * No assertions.  Just write out the graph for convenience.
+     */
+    @Test
+    public void shouldWriteDEFAULTTheDeliveryGraphAsGraphSONV4() throws IOException {
+        final OutputStream os = new FileOutputStream(new File(tempPath, "tinkerpop-delivery.json"));
+        GraphSONWriter.build().mapper(GraphSONMapper.build().version(GraphSONVersion.V4_0).create()).create()
+                .writeGraph(os, TinkerFactory.createTheDelivery());
         os.close();
     }
 

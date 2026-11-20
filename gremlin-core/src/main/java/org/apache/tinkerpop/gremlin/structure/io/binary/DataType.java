@@ -53,6 +53,7 @@ public enum DataType {
     BOOLEAN(0x27),
     BULKSET(0X2A),  // todo:
     TREE(0X2B),
+    GEOMETRY(0X31),
 
     CHAR(0X80),
     DURATION(0X81),

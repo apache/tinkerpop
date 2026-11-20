@@ -53,6 +53,7 @@ const DataType = {
   BOOLEAN: 0x27,
   TREE: 0x2b,
   MERGE: 0x2e,
+  GEOMETRY: 0x31,
 
   CHAR: 0x80,
   DURATION: 0x81,

@@ -257,6 +257,11 @@ function compositePdtComparator(actual, expected) {
   assert.deepStrictEqual(actual.fields, expected.fields);
 }
 
+function geometryComparator(actual, expected) {
+  assert.strictEqual(actual.constructor, expected.constructor);
+  assert.isTrue(actual.equals(expected));
+}
+
 function setCardinalityComparator(actual, expected) {
   assert.strictEqual(actual.id, expected.id);
   assert.strictEqual(actual.label, expected.label);
@@ -316,6 +321,16 @@ describe('GraphBinary v4 Model Tests', () => {
   run('merge-out-v');
   run('merge-in-v');
   run('neg-zero-double', negZeroComparator);
+  run('point-geometry', geometryComparator);
+  run('point-z-geometry', geometryComparator);
+  run('empty-point-geometry', geometryComparator);
+  run('linestring-geometry', geometryComparator);
+  run('polygon-geometry', geometryComparator);
+  run('multipoint-geometry', geometryComparator);
+  run('multilinestring-geometry', geometryComparator);
+  run('multipolygon-geometry', geometryComparator);
+  run('geometrycollection-geometry', geometryComparator);
+  run('other-srid-geometry', geometryComparator);
 
   // runWriteRead mode
   runWriteRead('min-byte');

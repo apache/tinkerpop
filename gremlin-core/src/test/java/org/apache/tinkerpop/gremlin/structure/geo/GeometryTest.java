@@ -951,7 +951,7 @@ public class GeometryTest {
         // Null input to the parsers
         assertIae(() -> Geometry.fromWkt(null));
         assertIae(() -> Geometry.fromWkt(null, 4326));
-        assertIae(() -> Geometry.fromWkb(null, 0));
+        assertIae(() -> Geometry.fromWkb((byte[]) null, 0));
     }
 
     private static void assertIae(final Runnable action) {

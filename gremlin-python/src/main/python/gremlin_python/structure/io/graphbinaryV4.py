@@ -30,6 +30,7 @@ from aenum import Enum
 from gremlin_python.process.traversal import Direction, T, Merge
 from gremlin_python.statics import FloatType, BigDecimal, ShortType, IntType, LongType, BigIntType, \
     DictType, SetType, SingleByte, SingleChar
+from gremlin_python.structure.geo import Geometry
 from gremlin_python.structure.graph import Graph, Edge, Property, Vertex, VertexProperty, Path, CompositePDT, \
     PrimitivePDT, Tree, _pdt_decorated_types
 from gremlin_python.structure.io.util import HashableDict, SymbolUtil, Marker
@@ -71,6 +72,7 @@ class DataType(Enum):
     short = 0x26
     boolean = 0x27
     tree = 0x2b
+    geometry = 0x31
     char = 0x80
     duration = 0x81
     composite_pdt = 0xf0
@@ -1070,3 +1072,24 @@ class PrimitivePDTIO(_GraphBinaryTypeIO):
         name = r.read_object(b)
         value = r.read_object(b)
         return PrimitivePDT(name, value)
+
+
+class GeometryIO(_GraphBinaryTypeIO):
+    python_type = Geometry
+    graphbinary_type = DataType.geometry
+
+    @classmethod
+    def dictify(cls, obj, writer, to_extend, as_value=False, nullable=True):
+        cls.prefix_bytes(cls.graphbinary_type, as_value, nullable, to_extend)
+        to_extend.extend(int32_pack(obj.srid))
+        to_extend.extend(obj.to_wkb())
+        return to_extend
+
+    @classmethod
+    def objectify(cls, buff, reader, nullable=True):
+        return cls.is_null(buff, reader, cls._read_geometry, nullable)
+
+    @classmethod
+    def _read_geometry(cls, b, r):
+        srid = cls.read_int(b)
+        return Geometry.read_wkb(b, srid)

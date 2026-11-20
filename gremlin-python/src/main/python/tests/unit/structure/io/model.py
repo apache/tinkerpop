@@ -21,6 +21,8 @@ import datetime
 import uuid
 from collections import OrderedDict
 from gremlin_python.statics import short, long, bigint, BigDecimal, SingleByte, SingleChar
+from gremlin_python.structure.geo import GeometryCollection, LineString, Model, MultiLineString, \
+    MultiPoint, MultiPolygon, Point, Polygon
 from gremlin_python.structure.graph import Graph, Vertex, Edge, Property, VertexProperty, Path, Tree, CompositePDT, PrimitivePDT
 from gremlin_python.process.traversal import Direction, Merge, T
 
@@ -101,6 +103,35 @@ model["no-prop-edge"] = Edge(
     "develops",
     Vertex(10, "software")
 )
+
+
+def _geographic_ring(coordinates):
+    return LineString([Point(x, y, model=Model.GEOGRAPHIC) for x, y in coordinates])
+
+
+model["point-geometry"] = Point(-122.3321, 47.6062, model=Model.GEOGRAPHIC)
+model["point-z-geometry"] = Point(1, 2, 3)
+model["empty-point-geometry"] = Point.empty()
+model["linestring-geometry"] = LineString([Point(0, 0), Point(1, 1), Point(2, 0)])
+model["polygon-geometry"] = Polygon(
+    _geographic_ring([(0, 0), (10, 0), (10, 10), (0, 10), (0, 0)]),
+    [_geographic_ring([(2, 2), (2, 4), (4, 4), (2, 2)])]
+)
+model["multipoint-geometry"] = MultiPoint([Point(1, 2), Point(3, 4)])
+model["multilinestring-geometry"] = MultiLineString([
+    LineString([Point(0, 0), Point(1, 1)]),
+    LineString([Point(2, 2), Point(3, 3)])
+])
+model["multipolygon-geometry"] = MultiPolygon([
+    Polygon(_geographic_ring([(0, 0), (1, 0), (1, 1), (0, 1), (0, 0)])),
+    Polygon(_geographic_ring([(2, 2), (3, 2), (3, 3), (2, 3), (2, 2)]))
+])
+model["geometrycollection-geometry"] = GeometryCollection([
+    Point(1, 2),
+    GeometryCollection([LineString([Point(0, 0), Point(1, 1)])]),
+    Point.empty()
+])
+model["other-srid-geometry"] = Point(1, 2, srid=3857)
 model["max-int"] = 2147483647
 model["min-int"] = -2**31
 model["max-long"] = long(2**63-1)

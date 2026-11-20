@@ -191,6 +191,36 @@ def test_no_prop_edge():
     # gremlin-python serializes/deserializes "null" for props not empty list
     run_writeread("no-prop-edge")
 
+def test_point_geometry():
+    run("point-geometry")
+
+def test_point_z_geometry():
+    run("point-z-geometry")
+
+def test_empty_point_geometry():
+    run("empty-point-geometry")
+
+def test_linestring_geometry():
+    run("linestring-geometry")
+
+def test_polygon_geometry():
+    run("polygon-geometry")
+
+def test_multipoint_geometry():
+    run("multipoint-geometry")
+
+def test_multilinestring_geometry():
+    run("multilinestring-geometry")
+
+def test_multipolygon_geometry():
+    run("multipolygon-geometry")
+
+def test_geometrycollection_geometry():
+    run("geometrycollection-geometry")
+
+def test_other_srid_geometry():
+    run("other-srid-geometry")
+
 def test_max_int():
     run("max-int")
 

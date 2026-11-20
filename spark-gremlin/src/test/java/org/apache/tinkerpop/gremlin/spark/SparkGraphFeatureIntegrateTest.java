@@ -56,7 +56,7 @@ import java.util.Optional;
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData;
 import static org.apache.tinkerpop.gremlin.features.World.GRAPHCOMPUTER_TAG_FILTER;
 
-// @DataGeometry scenarios are excluded since geometry values cannot be serialized
+// @DataGeometry scenarios are excluded since SparkGraphWorld has no delivery graph
 @RunWith(Cucumber.class)
 @CucumberOptions(
         tags = GRAPHCOMPUTER_TAG_FILTER + " and not @WithElementIdStrategy and not @DataGeometry",

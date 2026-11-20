@@ -44,6 +44,7 @@ public class TestFiles {
                     "tinkerpop-crew-v3.kryo",
                     "tinkerpop-sink-v3.kryo",
                     "tinkerpop-zoo-v3.kryo",
+                    "tinkerpop-delivery-v3.kryo",
                     "air-routes-v3.kryo");
             for (final String fileName : kryoResources) {
                 PATHS.put(fileName,
@@ -107,9 +108,11 @@ public class TestFiles {
                 throw new RuntimeException("The air-routes graph is only available as Gryo");
             return PATHS.get("air-routes" + type);
         } else if (graphData.equals(LoadGraphWith.GraphData.DELIVERY)) {
-            // the delivery graph holds geometry values, which no serialization format can write to a data file
-            throw new UnsupportedOperationException(
-                    "There is no data file for the delivery graph since its geometry values cannot be serialized");
+            // the delivery graph holds geometry values, which GraphSON V1/V2/V3 cannot write, so there is no
+            // "-v3.json" resource for it. Only Gryo is supported.
+            if (useGraphSON)
+                throw new RuntimeException("The delivery graph holds geometry values and cannot be read from GraphSON V1/V2/V3");
+            return PATHS.get("tinkerpop-delivery" + type);
         } else
             throw new RuntimeException("Could not load graph with " + graphData);
     }

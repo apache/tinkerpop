@@ -27,6 +27,15 @@
 import { assert } from 'chai';
 import { Graph, Vertex, Edge, Property, VertexProperty, Path } from '../../../lib/structure/graph.js';
 import { Direction, T, Merge } from '../../../lib/process/traversal.js';
+import {
+  Point,
+  LineString,
+  Polygon,
+  GeometryCollection,
+  MultiPoint,
+  MultiLineString,
+  MultiPolygon,
+} from '../../../lib/structure/geo.js';
 import ioc, { DataType } from '../../../lib/structure/io/binary/GraphBinary.js';
 import StreamReader from '../../../lib/structure/io/binary/internals/StreamReader.js';
 
@@ -192,6 +201,23 @@ describe('Type Detection Tests', () => {
       const result = anySerializer.serialize(Merge.onCreate);
       assert.strictEqual(result[0], DataType.MERGE);
     });
+
+    it('every geometry kind → GEOMETRY (0x31)', () => {
+      const shell = LineString.of(Point.of(0, 0), Point.of(1, 0), Point.of(1, 1), Point.of(0, 0));
+      const line = LineString.of(Point.of(0, 0), Point.of(1, 1));
+      const geometries = [
+        Point.of(1, 2),
+        line,
+        Polygon.of(shell),
+        MultiPoint.of(Point.of(1, 2)),
+        MultiLineString.of(line),
+        MultiPolygon.of(Polygon.of(shell)),
+        GeometryCollection.of(Point.of(1, 2)),
+      ];
+      for (const geometry of geometries) {
+        assert.strictEqual(anySerializer.serialize(geometry)[0], DataType.GEOMETRY);
+      }
+    });
   });
 
   describe('canBeUsedFor negative cases', () => {
@@ -271,6 +297,12 @@ describe('Type Detection Tests', () => {
       assert.isFalse(ioc.vertexPropertySerializer.canBeUsedFor(new Vertex(1, 'person')));
       assert.isFalse(ioc.vertexPropertySerializer.canBeUsedFor('string'));
       assert.isFalse(ioc.vertexPropertySerializer.canBeUsedFor(42));
+    });
+
+    it('geometrySerializer rejects non-geometries', () => {
+      assert.isFalse(ioc.geometrySerializer.canBeUsedFor({ x: 1, y: 2 }));
+      assert.isFalse(ioc.geometrySerializer.canBeUsedFor('POINT(1 2)'));
+      assert.isFalse(ioc.geometrySerializer.canBeUsedFor([1, 2]));
     });
 
     it('enumSerializer rejects non-enums', () => {

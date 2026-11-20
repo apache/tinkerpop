@@ -27,6 +27,14 @@ using System.Linq;
 using System.Numerics;
 using Gremlin.Net.Process.Traversal;
 using Gremlin.Net.Structure;
+using GeoGeometryCollection = Gremlin.Net.Structure.Geo.GeometryCollection;
+using GeoLineString = Gremlin.Net.Structure.Geo.LineString;
+using GeoModel = Gremlin.Net.Structure.Geo.Model;
+using GeoMultiLineString = Gremlin.Net.Structure.Geo.MultiLineString;
+using GeoMultiPoint = Gremlin.Net.Structure.Geo.MultiPoint;
+using GeoMultiPolygon = Gremlin.Net.Structure.Geo.MultiPolygon;
+using GeoPoint = Gremlin.Net.Structure.Geo.Point;
+using GeoPolygon = Gremlin.Net.Structure.Geo.Polygon;
 
 namespace Gremlin.Net.UnitTest.Structure.IO.GraphBinary4
 {
@@ -295,7 +303,34 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphBinary4
             ["merge-on-match"] = Merge.OnMatch,
             ["merge-out-v"] = Merge.OutV,
             ["merge-in-v"] = Merge.InV,
+
+            // Geometry
+            ["point-geometry"] = GeographicPoint(-122.3321, 47.6062),
+            ["point-z-geometry"] = new GeoPoint(1, 2, 3),
+            ["empty-point-geometry"] = GeoPoint.Empty(),
+            ["linestring-geometry"] = new GeoLineString(new GeoPoint(0, 0), new GeoPoint(1, 1), new GeoPoint(2, 0)),
+            ["polygon-geometry"] = new GeoPolygon(
+                new GeoLineString(GeographicPoint(0, 0), GeographicPoint(10, 0), GeographicPoint(10, 10),
+                    GeographicPoint(0, 10), GeographicPoint(0, 0)),
+                new GeoLineString(GeographicPoint(2, 2), GeographicPoint(2, 4), GeographicPoint(4, 4),
+                    GeographicPoint(2, 2))),
+            ["multipoint-geometry"] = new GeoMultiPoint(new GeoPoint(1, 2), new GeoPoint(3, 4)),
+            ["multilinestring-geometry"] = new GeoMultiLineString(
+                new GeoLineString(new GeoPoint(0, 0), new GeoPoint(1, 1)),
+                new GeoLineString(new GeoPoint(2, 2), new GeoPoint(3, 3))),
+            ["multipolygon-geometry"] = new GeoMultiPolygon(
+                new GeoPolygon(new GeoLineString(GeographicPoint(0, 0), GeographicPoint(1, 0),
+                    GeographicPoint(1, 1), GeographicPoint(0, 1), GeographicPoint(0, 0))),
+                new GeoPolygon(new GeoLineString(GeographicPoint(2, 2), GeographicPoint(3, 2),
+                    GeographicPoint(3, 3), GeographicPoint(2, 3), GeographicPoint(2, 2)))),
+            ["geometrycollection-geometry"] = new GeoGeometryCollection(
+                new GeoPoint(1, 2),
+                new GeoGeometryCollection(new GeoLineString(new GeoPoint(0, 0), new GeoPoint(1, 1))),
+                GeoPoint.Empty()),
+            ["other-srid-geometry"] = GeoPoint.WithSrid(1, 2, 3857),
         };
+
+        private static GeoPoint GeographicPoint(double x, double y) => new(x, y, GeoModel.Geographic);
 
         private static class CrewGraphFactory
         {

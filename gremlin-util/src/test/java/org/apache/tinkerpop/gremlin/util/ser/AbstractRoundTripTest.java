@@ -29,6 +29,8 @@ import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.geo.Geometry;
+import org.apache.tinkerpop.gremlin.structure.geo.Model;
 import org.apache.tinkerpop.gremlin.structure.io.IoTest;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedEdge;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
@@ -153,6 +155,12 @@ public abstract class AbstractRoundTripTest {
 
                 // date+time
                 new Object[] {"Duration", Duration.ofSeconds(213123213, 400), null},
+
+                // geospatial
+                new Object[] {"GeometryPoint", Geometry.fromWkt("POINT(-122.3321 47.6062)", Model.GEOGRAPHIC), null},
+                new Object[] {"GeometryPointZ", Geometry.fromWkt("POINT Z(1 2 3)", Model.CARTESIAN), null},
+                new Object[] {"GeometryPolygon", Geometry.fromWkt("POLYGON((0 0, 10 0, 10 10, 0 10, 0 0), (2 2, 2 4, 4 4, 2 2))", Model.GEOGRAPHIC), null},
+                new Object[] {"GeometryCollection", Geometry.fromWkt("GEOMETRYCOLLECTION(POINT(1 2), GEOMETRYCOLLECTION(LINESTRING(0 0, 1 1)), POINT EMPTY)", Model.CARTESIAN), null},
 
                 new Object[] {"UUID", UUID.randomUUID(), null},
                 new Object[] {"ByteBuffer", ByteBuffer.wrap(new byte[]{ 1, 2, 3 }), null},

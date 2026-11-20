@@ -98,6 +98,9 @@ public abstract class RemoteWorld implements World {
                 case AIR_ROUTES:
                     remoteTraversalSource = "gairroutes";
                     break;
+                case DELIVERY:
+                    remoteTraversalSource = "gdelivery";
+                    break;
                 default:
                     throw new UnsupportedOperationException("GraphData not supported: " + graphData.name());
             }

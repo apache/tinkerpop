@@ -517,10 +517,10 @@ gremlin> g.V().has('store','loc',geoWithin(Geometry.fromWkt("POLYGON((-74 40.7, 
 ----
 
 A Gremlin query string parsed by the `gremlin-lang` grammar writes a geometry as a literal such as
-`Geometry("POINT(1 2)")`. In this release geometries, that literal and the geo predicates run in embedded Java and in
-the Gremlin Console against a local graph such as TinkerGraph. GraphBinary, GraphSON and Gryo serialization, the
-language variants, and remote use through a driver or Gremlin Server are not yet supported.
-The Java and Groovy translators render geometries, while the Python, .NET, Go and JavaScript translators reject them.
+`Geometry("POINT(1 2)")`. GraphBinary, GraphSON 4.0 and Gryo serialize geometries, and the language variants have
+geometry types, so a geometry can be stored in a data file or returned to a remote client. The language variants do not
+yet have the geo predicates. The Java and Groovy translators render geometries, while the Python, .NET, Go and
+JavaScript translators reject them.
 
 To try the predicates on realistic data, `TinkerFactory.createTheDelivery()` builds the
 link:https://tinkerpop.apache.org/docs/4.0.0-beta.4/data/#the-delivery[delivery graph], a toy graph of delivery hubs, zones,
@@ -627,10 +627,11 @@ The Gherkin scenarios that exercise geometries carry the `@DataGeometry` tag, an
 use the delivery graph. A scenario that stores a geometry also carries `@AllowGeometryPropertyValues`, and one that
 holds `CARTESIAN` and `GEOGRAPHIC` values in the same graph carries `@AllowMixedGeometryModels`. A provider whose
 graph cannot hold geometry values should add `and not @DataGeometry` to its `@CucumberOptions` tag filter. In this
-release the scenarios are run by the embedded Java runners, while the remote, Hadoop and Spark runners exclude them.
-The language variant translators reject geometry literals, the geo predicates and the geometry `GType` tokens, so the
-generated test files for Python, .NET, Go and JavaScript hold a placeholder for each of these scenarios and the
-language variant runners skip `@DataGeometry`.
+release the scenarios are run by the embedded Java runners and by the remote Java runners against Gremlin Server. The
+Hadoop and Spark runners exclude them, since their feature test worlds have no delivery graph. The language variants
+do not yet have the geo predicates and their translators reject geometry literals, the geo predicates and the geometry
+`GType` tokens, so the generated test files for Python, .NET, Go and JavaScript hold a placeholder for each of these
+scenarios and the language variant runners skip `@DataGeometry`.
 
 See: link:https://tinkerpop.apache.org/docs/4.0.0-beta.4/dev/developer/#gherkin-tags[Gherkin Tags],
 link:https://tinkerpop.apache.org/docs/4.0.0-beta.4/data/#the-delivery[The Delivery]

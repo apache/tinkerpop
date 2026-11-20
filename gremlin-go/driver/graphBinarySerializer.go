@@ -21,6 +21,7 @@ package gremlingo
 
 import (
 	"encoding/binary"
+	"errors"
 	"fmt"
 	"io"
 	"math/big"
@@ -63,6 +64,7 @@ const (
 	booleanType        dataType = 0x27
 	treeType           dataType = 0x2b
 	mergeType          dataType = 0x2e
+	geometryType       dataType = 0x31
 	charType           dataType = 0x80
 	durationType       dataType = 0x81
 	compositePDTType   dataType = 0xf0
@@ -622,6 +624,19 @@ func markerWriter(value interface{}, w io.Writer, _ *graphBinaryTypeSerializer) 
 	return binary.Write(w, binary.BigEndian, m.GetValue())
 }
 
+// Format: {srid}{wkb}
+func geometryWriter(value interface{}, w io.Writer, _ *graphBinaryTypeSerializer) error {
+	g := value.(Geometry)
+	if isNilGeometry(g) {
+		return errors.New("a nil geometry cannot be written")
+	}
+	if err := binary.Write(w, binary.BigEndian, g.Srid()); err != nil {
+		return err
+	}
+	_, err := w.Write(g.WKB())
+	return err
+}
+
 // Format: {strategy_class}{configuration}
 func traversalStrategyWriter(value interface{}, w io.Writer, typeSerializer *graphBinaryTypeSerializer) error {
 	ts := value.(*traversalStrategy)
@@ -696,6 +711,8 @@ func (serializer *graphBinaryTypeSerializer) getType(val interface{}) (dataType,
 		return compositePDTType, nil
 	case *PrimitivePDT:
 		return primitivePDTType, nil
+	case Geometry:
+		return geometryType, nil
 	default:
 		switch reflect.TypeOf(val).Kind() {
 		case reflect.Map:

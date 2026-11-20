@@ -192,6 +192,36 @@ export default class StreamReader {
   }
 
   /**
+   * @returns {Promise<number>} signed 32-bit little-endian integer
+   */
+  async readInt32LE() {
+    if (!this.#available(4)) {
+      await this.#ensure(4);
+    }
+    return this.#buffer.readInt32LE(this.#advance(4));
+  }
+
+  /**
+   * @returns {Promise<number>} unsigned 32-bit big-endian integer
+   */
+  async readUInt32BE() {
+    if (!this.#available(4)) {
+      await this.#ensure(4);
+    }
+    return this.#buffer.readUInt32BE(this.#advance(4));
+  }
+
+  /**
+   * @returns {Promise<number>} unsigned 32-bit little-endian integer
+   */
+  async readUInt32LE() {
+    if (!this.#available(4)) {
+      await this.#ensure(4);
+    }
+    return this.#buffer.readUInt32LE(this.#advance(4));
+  }
+
+  /**
    * @returns {Promise<bigint>} signed 64-bit big-endian integer
    */
   async readBigInt64BE() {
@@ -219,5 +249,15 @@ export default class StreamReader {
       await this.#ensure(8);
     }
     return this.#buffer.readDoubleBE(this.#advance(8));
+  }
+
+  /**
+   * @returns {Promise<number>} 64-bit little-endian double
+   */
+  async readDoubleLE() {
+    if (!this.#available(8)) {
+      await this.#ensure(8);
+    }
+    return this.#buffer.readDoubleLE(this.#advance(8));
   }
 }
