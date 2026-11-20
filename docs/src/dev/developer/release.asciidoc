@@ -373,11 +373,11 @@ that have merged or closed since the last run, as described in <<beads-errands,E
 .. Confirm that every subgraph belonging to the release is `pinned`. The pre-flight check should already
 have established this, so anything still closed and unpinned at this point is work whose record was
 never finished.
-.. `bd gc --skip-decay --dry-run` to preview, then `bd gc --skip-decay --force` to reclaim storage. This
-discards only chunks that nothing in the database can still reach. Beads, their field content and the
-full Dolt commit history all survive, and `--skip-decay` is what holds back the single phase that would
-delete beads. Expect the first run to recover a large fraction of the database and later runs
-progressively less.
+.. `bd gc --skip-decay --full --dry-run` to preview, then `bd gc --skip-decay --full --force` to reclaim
+storage. This discards only chunks that nothing in the database can still reach. Beads, their field
+content and the full Dolt commit history all survive, and `--skip-decay` is what holds back the single
+phase that would delete beads. Without `--full` the collection examines only data written since the
+previous one, so storage that became unreachable before then is never recovered.
 .. Note that the output of the previous step announces a phase named "Compact", which reports how many
 commits are in history and squashes nothing. Squashing requires `bd compact` or `bd flatten` run
 deliberately, and neither belongs to routine administration. There is no flag that suppresses the

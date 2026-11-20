@@ -55,6 +55,11 @@ target master, we targeted 3.7-dev instead" both qualify. Check what the phrasin
 though: a choice about *the work* is a decision, while "the test frames HashMap instead of
 OptionsStrategy" describes code and stays a comment.
 
+**Wording is not a decision.** A change to the wording of comments, javadoc, test names or
+assertion messages gets no task bead and no decision bead, even when the operator redirects
+you to it. An operator correcting terminology is not making a design choice about the work.
+Make the edit and move on.
+
 ```bash
 # Only when something was actually ruled out. No fork = implementation; the code documents that.
 bd create --type=decision --parent=<root> --title="Chose X" --metadata '{"rejected":false}' \
@@ -211,10 +216,10 @@ Tasks closed as they finished (section 3), decisions as they were written (secti
 **root** is the only thing still open at merge — it is the deliverable.
 
 ```bash
-bd children <root>               # the whole subtree; nothing should still be in_progress
+bd children <root>               # the whole subtree; nothing should still be open or in_progress
 bin/beads-commits.py --root <root> --branch 3.7-dev --suggest   # propose; operator confirms
 bin/beads-commits.py --root <root> --branch 3.7-dev --commits <sha>...
-bd close <root>                  # an epic root needs --force; see below
+bd close <root> --force          # every root; see below
 bd update <id1> <id2> ... -s pinned
 bd dolt pull && bd dolt push
 ```
@@ -234,12 +239,17 @@ run the recording form. It also writes a record for each merged PR GitHub ties t
 commits that has none yet, or makes the root a parent of one another root already holds. It refuses any sha not reachable from `origin/<branch>`, so a refusal
 means the work has not actually landed — say so and leave the root open.
 
-**An `epic` root needs `bd close <root> --force`.** The commit record just written is a
-child and is pinned, and the gate counts only `closed` children as done, so the record is
-what blocks the close. Do not reorder the two steps to dodge it: the record write is what
-refuses a sha unreachable from `origin/<branch>`, and closing first would resolve the root
-before that check runs. `task` and `feature` roots do not gate. An epic that shares a record
+**Every root needs `bd close <root> --force`.** The commit record just written is a
+child and is pinned, and bd's close policy counts only `closed` children as done, so the
+record is what blocks the close — whatever the root's type. Do not reorder the two steps to
+dodge it: the record write is what refuses a sha unreachable from `origin/<branch>`, and
+closing first would resolve the root before that check runs. A root that shares a record
 another root has already pinned needs `--force` for the same reason.
+
+`--force` also overrides every other refusal, so the `bd children` read above is the check
+it skips: pinned records are the only children that may still be unclosed. Anything else
+open or `in_progress` is unfinished work — stop and raise it with the operator. A root
+claimed by another contributor is theirs to close (section 3); ask before forcing it.
 
 **Pin every bead in the subtree** — root, decisions, records, tasks. No judgment about
 which ones matter: the work shipped, so all of it is the project's history. Show the
@@ -260,6 +270,10 @@ Pinning is what makes a bead permanent — every destructive operation keys on
   the reasoning that was there.
 - `bd prune` / `bd purge` / `bd gc` are release-time maintainer operations. Don't run them.
 - Don't use `bd edit` — it opens `$EDITOR` and blocks.
+- **Never `bd remember`.** Its memories are shared with every clone and injected into no
+  session (the hooks run `bd prime --no-memories`), so nothing written there is ever read. A
+  fact belongs in a comment on the root bead (section 0); a rule for every session belongs in
+  this file, by a normal commit.
 
 ---
 
@@ -489,7 +503,10 @@ for each, reads the reason and then either:
 
 - **revises and re-releases** — edit the errand's `## Change` and `## Acceptance`, then
   `bd gate resolve <gate>`, which returns it to `bd ready`; or
-- **abandons** — `bd close <errand> <gate>`.
+- **abandons** — `bd close <gate> <errand> --actor <email>`. The gate goes first, since bd
+  refuses to close an errand its open gate still blocks. `--actor` must be the email the gate
+  is assigned to, because bd otherwise acts as your git `user.name` and refuses to close a
+  bead assigned to anyone else.
 
 ---
 
