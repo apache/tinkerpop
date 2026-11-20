@@ -929,8 +929,8 @@ In `gremlin-groovy` scripts, including those run in the Gremlin Console and thos
 built with the Java API, either from Well-Known Text or Extended Well-Known Text with `Geometry.fromWkt()` or from
 coordinates with the factories of the geometry classes such as `Point.of()`. The coordinate model is written there as
 `Model.CARTESIAN` or `Model.GEOGRAPHIC`, since a bare `CARTESIAN` or `GEOGRAPHIC` names the `GType` entry. A server
-script can return a geometry to a client. GraphSON names only the `CARTESIAN` and `GEOGRAPHIC` models, so a geometry
-whose model is `OTHER` can be returned over GraphBinary but not over GraphSON.
+script can return a geometry to a client. GraphBinary and GraphSON both carry the SRID of a geometry, so a geometry of
+any model, including `OTHER`, can be returned over either of them.
 
 [source,groovy]
 ----

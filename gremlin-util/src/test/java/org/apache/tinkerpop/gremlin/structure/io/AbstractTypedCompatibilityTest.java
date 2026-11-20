@@ -713,6 +713,23 @@ public abstract class AbstractTypedCompatibilityTest extends AbstractCompatibili
         assertEquals(resource, recycled);
     }
 
+    /**
+     * GraphBinary and GraphSON both carry the SRID of a geometry, so an SRID whose model is OTHER round trips.
+     */
+    @Test
+    public void shouldReadWriteOtherSridGeometry() throws Exception {
+        final String resourceName = "other-srid-geometry";
+
+        final Geometry resource = findModelEntryObject(resourceName);
+        final Geometry fromStatic = read(readFromResource(resourceName), Geometry.class);
+        final Geometry recycled = read(write(fromStatic, Geometry.class, resourceName), Geometry.class);
+        assertNotSame(fromStatic, recycled);
+        assertEquals(fromStatic, recycled);
+        assertEquals(resource, fromStatic);
+        assertEquals(resource, recycled);
+        assertEquals(3857, recycled.srid());
+    }
+
     @Test
     public void shouldReadWriteMaxInteger() throws Exception {
         final String resourceName = "max-int";

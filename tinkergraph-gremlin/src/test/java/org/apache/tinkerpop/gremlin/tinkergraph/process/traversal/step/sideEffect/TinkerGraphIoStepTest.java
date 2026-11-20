@@ -18,7 +18,6 @@
  */
 package org.apache.tinkerpop.gremlin.tinkergraph.process.traversal.step.sideEffect;
 
-import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.tinkerpop.gremlin.TestHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.IO;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
@@ -33,8 +32,6 @@ import org.junit.Test;
 import java.io.File;
 import java.util.UUID;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsString;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
@@ -147,21 +144,22 @@ public class TinkerGraphIoStepTest {
     }
 
     /**
-     * GraphSON names a geometry's coordinate system as {@code CARTESIAN} or {@code GEOGRAPHIC} and has no way to
-     * carry any other SRID, so a write that would lose one is refused rather than silently dropping it.
+     * GraphSON carries a geometry's SRID as a number, so an SRID whose model is OTHER survives a write and a read.
      */
     @Test
-    public void shouldFailToWriteGeometryWithOtherModelGraphSON() throws Exception {
-        g.addV("place").property("name", "zone18n").
-                property("projected", Geometry.fromWkt("POINT(560000 5280000)", 32618)).iterate();
+    public void shouldWriteReadGeometryWithOtherModelGraphSON() throws Exception {
+        final Geometry projected = Geometry.fromWkt("POINT(560000 5280000)", 32618);
+        g.addV("place").property("name", "zone18n").property("projected", projected).iterate();
 
-        final File file = TestHelper.generateTempFile(TinkerGraphIoStepTest.class, "shouldFailToWriteGeometryWithOtherModelGraphSON", ".json");
-        try {
-            g.io(file.getAbsolutePath()).with(IO.writer, IO.graphson).write().iterate();
-            fail("Can't write a geometry whose SRID has no GraphSON model");
-        } catch (Exception ex) {
-            final String message = ExceptionUtils.getRootCauseMessage(ex);
-            assertThat(message, containsString("32618"));
-        }
+        final File file = TestHelper.generateTempFile(TinkerGraphIoStepTest.class, "shouldWriteReadGeometryWithOtherModelGraphSON", ".json");
+        g.io(file.getAbsolutePath()).with(IO.writer, IO.graphson).write().iterate();
+
+        final GraphTraversalSource emptyG = TinkerGraph.open().traversal();
+        emptyG.io(file.getAbsolutePath()).with(IO.reader, IO.graphson).read().iterate();
+
+        final Geometry readProjected = (Geometry) emptyG.V().has("name", "zone18n").values("projected").next();
+        assertEquals(projected, readProjected);
+        assertEquals(32618, readProjected.srid());
+        assertEquals(Model.OTHER, readProjected.model());
     }
 }

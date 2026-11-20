@@ -19,7 +19,6 @@
 package org.apache.tinkerpop.gremlin.structure.io.graphson;
 
 import org.apache.tinkerpop.gremlin.structure.geo.Geometry;
-import org.apache.tinkerpop.gremlin.structure.geo.Model;
 import org.apache.tinkerpop.shaded.jackson.core.JsonGenerator;
 import org.apache.tinkerpop.shaded.jackson.core.JsonParser;
 import org.apache.tinkerpop.shaded.jackson.databind.DeserializationContext;
@@ -27,16 +26,16 @@ import org.apache.tinkerpop.shaded.jackson.databind.SerializerProvider;
 import org.apache.tinkerpop.shaded.jackson.databind.ser.std.StdScalarSerializer;
 
 import java.io.IOException;
+import java.math.BigInteger;
 import java.util.Map;
 
 /**
  * GraphSON V4 serializers for {@link Geometry}, written as an object holding the ISO WKT of the
- * value and the name of its {@link Model}.
+ * value and its SRID as a JSON integer.
  * <p>
- * The model carries the coordinate interpretation rather than the SRID, so a geometry whose
- * {@link Geometry#model()} is {@link Model#OTHER} cannot be written: its SRID names a coordinate
- * system that the two model names do not describe. A value that is read must name
- * {@link Model#CARTESIAN} or {@link Model#GEOGRAPHIC}, which fixes its SRID at 0 or 4326.
+ * The SRID is carried as given, so every geometry round trips, including one whose
+ * {@link Geometry#model()} is {@link org.apache.tinkerpop.gremlin.structure.geo.Model#OTHER}.
+ * The model is not written because it follows from the SRID.
  */
 final class GeometrySerializersV4 {
 
@@ -46,9 +45,9 @@ final class GeometrySerializersV4 {
     private static final String WKT = "wkt";
 
     /**
-     * The field holding the name of the geometry's {@link Model}.
+     * The field holding the SRID of the geometry.
      */
-    private static final String MODEL = "model";
+    private static final String SRID = "srid";
 
     /**
      * The EWKT prefix, which carries an SRID of its own and so is not accepted in {@link #WKT}.
@@ -67,15 +66,9 @@ final class GeometrySerializersV4 {
         @Override
         public void serialize(final Geometry value, final JsonGenerator gen,
                               final SerializerProvider serializerProvider) throws IOException {
-            final Model model = value.model();
-            if (model == Model.OTHER) {
-                throw new IOException("GraphSON carries the model rather than the SRID, so a geometry with SRID "
-                        + value.srid() + " cannot be written");
-            }
-
             gen.writeStartObject();
             gen.writeStringField(WKT, value.toWKT());
-            gen.writeStringField(MODEL, model.name());
+            gen.writeNumberField(SRID, value.srid());
             gen.writeEndObject();
         }
     }
@@ -97,38 +90,23 @@ final class GeometrySerializersV4 {
         }
 
         /**
-         * Builds the geometry from the {@code wkt} and {@code model} fields. Any other field is
-         * ignored, as {@link AbstractObjectDeserializer} leaves unknown fields in the map.
+         * Builds the geometry from the {@code wkt} and {@code srid} fields. Any other field, such
+         * as the {@code model} field of earlier drafts, is ignored, as
+         * {@link AbstractObjectDeserializer} leaves unknown fields in the map.
          */
         @Override
         public Geometry createObject(final Map<String, Object> data) {
             final String wkt = requireString(data, WKT);
-            final String modelName = requireString(data, MODEL);
+            final int srid = requireSrid(data);
 
-            final Model model;
-            try {
-                model = Model.valueOf(modelName);
-            } catch (IllegalArgumentException iae) {
-                throw new IllegalArgumentException(modelMustBeKnown(modelName), iae);
-            }
-            // fromWkt(String, Model) also rejects OTHER, but points at fromWkt(wkt, srid) instead of
-            // naming the two models a GraphSON body can carry
-            if (model == Model.OTHER) {
-                throw new IllegalArgumentException(modelMustBeKnown(modelName));
-            }
-
-            // fromWkt(String, Model) accepts an EWKT prefix whose SRID agrees with the model, but the
-            // GraphSON body carries the coordinate system in its model field alone
+            // fromWkt(String, int) accepts an EWKT prefix whose SRID agrees with the srid argument, but the
+            // GraphSON body carries the SRID in its srid field alone
             if (wkt.trim().regionMatches(true, 0, EWKT_PREFIX, 0, EWKT_PREFIX.length())) {
                 throw new IllegalArgumentException("Geometry wkt must be ISO WKT without an EWKT " + EWKT_PREFIX
                         + " prefix");
             }
 
-            return Geometry.fromWkt(wkt, model);
-        }
-
-        private static String modelMustBeKnown(final String modelName) {
-            return "Geometry model must be " + Model.CARTESIAN + " or " + Model.GEOGRAPHIC + " but was " + modelName;
+            return Geometry.fromWkt(wkt, srid);
         }
 
         private static String requireString(final Map<String, Object> data, final String field) {
@@ -137,6 +115,26 @@ final class GeometrySerializersV4 {
                 throw new IllegalArgumentException("Geometry requires a string " + field + " field");
             }
             return (String) value;
+        }
+
+        /**
+         * Reads the {@code srid} field, which has to be a JSON integer that fits in a 32-bit signed
+         * integer. A floating point number, a string or a boolean is refused rather than converted.
+         */
+        private static int requireSrid(final Map<String, Object> data) {
+            final Object value = data.get(SRID);
+            if (value instanceof Integer || value instanceof Short || value instanceof Byte) {
+                return ((Number) value).intValue();
+            }
+            if (value instanceof Long || value instanceof BigInteger) {
+                final BigInteger big = value instanceof Long ? BigInteger.valueOf((Long) value) : (BigInteger) value;
+                if (big.bitLength() < Integer.SIZE) {
+                    return big.intValue();
+                }
+                throw new IllegalArgumentException("Geometry srid must fit in a 32-bit signed integer but was "
+                        + value);
+            }
+            throw new IllegalArgumentException("Geometry requires an integer " + SRID + " field");
         }
     }
 }

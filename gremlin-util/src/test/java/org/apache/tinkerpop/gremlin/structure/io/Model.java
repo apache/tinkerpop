@@ -182,7 +182,7 @@ public class Model {
         addCoreEntry(deepTree, "tree-deep-nesting", "");
 
         addCoreEntry(Geometry.fromWkt("POINT(-122.3321 47.6062)", GEOGRAPHIC), "point-geometry",
-                "GraphBinary writes a `Geometry` as its SRID followed by its ISO WKB bytes, while GraphSON writes its WKT text together with its coordinate model.");
+                "GraphBinary writes a `Geometry` as its SRID followed by its ISO WKB bytes, while GraphSON writes its WKT text together with its SRID.");
         addCoreEntry(Geometry.fromWkt("POINT Z(1 2 3)", CARTESIAN), "point-z-geometry", "");
         addCoreEntry(Geometry.fromWkt("POINT EMPTY", CARTESIAN), "empty-point-geometry", "");
         addCoreEntry(Geometry.fromWkt("LINESTRING(0 0, 1 1, 2 0)", CARTESIAN), "linestring-geometry", "");

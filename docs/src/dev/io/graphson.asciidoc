@@ -255,9 +255,9 @@ following values: "-Infinity", "Infinity", "NaN"
 
 === Geometry
 
-JSON Object with two required keys: "wkt" and "model" +
+JSON Object with two required keys: "wkt" and "srid" +
 "wkt" is a JSON String holding the ISO WKT of the geometry, exactly as `Geometry.toWKT()` writes it +
-"model" is a JSON String naming the coordinate interpretation model, either "CARTESIAN" or "GEOGRAPHIC"
+"srid" is a JSON Number holding the spatial reference identifier of the geometry as a 4-byte signed integer
 
 [source,json]
 ----
@@ -265,7 +265,7 @@ JSON Object with two required keys: "wkt" and "model" +
   "@type" : "g:Geometry",
   "@value" : {
     "wkt" : "POINT(-122.3321 47.6062)",
-    "model" : "GEOGRAPHIC"
+    "srid" : 4326
   }
 }
 ----
@@ -274,14 +274,17 @@ JSON Object with two required keys: "wkt" and "model" +
 ----
 {
   "wkt" : "POINT(-122.3321 47.6062)",
-  "model" : "GEOGRAPHIC"
+  "srid" : 4326
 }
 ----
 
-GraphSON carries the coordinate system as a model rather than as a spatial reference identifier, so a geometry whose
-model is `OTHER` cannot be written. Reading fails when either field is absent, when "model" names anything other than
-"CARTESIAN" or "GEOGRAPHIC", including "OTHER", and when "wkt" carries an extended WKT `SRID=` prefix. Fields other
-than "wkt" and "model" are ignored.
+GraphSON carries the spatial reference identifier as written, so every geometry round trips, including one whose
+model is `OTHER` such as SRID 32618. The model is not written because it follows from the SRID: 0 is `CARTESIAN`, 4326
+is `GEOGRAPHIC` and any other value is `OTHER`. Reading fails when either field is absent, when "srid" is not an
+integer or does not fit in a 4-byte signed integer, and when "wkt" carries an extended WKT `SRID=` prefix. Reading
+also applies the checks of `Geometry.fromWkt(wkt, srid)`, so a geometry with SRID 4326 whose coordinates fall outside
+the longitude and latitude ranges is refused. Fields other than "wkt" and "srid" are ignored, which includes a "model"
+field.
 
 === Integer
 

@@ -49,10 +49,10 @@ public class GeometryGraphSONTest extends AbstractGraphSONTest {
     private static final String SEATTLE_WKT = "POINT(-122.3321 47.6062)";
 
     private static final String SEATTLE_JSON =
-            "{\"@type\":\"g:Geometry\",\"@value\":{\"wkt\":\"" + SEATTLE_WKT + "\",\"model\":\"GEOGRAPHIC\"}}";
+            "{\"@type\":\"g:Geometry\",\"@value\":{\"wkt\":\"" + SEATTLE_WKT + "\",\"srid\":4326}}";
 
     private static final String SEATTLE_UNTYPED_JSON =
-            "{\"wkt\":\"" + SEATTLE_WKT + "\",\"model\":\"GEOGRAPHIC\"}";
+            "{\"wkt\":\"" + SEATTLE_WKT + "\",\"srid\":4326}";
 
     private ObjectMapper mapper;
     private ObjectMapper untypedMapper;
@@ -93,12 +93,16 @@ public class GeometryGraphSONTest extends AbstractGraphSONTest {
                 Geometry.fromWkt("MULTIPOINT((1 2), (3 4))", Model.CARTESIAN),
                 Geometry.fromWkt("MULTILINESTRING((0 0, 1 1), (2 2, 3 3))", Model.CARTESIAN),
                 Geometry.fromWkt("MULTIPOLYGON(((0 0, 1 0, 1 1, 0 1, 0 0)), ((5 5, 6 5, 6 6, 5 6, 5 5)))", Model.GEOGRAPHIC),
-                Geometry.fromWkt("GEOMETRYCOLLECTION(POINT(1 2), GEOMETRYCOLLECTION(LINESTRING(0 0, 1 1)), POINT EMPTY)", Model.CARTESIAN));
+                Geometry.fromWkt("GEOMETRYCOLLECTION(POINT(1 2), GEOMETRYCOLLECTION(LINESTRING(0 0, 1 1)), POINT EMPTY)", Model.CARTESIAN),
+                Geometry.fromWkt("LINESTRING(500000 4500000, 500100 4500100)", 32618),
+                Geometry.fromWkt("POINT Z(1 2 3)", 3857),
+                Geometry.fromWkt("GEOMETRYCOLLECTION EMPTY", 32618));
 
         for (final Geometry geometry : geometries) {
             final Geometry read = serializeDeserialize(mapper, geometry, Geometry.class);
             assertEquals(geometry, read);
             assertEquals(geometry.getClass(), read.getClass());
+            assertEquals(geometry.srid(), read.srid());
         }
     }
 
@@ -117,7 +121,7 @@ public class GeometryGraphSONTest extends AbstractGraphSONTest {
         for (final String wkt : values) {
             final Geometry geometry = Geometry.fromWkt(wkt, Model.CARTESIAN);
 
-            assertEquals(wkt, "{\"@type\":\"g:Geometry\",\"@value\":{\"wkt\":\"" + wkt + "\",\"model\":\"CARTESIAN\"}}",
+            assertEquals(wkt, "{\"@type\":\"g:Geometry\",\"@value\":{\"wkt\":\"" + wkt + "\",\"srid\":0}}",
                     mapper.writeValueAsString(geometry));
 
             final Geometry read = serializeDeserialize(mapper, geometry, Geometry.class);
@@ -131,7 +135,7 @@ public class GeometryGraphSONTest extends AbstractGraphSONTest {
     @Test
     public void shouldRoundTripCartesianPointWithSridZero() throws Exception {
         final Geometry point = Geometry.fromWkt("POINT(1 2)", Model.CARTESIAN);
-        assertEquals("{\"@type\":\"g:Geometry\",\"@value\":{\"wkt\":\"POINT(1 2)\",\"model\":\"CARTESIAN\"}}",
+        assertEquals("{\"@type\":\"g:Geometry\",\"@value\":{\"wkt\":\"POINT(1 2)\",\"srid\":0}}",
                 mapper.writeValueAsString(point));
 
         final Geometry read = serializeDeserialize(mapper, point, Geometry.class);
@@ -144,7 +148,7 @@ public class GeometryGraphSONTest extends AbstractGraphSONTest {
     public void shouldKeepNegativeZeroOnRoundTrip() throws Exception {
         final Point point = Point.of(-0.0, 0.0);
 
-        assertEquals("{\"@type\":\"g:Geometry\",\"@value\":{\"wkt\":\"POINT(-0 0)\",\"model\":\"CARTESIAN\"}}",
+        assertEquals("{\"@type\":\"g:Geometry\",\"@value\":{\"wkt\":\"POINT(-0 0)\",\"srid\":0}}",
                 mapper.writeValueAsString(point));
 
         final Point read = (Point) serializeDeserialize(mapper, point, Geometry.class);
@@ -153,63 +157,158 @@ public class GeometryGraphSONTest extends AbstractGraphSONTest {
     }
 
     @Test
-    public void shouldFailToWriteGeometryWithOtherModel() {
-        final Geometry point = Geometry.fromWkt("POINT(1 2)", 3857);
-        final IOException ioe = assertThrows(IOException.class, () -> mapper.writeValueAsString(point));
-        assertTrue(ioe.getMessage(), ioe.getMessage().contains("3857"));
+    public void shouldRoundTripGeometryWithOtherModel() throws Exception {
+        final Geometry point = Geometry.fromWkt("POINT(560000 5280000)", 32618);
+        assertEquals("{\"@type\":\"g:Geometry\",\"@value\":{\"wkt\":\"POINT(560000 5280000)\",\"srid\":32618}}",
+                mapper.writeValueAsString(point));
+
+        final Geometry read = serializeDeserialize(mapper, point, Geometry.class);
+        assertEquals(point, read);
+        assertEquals(Model.OTHER, read.model());
+        assertEquals(32618, read.srid());
+    }
+
+    /**
+     * An OTHER SRID leaves the coordinates unchecked, so a value outside the geographic range reads back
+     * as written.
+     */
+    @Test
+    public void shouldReadOtherModelWithoutGeographicRangeCheck() throws Exception {
+        final Geometry point = mapper.readValue(
+                "{\"@type\":\"g:Geometry\",\"@value\":{\"wkt\":\"POINT(190 95)\",\"srid\":3857}}", Geometry.class);
+        assertEquals(Geometry.fromWkt("POINT(190 95)", 3857), point);
+        assertEquals(Model.OTHER, point.model());
+        assertEquals(3857, point.srid());
     }
 
     @Test
-    public void shouldFailToReadOtherModel() {
-        assertReadFails("{\"@type\":\"g:Geometry\",\"@value\":{\"wkt\":\"POINT(1 2)\",\"model\":\"OTHER\"}}",
-                "CARTESIAN or GEOGRAPHIC");
+    public void shouldReadSridZeroAsCartesian() throws Exception {
+        final Geometry point = mapper.readValue(
+                "{\"@type\":\"g:Geometry\",\"@value\":{\"wkt\":\"POINT(1 2)\",\"srid\":0}}", Geometry.class);
+        assertEquals(Model.CARTESIAN, point.model());
+        assertEquals(0, point.srid());
     }
 
     @Test
-    public void shouldFailToReadUnknownModel() {
-        assertReadFails("{\"@type\":\"g:Geometry\",\"@value\":{\"wkt\":\"POINT(1 2)\",\"model\":\"MERCATOR\"}}",
-                "CARTESIAN or GEOGRAPHIC");
+    public void shouldReadTypedInt64Srid() throws Exception {
+        final Geometry point = mapper.readValue("{\"@type\":\"g:Geometry\",\"@value\":{\"wkt\":\"POINT(1 2)\","
+                + "\"srid\":{\"@type\":\"g:Int64\",\"@value\":4326}}}", Geometry.class);
+        assertEquals(Model.GEOGRAPHIC, point.model());
+        assertEquals(4326, point.srid());
+    }
+
+    @Test
+    public void shouldFailToReadGeographicPointOutOfRange() {
+        assertReadFails("{\"@type\":\"g:Geometry\",\"@value\":{\"wkt\":\"POINT(190 95)\",\"srid\":4326}}",
+                "GEOGRAPHIC longitude");
     }
 
     @Test
     public void shouldFailToReadWithoutWkt() {
-        assertReadFails("{\"@type\":\"g:Geometry\",\"@value\":{\"model\":\"CARTESIAN\"}}",
+        assertReadFails("{\"@type\":\"g:Geometry\",\"@value\":{\"srid\":0}}",
                 "string wkt field");
     }
 
     @Test
-    public void shouldFailToReadWithoutModel() {
+    public void shouldFailToReadNonStringWkt() {
+        assertReadFails("{\"@type\":\"g:Geometry\",\"@value\":{\"wkt\":12,\"srid\":0}}",
+                "string wkt field");
+    }
+
+    @Test
+    public void shouldFailToReadWithoutSrid() {
         assertReadFails("{\"@type\":\"g:Geometry\",\"@value\":{\"wkt\":\"POINT(1 2)\"}}",
-                "string model field");
+                "integer srid field");
+    }
+
+    @Test
+    public void shouldFailToReadNullSrid() {
+        assertReadFails("{\"@type\":\"g:Geometry\",\"@value\":{\"wkt\":\"POINT(1 2)\",\"srid\":null}}",
+                "integer srid field");
+    }
+
+    @Test
+    public void shouldFailToReadStringSrid() {
+        assertReadFails("{\"@type\":\"g:Geometry\",\"@value\":{\"wkt\":\"POINT(1 2)\",\"srid\":\"4326\"}}",
+                "integer srid field");
+    }
+
+    @Test
+    public void shouldFailToReadFractionalSrid() {
+        assertReadFails("{\"@type\":\"g:Geometry\",\"@value\":{\"wkt\":\"POINT(1 2)\",\"srid\":4326.5}}",
+                "integer srid field");
+    }
+
+    @Test
+    public void shouldFailToReadWholeFloatingPointSrid() {
+        assertReadFails("{\"@type\":\"g:Geometry\",\"@value\":{\"wkt\":\"POINT(1 2)\",\"srid\":4326.0}}",
+                "integer srid field");
+    }
+
+    @Test
+    public void shouldFailToReadBooleanSrid() {
+        assertReadFails("{\"@type\":\"g:Geometry\",\"@value\":{\"wkt\":\"POINT(1 2)\",\"srid\":true}}",
+                "integer srid field");
+    }
+
+    @Test
+    public void shouldFailToReadModelInsteadOfSrid() {
+        assertReadFails("{\"@type\":\"g:Geometry\",\"@value\":{\"wkt\":\"POINT(1 2)\",\"model\":\"GEOGRAPHIC\"}}",
+                "integer srid field");
+    }
+
+    @Test
+    public void shouldFailToReadSridOutsideIntRange() {
+        assertReadFails("{\"@type\":\"g:Geometry\",\"@value\":{\"wkt\":\"POINT(1 2)\",\"srid\":2147483648}}",
+                "32-bit signed integer");
     }
 
     @Test
     public void shouldReadWktWithSpaceBeforeTheBody() throws Exception {
         final Geometry point = mapper.readValue(
-                "{\"@type\":\"g:Geometry\",\"@value\":{\"wkt\":\"POINT (1 2)\",\"model\":\"CARTESIAN\"}}", Geometry.class);
+                "{\"@type\":\"g:Geometry\",\"@value\":{\"wkt\":\"POINT (1 2)\",\"srid\":0}}", Geometry.class);
         assertEquals(Geometry.fromWkt("POINT(1 2)", Model.CARTESIAN), point);
     }
 
     @Test
     public void shouldFailToReadWktWithOneOrdinate() {
-        assertReadFails("{\"@type\":\"g:Geometry\",\"@value\":{\"wkt\":\"POINT(1)\",\"model\":\"CARTESIAN\"}}",
+        assertReadFails("{\"@type\":\"g:Geometry\",\"@value\":{\"wkt\":\"POINT(1)\",\"srid\":0}}",
                 "Expected number");
     }
 
     @Test
     public void shouldFailToReadEwktAsWkt() {
         assertReadFails(
-                "{\"@type\":\"g:Geometry\",\"@value\":{\"wkt\":\"SRID=4326;POINT(1 2)\",\"model\":\"GEOGRAPHIC\"}}",
+                "{\"@type\":\"g:Geometry\",\"@value\":{\"wkt\":\"SRID=4326;POINT(1 2)\",\"srid\":4326}}",
                 "SRID=");
+    }
+
+    @Test
+    public void shouldFailToReadLowerCaseEwktAsWkt() {
+        assertReadFails(
+                "{\"@type\":\"g:Geometry\",\"@value\":{\"wkt\":\" srid=32618;POINT(1 2)\",\"srid\":32618}}",
+                "SRID=");
+    }
+
+    /**
+     * A {@code model} field, as written by earlier drafts of this format, is ignored, so the SRID alone decides
+     * the coordinate system even when the two disagree.
+     */
+    @Test
+    public void shouldIgnoreLegacyModelField() throws Exception {
+        final Geometry point = mapper.readValue(
+                "{\"@type\":\"g:Geometry\",\"@value\":{\"wkt\":\"POINT(1 2)\",\"model\":\"CARTESIAN\",\"srid\":4326}}",
+                Geometry.class);
+        assertEquals(Model.GEOGRAPHIC, point.model());
+        assertEquals(4326, point.srid());
     }
 
     @Test
     public void shouldIgnoreUnknownFields() throws Exception {
         final Geometry point = mapper.readValue(
-                "{\"@type\":\"g:Geometry\",\"@value\":{\"wkt\":\"POINT(1 2)\",\"model\":\"CARTESIAN\",\"srid\":4326}}",
+                "{\"@type\":\"g:Geometry\",\"@value\":{\"wkt\":\"POINT(1 2)\",\"srid\":32618,\"extra\":\"x\"}}",
                 Geometry.class);
-        assertEquals(Model.CARTESIAN, point.model());
-        assertEquals(0, point.srid());
+        assertEquals(Geometry.fromWkt("POINT(1 2)", 32618), point);
     }
 
     @Test

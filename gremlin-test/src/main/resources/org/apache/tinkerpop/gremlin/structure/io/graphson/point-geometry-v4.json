@@ -2,6 +2,6 @@
   "@type" : "g:Geometry",
   "@value" : {
     "wkt" : "POINT(-122.3321 47.6062)",
-    "model" : "GEOGRAPHIC"
+    "srid" : 4326
   }
 }

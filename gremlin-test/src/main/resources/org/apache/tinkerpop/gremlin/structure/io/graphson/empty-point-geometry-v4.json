@@ -2,6 +2,6 @@
   "@type" : "g:Geometry",
   "@value" : {
     "wkt" : "POINT EMPTY",
-    "model" : "CARTESIAN"
+    "srid" : 0
   }
 }

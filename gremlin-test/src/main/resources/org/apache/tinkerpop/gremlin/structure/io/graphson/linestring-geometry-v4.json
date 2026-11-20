@@ -2,6 +2,6 @@
   "@type" : "g:Geometry",
   "@value" : {
     "wkt" : "LINESTRING(0 0, 1 1, 2 0)",
-    "model" : "CARTESIAN"
+    "srid" : 0
   }
 }
