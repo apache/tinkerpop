@@ -105,15 +105,10 @@ On the `WsAndHttpChannelizer` and `UnifiedChannelizer`, HTTP requests are now au
 including the `AllowAllAuthenticator`. HTTP clients of such deployments need a grant from the authorizer, for example
 one for the anonymous user, and otherwise receive `401`.
 
-`POST` requests whose `Content-Type` matches a configured serializer other than `application/json`, as drivers send
-them, are passed to the authorizer as the `RequestMessage` they deserialize to. Bytecode is authorized through
-`authorize(user, Bytecode, aliases)`, and the returned `Bytecode` is the one that executes, as on the WebSocket path.
-Requests sent as `GET` query parameters or as a plain JSON body are passed to the authorizer as script requests.
-
-With an authorizer configured, an HTTP request is rejected with `400` unless the `gremlin` argument is bytecode exactly
-when the op is `bytecode`, and a bytecode request has `aliases` with a single entry named `g`. Script requests may
-still rebind several aliases. The Java driver's `HttpChannelizer` and the HTTP transport of `gremlin-python` already
-send requests in this form. No serialization format, wire protocol or configuration changed.
+With an authorizer configured, an HTTP request is rejected with `400` unless it is in the form the drivers send. A
+bytecode request must use the bytecode op and carry `aliases` with a single entry named `g`, while a script request
+may still rebind several aliases. The Java driver's `HttpChannelizer` and the HTTP transport of `gremlin-python`
+already send requests in this form. No serialization format, wire protocol or configuration changed.
 
 See: link:https://tinkerpop.apache.org/docs/3.7.8/reference/#authorization[Reference Documentation - Authorization]
 
