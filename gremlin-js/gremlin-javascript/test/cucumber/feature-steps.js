@@ -23,8 +23,9 @@
 
 import chaiString from 'chai-string';
 import { Given, Then, When, setDefaultTimeout } from '@cucumber/cucumber';
-// Setting Cucumber timeout to 10s for Floating Errors on Windows on GitHub Actions
-setDefaultTimeout(10 * 1000);
+// Setting Cucumber timeout to 30s, the test server's timeoutMillis, so that slower machines can run the heavier
+// scenarios (and to avoid Floating Errors on Windows on GitHub Actions)
+setDefaultTimeout(30 * 1000);
 import { use, expect } from 'chai';
 use(chaiString);
 import { inspect, format, inherits } from 'util';
