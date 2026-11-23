@@ -281,7 +281,9 @@ This release also includes changes from <<release-3-7-5, 3.7.5>>.
 image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/gremlin-zamfir.png[width=185]
 
 [[release-3-7-8]]
-=== TinkerPop 3.7.8 (Release Date: NOT OFFICIALLY RELEASED YET)
+=== TinkerPop 3.7.8 (Release Date: November 23, 2026)
+
+This release also includes changes from <<release-3-7-7, 3.7.7>>.
 
 * Upgraded Apache Kerby to 2.1.2 and Guava to 33.7.2 in test dependencies.
 * Fixed `loops()` silently overflowing its internal counter and wrapping to a negative count. It now throws an `IllegalStateException` if the loop count exceeds `Integer.MAX_VALUE`.
@@ -303,6 +305,26 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Fixed bug in `TinkerTransactionGraph` where an edge could not be dropped and re-added with the same id in one transaction.
 * Fixed the Gremlin Groovy sugar syntax turning a misspelled step or a step called with mismatched argument types into `values()`, which now throws a `MissingMethodException`.
 * Bumped `jackson-databind` to 2.18.12.
+
+==== Bugs
+
+* TINKERPOP-2960 Error handling Index with null property values
+* TINKERPOP-3189 Cannot drop then add Edge with same ID within single transaction
+* TINKERPOP-3283 loops() quietly overflows
+* TINKERPOP-3292 TinkerTransactionGraph indexed lookup misses elements modified
+* TINKERPOP-3293 NPE on rollback with a vertex index but no edge index
+* TINKERPOP-3295 inject() and addV() has bulking issues
+* TINKERPOP-3298 TinkerTransactionGraph writes through an indexed lookup or a kept reference bypass transaction isolation
+* TINKERPOP-3304 mergeV() and mergeE() pass a null old value to MutationListener when the property did not exist yet
+* TINKERPOP-3306 SugarLoader `methodMissing` turns misspelled steps and wrong-type calls into `values()`
+* TINKERPOP-3310 Markdown crosslinks don't point to the markdown page with the anchor
+
+==== Improvements
+
+* TINKERPOP-2363 GraphBinary and numerics for Python
+* TINKERPOP-3059 Prevent repeated option() calls to merge steps
+* TINKERPOP-3297 Supporting python 3.14-3.15
+* TINKERPOP-3307 CardinalityValue not exported from gremlin-javascript public API
 
 [[release-3-7-7]]
 === TinkerPop 3.7.7 (Release Date: September 1, 2026)

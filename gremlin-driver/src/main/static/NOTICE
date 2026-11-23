@@ -33,15 +33,21 @@ It is currently developed by a community of developers.
 
     Some portions of the code have been derived from other projects.
 
-        fast_double_parser, Copyright (c) 2022 Daniel Lemire. Apache 2.0 License.
-        https://github.com/fastfloat/fast_float
 
-        fast_float, Copyright (c) 2021 The fast_float authors. Apache 2.0 License.
+        fast_float, Copyright (c) 2021 The fast_float authors. MIT License.
         https://github.com/fastfloat/fast_float
 
         bigint, Copyright 2020 Tim Buktu. 2-clause BSD License.
         https://github.com/tbuktu/bigint/tree/floatfft
         (We only use those portions of the bigint project that can be licensed under 2-clause BSD License.)
+
+* Schubfach
+
+    jackson-core bundles a copy of the Schubfach number writing code <https://github.com/c4f7fcce9cb06515/Schubfach>.
+    That code is available under an MIT license <https://github.com/c4f7fcce9cb06515/Schubfach/blob/master/todec/LICENSE>
+    under the following copyright.
+
+    Copyright 2018-2020 Raffaello Giulietti
 
 ------------------------------------------------------------------------
 JavaTuples 1.2

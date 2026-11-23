@@ -208,6 +208,8 @@ BSD-style Licenses
 The Apache TinkerPop project bundles the following components under the BSD License:
 
      Antlr4 (org.antlr:antlr4-runtime:4.9.1 - https://www.antlr.org) - for details, see licenses/antlr4
+     bigint (https://github.com/tbuktu/bigint)
+       - for details, see licenses/bigint
      Kryo (com.esotericsoftware:kryo-shaded:3.0.3 - https://github.com/EsotericSoftware/kryo)
        - shaded to org.apache.tinkerpop.shaded.kryo
        - for details, see licenses/kryo
@@ -221,9 +223,13 @@ MIT Licenses
 
 The Apache TinkerPop project bundles the following components under the MIT License:
 
-     SLF4J API Module (org.slf4j:slf4j-api:1.7.25 - http://www.slf4j.org)
-       - shaded to org.shaded.slf4j
-       - for details, see licenses/slf4j
+     FastDoubleParser (https://github.com/wrandelshofer/FastDoubleParser)
+       - shaded to org.apache.tinkerpop.shaded.jackson.core.internal.shaded.fdp
+       - for details, see licenses/fastdoubleparser and licenses/fastdoubleparser-thirdparty
+       - includes MIT-licensed portions of fast_float
+     Schubfach (https://github.com/c4f7fcce9cb06515/Schubfach)
+       - shaded to org.apache.tinkerpop.shaded.jackson.core.io.schubfach
+       - for details, see licenses/schubfach
 
 ========================================================================
 Other Licenses
@@ -232,4 +238,3 @@ Other Licenses
 The Apache TinkerPop project bundles the following components under the Eclipse Public License 1.0:
 
      logback-core (ch.qos.logback:logback-core:1.2.13 - https://logback.qos.ch) - for details, see licenses/logback
-     logback-classic (ch.qos.logback:logback-classic:1.2.13 - https://logback.qos.ch) - for details, see licenses/logback
