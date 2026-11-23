@@ -18,4 +18,4 @@
 #
 
 __author__ = 'Marko A. Rodriguez (http://markorodriguez.com)'
-__version__ = '3.7.8.dev1' # Do not touch, updated automatically from maven
+__version__ = '3.7.8' # Do not touch, updated automatically from maven
