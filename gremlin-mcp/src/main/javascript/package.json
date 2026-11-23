@@ -1,6 +1,6 @@
 {
   "name": "gremlin-mcp",
-  "version": "3.8.2-alpha.1",
+  "version": "3.8.3",
   "description": "The official Apache TinkerPop MCP server for Gremlin that allows for fetching status, schema, and querying using Gremlin for any TinkerPop-compatible graph database (TypeScript implementation).",
   "type": "module",
   "main": "dist/server.js",
