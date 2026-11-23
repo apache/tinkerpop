@@ -150,6 +150,9 @@ limitations under the License.
                                         <resource>META-INF/licenses/kryo</resource>
                                         <resource>META-INF/licenses/minlog</resource>
                                         <resource>META-INF/licenses/bigint</resource>
+                                        <resource>META-INF/licenses/fastdoubleparser</resource>
+                                        <resource>META-INF/licenses/fastdoubleparser-thirdparty</resource>
+                                        <resource>META-INF/licenses/schubfach</resource>
                                     </resources>
                                 </transformer>
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.IncludeResourceTransformer">
@@ -163,6 +166,18 @@ limitations under the License.
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.IncludeResourceTransformer">
                                     <resource>META-INF/licenses/bigint</resource>
                                     <file>src/main/static/licenses/bigint</file>
+                                </transformer>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.IncludeResourceTransformer">
+                                    <resource>META-INF/licenses/fastdoubleparser</resource>
+                                    <file>src/main/static/licenses/fastdoubleparser</file>
+                                </transformer>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.IncludeResourceTransformer">
+                                    <resource>META-INF/licenses/fastdoubleparser-thirdparty</resource>
+                                    <file>src/main/static/licenses/fastdoubleparser-thirdparty</file>
+                                </transformer>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.IncludeResourceTransformer">
+                                    <resource>META-INF/licenses/schubfach</resource>
+                                    <file>src/main/static/licenses/schubfach</file>
                                 </transformer>
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.DontIncludeResourceTransformer">
                                     <resources>
