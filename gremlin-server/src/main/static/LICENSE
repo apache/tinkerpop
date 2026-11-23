@@ -207,7 +207,13 @@ BSD-style Licenses
 
 The Apache TinkerPop project bundles the following components under the BSD License:
 
-     Antlr4 (org.antlr:antlr4-runtime:4.9.1 - https://www.antlr.org) - for details, see licenses/antlr4
+     Antlr4 (org.antlr:antlr4-runtime:4.9.1 - https://www.antlr.org)
+       - for details, see licenses/antlr4
+     ASM (https://asm.ow2.io/)
+       - for details, see licenses/asm
+     bigint (https://github.com/tbuktu/bigint)
+       - for details, see licenses/bigint
+     ganymed ssh (http://www.inf.ethz.ch) - for details, see licenses/ganymed-ssh
      JLine (jline:jline:2.14.6 - https://github.com/jline/jline2) - for details, see licenses/jline2
      Kryo (com.esotericsoftware:kryo-shaded:3.0.3 - https://github.com/EsotericSoftware/kryo)
        - shaded in gremlin-shaded to org.apache.tinkerpop.shaded.kryo
@@ -225,8 +231,13 @@ The Apache TinkerPop project bundles the following components under the MIT Lice
 
      JCL 1.1.1 implemented over SLF4J (org.slf4j:jcl-over-slf4j:1.7.25 - http://www.slf4j.org) - for details, see licenses/slf4j
      SLF4J API Module (org.slf4j:slf4j-api:1.7.25 - http://www.slf4j.org) - for details, see licenses/slf4j
-     Foundation stylesheet for CodeRay (http://foundation.zurb.com) - for details, see licenses/foundation
-     normalize.css 2.1.2 (http://necolas.github.io/normalize.css/) - for details, see licenses/normalize
+     FastDoubleParser (https://github.com/wrandelshofer/FastDoubleParser)
+       - shaded in gremlin-shaded to org.apache.tinkerpop.shaded.jackson.core.internal.shaded.fdp
+       - for details, see licenses/fastdoubleparser and licenses/fastdoubleparser-thirdparty
+       - includes MIT-licensed portions of fast_float
+     Schubfach (https://github.com/c4f7fcce9cb06515/Schubfach)
+       - shaded in gremlin-shaded to org.apache.tinkerpop.shaded.jackson.core.io.schubfach
+       - for details, see licenses/schubfach
 
 ========================================================================
 Other Licenses
