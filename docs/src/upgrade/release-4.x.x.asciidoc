@@ -27,7 +27,7 @@ image::gremlins-wildest-dreams.png[width=185]
 [llms-summary="Upgrade notes for the TinkerPop 4.0.0-beta.4 release: the TinkerGraph split into in-memory and disk-backed implementations, the Gremlin Console move to Groovy 6, Gremlin naming in JavaScript, variable-length paths in TinkerGQL, GraphBinary length limits, Java module system support, geospatial data, plus provider guidance."]
 == TinkerPop 4.0.0-beta.4
 
-*Release Date: NOT OFFICIALLY RELEASED YET*
+*Release Date: November 23, 2026*
 
 Please see the link:https://github.com/apache/tinkerpop/blob/4.0.0-beta.4/CHANGELOG.asciidoc#release-4-0-0-beta-4[changelog] for a
 complete list of all the modifications that are part of this release.

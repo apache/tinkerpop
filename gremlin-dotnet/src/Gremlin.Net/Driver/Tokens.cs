@@ -33,7 +33,7 @@ namespace Gremlin.Net.Driver
         /// <summary>
         ///     Current TinkerPop version.
         /// </summary>
-        public static string GremlinVersion = "4.0.0-SNAPSHOT"; // DO NOT MODIFY - Configured automatically by Maven Replacer Plugin
+        public static string GremlinVersion = "4.0.0-beta.4"; // DO NOT MODIFY - Configured automatically by Maven Replacer Plugin
 
         /// <summary>
         ///     Argument name that allows the definition of the number of items each ResponseMessage should

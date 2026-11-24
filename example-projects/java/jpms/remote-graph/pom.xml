@@ -26,7 +26,7 @@ under the License.
     <properties>
         <maven.compiler.release>17</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <tinkerpop.version>4.0.0-SNAPSHOT</tinkerpop.version>
+        <tinkerpop.version>4.0.0-beta.4</tinkerpop.version>
     </properties>
     <dependencies>
         <dependency>

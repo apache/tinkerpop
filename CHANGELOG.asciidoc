@@ -23,7 +23,7 @@ under the License.
 image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/gremlins-wildest-dreams.png[width=185]
 
 [[release-4-0-0-beta-4]]
-=== TinkerPop 4.0.0-beta.4 (Release Date: NOT OFFICIALLY RELEASED YET)
+=== TinkerPop 4.0.0-beta.4 (November 23, 2026)
 
 * Added a `Geometry` value type for geospatial data, which adds a dependency on the JTS Topology Suite to `gremlin-core`.
 * Added the `geoWithin` and `geoContains` predicates, which filter `Geometry` values by spatial relationship.
