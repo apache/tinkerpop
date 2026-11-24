@@ -97,13 +97,21 @@ if [ "${TYPE}" = "SOURCE" ]; then
 fi
 
 echo -n "* downloading ${COMPONENT} (${ZIP_FILENAME})... "
-curl -Lsf ${URL} -o ${ZIP_FILENAME} || { echo "Failed to download ${COMPONENT}" ; exit 1; }
+# ATR answers any unknown path with its HTML application page and HTTP 200, so a status check alone cannot tell a real
+# file from a miss. Treat an HTML response as "no such file".
+fetch_artifact() {
+  local url=$1 out=$2 content_type
+  content_type=$(curl -Lsf "${url}" -o "${out}" -w '%{content_type}') || { rm -f "${out}"; return 1; }
+  [[ "${content_type}" != text/html* ]] || { rm -f "${out}"; return 1; }
+}
+
+fetch_artifact ${URL} ${ZIP_FILENAME} || { echo "Failed to download ${COMPONENT}" ; exit 1; }
 for ext in "asc" "sha512"
 do
-  curl -Lsf ${URL}.${ext} -o ${ZIP_FILENAME}.${ext} || { echo "Failed to download ${COMPONENT} (${ext})" ; exit 1 ; }
+  fetch_artifact ${URL}.${ext} ${ZIP_FILENAME}.${ext} || { echo "Failed to download ${COMPONENT} (${ext})" ; exit 1 ; }
 done
-curl -Lsf ${URL}.md5 -o ${ZIP_FILENAME}.md5 && { echo "MD5 checksums should not be released (${ZIP_FILENAME}.md5)" ; exit 1 ; }
-curl -Lsf ${URL}.sha1 -o ${ZIP_FILENAME}.sha1 && { echo "SHA1 checksums should not be released (${ZIP_FILENAME}.sha1)" ; exit 1 ; }
+if fetch_artifact ${URL}.md5 ${ZIP_FILENAME}.md5; then echo "MD5 checksums should not be released (${ZIP_FILENAME}.md5)" ; exit 1 ; fi
+if fetch_artifact ${URL}.sha1 ${ZIP_FILENAME}.sha1; then echo "SHA1 checksums should not be released (${ZIP_FILENAME}.sha1)" ; exit 1 ; fi
 echo "OK"
 
 # validate zip file
