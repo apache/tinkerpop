@@ -16,8 +16,9 @@ test belongs on a later branch. Changes here merge forward toward `master` — s
 
 This repository provides development guidance as [Agent Skills](https://agentskills.io):
 `tinker-dev` for building, testing and coding conventions, `tinker-doc` for authoring and
-revising documentation, `tinker-review` for graph-based review of a pull request, and
-`tinker-merge` for merging work forward through the release branches. If your tool supports
+revising documentation, `tinker-review` for graph-based review of a pull request,
+`tinker-merge` for merging work forward through the release branches, and `tinker-license`
+for reviewing LICENSE and NOTICE against what the distributions bundle. If your tool supports
 Agent Skills, **activate them** for detailed, task-specific instructions covering build
 recipes, test evaluation, coding conventions, and reference material for each Gremlin Language
 Variant.

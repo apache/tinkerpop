@@ -479,6 +479,9 @@ pipeline, and AsciiDoc conventions
 analyzing it against domain playbooks to produce an evidence report
 * `tinker-merge` covers merging a pull request, a feature branch or commits on a release branch forward through the
 release branches toward `master`, testing each branch locally and stopping before the push
+* `tinker-license` covers review of the LICENSE and NOTICE files against what the source and binary distributions
+bundle, following the ASF licensing guide and the <<dependencies,Dependencies>> rules, with an inventory script in
+`scripts/`
 
 Unlike the others, `tinker-review` depends on more than the repository. It requires Docker, Node.js 20 or newer, a
 remote that fetches from `apache/tinkerpop`, and a one-time `npm install --prefix .skills/tinker-review` to install its
