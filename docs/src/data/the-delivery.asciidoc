@@ -17,7 +17,7 @@ specific language governing permissions and limitations
 under the License.
 ////
 [[the-delivery]]
-[llms-summary="The delivery graph: a TinkerPop 4.x showcase for geometry property values and the geospatial predicates. Includes its GQL Graph Types schema and Gremlin examples that filter vertices and edges by location with geoWithin and geoContains. Only the loading block runs at build time. The examples are static listings with their results in callouts."]
+[llms-summary="The delivery graph: a TinkerPop 4.x showcase for geometry property values and the geospatial predicates. Includes its GQL Graph Types schema and Gremlin examples that filter vertices and edges by location with geoWithin and geoContains. Only the loading blocks run at build time. The examples are static listings with their results in callouts."]
 == The Delivery Graph
 
 The delivery graph models a grocery delivery company. It runs five hubs: `Hell's Kitchen`,
@@ -36,8 +36,9 @@ warehouse uses the `CARTESIAN` model with coordinates in meters. It is the refer
 filtering by location, because each geometry exercises a case that spatial filters commonly get
 wrong: a zone with a hole, a customer on a border, a zone across the prime meridian, a zone in two
 parts, a shipping lane across the antimeridian, z values including z = 0, overlapping zones, and an
-invalid polygon. It is created with `TinkerFactory.createTheDelivery()` and, because geometry
-serialization is not yet available, has no data file.
+invalid polygon. It is created with `TinkerFactory.createTheDelivery()` and ships as
+`data/tinkerpop-delivery.json` in GraphSON 4.0 and `data/tinkerpop-delivery.kryo` in Gryo. It is not
+provided in GraphML or in earlier versions of GraphSON, which cannot represent geometry values.
 
 .The Delivery Graph
 image::the-delivery-graph.png[width=685]
@@ -80,8 +81,9 @@ distance between the two hubs, rounded to 0.1 km.
 
 === Loading the Delivery Graph
 
-The examples that follow assume a traversal source `g` bound to the delivery graph, which the
-`TinkerFactory` helper builds in memory and populates directly.
+The examples that follow assume a traversal source `g` bound to the delivery graph. There are two
+ways to obtain one. The first builds the graph in memory with the `TinkerFactory` helper and
+populates it directly.
 
 [gremlin-groovy]
 ----
@@ -89,12 +91,21 @@ graph = TinkerFactory.createTheDelivery()
 g = traversal().with(graph)
 ----
 
-The graph has no data file, so it cannot be loaded with `g.io(...)` as the other toy graphs can.
+The second reads the shipped `data/tinkerpop-delivery.kryo` dataset, which is serialized in Gryo.
+Gryo keeps the model and SRID of each geometry, so a default `TinkerGraph` receives the same
+`GEOGRAPHIC` and `CARTESIAN` values that the helper builds.
+
+[gremlin-groovy]
+----
+graph = TinkerGraph.open()
+g = traversal().with(graph)
+g.io("data/tinkerpop-delivery.kryo").read().iterate()
+----
 
 === Examples
 
 The examples below write the predicates without the `GeoP` prefix and create geometries with
-`Geometry.fromWkt()`. The loading block above runs at build time. These examples are static
+`Geometry.fromWkt()`. The loading blocks above run at build time. These examples are static
 listings, so their results are in callouts.
 
 Midtown is the zone Hell's Kitchen serves, and it is passed to `geoWithin` as a traversal.

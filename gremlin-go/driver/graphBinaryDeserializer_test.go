@@ -21,6 +21,8 @@ package gremlingo
 
 import (
 	"bytes"
+	"encoding/hex"
+	"errors"
 	"io"
 	"sync"
 	"testing"
@@ -482,5 +484,136 @@ func TestGraphBinaryDeserializerComplexTypes(t *testing.T) {
 
 		// Should have blocked for second chunk
 		assert.GreaterOrEqual(t, elapsed, 10*time.Millisecond)
+	})
+}
+
+// TestGeometryDeserialization reads geometry values from GraphBinary bytes, including bytes that
+// a hostile or broken writer could send.
+func TestGeometryDeserialization(t *testing.T) {
+	readGeometryBytes := func(t *testing.T, hexBytes string) (interface{}, error) {
+		t.Helper()
+		data, err := hex.DecodeString(hexBytes)
+		assert.Nil(t, err)
+		return NewGraphBinaryDeserializer(bytes.NewReader(data)).ReadFullyQualified()
+	}
+
+	t.Run("reads a point from its srid and ISO WKB", func(t *testing.T) {
+		read, err := readGeometryBytes(t, "31"+"00"+"000010e6"+
+			"00"+"00000001"+"c05e9541205bc01a"+"4047cd97f62b6ae8")
+		assert.Nil(t, err)
+
+		point, ok := read.(*Point)
+		assert.True(t, ok)
+		assert.True(t, seattlePoint(t).Equal(point))
+		assert.Equal(t, Model.Geographic, point.Model())
+	})
+
+	t.Run("reads a null geometry as nil", func(t *testing.T) {
+		read, err := readGeometryBytes(t, "31"+"01")
+		assert.Nil(t, err)
+		assert.Nil(t, read)
+	})
+
+	t.Run("reads a little-endian geometry", func(t *testing.T) {
+		read, err := readGeometryBytes(t, "31"+"00"+"000010e6"+
+			"01"+"01000000"+"1ac05b2041955ec0"+"e86a2bf697cd4740")
+		assert.Nil(t, err)
+		assert.True(t, seattlePoint(t).Equal(read.(Geometry)))
+	})
+
+	t.Run("rejects a value that ends inside the WKB", func(t *testing.T) {
+		_, err := readGeometryBytes(t, "31"+"00"+"000010e6"+"00"+"00000001"+"c05e9541")
+		assert.NotNil(t, err)
+		assert.Contains(t, err.Error(), "ends before its WKB is complete")
+		assert.True(t, errors.Is(err, io.ErrUnexpectedEOF))
+	})
+
+	t.Run("rejects a point count larger than the bytes that follow", func(t *testing.T) {
+		// One whole vertex and a partial second one, under a count of 2147483647.
+		_, err := readGeometryBytes(t, "31"+"00"+"00000000"+"00"+"00000002"+"7fffffff"+
+			"00000000000000000000000000000000"+"00000000")
+		assert.NotNil(t, err)
+		assert.Contains(t, err.Error(), "ends before its WKB is complete")
+		assert.True(t, errors.Is(err, io.ErrUnexpectedEOF))
+	})
+
+	t.Run("rejects a count that does not fit a signed 32-bit integer", func(t *testing.T) {
+		_, err := readGeometryBytes(t, "31"+"00"+"00000000"+"00"+"00000002"+"ffffffff")
+		assert.NotNil(t, err)
+		assert.Contains(t, err.Error(), "invalid point count")
+	})
+
+	t.Run("rejects EWKB", func(t *testing.T) {
+		_, err := readGeometryBytes(t, "31"+"00"+"000010e6"+"00"+"80000001"+
+			"c05e9541205bc01a"+"4047cd97f62b6ae8")
+		assert.NotNil(t, err)
+		assert.Contains(t, err.Error(), "EWKB")
+	})
+
+	t.Run("rejects the M and ZM dimensions", func(t *testing.T) {
+		_, err := readGeometryBytes(t, "31"+"00"+"00000000"+"00"+"000007d1"+
+			"3ff0000000000000"+"4000000000000000"+"4008000000000000")
+		assert.NotNil(t, err)
+		assert.Contains(t, err.Error(), "M dimension not supported")
+
+		_, err = readGeometryBytes(t, "31"+"00"+"00000000"+"00"+"00000bb9"+
+			"3ff0000000000000"+"4000000000000000"+"4008000000000000"+"4010000000000000")
+		assert.NotNil(t, err)
+		assert.Contains(t, err.Error(), "ZM dimension not supported")
+	})
+
+	t.Run("rejects an unknown WKB type code", func(t *testing.T) {
+		// The coordinates of a point follow, so parsing this as a point would succeed.
+		_, err := readGeometryBytes(t, "31"+"00"+"00000000"+"00"+"00000008"+
+			"3ff0000000000000"+"4000000000000000")
+		assert.NotNil(t, err)
+		assert.Contains(t, err.Error(), "unknown WKB type code: 8")
+	})
+
+	t.Run("rejects a NaN vertex in a line string", func(t *testing.T) {
+		_, err := readGeometryBytes(t, "31"+"00"+"00000000"+"00"+"00000002"+"00000002"+
+			"7ff8000000000000"+"0000000000000000"+
+			"3ff0000000000000"+"3ff0000000000000")
+		assert.NotNil(t, err)
+	})
+
+	t.Run("rejects a geographic coordinate out of range", func(t *testing.T) {
+		_, err := readGeometryBytes(t, "31"+"00"+"000010e6"+"00"+"00000001"+
+			"4066a00000000000"+"0000000000000000")
+		assert.NotNil(t, err)
+	})
+
+	t.Run("rejects mixed z dimensions", func(t *testing.T) {
+		// A 2D collection holding a 3D point.
+		_, err := readGeometryBytes(t, "31"+"00"+"00000000"+"00"+"00000007"+"00000001"+
+			"00"+"000003e9"+"3ff0000000000000"+"4000000000000000"+"4008000000000000")
+		assert.NotNil(t, err)
+		assert.Contains(t, err.Error(), "mixed z dimensions in WKB")
+	})
+
+	t.Run("rejects nesting deeper than 32 levels", func(t *testing.T) {
+		var value bytes.Buffer
+		value.Write([]byte{0x31, 0x00, 0x00, 0x00, 0x00, 0x00})
+		for level := 0; level < 33; level++ {
+			// A big-endian GEOMETRYCOLLECTION holding one part.
+			value.Write([]byte{0x00, 0x00, 0x00, 0x00, 0x07, 0x00, 0x00, 0x00, 0x01})
+		}
+		value.Write(seattlePoint(t).WKB())
+
+		_, err := NewGraphBinaryDeserializer(&value).ReadFullyQualified()
+		assert.NotNil(t, err)
+	})
+
+	t.Run("reads 32 levels of nesting", func(t *testing.T) {
+		var value bytes.Buffer
+		value.Write([]byte{0x31, 0x00, 0x00, 0x00, 0x00, 0x00})
+		for level := 0; level < 32; level++ {
+			value.Write([]byte{0x00, 0x00, 0x00, 0x00, 0x07, 0x00, 0x00, 0x00, 0x01})
+		}
+		value.Write(mustPoint(t, 1, 2, Model.Cartesian).WKB())
+
+		read, err := NewGraphBinaryDeserializer(&value).ReadFullyQualified()
+		assert.Nil(t, err)
+		assert.IsType(t, &GeometryCollection{}, read)
 	})
 }

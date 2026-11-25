@@ -1063,10 +1063,11 @@ tag when one is necessary will cause provider tests to fail:
 `true` (meaning that it can store `null` values).
 * `@AllowSetPropertyValues` - The scenario requires that the graph can store a `Set` as a property value.
 * `@AllowUUIDPropertyValues` - The scenario requires that the graph can store a `UUID` as a property value.
-* `@DataGeometry` - The scenario tests `Geometry` values. In this release only the embedded Java TinkerGraph runners
-run these scenarios, since geometry serialization is not available. The remote, Hadoop and Spark runners exclude them
-with `and not @DataGeometry` in their `@CucumberOptions` tag filter, and the Python, .NET, Go and JavaScript runners
-skip the tag in their own test configuration.
+* `@DataGeometry` - The scenario tests `Geometry` values. In this release the embedded Java TinkerGraph runners and
+the remote Java runners against Gremlin Server run these scenarios. The Hadoop and Spark runners exclude them with
+`and not @DataGeometry` in their `@CucumberOptions` tag filter, since their feature test worlds have no delivery graph.
+The Python, .NET, Go and JavaScript runners skip the tag in their own test configuration, since those language
+variants do not yet have the geo predicates and their translators reject geometries.
 * `@DisallowNullPropertyValues` - The scenario requires that the graph be configured with `AllowNullPropertyValues` as
 `false` (meaning that it cannot store `null` values).
 * `@GraphComputerOnly` - The scenario is only supported with `GraphComputer`.

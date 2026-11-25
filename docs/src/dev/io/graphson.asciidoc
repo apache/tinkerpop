@@ -253,6 +253,39 @@ following values: "-Infinity", "Infinity", "NaN"
 100.0
 ----
 
+=== Geometry
+
+JSON Object with two required keys: "wkt" and "srid" +
+"wkt" is a JSON String holding the ISO WKT of the geometry, exactly as `Geometry.toWKT()` writes it +
+"srid" is a JSON Number holding the spatial reference identifier of the geometry as a 4-byte signed integer
+
+[source,json]
+----
+{
+  "@type" : "g:Geometry",
+  "@value" : {
+    "wkt" : "POINT(-122.3321 47.6062)",
+    "srid" : 4326
+  }
+}
+----
+
+[source,json]
+----
+{
+  "wkt" : "POINT(-122.3321 47.6062)",
+  "srid" : 4326
+}
+----
+
+GraphSON carries the spatial reference identifier as written, so every geometry round trips, including one whose
+model is `OTHER` such as SRID 32618. The model is not written because it follows from the SRID: 0 is `CARTESIAN`, 4326
+is `GEOGRAPHIC` and any other value is `OTHER`. Reading fails when either field is absent, when "srid" is not an
+integer or does not fit in a 4-byte signed integer, and when "wkt" carries an extended WKT `SRID=` prefix. Reading
+also applies the checks of `Geometry.fromWkt(wkt, srid)`, so a geometry with SRID 4326 whose coordinates fall outside
+the longitude and latitude ranges is refused. Fields other than "wkt" and "srid" are ignored, which includes a "model"
+field.
+
 === Integer
 
 A JSON Number with the same range as a 4-byte signed integer.

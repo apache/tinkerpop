@@ -49,7 +49,7 @@ import java.util.Optional;
 
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData;
 
-// @DataGeometry scenarios are excluded since geometry values cannot be serialized
+// @DataGeometry scenarios are excluded since HadoopGraphWorld has no delivery graph
 @RunWith(Cucumber.class)
 @CucumberOptions(
         tags = "not @GraphComputerOnly and not @TinkerServiceRegistry and not @InsertionOrderingRequired and not @StepWrite and not @TinkerGQL and not @MultiLabelDefault and not @DataGeometry",

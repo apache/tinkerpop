@@ -611,5 +611,36 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphBinary4
 
         [Fact]
         public Task TestMergeInV() => Run("merge-in-v");
+
+        // Geometry tests
+        [Fact]
+        public Task TestPointGeometry() => Run("point-geometry");
+
+        [Fact]
+        public Task TestPointZGeometry() => Run("point-z-geometry");
+
+        [Fact]
+        public Task TestEmptyPointGeometry() => Run("empty-point-geometry");
+
+        [Fact]
+        public Task TestLineStringGeometry() => Run("linestring-geometry");
+
+        [Fact]
+        public Task TestPolygonGeometry() => Run("polygon-geometry");
+
+        [Fact]
+        public Task TestMultiPointGeometry() => Run("multipoint-geometry");
+
+        [Fact]
+        public Task TestMultiLineStringGeometry() => Run("multilinestring-geometry");
+
+        [Fact]
+        public Task TestMultiPolygonGeometry() => Run("multipolygon-geometry");
+
+        [Fact]
+        public Task TestGeometryCollectionGeometry() => Run("geometrycollection-geometry");
+
+        [Fact]
+        public Task TestOtherSridGeometry() => Run("other-srid-geometry");
     }
 }

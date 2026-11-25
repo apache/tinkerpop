@@ -81,6 +81,7 @@ import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
+import org.apache.tinkerpop.gremlin.structure.geo.Geometry;
 import org.apache.tinkerpop.gremlin.structure.io.pdt.CompositePDT;
 import org.apache.tinkerpop.gremlin.structure.io.pdt.PrimitivePDT;
 import org.apache.tinkerpop.gremlin.structure.io.pdt.PDTRegistry;
@@ -161,6 +162,7 @@ public abstract class GraphSONModule extends TinkerPopJacksonModule {
                     put(Tree.class, "Tree");
                     put(CompositePDT.class, "CompositePdt");
                     put(PrimitivePDT.class, "PrimitivePdt");
+                    put(Geometry.class, "Geometry");
                     Stream.of(
                             Direction.class,
                             Merge.class,
@@ -188,6 +190,9 @@ public abstract class GraphSONModule extends TinkerPopJacksonModule {
             addSerializer(Tree.class, new GraphSONSerializersV4.TreeJacksonSerializer());
             addSerializer(CompositePDT.class, new PdtGraphSONSerializersV4.CompositePDTJacksonSerializer());
             addSerializer(PrimitivePDT.class, new PdtGraphSONSerializersV4.PrimitivePDTJacksonSerializer());
+
+            // geospatial
+            addSerializer(Geometry.class, new GeometrySerializersV4.GeometryJacksonSerializer());
 
             // java.util - use the standard jackson serializers for collections when types aren't embedded
             if (typeInfo != TypeInfo.NO_TYPES) {
@@ -222,6 +227,9 @@ public abstract class GraphSONModule extends TinkerPopJacksonModule {
             addDeserializer(CompositePDT.class, pdtDeserializer);
             primitivePdtDeserializer = new PdtGraphSONSerializersV4.PrimitivePDTJacksonDeserializer();
             addDeserializer(PrimitivePDT.class, primitivePdtDeserializer);
+
+            // geospatial
+            addDeserializer(Geometry.class, new GeometrySerializersV4.GeometryJacksonDeserializer());
 
             // java.util - use the standard jackson serializers for collections when types aren't embedded
             if (typeInfo != TypeInfo.NO_TYPES) {

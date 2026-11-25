@@ -47,6 +47,7 @@ section describes in detail.
 |Modern |yes |yes |yes
 |The Crew |yes |no |yes
 |The Zoo |yes |no |no
+|The Delivery |yes |no |yes
 |Grateful Dead |yes |yes |yes
 |Air Routes |yes |yes |yes
 |=========================================================

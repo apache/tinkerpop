@@ -17,6 +17,8 @@ specific language governing permissions and limitations
 under the License.
 """
 
+import io
+import struct
 import uuid
 import math
 import pytest
@@ -24,10 +26,24 @@ from collections import OrderedDict
 
 from datetime import datetime, timedelta, timezone
 from gremlin_python.statics import long, bigint, BigDecimal, SingleByte, SingleChar
+from gremlin_python.structure.geo import GeometryCollection, LineString, Model, \
+    MultiLineString, MultiPoint, MultiPolygon, Point, Polygon
 from gremlin_python.structure.graph import Graph, Vertex, Edge, Property, VertexProperty, Path, CompositePDT
 from gremlin_python.structure.io.graphbinaryV4 import GraphBinaryWriter, GraphBinaryReader
 from gremlin_python.process.traversal import Direction
 from gremlin_python.structure.io.util import Marker
+
+
+# The Geometry example from the GraphBinary documentation: POINT(-122.3321 47.6062) under SRID 4326
+GEOMETRY_WIRE_EXAMPLE = bytes.fromhex('31' '00' '000010e6'
+                                      '00' '00000001'
+                                      'c05e9541205bc01a' '4047cd97f62b6ae8')
+
+
+def geometry_bytes(srid, wkb):
+    """Returns a fully qualified, non-null Geometry value from an SRID and hand-written WKB."""
+    return bytearray(b'\x31\x00' + struct.pack('>i', srid) + wkb)
+
 
 
 class TestGraphBinaryV4(object):
@@ -493,3 +509,126 @@ class TestGraphBinaryV4(object):
         # (tzinfo is None) raises AttributeError before any bytes are written.
         with pytest.raises(AttributeError, match='Timezone information'):
             self.graphbinary_writer.write_object(datetime(2022, 5, 20))
+
+    def test_geometry_write_matches_the_documented_wire_example(self):
+        point = Point(-122.3321, 47.6062, model=Model.GEOGRAPHIC)
+        assert bytes(self.graphbinary_writer.write_object(point)) == GEOMETRY_WIRE_EXAMPLE
+
+    def test_geometry_read_of_the_documented_wire_example(self):
+        point = self.graphbinary_reader.read_object(bytearray(GEOMETRY_WIRE_EXAMPLE))
+        assert point == Point(-122.3321, 47.6062, model=Model.GEOGRAPHIC)
+        assert point.model == Model.GEOGRAPHIC
+
+    def test_geometry_null(self):
+        assert self.graphbinary_reader.read_object(bytearray(b'\x31\x01')) is None
+
+    def test_geometry_empty_point(self):
+        expected = geometry_bytes(0, bytes.fromhex('00' '00000001'
+                                                   '7ff8000000000000' '7ff8000000000000'))
+        written = self.graphbinary_writer.write_object(Point.empty())
+        assert written == expected
+        assert self.graphbinary_reader.read_object(expected) == Point.empty()
+
+    def test_geometry_empty_point_with_z(self):
+        # type 1001 with three NaN ordinates: an empty point that keeps its z dimension
+        expected = geometry_bytes(0, bytes.fromhex('00' '000003e9'
+                                                   '7ff8000000000000' '7ff8000000000000'
+                                                   '7ff8000000000000'))
+        read = self.graphbinary_reader.read_object(expected)
+        assert read.is_empty is True
+        assert read.has_z is True
+        assert str(read) == 'POINT Z EMPTY'
+        assert self.graphbinary_writer.write_object(read) == expected
+
+    def test_geometry_round_trip_of_every_kind(self):
+        shell = LineString([Point(0, 0), Point(1, 0), Point(1, 1), Point(0, 0)])
+        hole = LineString([Point(0.2, 0.2), Point(0.4, 0.2), Point(0.4, 0.4), Point(0.2, 0.2)])
+        values = [
+            Point(1, 2),
+            Point(1, 2, 3),
+            LineString([Point(0, 0), Point(1, 1), Point(2, 0)]),
+            LineString([Point(0, 0, 1), Point(1, 1, 2)]),
+            Polygon(shell, [hole]),
+            MultiPoint([Point(1, 2), Point.empty()]),
+            MultiLineString([LineString([Point(0, 0), Point(1, 1)]), LineString.empty()]),
+            MultiPolygon([Polygon(shell)]),
+            GeometryCollection([Point(1, 2), GeometryCollection([Point.empty()])]),
+            Point(1, 2, srid=3857),
+            LineString.empty(),
+            Polygon.empty(),
+            MultiPoint.empty(),
+            MultiLineString.empty(),
+            MultiPolygon.empty(),
+            GeometryCollection.empty()
+        ]
+        for value in values:
+            read = self.graphbinary_reader.read_object(self.graphbinary_writer.write_object(value))
+            assert read == value
+            assert type(read) is type(value)
+
+    def test_geometry_reads_little_endian_wkb(self):
+        little_endian = geometry_bytes(4326, b'\x01' + struct.pack('<i', 1)
+                                       + struct.pack('<dd', -122.3321, 47.6062))
+        read = self.graphbinary_reader.read_object(little_endian)
+        assert read == Point(-122.3321, 47.6062, model=Model.GEOGRAPHIC)
+        # the writer always emits big-endian WKB
+        assert bytes(self.graphbinary_writer.write_object(read)) == GEOMETRY_WIRE_EXAMPLE
+
+    def test_geometry_keeps_negative_zero(self):
+        written = self.graphbinary_writer.write_object(Point(-0.0, 0.0))
+        assert written == geometry_bytes(0, bytes.fromhex('00' '00000001'
+                                                          '8000000000000000' '0000000000000000'))
+        read = self.graphbinary_reader.read_object(written)
+        assert math.copysign(1.0, read.x) == -1.0
+
+    def test_geometry_in_a_list_leaves_the_buffer_after_the_value(self):
+        written = self.graphbinary_writer.write_object([Point(1, 2), 7])
+        buff = io.BytesIO(bytes(written) + b'\xff')
+        assert self.graphbinary_reader.read_object(buff) == [Point(1, 2), 7]
+        assert buff.read() == b'\xff'
+
+    def test_geometry_value_ending_inside_the_wkb(self):
+        with pytest.raises(ValueError, match='end of input'):
+            self.graphbinary_reader.read_object(bytearray(GEOMETRY_WIRE_EXAMPLE[:-4]))
+
+    def test_geometry_rejects_a_point_count_that_cannot_be_addressed(self):
+        # a line string declaring 0x7fffffff points but carrying only one
+        wkb = b'\x00' + struct.pack('>i', 2) + b'\x7f\xff\xff\xff' + struct.pack('>dd', 0.0, 0.0)
+        with pytest.raises(ValueError, match='end of input'):
+            self.graphbinary_reader.read_object(geometry_bytes(0, wkb))
+        # a count is read unsigned, and one of 2 ** 31 or more is refused outright
+        too_large = b'\x00' + struct.pack('>i', 2) + b'\x80\x00\x00\x00'
+        with pytest.raises(ValueError, match='Invalid point count'):
+            self.graphbinary_reader.read_object(geometry_bytes(0, too_large))
+
+    def test_geometry_rejects_ewkb_and_unsupported_wkb_types(self):
+        with pytest.raises(ValueError, match='EWKB'):
+            self.graphbinary_reader.read_object(
+                geometry_bytes(0, b'\x00' + struct.pack('>I', 0x80000001)
+                               + struct.pack('>ddd', 1.0, 2.0, 3.0)))
+        with pytest.raises(ValueError, match='M dimension'):
+            self.graphbinary_reader.read_object(
+                geometry_bytes(0, b'\x00' + struct.pack('>i', 2001)
+                               + struct.pack('>ddd', 1.0, 2.0, 3.0)))
+        with pytest.raises(ValueError, match='ZM dimension'):
+            self.graphbinary_reader.read_object(
+                geometry_bytes(0, b'\x00' + struct.pack('>i', 3001)
+                               + struct.pack('>ddd', 1.0, 2.0, 3.0)))
+        with pytest.raises(ValueError, match='Unknown WKB type'):
+            self.graphbinary_reader.read_object(
+                geometry_bytes(0, b'\x00' + struct.pack('>i', 8) + struct.pack('>dd', 1.0, 2.0)))
+
+    def test_geometry_applies_the_coordinate_checks_on_read(self):
+        nan_vertex = b'\x00' + struct.pack('>i', 2) + struct.pack('>i', 2) \
+                     + struct.pack('>dd', math.nan, math.nan) + struct.pack('>dd', 1.0, 1.0)
+        with pytest.raises(ValueError, match='empty point'):
+            self.graphbinary_reader.read_object(geometry_bytes(0, nan_vertex))
+        out_of_range = b'\x00' + struct.pack('>i', 1) + struct.pack('>dd', 181.0, 0.0)
+        with pytest.raises(ValueError, match='longitude'):
+            self.graphbinary_reader.read_object(geometry_bytes(4326, out_of_range))
+
+    def test_geometry_rejects_nesting_beyond_the_limit(self):
+        collection_header = b'\x00' + struct.pack('>i', 7) + struct.pack('>i', 1)
+        wkb = collection_header * 33 + b'\x00' + struct.pack('>i', 1) + struct.pack('>dd', 1.0, 2.0)
+        with pytest.raises(ValueError, match='nesting depth'):
+            self.graphbinary_reader.read_object(geometry_bytes(0, wkb))

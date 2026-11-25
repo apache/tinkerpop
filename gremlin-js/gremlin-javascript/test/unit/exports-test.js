@@ -76,6 +76,21 @@ describe('API', function () {
     assert.strictEqual(typeof glvModule.structure.Byte, 'function');
     assert.strictEqual(typeof glvModule.structure.Long, 'function');
     assert.strictEqual(typeof glvModule.structure.unwrap, 'function');
+    assert.strictEqual(typeof glvModule.structure.Model, 'object');
+    assert.strictEqual(glvModule.structure.Model.GEOGRAPHIC, 'GEOGRAPHIC');
+    validateConstructor(glvModule.structure, 'Geometry');
+    assert.strictEqual(typeof glvModule.structure.Geometry.fromWKB, 'function');
+    validateConstructor(glvModule.structure, 'Curve');
+    validateConstructor(glvModule.structure, 'Surface');
+    validateConstructor(glvModule.structure, 'MultiCurve');
+    validateConstructor(glvModule.structure, 'MultiSurface');
+    validateConstructor(glvModule.structure, 'Point');
+    validateConstructor(glvModule.structure, 'LineString');
+    validateConstructor(glvModule.structure, 'Polygon');
+    validateConstructor(glvModule.structure, 'GeometryCollection');
+    validateConstructor(glvModule.structure, 'MultiPoint');
+    validateConstructor(glvModule.structure, 'MultiLineString');
+    validateConstructor(glvModule.structure, 'MultiPolygon');
   });
   it('should expose fields under driver', function () {
     assert.ok(glvModule.driver);

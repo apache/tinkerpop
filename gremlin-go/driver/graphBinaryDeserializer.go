@@ -285,6 +285,8 @@ func (d *GraphBinaryDeserializer) readValue(dt dataType, flag byte) (interface{}
 		return d.readCompositePDT()
 	case primitivePDTType:
 		return d.readPrimitivePDT()
+	case geometryType:
+		return d.readGeometry()
 	default:
 		return nil, newError(err0408GetSerializerToReadUnknownTypeError, dt)
 	}
@@ -911,6 +913,21 @@ func (d *GraphBinaryDeserializer) readEnum(dt dataType) (interface{}, error) {
 	default:
 		return s, nil
 	}
+}
+
+// readGeometry reads a Geometry value, which is an SRID followed by the ISO WKB bytes of the
+// geometry. The reader finds its end by parsing it and leaves the stream positioned on the byte
+// after the geometry.
+func (d *GraphBinaryDeserializer) readGeometry() (interface{}, error) {
+	srid, err := d.readInt32()
+	if err != nil {
+		return nil, err
+	}
+	g, err := readWkbGeometry(d, srid)
+	if err != nil {
+		return nil, wrapTruncatedWkbError(err, "the geometry value ends before its WKB is complete")
+	}
+	return g, nil
 }
 
 func (d *GraphBinaryDeserializer) readCompositePDT() (interface{}, error) {

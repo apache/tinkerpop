@@ -28,6 +28,7 @@ using System.IO;
 using System.Linq;
 using System.Numerics;
 using Gremlin.Net.Process.Traversal;
+using Gremlin.Net.Structure.Geo;
 using Gremlin.Net.Structure.IO.GraphBinary4.Types;
 
 namespace Gremlin.Net.Structure.IO.GraphBinary4
@@ -68,6 +69,7 @@ namespace Gremlin.Net.Structure.IO.GraphBinary4
                 {typeof(Marker), SingleTypeSerializers.MarkerSerializer},
                 {typeof(CompositePDT), new CompositePDTSerializer()},
                 {typeof(PrimitivePDT), new PrimitivePDTSerializer()},
+                {typeof(Geometry), new GeometrySerializer()},
             };
 
         private readonly Dictionary<DataType, ITypeSerializer> _serializerByDataType =
@@ -104,6 +106,7 @@ namespace Gremlin.Net.Structure.IO.GraphBinary4
                 {DataType.Marker, SingleTypeSerializers.MarkerSerializer},
                 {DataType.CompositePDT, new CompositePDTSerializer()},
                 {DataType.PrimitivePDT, new PrimitivePDTSerializer()},
+                {DataType.Geometry, new GeometrySerializer()},
             };
 
         /// <summary>

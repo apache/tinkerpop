@@ -73,7 +73,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
         MultiLabelDefaultNotSupportedOnTestGraph,
 
         /// <summary>
-        /// Geometry values cannot be serialized.
+        /// Gremlin.Net has no geo predicates and the translator rejects geometries.
         /// </summary>
         GeometryNotSupported
     }

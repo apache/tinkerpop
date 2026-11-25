@@ -214,5 +214,6 @@ func initSerializers() {
 		markerType:         markerWriter,
 		compositePDTType:   pdtWriter,
 		primitivePDTType:   primitivePdtWriter,
+		geometryType:       geometryWriter,
 	}
 }

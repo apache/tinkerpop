@@ -77,6 +77,7 @@ The following types have been removed:
 ==== Added Types
 
 - `DateTime` (0x04) - unified date-time representation with timezone offset
+- `Geometry` (0x31) - geospatial value represented as a spatial reference identifier and ISO WKB
 - `CompositePDT` (0xf0) - provider-defined composite type with typed fields
 - `PrimitivePDT` (0xf1) - provider-defined primitive type with stringified value
 - `Marker` (0xfd) - separator between result data and status in response messages
@@ -175,6 +176,7 @@ Changes to existing types require new revision.
 - `0x27`: Boolean
 - `0x2b`: Tree
 - `0x2e`: Merge
+- `0x31`: Geometry
 - `0xf0`: CompositePDT
 - `0xf1`: PrimitivePDT
 - `0xfd`: Marker
@@ -561,6 +563,42 @@ Where:
 - `{length}` is an `Int {value}` describing the amount of items.
 - `{item_0}...{item_n}` are the items of the `Tree`. `{item_i}` is composed of a `{key}` which is a fully-qualified typed value
 followed by a `{Tree}`.
+
+==== Geometry
+
+A geospatial value.
+
+Format: `{srid}{wkb}`
+
+Where:
+
+- `{srid}` is an `Int {value}` holding the spatial reference identifier of the geometry.
+- `{wkb}` is the ISO well-known binary encoding of the geometry. Its extent is given by the WKB itself. A byte order
+byte is followed by a type code that fixes the size of a point, and the counts that follow give the number of points,
+rings and parts the value contains.
+
+The `{srid}` determines how the coordinates are read. An SRID of 0 is reported as the `CARTESIAN` model, which is
+planar with math in coordinate units, and an SRID of 4326 is reported as the `GEOGRAPHIC` model, which is longitude and
+latitude on the WGS84 earth surface. Any other SRID is reported as the `OTHER` model, which names a coordinate system
+such as a map projection that TinkerPop does not interpret.
+
+Writers SHOULD write big-endian WKB. Readers MUST accept both byte orders. The byte order belongs to a single geometry
+rather than to the value as a whole, so each geometry nested in a collection carries its own byte order byte.
+
+Extended WKB, along with the M and ZM dimensions, is not allowed. An empty point is written with NaN coordinates,
+which is `7f f8 00 00 00 00 00 00` for each ordinate.
+
+Example values:
+
+[source,text]
+----
+31 00                      Geometry type code and value flag
+00 00 10 e6                srid is 4326, so the model is GEOGRAPHIC
+00                         wkb is big-endian
+00 00 00 01                wkb type is Point
+c0 5e 95 41 20 5b c0 1a    x is -122.3321
+40 47 cd 97 f6 2b 6a e8    y is 47.6062
+----
 
 ==== Marker
 

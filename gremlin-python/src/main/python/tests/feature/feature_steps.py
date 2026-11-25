@@ -91,7 +91,7 @@ def choose_graph(step, graph_name):
     if not step.context.ignore:
         step.context.ignore = "MultiLabelDefault" in tagset
 
-    # geometry values cannot be serialized
+    # gremlin-python has no geo predicates and the translator rejects geometries, so these scenarios are placeholders
     if not step.context.ignore:
         step.context.ignore = "DataGeometry" in tagset
 

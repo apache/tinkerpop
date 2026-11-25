@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.structure.io.gryo;
 
+import org.apache.tinkerpop.gremlin.structure.geo.Geometry;
 import org.apache.tinkerpop.gremlin.structure.io.ClassRegistry;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.InputShim;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.KryoShim;
@@ -31,6 +32,7 @@ import org.apache.tinkerpop.shaded.kryo.io.Output;
 import org.javatuples.Pair;
 import org.javatuples.Triplet;
 
+import java.io.ByteArrayOutputStream;
 import java.net.InetAddress;
 import java.net.URI;
 import java.nio.ByteBuffer;
@@ -121,6 +123,79 @@ final class UtilSerializers {
                         orElseThrow(() -> new RuntimeException("Class not recognized - " + name));
             }
             return clazzes;
+        }
+    }
+
+    /**
+     * Serializer for the {@link Geometry} kinds, which each carry their own Gryo registration id and
+     * share this serializer. A value is written as its SRID, the length of its ISO WKB and the WKB
+     * bytes, where the SRID and the length are each the four big-endian bytes that Kryo writes for an
+     * {@code int}. The length is what lets the reader hand exactly one geometry to the WKB parser.
+     * <p>
+     * The WKB is written big-endian, as {@link Geometry#toWKB()} produces it. A value that is read may
+     * carry either byte order, because every geometry header declares its own.
+     * <p>
+     * A negative length, WKB that does not parse, a geometry that is not an instance of the registered
+     * class, and an input that reports no bytes while bytes are still owed each fail with
+     * {@link IllegalArgumentException}, while a stream that ends before the declared length has been
+     * read fails with Kryo's own exception, as any truncated Gryo value does.
+     *
+     * @param <T> the geometry kind of the registration this serializer is bound to
+     */
+    static final class GeometrySerializer<T extends Geometry> implements SerializerShim<T> {
+
+        /**
+         * The most bytes taken from the stream at a time. The declared length is a number the stream
+         * supplies, so it is used to decide how much more to read rather than how much to allocate: a
+         * stream claiming a length it does not carry runs out within one chunk of the bytes it holds.
+         */
+        private static final int READ_CHUNK_SIZE = 8192;
+
+        @Override
+        public <O extends OutputShim> void write(final KryoShim<?, O> kryo, final O output, final T geometry) {
+            final byte[] wkb = geometry.toWKB();
+            output.writeInt(geometry.srid());
+            output.writeInt(wkb.length);
+            output.writeBytes(wkb, 0, wkb.length);
+        }
+
+        @Override
+        @SuppressWarnings("unchecked")
+        public <I extends InputShim> T read(final KryoShim<I, ?> kryo, final I input, final Class<T> clazz) {
+            final int srid = input.readInt();
+            final int length = input.readInt();
+            if (length < 0)
+                throw new IllegalArgumentException("Geometry WKB length cannot be negative - " + length);
+
+            final ByteArrayOutputStream wkb = new ByteArrayOutputStream(Math.min(length, READ_CHUNK_SIZE));
+            int remaining = length;
+            while (remaining > 0) {
+                final byte[] chunk = input.readBytes(Math.min(remaining, READ_CHUNK_SIZE));
+                // an input that hands back nothing while bytes are still owed would otherwise loop forever
+                if (chunk.length == 0)
+                    throw new IllegalArgumentException(String.format(
+                            "Geometry WKB declares %d bytes but the stream supplied only %d",
+                            length, length - remaining));
+                wkb.write(chunk, 0, chunk.length);
+                remaining -= chunk.length;
+            }
+
+            final Geometry geometry = Geometry.fromWkb(wkb.toByteArray(), srid);
+            if (!clazz.isInstance(geometry))
+                throw new IllegalArgumentException(String.format(
+                        "Geometry WKB read as %s where %s was expected",
+                        geometry.getClass().getSimpleName(), clazz.getSimpleName()));
+
+            return (T) geometry;
+        }
+
+        /**
+         * A {@link Geometry} is a value that cannot be changed after construction, so Kryo may share one
+         * rather than copying it.
+         */
+        @Override
+        public boolean isImmutable() {
+            return true;
         }
     }
 

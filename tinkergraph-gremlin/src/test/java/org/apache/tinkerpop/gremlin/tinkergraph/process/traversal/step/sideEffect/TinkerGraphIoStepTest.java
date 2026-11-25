@@ -22,6 +22,8 @@ import org.apache.tinkerpop.gremlin.TestHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.IO;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.geo.Geometry;
+import org.apache.tinkerpop.gremlin.structure.geo.Model;
 import org.apache.tinkerpop.gremlin.structure.io.util.CustomId;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.junit.Before;
@@ -94,5 +96,70 @@ public class TinkerGraphIoStepTest {
         emptyG.io(file.getAbsolutePath()).with(IO.registry, CustomId.CustomIdIoRegistry.instance()).read().iterate();
 
         assertEquals(1, emptyG.V().has("custom", new CustomId("a", uuid)).count().next().intValue());
+    }
+
+    @Test
+    public void shouldWriteReadGeometryGryo() throws Exception {
+        final Geometry point = Geometry.fromWkt("POINT(-122.3321 47.6062)", Model.GEOGRAPHIC);
+        final Geometry collection = Geometry.fromWkt("GEOMETRYCOLLECTION(POINT(1 2), LINESTRING(0 0, 1 1))", Model.CARTESIAN);
+        final Geometry projected = Geometry.fromWkt("POINT(560000 5280000)", 32618);
+
+        g.addV("place").property("name", "seattle").
+                property("location", point).
+                property("area", collection).
+                property("projected", projected).iterate();
+
+        final File file = TestHelper.generateTempFile(TinkerGraphIoStepTest.class, "shouldWriteReadGeometryGryo", ".kryo");
+        g.io(file.getAbsolutePath()).with(IO.writer, IO.gryo).write().iterate();
+
+        final GraphTraversalSource emptyG = TinkerGraph.open().traversal();
+        emptyG.io(file.getAbsolutePath()).with(IO.reader, IO.gryo).read().iterate();
+
+        assertEquals(point, emptyG.V().has("name", "seattle").values("location").next());
+        assertEquals(collection, emptyG.V().has("name", "seattle").values("area").next());
+
+        final Geometry readProjected = (Geometry) emptyG.V().has("name", "seattle").values("projected").next();
+        assertEquals(projected, readProjected);
+        assertEquals(32618, readProjected.srid());
+        assertEquals(Model.OTHER, readProjected.model());
+    }
+
+    @Test
+    public void shouldWriteReadGeometryGraphSON() throws Exception {
+        final Geometry point = Geometry.fromWkt("POINT(-122.3321 47.6062)", Model.GEOGRAPHIC);
+        final Geometry collection = Geometry.fromWkt("GEOMETRYCOLLECTION(POINT(1 2), LINESTRING(0 0, 1 1))", Model.CARTESIAN);
+
+        g.addV("place").property("name", "seattle").
+                property("location", point).
+                property("area", collection).iterate();
+
+        final File file = TestHelper.generateTempFile(TinkerGraphIoStepTest.class, "shouldWriteReadGeometryGraphSON", ".json");
+        g.io(file.getAbsolutePath()).with(IO.writer, IO.graphson).write().iterate();
+
+        final GraphTraversalSource emptyG = TinkerGraph.open().traversal();
+        emptyG.io(file.getAbsolutePath()).with(IO.reader, IO.graphson).read().iterate();
+
+        assertEquals(point, emptyG.V().has("name", "seattle").values("location").next());
+        assertEquals(collection, emptyG.V().has("name", "seattle").values("area").next());
+    }
+
+    /**
+     * GraphSON carries a geometry's SRID as a number, so an SRID whose model is OTHER survives a write and a read.
+     */
+    @Test
+    public void shouldWriteReadGeometryWithOtherModelGraphSON() throws Exception {
+        final Geometry projected = Geometry.fromWkt("POINT(560000 5280000)", 32618);
+        g.addV("place").property("name", "zone18n").property("projected", projected).iterate();
+
+        final File file = TestHelper.generateTempFile(TinkerGraphIoStepTest.class, "shouldWriteReadGeometryWithOtherModelGraphSON", ".json");
+        g.io(file.getAbsolutePath()).with(IO.writer, IO.graphson).write().iterate();
+
+        final GraphTraversalSource emptyG = TinkerGraph.open().traversal();
+        emptyG.io(file.getAbsolutePath()).with(IO.reader, IO.graphson).read().iterate();
+
+        final Geometry readProjected = (Geometry) emptyG.V().has("name", "zone18n").values("projected").next();
+        assertEquals(projected, readProjected);
+        assertEquals(32618, readProjected.srid());
+        assertEquals(Model.OTHER, readProjected.model());
     }
 }
