@@ -48,6 +48,7 @@ packed one is unreferenced, or a LICENSE entry names an artifact or version that
 """
 
 import argparse
+import fnmatch
 import io
 import json
 import os
@@ -93,7 +94,7 @@ ARTIFACTS = {
                     "gremlin-console/src/main/static"),
 }
 # Language-variant packages: package directory, and how LICENSE and NOTICE get into what is
-# published. "npm" asks npm for the packed file list; a (file, pattern) pair is a packaging file
+# published. "npm" reads package.json and .npmignore; a (file, pattern) pair is a packaging file
 # that must match the pattern for each name; None means the whole directory is published, as a Go
 # module is.
 GLVS = {
@@ -508,17 +509,24 @@ def report_glv():
             continue
         # Does the published package carry both files?
         if packing == "npm":
-            out = subprocess.run(["npm", "pack", "--dry-run", "--json", "--ignore-scripts"], cwd=d,
-                                 capture_output=True, text=True) if shutil.which("npm") else None
-            if out is None or out.returncode != 0:
-                print("  not checked: npm pack --dry-run did not run")
+            # npm always packs LICENSE. It packs NOTICE only if a "files" allowlist names it, or,
+            # with no allowlist, unless .npmignore excludes it. Read the rules rather than run
+            # npm pack, which would run the package's prepare script.
+            pkg = json.load(open(os.path.join(d, "package.json")))
+            if "files" in pkg:
+                has_notice = any(fnmatch.fnmatch("NOTICE", pat.rstrip("/")) for pat in pkg["files"])
+                why = "the package.json files allowlist"
             else:
-                packed = {f["path"] for f in json.loads(out.stdout)[0]["files"]}
-                for f in files:
-                    if f in packed:
-                        print("  ok   npm package includes %s" % f)
-                    else:
-                        fail("npm package for %s does not include %s" % (d, f))
+                ignore = os.path.join(d, ".npmignore")
+                rules = read(ignore).splitlines() if os.path.isfile(ignore) else []
+                has_notice = not any(fnmatch.fnmatch("NOTICE", r.strip().lstrip("/")) for r in rules
+                                     if r.strip() and not r.startswith("#"))
+                why = ".npmignore"
+            print("  ok   npm always packs LICENSE")
+            if has_notice:
+                print("  ok   npm packs NOTICE (per %s)" % why)
+            else:
+                fail("npm package for %s does not include NOTICE (per %s)" % (d, why))
         elif packing:
             path, pattern = packing
             text = read(path)

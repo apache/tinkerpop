@@ -54,25 +54,22 @@ Settle two things with the operator before building anything:
   commit: a version bump changes a LICENSE line, a new dependency may need an entry, and a shade
   change can add or drop whole components.
 
-## 2. The artifacts under review
-
-**Always review a fresh build.** A `target/` directory can hold output from an earlier version or
-an earlier state of the tree, and reviewing it reports on something that will not ship. The
-inventory script in step 3 therefore builds before it checks anything:
+## 2. Run the inventory
 
 ```bash
-mvn clean package -DskipTests -pl gremlin-driver,gremlin-console,gremlin-server -am
+python3 .skills/tinker-license/scripts/license-inventory.py [--strict] [--skip-build] [--only <keys>]
 ```
 
-It takes the version `<v>` from the root `pom.xml`, as written: a SNAPSHOT before a release, the
-release version during one. It uses `package`, never `install`, so a build of a release tag does
-not overwrite the released artifacts in `~/.m2`. Do not build separately and do not point the
-review at artifacts from another run. Check that the JDK on the path suits the branch first (see
-the `tinker-dev` skill).
+Check first that the JDK on the path suits the branch (see the `tinker-dev` skill). The script
+builds what it reviews, so do not build separately and do not point it at another run's output: a
+`target/` directory can hold artifacts from an earlier version or tree. It runs
+`mvn clean package -DskipTests` for the driver, console and server and the modules they depend
+on. Every artifact below is produced by the shade and assembly plugins in the `package` phase,
+so later phases add nothing to review. The build takes a few minutes and logs to
+`target/license-inventory-build.log`. It checks the version the root `pom.xml` declares, SNAPSHOT
+or release.
 
-That produces the five binary artifacts this review covers, plus the source tree's root LICENSE:
-
-| Key | Artifact | LICENSE/NOTICE source |
+| Key | What it reviews | LICENSE/NOTICE source |
 |---|---|---|
 | `shaded` | `gremlin-shaded/target/gremlin-shaded-<v>.jar` | `gremlin-shaded/src/main/static` |
 | `driver` | `gremlin-driver/target/gremlin-driver-<v>-shaded.jar` | `gremlin-driver/src/main/static` |
@@ -80,53 +77,30 @@ That produces the five binary artifacts this review covers, plus the source tree
 | `server-zip` | `gremlin-server/target/apache-tinkerpop-gremlin-server-<v>-distribution.zip` | `gremlin-server/src/main/static` |
 | `console-zip` | `gremlin-console/target/apache-tinkerpop-gremlin-console-<v>-distribution.zip` | `gremlin-console/src/main/static` |
 | `source` | the git tree | root `LICENSE`, `NOTICE`, `licenses/` |
-| `glv` | each language-variant package | its own `LICENSE`, `NOTICE` and any `licenses/` |
+| `glv` | `gremlin-python`, `gremlin-javascript`, `gremlin-dotnet`, `gremlin-go`, `gremlint` | each package's own `LICENSE`, `NOTICE` and any `licenses/` |
 
 The shaded jars merge dependency classes into one jar and replace the dependencies' own
-LICENSE/NOTICE files with TinkerPop's. The zips ship dependency jars intact, so a dependency's
-own license files still travel inside its jar, but the zip's top-level LICENSE must still account
-for it.
+LICENSE/NOTICE files with TinkerPop's. The zips ship dependency jars intact, but the zip's
+top-level LICENSE must still account for each one. The language-variant packages declare their
+dependencies rather than bundling them, so each LICENSE should be the plain Apache license and
+each NOTICE the boilerplate. The script cannot see one case there: a .NET source-only package,
+one whose files sit under `contentFiles/` in the NuGet cache, compiles its source into
+Gremlin.Net's DLL even with `PrivateAssets` set to `all`. Check the `PackageReference` entries
+in `Gremlin.Net.csproj` for these, and decide each under step 3.
 
-The language-variant packages (`gremlin-python`, `gremlin-javascript`, `gremlin-dotnet`,
-`gremlin-go`, `gremlint`) publish their own LICENSE and NOTICE to PyPI, npm, NuGet and the Go
-proxy. They declare their dependencies rather than bundling them, so each LICENSE should be the
-plain Apache license and each NOTICE the boilerplate. The script's `glv` key checks them, as the
-`glv` row below. One thing it cannot see: a .NET source-only package, one whose files sit under
-`contentFiles/` in the NuGet cache, compiles its source into Gremlin.Net's DLL even with
-`PrivateAssets` set to `all`. Check the `PackageReference` entries in `Gremlin.Net.csproj` for
-these, and decide each under step 4.
-
-## 3. Run the inventory
-
-```bash
-python3 .skills/tinker-license/scripts/license-inventory.py [--strict] [--skip-build] [--only shaded,driver,...]
-```
-
-The build takes a few minutes. Its output goes to `target/license-inventory-build.log`, and a
-failed build stops the run before any check. `--only` narrows the checks, not the build.
-`--only source` and `--only glv` skip the build, because neither needs one. Any artifact that is
-missing, or older than this run's build, is a failure.
-
-`--skip-build` reuses the artifacts already in `target/` for the pom version and prints when each
-was built. Build by default. Pass `--skip-build` when the operator asks to skip the build, or to
-re-run checks right after a fresh build of an unchanged tree. When the artifacts were not rebuilt,
-say so in the report and give the build times the script printed. An edit to a LICENSE or NOTICE
-source after the last build shows up as a packed file that differs from its source, which is the
-cue to rebuild.
-
-The exit code says what happened:
+`--only` narrows the checks, not the build. `--only source` and `--only glv` skip the build,
+because neither needs one. `--skip-build` reuses the artifacts already in `target/` and prints
+when each was built. Pass it only when the operator asks, or to re-run checks right after a fresh
+build of an unchanged tree, and say in the report that the artifacts were not rebuilt.
 
 | Exit | Meaning | Do |
 |---|---|---|
-| `0` | The checks ran, and passed if `--strict` was given | Go to step 4 |
-| `1` | A check failed under `--strict`, or the build failed | For a check, go to step 4. For the build, report the end of the log and stop. |
-| `2` | `--skip-build` was given but artifacts are missing from `target/`, so nothing was checked | Ask the operator whether to build them now. If they agree, run again without `--skip-build`. If not, stop. |
+| `0` | The checks ran, and passed if `--strict` was given | Go to step 3 |
+| `1` | A check failed under `--strict`, the build failed, or the script was run outside the repository root | For a check, go to step 3. Otherwise report the reason and stop. |
+| `2` | `--skip-build` found artifacts missing from `target/`, or the arguments were invalid; nothing was checked | For missing artifacts, ask the operator whether to build. If they agree, run again without `--skip-build`. |
 
-A usage error, such as an unknown `--only` key, also exits 2, and running outside the repository
-root exits 1. Both print the reason and check nothing. The last line of the output counts both
-mechanical failures and leads, and a lead count above zero always needs step 4.
-
-The script reports facts and decides nothing. For each artifact it:
+The last line counts mechanical failures and leads. A lead count above zero always needs step 3.
+The script reports facts and decides nothing. For each binary artifact it:
 
 - compares the packed LICENSE and NOTICE with their sources;
 - cross-checks every `licenses/<name>` the LICENSE refers to against the files actually packed,
@@ -145,15 +119,14 @@ The script reports facts and decides nothing. For each artifact it:
 
 For the source tree it maps each root LICENSE entry to the tracked files that look like it, and
 says when the name is only an npm dependency. For each language-variant package it checks that the
-published package carries LICENSE and NOTICE (through `npm pack --dry-run`, `MANIFEST.in` or the
-`.csproj`), that every `licenses/` reference resolves inside the package, and it lists any LICENSE
+published package carries LICENSE and NOTICE (through `package.json` and `.npmignore`, `MANIFEST.in`
+or the `.csproj`), that every `licenses/` reference resolves inside the package, and it lists any LICENSE
 text past the Apache license, any non-boilerplate NOTICE line and any non-ASF copyright line in
-the package's tracked files. `--strict` exits 1 on any mechanical failure: the first
-three checks above, a language-variant package missing LICENSE or NOTICE or a reference with no
-file, or an artifact the build did not produce. An unknown `--only` key is an error.
-Every flag is a lead, not a verdict.
+the package's tracked files. `--strict` exits 1 on any mechanical failure: the first three checks
+above, a language-variant package missing LICENSE or NOTICE or a reference with no file, or an
+artifact the build did not produce. Every flag is a lead, not a verdict.
 
-## 4. Decide each component
+## 3. Decide each component
 
 Work through every bundled component the inventory lists, plus everything it flags. For each,
 find its license from the jar or its pom, never from memory, and apply
@@ -183,7 +156,7 @@ find its license from the jar or its pom, never from memory, and apply
 Check the reverse direction too. Every LICENSE entry, every packed license file and every NOTICE
 section must correspond to something bundled, at the stated version.
 
-## 5. Report
+## 4. Report
 
 Report one table per artifact with the problems first, in this order:
 
@@ -197,12 +170,15 @@ content), the rule it breaks, and the fix. Say what you did not check, such as c
 dependency embeds without saying so in its license files, and whether each problem is new since
 the last release or was already shipped.
 
-## 6. When asked to fix
+## 5. When asked to fix
 
 - **Fix on the oldest affected branch.** Build the patch against `<remote>/<branch>`, not a local
   branch that may be behind, and hand it over as a patch or uncommitted changes.
 - **Copy license texts verbatim** from the dependency's jar or source release. Never retype or
   reconstruct one.
+- **Keep entries compact.** When an entry's only detail is its license file, put
+  `- for details, see licenses/<name>` on the entry's own line. Use indented `- ` lines only when
+  there is more to say, such as where it is bundled or what it is shaded to.
 - **Change the shade configuration with the files.** A new `licenses/` file in a shaded module
   needs an `IncludeResourceTransformer`, and the copy that arrives from `gremlin-shaded` needs a
   `DontIncludeResourceTransformer` in `gremlin-driver` and `gremlin-console`. A zip picks up its
@@ -210,6 +186,8 @@ the last release or was already shipped.
 - **Run the inventory with `--strict`**, without `--skip-build`, until it passes. Each such run
   rebuilds, so it always checks the edited files, and check that RAT still
   reports no unapproved files.
-- **Check the merge forward.** Apply the change to each later branch in a scratch worktree and
-  rebuild. Versions differ between branches, so a hunk can merge cleanly and still name the wrong
-  version there. Tell the operator about every such line.
+- **Check the merge forward** with the `tinker-merge` skill, passing
+  `--test-command 'python3 .skills/tinker-license/scripts/license-inventory.py --strict'` so
+  every branch in the chain is rebuilt and re-inventoried after its merge. Versions differ
+  between branches, so a hunk can merge cleanly and still name the wrong version there. Tell the
+  operator about every such line.

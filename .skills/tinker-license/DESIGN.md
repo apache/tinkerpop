@@ -44,6 +44,6 @@ judgment from its license and what is inside it, so it stays in `SKILL.md` and t
   and how its LICENSE and NOTICE get into the published package.
 - **A new kind of gap** → a check in the script if it can be decided from the artifact alone;
   otherwise a pattern in `references/pitfalls.md` and, if it changes the procedure, a line in
-  step 4 of `SKILL.md`.
+  step 3 of `SKILL.md`.
 - **A policy change** in the developer docs or at the ASF → `references/asf-rules.md` first, then
   any step in `SKILL.md` that applies it.
