@@ -45,7 +45,7 @@
   "license": "Apache-2.0",
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.32.2",
-    "effect": "^3.17.9",
+    "effect": "^4.1.5",
     "gremlin": "4.0.0-beta.4",
     "gremlint": "4.0.0-beta.4",
     "winston": "^3.17.0",
